@@ -1,0 +1,13 @@
+#--------------------------------------------------------------------
+# This script should be copied into /etc/udev/rules.d
+# Dependencies:
+#   /etc/systemd/system/usb-mount@.service
+#   /usr/local/bin/usb-mount.sh
+#--------------------------------------------------------------------
+# 1. With this rule the usb INSERTION/REMOVAL can be detected
+# 2. Once detection has taken place, the service 'usb-mount@.service' is RUN
+# 3. Finally, depending on whether it is an Insertion or Removal, the following
+#       scripts 'usb-mount@.service' is run
+#--------------------------------------------------------------------
+ACTION=="add",KERNEL=="sd[a-z][0-9]*",SUBSYSTEMS=="usb",RUN+="/bin/systemctl start usb-mount@%k.service"
+ACTION=="remove",KERNEL=="sd[a-z][0-9]*",SUBSYSTEMS=="usb",RUN+="/bin/systemctl stop usb-mount@%k.service"

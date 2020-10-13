@@ -1,0 +1,28 @@
+#--------------------------------------------------------------------
+# Remarks: 
+# 1. In order for the service to run after a reboot
+#		make sure to create a 'symlink'
+#		ln -s /etc/systemd/system/<myservice.service> /etc/systemd/system/multi-user.target.wants/<myservice.service>
+# 2. Reload daemon: systemctl daemon-reload
+# 3. Start Service: systemctl start <myservice.service>
+# 4. Check status: systemctl status <myservice.service>
+#--------------------------------------------------------------------
+[Unit]
+Description=Enable UFW
+
+[Service]
+Type=oneshot
+#In order to run 'enable-ufw-before-login.sh' as 'root',
+#   'User' has to be defined. In this case it's 'ubuntu'. 
+User=ubuntu
+RemainAfterExit=true
+#In order to run 'enable-ufw-before-login.sh' as 'root',
+#   the to-be-executed script has to be place within
+#   /usr/bin/sudo /bin/bash -lc '<script.sh>'
+ExecStart=/usr/bin/sudo /bin/bash -lc '/usr/local/bin/enable-ufw-before-login.sh enable'
+ExecStop=/usr/bin/sudo /bin/bash -lc '/usr/local/bin/enable-ufw-before-login.sh disable'
+StandardInput=journal+console
+StandardOutput=journal+console
+
+[Install]
+WantedBy=multi-user.target

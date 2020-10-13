@@ -1,0 +1,19 @@
+#--------------------------------------------------------------------
+# This script should be copied into /etc/systemd/system
+#   /usr/local/bin/sd-detect-add.sh
+#   /usr/local/bin/sd-detect-remove.sh
+#   /etc/udev/rules.d/detect.rules
+#--------------------------------------------------------------------
+[Unit]
+Description=Mount USB Drive on %i
+
+[Service]
+Type=oneshot
+RemainAfterExit=true
+ExecStart=/usr/local/bin/sd-detect-add.sh %i
+ExecStop=/usr/local/bin/sd-detect-remove.sh %i
+
+#THIS PART IS MANDATORY
+#WITHOUT the code below, the 'echo' in 'usb-mount.sh' will not be shown
+StandardInput=journal+console
+StandardOutput=journal+console

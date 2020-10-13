@@ -1,0 +1,9 @@
+#--------------------------------------------------------------------
+# This script should be copied into /etc/udev/rules.d
+# Dependencies:
+#   /usr/local/bin/sd-detect-add.sh
+#   /usr/local/bin/sd-detect-remove.sh
+#   /etc/systemd/system/sd-detect@.service
+#--------------------------------------------------------------------
+ACTION=="add", KERNEL=="mmcblk[1-9]p[1-9]*", RUN+="/bin/systemctl start sd-detect@%k.service"
+ACTION=="remove", KERNEL=="mmcblk[1-9]p[1-9]*", RUN+="/bin/systemctl stop sd-detect@%k.service"
