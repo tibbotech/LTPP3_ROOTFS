@@ -9,7 +9,23 @@ LABEL description="This is an image for our base linux image creation"
 # Disable Prompt During Packages Installation
 ARG DEBIAN_FRONTEND=noninteractive
 
-RUN apt update
+RUN apt-get -y update
 
-RUN apt upgrade
+RUN apt-get -y upgrade
 
+RUN apt-get -y install	bison			    \
+                        build-essential	    \
+                        flex			    \ 
+                        git			        \	 
+                        libncurses5-dev     \
+                        libssl-dev		    \
+                        openssl			    \ 
+                        qemu			    \ 
+                        qemu-user-static    \ 
+                        sshfs			    \
+                        u-boot-tools	    \
+                        wget
+
+RUN git clone https://github.com/tibbotech/LTPP3_ROOTFS.git && \
+                        cd LTPP3_ROOTFS && \
+                        ./sunplus_inst.sh

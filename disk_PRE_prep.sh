@@ -628,3 +628,48 @@ echo ">from: ${kernel_dir}"
 	sudo make oldconfig
 echo -e "\r"
 echo -e "\r"
+
+###FIX error messages:
+#	WARN:	uid is 0 but '/etc' is owned by 1000
+echo -e "\r"
+echo ">chown root:root ${etc_dir}"
+echo ">in: ${extra_dir}"
+	sudo chown root:root ${extra_etc_dir}
+
+#>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>	
+###FIX error messages:
+#	WARN:	/etc is group writable
+echo -e "\r"
+echo ">chmod 755 ${etc_dir}"
+echo ">in: ${extra_dir}"
+	sudo chmod 755 ${extra_etc_dir}
+
+
+#Rename "build_disk.sh" to "build_disk.sh.bak"
+press_any_key__localfunc
+echo -e "\r"
+echo ">Renaming ${build_disk_filename}" 
+echo -e "to: ${build_disk_bck_filename}"
+echo -e "in: ${initramfs_dir}"
+echo -e "\r"
+sudo mv ${build_disk_fpath} ${build_disk_bck_fpath}
+
+
+#Copy modified file to location: ~/SP7021/linux/rootfs/initramfs
+press_any_key__localfunc
+echo -e "\r"
+echo ">Copying ${build_disk_mod_filename}" 
+echo -e "as: ${build_disk_filename}"
+echo -e "from: ${home_scripts_dir}"
+echo -e "to: ${initramfs_dir}"
+echo -e "\r"
+sudo cp ${build_disk_mod_fpath}  ${build_disk_fpath}
+
+
+#Make file "build_disk.sh" executable
+press_any_key__localfunc
+echo -e "\r"
+echo ">Changing permission of ${build_disk_filename}"
+echo -e "in: ${initramfs_dir}"
+echo -e "\r"
+sudo chmod +x ${build_disk_fpath}
