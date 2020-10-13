@@ -29,6 +29,6 @@ RUN apt-get -y install	bison			    \
 RUN apt-get -y install vim  \
                         nano
 
-RUN git clone https://github.com/tibbotech/LTPP3_ROOTFS.git && cd ~
+RUN cd ~/ && RUN git clone https://github.com/tibbotech/LTPP3_ROOTFS.git
 
-RUN ~/LTPP3_ROOTFS/sunplus_inst.sh
+RUN LTPP3_ROOTFS/sunplus_inst.sh
