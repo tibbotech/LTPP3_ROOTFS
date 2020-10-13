@@ -31,33 +31,15 @@ press_any_key__localfunc() {
 }
 
 
-#---Check if currently NOT logged in as "root"
-echo -e "\r"
-echo "---Checking current user---"
-echo -e "\r"
-
-# current_user=`whoami`
-# if [[ ${current_user} == "root" ]]; then
-# 	echo -e "\r"
-# 	echo ">Current user is <root>..."
-# 	echo ">>>Please login as a normal user (e.g. imcase)"
-# 	echo -e "\r"
-# 	echo "Exiting Now..."
-# 	echo -e "\r"
-# 	echo -e "\r"
-
-# 	exit
-# fi
-
-
 #---Define path variables
 press_any_key__localfunc
 echo -e "\r"
 echo "---Defining Varabiles (Filenames, Directories, Paths, Full-Paths)---"
 echo -e "\r"
-work_dir=`dirname "$(realpath "${0}")"`
+home_dir=~
 etc_dir=/etc
 home_scripts_dir=${home_dir}/scripts
+Downloads_dir=${home_dir}/Downloads
 sunplus_foldername="SP7021"
 sunplus_dir=${home_dir}/${sunplus_foldername}
 
@@ -68,10 +50,10 @@ echo "---Checking current working directory---"
 echo -e "\r"
 current_working_dir=`pwd`
 
-if [[ ${current_working_dir} != ${work_dir} ]]; then
+if [[ ${current_working_dir} != ${home_dir} ]]; then
 	echo -e "\r"
 	echo ">Current working directory is <${current_working_dir}>..."
-	echo ">>>Please navigate to <${work_dir}>..."
+	echo ">>>Please navigate to <${home_dir}>..."
 	echo ">>>...And execute script again."
 	echo -e "\r"
 	echo "Exiting Now..."
@@ -84,12 +66,10 @@ fi
 
 #---Check if Sunplus is already installed
 if [[ -d ${sunplus_dir} ]]; then
-    echo -e "\r"
-    echo "---WARNING: Sunplus already installed---"
-    echo "Location: ${sunplus_dir}"
-    echo -e "\r"
-
-    exit
+	echo -e "\r"
+	echo "---Removing existing directory: ${sunplus_dir}---"
+	echo -e "\r"
+	rm -rf ${sunplus_dir}
 fi
 
 
@@ -98,7 +78,7 @@ press_any_key__localfunc
 echo -e "\r"
 echo "---Installing Libraries for Sunplus---"
 echo -e "\r"
-sudo apt-get install openssl libssl-dev bison flex -y
+apt-get install openssl libssl-dev bison flex -y
 
 press_any_key__localfunc
 echo -e "\r"
@@ -112,7 +92,7 @@ echo -e "\r"
 cd ${sunplus_dir}
 
 echo -e "\r"
-echo ">Adding <${working_dir}/boot/uboot/tools> to <PATH>"
+echo ">Adding <${sunplus_dir}/boot/uboot/tools> to <PATH>"
 echo -e "\r"
 echo "export PATH=\$PATH:"${sunplus_dir}/boot/uboot/tools >>  ${home_dir}/.bashrc
 
@@ -154,8 +134,3 @@ echo -e "\r"
 echo "---Executing: <make all>---"
 echo -e "\r"
 make all
-
-#Note: The defconfig of LTPP3G2 is composite by many modules, 
-#the content is vary from modules to modules. So if you want to build it, 
-#please be sure you have deconfig that you are using and 
-#to replace linux/kernel/arch/arm/configs/sp7021_chipC_ltpp3g2_defconfig
