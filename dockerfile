@@ -24,10 +24,10 @@ RUN apt-get -y install	bison			    \
                         qemu-user-static    \ 
                         sshfs			    \
                         u-boot-tools	    \
-                        wget                
+                        wget                \
+                        nano                \
+                        vim
 
-RUN apt-get -y install vim  \
-                        nano
 
 RUN cd ~ && git clone https://github.com/tibbotech/LTPP3_ROOTFS.git
 
