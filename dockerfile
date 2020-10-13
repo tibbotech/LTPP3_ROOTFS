@@ -25,9 +25,9 @@ RUN apt-get -y install	bison			    \
                         sshfs			    \
                         u-boot-tools	    \
                         wget                \
+                        bc                  \
                         nano                \
                         vim
-
 
 RUN cd ~ && git clone https://github.com/tibbotech/LTPP3_ROOTFS.git
 

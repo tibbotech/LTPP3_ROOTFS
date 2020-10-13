@@ -248,7 +248,7 @@ press_any_key__localfunc
 echo -e "\r"
 echo "---Installing Network related Tools---"
 echo -e "\r"
-	apt install iputils-ping -y
+	apt-get install iputils-ping -y
 	apt-get install net-tools -y
 	apt-get install iproute2 iproute2-doc -y
 	apt-get install netplan.io -y
