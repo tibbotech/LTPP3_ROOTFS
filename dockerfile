@@ -31,4 +31,4 @@ RUN apt-get -y install vim  \
 
 RUN cd ~ && git clone https://github.com/tibbotech/LTPP3_ROOTFS.git
 
-RUN ~/LTPP3_ROOTFS/sunplus_inst.sh
+RUN cd ~ && ~/LTPP3_ROOTFS/sunplus_inst.sh
