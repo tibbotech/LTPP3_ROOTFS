@@ -87,6 +87,10 @@ resize2fs_before_login_sh_filename="resize2fs-before-login.sh"
 enable_ufw_before_login_service_filename="enable-ufw-before-login.service"
 enable_ufw_before_login_sh_filename="enable-ufw-before-login.sh"
 
+build_disk_filename="build_disk.sh"
+build_disk_bck_filename=${build_disk_filename}.bak
+build_disk_mod_filename=${build_disk_filename}.mod
+
 home_dir=~
 etc_dir=/etc
 usr_dir=/usr
@@ -111,6 +115,12 @@ disk_etc_udev_rules_d_dir=${disk_etc_dir}/udev/rules.d
 disk_usr_local_bin_dir=${disk_dir}${usr_dir}/local/bin
 disk_scripts_dir=${disk_dir}/scripts
 # daisychain_dir=/sys/devices/platform/soc\@B/9c108000.l2sw
+
+extra_dir=${initramfs_dir}/extra
+extra_etc_dir=${extra_dir}${etc_dir}
+build_disk_fpath=${initramfs_dir}/${build_disk_filename} 
+build_disk_bck_fpath=${initramfs_dir}/${build_disk_bck_filename} 
+build_disk_mod_fpath=${home_scripts_dir}/${build_disk_mod_filename} 
 
 # dev_dir=/dev
 # mmcblk0p8_part="mmcblk0p8"
@@ -628,6 +638,7 @@ echo ">from: ${kernel_dir}"
 	sudo make oldconfig
 echo -e "\r"
 echo -e "\r"
+
 
 ###FIX error messages:
 #	WARN:	uid is 0 but '/etc' is owned by 1000
