@@ -35,36 +35,16 @@ press_any_key__localfunc() {
 
 
 
-#---Check if currently NOT logged in as "root"
-echo -e "\r"
-echo "---Checking current user---"
-echo -e "\r"
-current_user=`whoami`
-
-if [[ ${current_user} == "root" ]]; then
-	echo -e "\r"
-	echo ">Current user is <root>..."
-	echo ">>>Please login as a normal user (e.g. imcase)"
-	echo -e "\r"
-	echo ">Exiting Now..."
-	echo -e "\r"
-	echo -e "\r"
-
-	exit
-fi
-
-
-
 #---Define path variables
 press_any_key__localfunc
 echo -e "\r"
-echo "---Defining Varabiles (Filenames, Directories, Paths, Full-Paths)---"
+echo -e "---Defining Varabiles (Filenames, Directories, Paths, Full-Paths)---"
 echo -e "\r"
 armhf_filename="ubuntu-base-20.04.1-base-armhf.tar.gz"
 disk_foldername="disk"
 make_menuconfig_filename="armhf_kernel.config"
 make_menuconfig_default_filename=".config"
-qemu_arm_static_filename="qemu-arm-static"
+qemu_user_static_filename="qemu-user-static"
 resolve_filename="resolv.conf"
 usb_mount_rules_filename="usb-mount.rules"
 usb_mount_service_filename="usb-mount@.service"
@@ -91,189 +71,202 @@ build_disk_filename="build_disk.sh"
 build_disk_bck_filename=${build_disk_filename}.bak
 build_disk_mod_filename=${build_disk_filename}.mod
 
-home_dir=~
+home_dir=~	#this is the /root directory
 etc_dir=/etc
-usr_dir=/usr
-usr_bin_dir=${usr_dir}/bin
-Downloads_dir=${home_dir}/Downloads
-Downloads_disk_dir=${Downloads_dir}/${disk_foldername}
-Downloads_disk_lib_dir=${Downloads_dir}/disk/lib
-scripts_dir=/scripts
-home_scripts_dir=${home_dir}${scripts_dir}
-work_dir=${home_dir}/SP7021
-kernel_dir=${work_dir}/linux/kernel
-initramfs_dir=${work_dir}/linux/rootfs/initramfs
-disk_dir=${initramfs_dir}/${disk_foldername}
-disk_etc_dir=${disk_dir}/etc
-disk_lib_dir=${disk_dir}/lib
-disk_root_dir=${disk_dir}/root
-disk_home_ubuntu_dir=${disk_dir}/home/ubuntu
-disk_usr_bin_dir=${disk_dir}${usr_dir}/bin
+usr_bin_dir=/usr/bin
+home_downloads_dir=${home_dir}/Downloads
+home_downloads_disk_dir=${home_downloads_dir}/${disk_foldername}
+home_downloads_disk_lib_dir=${home_downloads_dir}/disk/lib
 
-disk_etc_systemd_system_dir=${disk_etc_dir}/systemd/system
-disk_etc_udev_rules_d_dir=${disk_etc_dir}/udev/rules.d
-disk_usr_local_bin_dir=${disk_dir}${usr_dir}/local/bin
-disk_scripts_dir=${disk_dir}/scripts
+scripts_dir=/scripts
+home_lttp3rootfs_dir=${home_dir}/LTPP3_ROOTFS
+home_lttp3rootfs_services_automount_dir=${home_lttp3rootfs_dir}/services/automount
+home_lttp3rootfs_services_oobe_resize2fs_dir=${home_lttp3rootfs_dir}/services/oobe/resize2fs
+home_lttp3rootfs_services_network_dir=${home_lttp3rootfs_dir}/services/network
+home_lttp3rootfs_services_ufw_dir=${home_lttp3rootfs_dir}/services/ufw
+home_lttp3rootfs_kernel_dir=${home_lttp3rootfs_dir}/kernel
+SP7xxx_dir=${home_dir}/SP7021
+SP7xxx_linux_kernel_dir=${SP7xxx_dir}/linux/kernel
+SP7xxx_linux_rootfs_initramfs_dir=${SP7xxx_dir}/linux/rootfs/initramfs
+SP7xxx_linux_rootfs_initramfs_disk_dir=${SP7xxx_linux_rootfs_initramfs_dir}/${disk_foldername}
+SP7xxx_linux_rootfs_initramfs_disk_etc_dir=${SP7xxx_linux_rootfs_initramfs_disk_dir}/etc
+SP7xxx_linux_rootfs_initramfs_disk_lib_dir=${SP7xxx_linux_rootfs_initramfs_disk_dir}/lib
+SP7xxx_linux_rootfs_initramfs_disk_usr_bin_dir=${SP7xxx_linux_rootfs_initramfs_disk_dir}/usr/bin
+
+SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir=${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}/systemd/system
+SP7xxx_linux_rootfs_initramfs_disk_etc_udev_rulesd_dir=${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}/udev/rules.d
+SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir=${SP7xxx_linux_rootfs_initramfs_disk_dir}/usr/local/bin
+SP7xxx_linux_rootfs_initramfs_disk_scripts_dir=${SP7xxx_linux_rootfs_initramfs_disk_dir}/scripts
 # daisychain_dir=/sys/devices/platform/soc\@B/9c108000.l2sw
 
-extra_dir=${initramfs_dir}/extra
-extra_etc_dir=${extra_dir}${etc_dir}
-build_disk_fpath=${initramfs_dir}/${build_disk_filename} 
-build_disk_bck_fpath=${initramfs_dir}/${build_disk_bck_filename} 
-build_disk_mod_fpath=${home_scripts_dir}/${build_disk_mod_filename} 
+SP7xxx_linux_rootfs_initramfs_extra_dir=${SP7xxx_linux_rootfs_initramfs_dir}/extra
+SP7xxx_linux_rootfs_initramfs_extra_etc_dir=${SP7xxx_linux_rootfs_initramfs_extra_dir}${etc_dir}
+SP7xxx_linux_rootfs_initramfs_build_disk_etc_dir
+
+build_disk_fpath=${SP7xxx_linux_rootfs_initramfs_dir}/${build_disk_filename}
+build_disk_bck_fpath=${SP7xxx_linux_rootfs_initramfs_dir}/${build_disk_bck_filename} 
+build_disk_mod_fpath=${home_lttp3rootfs_kernel_dir}/${build_disk_mod_filename} 
 
 # dev_dir=/dev
 # mmcblk0p8_part="mmcblk0p8"
 # dev_mmcblk0p8_dir=${dev_dir}/${mmcblk0p8_part}
 
 src_resolve_fpath=${etc_dir}/${resolve_filename}
-armhf_fpath=${Downloads_dir}/${armhf_filename}
-disk_etc_profile_fpath=${disk_etc_dir}/${profile_filename}
-chroot_exec_cmd_inside_chroot_fpath=${scripts_dir}/${chroot_exec_cmd_inside_chroot_filename}
-disk_scripts_chroot_exec_cmd_inside_chroot_fpath=${disk_scripts_dir}/${chroot_exec_cmd_inside_chroot_filename}
-# daisychain_mode_fpath=${daisychain_dir}/${daisychain_mode_filename}
+armhf_fpath=${home_downloads_dir}/${armhf_filename}
+disk_etc_profile_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}/${profile_filename}
 
-src_make_menuconfig_fpath=${home_scripts_dir}/${make_menuconfig_filename}
-dst_make_menuconfig_fpath=${kernel_dir}/${make_menuconfig_default_filename}
+src_make_menuconfig_fpath=${home_lttp3rootfs_kernel_dir}/${make_menuconfig_filename}
+dst_make_menuconfig_fpath=${SP7xxx_linux_kernel_dir}/${make_menuconfig_default_filename}
 
-src_usb_mount_service_fpath=${home_scripts_dir}/${usb_mount_service_filename}
-dst_usb_mount_service_fpath=${disk_etc_systemd_system_dir}/${usb_mount_service_filename}
+src_usb_mount_service_fpath=${home_lttp3rootfs_services_automount_dir}/${usb_mount_service_filename}
+dst_usb_mount_service_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}/${usb_mount_service_filename}
 
-src_usb_mount_sh_fpath=${home_scripts_dir}/${usb_mount_sh_filename}
-dst_usb_mount_sh_fpath=${disk_usr_local_bin_dir}/${usb_mount_sh_filename}
+src_usb_mount_sh_fpath=${home_lttp3rootfs_services_automount_dir}/${usb_mount_sh_filename}
+dst_usb_mount_sh_fpath=${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}/${usb_mount_sh_filename}
 
-src_usb_mount_rules_fpath=${home_scripts_dir}/${usb_mount_rules_filename}
-dst_usb_mount_rules_fpath=${disk_etc_udev_rules_d_dir}/${usb_mount_rules_filename}
+src_usb_mount_rules_fpath=${home_lttp3rootfs_services_automount_dir}/${usb_mount_rules_filename}
+dst_usb_mount_rules_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_udev_rulesd_dir}/${usb_mount_rules_filename}
 
-src_sd_detect_service_fpath=${home_scripts_dir}/${sd_detect_service_filename}
-dst_sd_detect_service_fpath=${disk_etc_systemd_system_dir}/${sd_detect_service_filename}
+src_sd_detect_service_fpath=${home_lttp3rootfs_services_automount_dir}/${sd_detect_service_filename}
+dst_sd_detect_service_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}/${sd_detect_service_filename}
 
-src_sd_detect_rules_fpath=${home_scripts_dir}/${sd_detect_rules_filename}
-dst_sd_detect_rules_fpath=${disk_etc_udev_rules_d_dir}/${sd_detect_rules_filename}
+src_sd_detect_rules_fpath=${home_lttp3rootfs_services_automount_dir}/${sd_detect_rules_filename}
+dst_sd_detect_rules_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_udev_rulesd_dir}/${sd_detect_rules_filename}
 
-src_sd_detect_add_sh_fpath=${home_scripts_dir}/${sd_detect_add_sh_filename}
-dst_sd_detect_add_sh_fpath=${disk_usr_local_bin_dir}/${sd_detect_add_sh_filename}
+src_sd_detect_add_sh_fpath=${home_lttp3rootfs_services_automount_dir}/${sd_detect_add_sh_filename}
+dst_sd_detect_add_sh_fpath=${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}/${sd_detect_add_sh_filename}
 
-src_sd_detect_remove_sh_fpath=${home_scripts_dir}/${sd_detect_remove_sh_filename}
-dst_sd_detect_remove_sh_fpath=${disk_usr_local_bin_dir}/${sd_detect_remove_sh_filename}
+src_sd_detect_remove_sh_fpath=${home_lttp3rootfs_services_automount_dir}/${sd_detect_remove_sh_filename}
+dst_sd_detect_remove_sh_fpath=${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}/${sd_detect_remove_sh_filename}
 
-scripts_resize2fs_exec_fpath=${scripts_dir}/${resize2fs_exec_filename}
-src_resize2fs_exec_fpath=${home_scripts_dir}/${resize2fs_exec_filename}
-dst_resize2fs_exec_fpath=${disk_scripts_dir}/${resize2fs_exec_filename}
+src_resize2fs_exec_fpath=${home_lttp3rootfs_services_oobe_resize2fs_dir}/${resize2fs_exec_filename}
+dst_resize2fs_exec_fpath=${SP7xxx_linux_rootfs_initramfs_disk_scripts_dir}/${resize2fs_exec_filename}
 
-src_enable_eth1_before_login_service_fpath=${home_scripts_dir}/${enable_eth1_before_login_service_filename}
-dst_enable_eth1_before_login_service_fpath=${disk_etc_systemd_system_dir}/${enable_eth1_before_login_service_filename}
+src_enable_eth1_before_login_service_fpath=${home_lttp3rootfs_services_network_dir}/${enable_eth1_before_login_service_filename}
+dst_enable_eth1_before_login_service_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}/${enable_eth1_before_login_service_filename}
 
-src_enable_eth1_before_login_sh_fpath=${home_scripts_dir}/${enable_eth1_before_login_sh_filename}
-dst_enable_eth1_before_login_sh_fpath=${disk_usr_local_bin_dir}/${enable_eth1_before_login_sh_filename}
+src_enable_eth1_before_login_sh_fpath=${home_lttp3rootfs_services_network_dir}/${enable_eth1_before_login_sh_filename}
+dst_enable_eth1_before_login_sh_fpath=${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}/${enable_eth1_before_login_sh_filename}
 
-src_resize2fs_before_login_service_fpath=${home_scripts_dir}/${resize2fs_before_login_service_filename}
-dst_resize2fs_before_login_service_fpath=${disk_etc_systemd_system_dir}/${resize2fs_before_login_service_filename}
+src_resize2fs_before_login_service_fpath=${home_lttp3rootfs_services_oobe_resize2fs_dir}/${resize2fs_before_login_service_filename}
+dst_resize2fs_before_login_service_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}/${resize2fs_before_login_service_filename}
 
-src_resize2fs_before_login_sh_fpath=${home_scripts_dir}/${resize2fs_before_login_sh_filename}
-dst_resize2fs_before_login_sh_fpath=${disk_usr_local_bin_dir}/${resize2fs_before_login_sh_filename}
+src_resize2fs_before_login_sh_fpath=${home_lttp3rootfs_services_oobe_resize2fs_dir}/${resize2fs_before_login_sh_filename}
+dst_resize2fs_before_login_sh_fpath=${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}/${resize2fs_before_login_sh_filename}
 
-src_enable_ufw_before_login_service_fpath=${home_scripts_dir}/${enable_ufw_before_login_service_filename}
-dst_enable_ufw_before_login_service_fpath=${disk_etc_systemd_system_dir}/${enable_ufw_before_login_service_filename}
+src_enable_ufw_before_login_service_fpath=${home_lttp3rootfs_services_ufw_dir}/${enable_ufw_before_login_service_filename}
+dst_enable_ufw_before_login_service_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}/${enable_ufw_before_login_service_filename}
 
-src_enable_ufw_before_login_sh_fpath=${home_scripts_dir}/${enable_ufw_before_login_sh_filename}
-dst_enable_ufw_before_login_sh_fpath=${disk_usr_local_bin_dir}/${enable_ufw_before_login_sh_filename}
+src_enable_ufw_before_login_sh_fpath=${home_lttp3rootfs_services_ufw_dir}/${enable_ufw_before_login_sh_filename}
+dst_enable_ufw_before_login_sh_fpath=${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}/${enable_ufw_before_login_sh_filename}
 
 
 echo -e "\r"
-echo "---------------------------------------------------------------"
+echo -e "---------------------------------------------------------------"
 echo -e "\tPRE-PREPARATION of DISK for CHROOT"
-echo "---------------------------------------------------------------"
+echo -e "---------------------------------------------------------------"
+
+#---Create Download directory (if needed)
+if [[ ! -d ${home_downloads_dir} ]]; then
+	echo -e "\r"
+	echo -e ">Create ${home_downloads_dir}"
+	mkdir ${home_downloads_dir}
+
+	echo -e "\r"
+	echo -e ">Downloading ${armhf_filename}"
+	press_any_key__localfunc
+	wget http://cdimage.ubuntu.com/cdimage/ubuntu-base/releases//20.04/release/${armhf_filename}
+fi
 
 
 press_any_key__localfunc
 #---Download armhf-image (if needed)
 if [[ ! -f ${armhf_fpath} ]]; then
 	echo -e "\r"
-	echo ">Navigate to <~/Downloads>"
-	cd ${Downloads_dir}
+	echo -e ">Navigate to <~/Downloads>"
+	cd ${home_downloads_dir}
 
 	echo -e "\r"
-	echo ">Downloading ${armhf_filename}"
+	echo -e ">Downloading ${armhf_filename}"
 	press_any_key__localfunc
-	sudo wget http://cdimage.ubuntu.com/cdimage/ubuntu-base/releases//20.04/release/${armhf_filename}
+	wget http://cdimage.ubuntu.com/cdimage/ubuntu-base/releases//20.04/release/${armhf_filename}
 fi
 
 
-if [[ -d ${Downloads_disk_dir} ]]; then
+if [[ -d ${home_downloads_disk_dir} ]]; then
 	press_any_key__localfunc
 	echo -e "\r"
-	echo ">Removing: ${disk_foldername}"
-	sudo rm -r ${Downloads_disk_dir}
+	echo -e ">Removing: ${disk_foldername}"
+	rm -r ${home_downloads_disk_dir}
 fi
 
 press_any_key__localfunc
 echo -e "\r"
-echo ">Moving: ${disk_foldername}"
-echo ">from: ${initramfs_dir}"
-echo ">to: ${Downloads_dir}"
-	sudo mv ${disk_dir} ${Downloads_dir}/
+echo -e ">Moving current: ${disk_foldername}"
+echo -e ">from: ${SP7xxx_linux_rootfs_initramfs_dir}"
+echo -e ">to: ${home_downloads_dir}"
+	mv ${SP7xxx_linux_rootfs_initramfs_disk_dir} ${home_downloads_dir}/
 
 press_any_key__localfunc
 echo -e "\r"
-echo ">Navigate to ${Downloads_dir}"
-	cd ${Downloads_dir}
+echo -e ">Navigate to ${home_downloads_dir}"
+	cd ${home_downloads_dir}
 
 press_any_key__localfunc
 	disk_tspan=$(date +%Y%m%d%H%M%S)
-	disk_targz_filename="disk.diskPREprep.${disk_tspan}.tar.gz"
+	disk_targz_filename="disk.${disk_tspan}.tar.gz"
 echo -e "\r"
-echo ">Compressing: ${disk_foldername}"
-echo ">at: ${Downloads_dir}"
-	sudo tar -czvf ${disk_targz_filename} ${disk_foldername}
+echo -e ">Compressing (BACKUP): ${disk_foldername}"
+echo -e ">at: ${home_downloads_dir}"
+	tar -czvf ${disk_targz_filename} ${disk_foldername}
 
 press_any_key__localfunc
 echo -e "\r"
-echo ">Creating: ${disk_foldername}"
-echo ">at: ${initramfs_dir}"
-	sudo mkdir ${disk_dir}
+echo -e ">Creating: ${disk_foldername}"
+echo -e ">at: ${SP7xxx_linux_rootfs_initramfs_dir}"
+	mkdir ${SP7xxx_linux_rootfs_initramfs_disk_dir}
 
 press_any_key__localfunc
 echo -e "\r"
-echo ">Copying: ${armhf_filename}"
-echo ">from: ${Downloads_dir}"
-echo ">to: ${disk_dir}"
-	sudo cp ${Downloads_dir}/${armhf_filename} ${disk_dir}
+echo -e ">Copying: ${armhf_filename}"
+echo -e ">from: ${home_downloads_dir}"
+echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_dir}"
+	cp ${home_downloads_dir}/${armhf_filename} ${SP7xxx_linux_rootfs_initramfs_disk_dir}
 
 press_any_key__localfunc
 echo -e "\r"
-echo ">Navigate to ${disk_dir}"
-	cd ${disk_dir}
+echo -e ">Navigate to ${SP7xxx_linux_rootfs_initramfs_disk_dir}"
+	cd ${SP7xxx_linux_rootfs_initramfs_disk_dir}
 
 press_any_key__localfunc
 echo -e "\r"
-echo ">Extracting: ${armhf_filename}"
-	sudo tar -xzvf ${armhf_filename}
+echo -e ">Extracting: ${armhf_filename}"
+	tar -xzvf ${armhf_filename}
 
 press_any_key__localfunc
 echo -e "\r"
-echo ">Removing: ${armhf_filename}"
-	sudo rm ${armhf_filename}
+echo -e ">Removing: ${armhf_filename}"
+	rm ${armhf_filename}
 
 press_any_key__localfunc
 echo -e "\r"
-echo ">Navigate to ${Downloads_disk_lib_dir}"
-	cd ${Downloads_disk_lib_dir}
+echo -e ">Navigate to ${home_downloads_disk_lib_dir}"
+	cd ${home_downloads_disk_lib_dir}
 
 press_any_key__localfunc
 echo -e "\r"
-echo ">Copying folders (incl. contents): firmware and modules"
-echo ">from: ${Downloads_disk_lib_dir}"
-echo ">to: ${disk_dir}"
-	sudo cp -R firmware/ ${disk_lib_dir}
-	sudo cp -R modules/ ${disk_lib_dir}
+echo -e ">Copying folders (incl. contents): firmware and modules"
+echo -e ">from: ${home_downloads_disk_lib_dir}"
+echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_dir}"
+	cp -R firmware/ ${SP7xxx_linux_rootfs_initramfs_disk_lib_dir}
+	cp -R modules/ ${SP7xxx_linux_rootfs_initramfs_disk_lib_dir}
 
 press_any_key__localfunc
 echo -e "\r"
-echo ">Copying: ${qemu_arm_static_filename}"
-echo ">from: ${usr_bin_dir}"
-echo ">to: ${disk_usr_bin_dir}"
-	sudo cp ${usr_bin_dir}/${qemu_arm_static_filename} ${disk_usr_bin_dir}
+echo -e ">Copying: ${qemu_user_static_filename}"
+echo -e ">from: ${usr_bin_dir}"
+echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_usr_bin_dir}"
+	cp ${usr_bin_dir}/${qemu_user_static_filename} ${SP7xxx_linux_rootfs_initramfs_disk_usr_bin_dir}
 
 
 # press_any_key__localfunc
@@ -283,359 +276,363 @@ echo ">to: ${disk_usr_bin_dir}"
 # 	read -e -p "Provide name of new owner of <disk> folder: " -i "${current_user}" current_user
 # fi
 # echo -e "\r"
-# echo ">Changing ownerschip of folder: ${disk_foldername}"
-# echo ">in: ${initramfs_dir}"
-# echo ">to: ${current_user}:${current_user}"
-# sudo chown ${current_user}:${current_user} -R ${disk_dir}
+# echo -e ">Changing ownerschip of folder: ${disk_foldername}"
+# echo -e ">in: ${SP7xxx_linux_rootfs_initramfs_dir}"
+# echo -e ">to: ${current_user}:${current_user}"
+# chown ${current_user}:${current_user} -R ${SP7xxx_linux_rootfs_initramfs_disk_dir}
 
 press_any_key__localfunc
 echo -e "\r"
-echo ">Removing: ${disk_foldername}"
-echo ">in: ${Downloads_dir}"
-	sudo rm -rf ${Downloads_disk_dir}
+echo -e ">Removing: ${disk_foldername}"
+echo -e ">in: ${home_downloads_dir}"
+	rm -rf ${home_downloads_disk_dir}
 
 press_any_key__localfunc
 echo -e "\r"
-echo ">Copying: ${resolve_filename}"
-echo ">from: ${etc_dir}"
-echo ">to: ${disk_etc_dir}"
+echo -e ">Copying: ${resolve_filename}"
+echo -e ">from: ${etc_dir}"
+echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}"
 echo -e "\r"
 echo -e "\r"
-	sudo cp ${src_resolve_fpath} ${disk_etc_dir}
+	cp ${src_resolve_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}
 
 press_any_key__localfunc
 echo -e "\r"
-echo "---AUTO-MOUNT USB & MMC-SD---"
+echo -e "---AUTO-MOUNT USB & MMC-SD---"
 echo -e "\r"
-echo ">Checking if directory <${disk_etc_systemd_system_dir}> exists?"
-if [[ -d ${disk_etc_systemd_system_dir} ]]; then
+echo -e ">Checking if directory <${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}> exists?"
+if [[ -d ${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir} ]]; then
 	echo -e "\r"
-	echo ">>>--does exist"
+	echo -e ">>>--does exist"
 	echo -e "\r"
-	echo ">>>>>Checking if file <${usb_mount_service_filename}> exists"
+	echo -e ">>>>>Checking if file <${usb_mount_service_filename}> exists"
 	if [[ -f ${dst_usb_mount_service_fpath} ]]; then
-		echo ">>>>>--does exist"
+		echo -e ">>>>>--does exist"
 		echo -e "\r"
-		echo ">>>>>>>Removing file <${usb_mount_service_filename}>"
-			sudo rm ${dst_usb_mount_service_fpath}
+		echo -e ">>>>>>>Removing file <${usb_mount_service_filename}>"
+			rm ${dst_usb_mount_service_fpath}
 	fi
 else
 	echo -e "\r"
-	echo ">>>--does NOT exist"
+	echo -e ">>>--does NOT exist"
 	echo -e "\r"
-	echo ">>>>>Creating directory <${disk_etc_systemd_system_dir}>"
-		sudo mkdir -p ${disk_etc_systemd_system_dir}
+	echo -e ">>>>>Creating directory <${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}>"
+		mkdir -p ${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}
 	
 	echo -e "\r"
-	echo ">>>>>Change ownership to <root> for directory: ${disk_etc_systemd_system_dir}"
-		sudo chown root:root ${disk_etc_systemd_system_dir}
+	echo -e ">>>>>Change ownership to <root> for directory: ${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}"
+		chown root:root ${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}
 
 	echo -e "\r"
-	echo ">>>>>Change permission to <drwxr-xr-x> for directory: ${disk_etc_systemd_system_dir}"
-		sudo chmod 755 ${disk_etc_systemd_system_dir}
+	echo -e ">>>>>Change permission to <drwxr-xr-x> for directory: ${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}"
+		chmod 755 ${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}
 fi
 
-echo -e "\r"
-echo ">Copy file <systemd unit service>: ${usb_mount_service_filename}"
-echo ">from: ${home_scripts_dir}"
-echo ">to: ${disk_etc_systemd_system_dir}"
-	sudo sudo cp ${src_usb_mount_service_fpath} ${disk_etc_systemd_system_dir}
-
-echo -e "\r"
-echo ">>>Change ownership to <root> for file: ${usb_mount_service_filename}"
-	sudo chown root:root ${dst_usb_mount_service_fpath}
-
-echo -e "\r"
-echo ">>>Change permission to <-rw-r--r--> for file: ${usb_mount_service_filename}"
-	sudo chmod 644 ${dst_usb_mount_service_fpath}
 
 
 echo -e "\r"
-echo ">Copy file <systemd unit service>: ${sd_detect_service_filename}"
-echo ">from: ${home_scripts_dir}"
-echo ">to: ${disk_etc_systemd_system_dir}"
-	sudo sudo cp ${src_sd_detect_service_fpath} ${disk_etc_systemd_system_dir}
+echo -e ">Copy file <systemd unit service>: ${usb_mount_service_filename}"
+echo -e ">from: ${home_lttp3rootfs_services_automount_dir}"
+echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}"
+	cp ${src_usb_mount_service_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}
 
 echo -e "\r"
-echo ">>>Change ownership to <root> for file: ${sd_detect_service_filename}"
-	sudo chown root:root ${dst_sd_detect_service_fpath}
+echo -e ">>>Change ownership to <root> for file: ${usb_mount_service_filename}"
+	chown root:root ${dst_usb_mount_service_fpath}
 
 echo -e "\r"
-echo ">>>Change permission to <-rw-r--r--> for file: ${sd_detect_service_filename}"
-	sudo chmod 644 ${dst_sd_detect_service_fpath}
+echo -e ">>>Change permission to <-rw-r--r--> for file: ${usb_mount_service_filename}"
+	chmod 644 ${dst_usb_mount_service_fpath}
+
+
+echo -e "\r"
+echo -e ">Copy file <systemd unit service>: ${sd_detect_service_filename}"
+echo -e ">from: ${home_lttp3rootfs_services_automount_dir}"
+echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}"
+	cp ${src_sd_detect_service_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}
+
+echo -e "\r"
+echo -e ">>>Change ownership to <root> for file: ${sd_detect_service_filename}"
+	chown root:root ${dst_sd_detect_service_fpath}
+
+echo -e "\r"
+echo -e ">>>Change permission to <-rw-r--r--> for file: ${sd_detect_service_filename}"
+	chmod 644 ${dst_sd_detect_service_fpath}
 
 
 
 press_any_key__localfunc
 echo -e "\r"
 echo -e "\r"
-echo ">Checking if directory <${disk_usr_local_bin_dir}> exists?"
-if [[ -d ${disk_usr_local_bin_dir} ]]; then
+echo -e ">Checking if directory <${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}> exists?"
+if [[ -d ${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir} ]]; then
 	echo -e "\r"
-	echo ">>>--does exist"
+	echo -e ">>>--does exist"
 	echo -e "\r"
-	echo ">>>>>Checking if file <${usb_mount_sh_filename}> exists"
+	echo -e ">>>>>Checking if file <${usb_mount_sh_filename}> exists"
 	if [[ -f ${dst_usb_mount_sh_fpath} ]]; then
-		echo ">>>>>--does exist"
+		echo -e ">>>>>--does exist"
 		echo -e "\r"
-		echo ">>>>>>>Removing file <${usb_mount_sh_filename}>"
-			sudo rm ${dst_usb_mount_sh_fpath}
+		echo -e ">>>>>>>Removing file <${usb_mount_sh_filename}>"
+			rm ${dst_usb_mount_sh_fpath}
 	fi
 else
 	echo -e "\r"
-	echo ">>>--does NOT exist"
+	echo -e ">>>--does NOT exist"
 	echo -e "\r"
-	echo ">>>>>Creating directory <${disk_usr_local_bin_dir}>"
-		sudo mkdir -p ${disk_usr_local_bin_dir}
+	echo -e ">>>>>Creating directory <${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}>"
+		mkdir -p ${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}
 
 	echo -e "\r"
-	echo ">>>>>Change ownership to <root> for directory: ${disk_usr_local_bin_dir}"
-		sudo chown root:root ${disk_usr_local_bin_dir}
+	echo -e ">>>>>Change ownership to <root> for directory: ${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}"
+		chown root:root ${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}
 
 	echo -e "\r"
-	echo ">>>>>Change permission to <drwxr-xr-x> for directory: ${disk_usr_local_bin_dir}"
-		sudo chmod 755 ${disk_usr_local_bin_dir}
+	echo -e ">>>>>Change permission to <drwxr-xr-x> for directory: ${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}"
+		chmod 755 ${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}
 fi
 
 echo -e "\r"
-echo ">Copy file: ${usb_mount_sh_filename}"
-echo ">from: ${home_scripts_dir}"
-echo ">to: ${disk_usr_local_bin_dir}"
-	sudo cp ${src_usb_mount_sh_fpath} ${disk_usr_local_bin_dir}
+echo -e ">Copy file: ${usb_mount_sh_filename}"
+echo -e ">from: ${home_lttp3rootfs_services_automount_dir}"
+echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}"
+	cp ${src_usb_mount_sh_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}
 
 echo -e "\r"
-echo ">>>Change ownership to <root> for file: ${usb_mount_sh_filename}"
-	sudo chown root:root ${dst_usb_mount_sh_fpath}
+echo -e ">>>Change ownership to <root> for file: ${usb_mount_sh_filename}"
+	chown root:root ${dst_usb_mount_sh_fpath}
 
 echo -e "\r"
-echo ">>>Change permission to <-rwxr-xr-x> for file: ${usb_mount_sh_filename}"
-	sudo chmod 755 ${dst_usb_mount_sh_fpath}
+echo -e ">>>Change permission to <-rwxr-xr-x> for file: ${usb_mount_sh_filename}"
+	chmod 755 ${dst_usb_mount_sh_fpath}
 
 
 echo -e "\r"
-echo ">Copy file: ${sd_detect_add_sh_filename}"
-echo ">from: ${home_scripts_dir}"
-echo ">to: ${disk_usr_local_bin_dir}"
-	sudo cp ${src_sd_detect_add_sh_fpath} ${disk_usr_local_bin_dir}
+echo -e ">Copy file: ${sd_detect_add_sh_filename}"
+echo -e ">from: ${home_lttp3rootfs_services_automount_dir}"
+echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}"
+	cp ${src_sd_detect_add_sh_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}
 
 echo -e "\r"
-echo ">>>Change ownership to <root> for file: ${sd_detect_add_sh_filename}"
-	sudo chown root:root ${dst_sd_detect_add_sh_fpath}
+echo -e ">>>Change ownership to <root> for file: ${sd_detect_add_sh_filename}"
+	chown root:root ${dst_sd_detect_add_sh_fpath}
 
 echo -e "\r"
-echo ">>>Change permission to <-rwxr-xr-x> for file: ${sd_detect_add_sh_filename}"
-	sudo chmod 755 ${dst_sd_detect_add_sh_fpath}
+echo -e ">>>Change permission to <-rwxr-xr-x> for file: ${sd_detect_add_sh_filename}"
+	chmod 755 ${dst_sd_detect_add_sh_fpath}
 
 echo -e "\r"
-echo ">Copy file: ${sd_detect_remove_sh_filename}"
-echo ">from: ${home_scripts_dir}"
-echo ">to: ${disk_usr_local_bin_dir}"
-	sudo cp ${src_sd_detect_remove_sh_fpath} ${disk_usr_local_bin_dir}
+echo -e ">Copy file: ${sd_detect_remove_sh_filename}"
+echo -e ">from: ${home_lttp3rootfs_services_automount_dir}"
+echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}"
+	cp ${src_sd_detect_remove_sh_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}
 
 echo -e "\r"
-echo ">>>Change ownership to <root> for file: ${sd_detect_remove_sh_filename}"
-	sudo chown root:root ${dst_sd_detect_remove_sh_fpath}
+echo -e ">>>Change ownership to <root> for file: ${sd_detect_remove_sh_filename}"
+	chown root:root ${dst_sd_detect_remove_sh_fpath}
 
 echo -e "\r"
-echo ">>>Change permission to <-rwxr-xr-x> for file: ${sd_detect_remove_sh_filename}"
-	sudo chmod 755 ${dst_sd_detect_remove_sh_fpath}
+echo -e ">>>Change permission to <-rwxr-xr-x> for file: ${sd_detect_remove_sh_filename}"
+	chmod 755 ${dst_sd_detect_remove_sh_fpath}
 
 
 
 press_any_key__localfunc
 echo -e "\r"
 echo -e "\r"
-echo ">Checking if directory <${disk_etc_udev_rules_d_dir}> exists"
-if [[ -d ${disk_etc_udev_rules_d_dir} ]]; then
+echo -e ">Checking if directory <${SP7xxx_linux_rootfs_initramfs_disk_etc_udev_rulesd_dir}> exists"
+if [[ -d ${SP7xxx_linux_rootfs_initramfs_disk_etc_udev_rulesd_dir} ]]; then
 	echo -e "\r"
-	echo ">>>--does exist"
+	echo -e ">>>--does exist"
 	echo -e "\r"
-	echo ">>>>>Checking if file <${usb_mount_rules_filename}> exists"
+	echo -e ">>>>>Checking if file <${usb_mount_rules_filename}> exists"
 	if [[ -f ${dst_usb_mount_rules_fpath} ]]; then
-		echo ">>>>>--does exist"
+		echo -e ">>>>>--does exist"
 		echo -e "\r"
-		echo ">>>>>>>Removing file <${usb_mount_rules_filename}>"
-			sudo rm ${dst_usb_mount_rules_fpath}
+		echo -e ">>>>>>>Removing file <${usb_mount_rules_filename}>"
+			rm ${dst_usb_mount_rules_fpath}
 	fi
 else
 	echo -e "\r"
-	echo ">>>--does NOT exist"
+	echo -e ">>>--does NOT exist"
 	echo -e "\r"
-	echo ">>>>>Creating directory <${disk_etc_udev_rules_d_dir}>"
-		sudo mkdir -p ${disk_etc_udev_rules_d_dir}
+	echo -e ">>>>>Creating directory <${SP7xxx_linux_rootfs_initramfs_disk_etc_udev_rulesd_dir}>"
+		mkdir -p ${SP7xxx_linux_rootfs_initramfs_disk_etc_udev_rulesd_dir}
 
 	echo -e "\r"
-	echo ">>>>>Change ownership to <root> for directory: ${disk_etc_udev_rules_d_dir}"
-		sudo chown root:root ${disk_etc_udev_rules_d_dir}
+	echo -e ">>>>>Change ownership to <root> for directory: ${SP7xxx_linux_rootfs_initramfs_disk_etc_udev_rulesd_dir}"
+		chown root:root ${SP7xxx_linux_rootfs_initramfs_disk_etc_udev_rulesd_dir}
 
 	echo -e "\r"
-	echo ">>>>>Change permission to <drwxr-xr-x> for directory: ${disk_etc_udev_rules_d_dir}"
-		sudo chmod 755 ${disk_etc_udev_rules_d_dir}
+	echo -e ">>>>>Change permission to <drwxr-xr-x> for directory: ${SP7xxx_linux_rootfs_initramfs_disk_etc_udev_rulesd_dir}"
+		chmod 755 ${SP7xxx_linux_rootfs_initramfs_disk_etc_udev_rulesd_dir}
 fi
 
 echo -e "\r"
-echo ">Copy file: ${usb_mount_rules_filename}"
-echo ">from: ${home_scripts_dir}"
-echo ">to: ${disk_etc_udev_rules_d_dir}"
-	sudo cp ${src_usb_mount_rules_fpath} ${disk_etc_udev_rules_d_dir}
+echo -e ">Copy file: ${usb_mount_rules_filename}"
+echo -e ">from: ${home_lttp3rootfs_services_automount_dir}"
+echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_etc_udev_rulesd_dir}"
+	cp ${src_usb_mount_rules_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_etc_udev_rulesd_dir}
 
 echo -e "\r"
-echo ">>>Change ownership to <root> for file: ${usb_mount_rules_filename}"
-	sudo chown root:root ${dst_usb_mount_rules_fpath}
+echo -e ">>>Change ownership to <root> for file: ${usb_mount_rules_filename}"
+	chown root:root ${dst_usb_mount_rules_fpath}
 
 echo -e "\r"
-echo ">>>Change permission to <-rw-r--r--> for file: ${usb_mount_rules_filename}"
-	sudo chmod 644 ${dst_usb_mount_rules_fpath}
+echo -e ">>>Change permission to <-rw-r--r--> for file: ${usb_mount_rules_filename}"
+	chmod 644 ${dst_usb_mount_rules_fpath}
 
 
 echo -e "\r"
-echo ">Copy file: ${sd_detect_rules_filename}"
-echo ">from: ${home_scripts_dir}"
-echo ">to: ${disk_etc_udev_rules_d_dir}"
-	sudo cp ${src_sd_detect_rules_fpath} ${disk_etc_udev_rules_d_dir}
+echo -e ">Copy file: ${sd_detect_rules_filename}"
+echo -e ">from: ${home_lttp3rootfs_services_automount_dir}"
+echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_etc_udev_rulesd_dir}"
+	cp ${src_sd_detect_rules_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_etc_udev_rulesd_dir}
 
 echo -e "\r"
-echo ">>>Change ownership to <root> for file: ${sd_detect_rules_filename}"
-	sudo chown root:root ${dst_sd_detect_rules_fpath}
+echo -e ">>>Change ownership to <root> for file: ${sd_detect_rules_filename}"
+	chown root:root ${dst_sd_detect_rules_fpath}
 
 echo -e "\r"
-echo ">>>Change permission to <-rw-r--r--> for file: ${sd_detect_rules_filename}"
-	sudo chmod 644 ${dst_sd_detect_rules_fpath}
+echo -e ">>>Change permission to <-rw-r--r--> for file: ${sd_detect_rules_filename}"
+	chmod 644 ${dst_sd_detect_rules_fpath}
 
 
 
 press_any_key__localfunc
 echo -e "\r"
-echo "---Services to run BEFORE login---"
+echo -e "---Services to run BEFORE login---"
 echo -e "\r"
 
 echo -e "\r"
-echo ">Creating <${scripts_foldername}>"
-echo ">in: ${disk_dir}"
-if [[ ! -d ${disk_scripts_dir} ]]; then
-	sudo mkdir ${disk_scripts_dir}
+echo -e ">Creating <${scripts_foldername}>"
+echo -e ">in: ${SP7xxx_linux_rootfs_initramfs_disk_dir}"
+if [[ ! -d ${SP7xxx_linux_rootfs_initramfs_disk_scripts_dir} ]]; then
+	mkdir ${SP7xxx_linux_rootfs_initramfs_disk_scripts_dir}
 fi
 
-echo -e "\r"
-echo ">Copying: ${resize2fs_exec_filename}"
-echo ">from: ${home_scripts_dir}"
-echo ">to: ${disk_scripts_dir}"
-	sudo cp ${src_resize2fs_exec_fpath} ${disk_scripts_dir}
 
 echo -e "\r"
-echo ">>>Change ownership to <root> for file: ${resize2fs_exec_filename}"
-	sudo chown root:root ${dst_resize2fs_exec_fpath}
+echo -e ">Copying: ${enable_eth1_before_login_service_filename}>"
+echo -e ">from: ${home_lttp3rootfs_services_network_dir}"
+echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}"
+	cp ${src_enable_eth1_before_login_service_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}
 
 echo -e "\r"
-echo ">>>Change permission to <-rw-r--r--> for file: ${resize2fs_exec_filename}"
-	sudo chmod 755 ${dst_resize2fs_exec_fpath}
+echo -e ">>>Change ownership to <root> for file: ${enable_eth1_before_login_service_filename}"
+	chown root:root ${dst_enable_eth1_before_login_service_fpath}
 
 echo -e "\r"
-echo ">Copying: ${enable_eth1_before_login_service_filename}>"
-echo ">from: ${home_scripts_dir}"
-echo ">to: ${disk_etc_systemd_system_dir}"
-	sudo cp ${src_enable_eth1_before_login_service_fpath} ${disk_etc_systemd_system_dir}
+echo -e ">>>Change permission to <-rw-r--r--> for file: ${enable_eth1_before_login_service_filename}"
+	chmod 644 ${dst_enable_eth1_before_login_service_fpath}
 
 echo -e "\r"
-echo ">>>Change ownership to <root> for file: ${enable_eth1_before_login_service_filename}"
-	sudo chown root:root ${dst_enable_eth1_before_login_service_fpath}
+echo -e ">Copying: ${enable_eth1_before_login_sh_filename}>"
+echo -e ">from: ${home_lttp3rootfs_services_network_dir}"
+echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}"
+	cp ${src_enable_eth1_before_login_sh_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}
 
 echo -e "\r"
-echo ">>>Change permission to <-rw-r--r--> for file: ${enable_eth1_before_login_service_filename}"
-	sudo chmod 644 ${dst_enable_eth1_before_login_service_fpath}
+echo -e ">>>Change ownership to <root> for file: ${enable_eth1_before_login_sh_filename}"
+	chown root:root ${dst_enable_eth1_before_login_sh_fpath}
 
 echo -e "\r"
-echo ">Copying: ${enable_eth1_before_login_sh_filename}>"
-echo ">from: ${home_scripts_dir}"
-echo ">to: ${disk_usr_local_bin_dir}"
-	sudo cp ${src_enable_eth1_before_login_sh_fpath} ${disk_usr_local_bin_dir}
-
-echo -e "\r"
-echo ">>>Change ownership to <root> for file: ${enable_eth1_before_login_sh_filename}"
-	sudo chown root:root ${dst_enable_eth1_before_login_sh_fpath}
-
-echo -e "\r"
-echo ">>>Change permission to <-rw-r--r--> for file: ${enable_eth1_before_login_sh_filename}"
-	sudo chmod 755 ${dst_enable_eth1_before_login_sh_fpath}
-
-echo -e "\r"
-echo ">Copying: ${resize2fs_before_login_service_filename}>"
-echo ">from: ${home_scripts_dir}"
-echo ">to: ${disk_etc_systemd_system_dir}"
-	sudo cp ${src_resize2fs_before_login_service_fpath} ${disk_etc_systemd_system_dir}
-
-echo -e "\r"
-echo ">>>Change ownership to <root> for file: ${resize2fs_before_login_service_filename}"
-	sudo chown root:root ${dst_resize2fs_before_login_service_fpath}
-
-echo -e "\r"
-echo ">>>Change permission to <-rw-r--r--> for file: ${resize2fs_before_login_service_filename}"
-	sudo chmod 644 ${dst_resize2fs_before_login_service_fpath}
-
-echo -e "\r"
-echo ">Copying: ${resize2fs_before_login_sh_filename}>"
-echo ">from: ${home_scripts_dir}"
-echo ">to: ${disk_usr_local_bin_dir}"
-	sudo cp ${src_resize2fs_before_login_sh_fpath} ${disk_usr_local_bin_dir}
-
-echo -e "\r"
-echo ">>>Change ownership to <root> for file: ${resize2fs_before_login_sh_filename}"
-	sudo chown root:root ${dst_resize2fs_before_login_sh_fpath}
-
-echo -e "\r"
-echo ">>>Change permission to <-rw-r--r--> for file: ${resize2fs_before_login_sh_filename}"
-	sudo chmod 755 ${dst_resize2fs_before_login_sh_fpath}
-
-echo -e "\r"
-echo ">Copying: ${enable_ufw_before_login_service_filename}>"
-echo ">from: ${home_scripts_dir}"
-echo ">to: ${disk_etc_systemd_system_dir}"
-	sudo cp ${src_enable_ufw_before_login_service_fpath} ${disk_etc_systemd_system_dir}
-
-echo -e "\r"
-echo ">>>Change ownership to <root> for file: ${enable_ufw_before_login_service_filename}"
-	sudo chown root:root ${dst_enable_ufw_before_login_service_fpath}
-
-echo -e "\r"
-echo ">>>Change permission to <-rw-r--r--> for file: ${enable_ufw_before_login_service_filename}"
-	sudo chmod 644 ${dst_enable_ufw_before_login_service_fpath}
-
-echo -e "\r"
-echo ">Copying: ${enable_ufw_before_login_sh_filename}>"
-echo ">from: ${home_scripts_dir}"
-echo ">to: ${disk_usr_local_bin_dir}"
-	sudo cp ${src_enable_ufw_before_login_sh_fpath} ${disk_usr_local_bin_dir}
-
-echo -e "\r"
-echo ">>>Change ownership to <root> for file: ${enable_ufw_before_login_sh_filename}"
-	sudo chown root:root ${dst_enable_ufw_before_login_sh_fpath}
-
-echo -e "\r"
-echo ">>>Change permission to <-rw-r--r--> for file: ${enable_ufw_before_login_sh_filename}"
-	sudo chmod 755 ${dst_enable_ufw_before_login_sh_fpath}
+echo -e ">>>Change permission to <-rw-r--r--> for file: ${enable_eth1_before_login_sh_filename}"
+	chmod 755 ${dst_enable_eth1_before_login_sh_fpath}
 
 
-press_any_key__localfunc
 echo -e "\r"
-echo "---Kernel Configuration File"
-echo ">Copying: ${make_menuconfig_filename}"
-echo ">from: ${home_scripts_dir}"
-echo ">to: ${kernel_dir}"
-echo ">as: ${make_menuconfig_default_filename}"
+echo -e ">Copying: ${resize2fs_exec_filename}"
+echo -e ">from: ${home_lttp3rootfs_services_oobe_resize2fs_dir}"
+echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_scripts_dir}"
+	cp ${src_resize2fs_exec_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_scripts_dir}
+
 echo -e "\r"
+echo -e ">>>Change ownership to <root> for file: ${resize2fs_exec_filename}"
+	chown root:root ${dst_resize2fs_exec_fpath}
+
 echo -e "\r"
-	sudo cp ${src_make_menuconfig_fpath} ${dst_make_menuconfig_fpath}
+echo -e ">>>Change permission to <-rw-r--r--> for file: ${resize2fs_exec_filename}"
+	chmod 755 ${dst_resize2fs_exec_fpath}
+
+echo -e "\r"
+echo -e ">Copying: ${resize2fs_before_login_service_filename}>"
+echo -e ">from: ${home_lttp3rootfs_services_oobe_resize2fs_dir}"
+echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}"
+	cp ${src_resize2fs_before_login_service_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}
+
+echo -e "\r"
+echo -e ">>>Change ownership to <root> for file: ${resize2fs_before_login_service_filename}"
+	chown root:root ${dst_resize2fs_before_login_service_fpath}
+
+echo -e "\r"
+echo -e ">>>Change permission to <-rw-r--r--> for file: ${resize2fs_before_login_service_filename}"
+	chmod 644 ${dst_resize2fs_before_login_service_fpath}
+
+echo -e "\r"
+echo -e ">Copying: ${resize2fs_before_login_sh_filename}>"
+echo -e ">from: ${home_lttp3rootfs_services_oobe_resize2fs_dir}"
+echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}"
+	cp ${src_resize2fs_before_login_sh_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}
+
+echo -e "\r"
+echo -e ">>>Change ownership to <root> for file: ${resize2fs_before_login_sh_filename}"
+	chown root:root ${dst_resize2fs_before_login_sh_fpath}
+
+echo -e "\r"
+echo -e ">>>Change permission to <-rw-r--r--> for file: ${resize2fs_before_login_sh_filename}"
+	chmod 755 ${dst_resize2fs_before_login_sh_fpath}
+
+echo -e "\r"
+echo -e ">Copying: ${enable_ufw_before_login_service_filename}>"
+echo -e ">from: ${home_lttp3rootfs_services_ufw_dir}"
+echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}"
+	cp ${src_enable_ufw_before_login_service_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}
+
+echo -e "\r"
+echo -e ">>>Change ownership to <root> for file: ${enable_ufw_before_login_service_filename}"
+	chown root:root ${dst_enable_ufw_before_login_service_fpath}
+
+echo -e "\r"
+echo -e ">>>Change permission to <-rw-r--r--> for file: ${enable_ufw_before_login_service_filename}"
+	chmod 644 ${dst_enable_ufw_before_login_service_fpath}
+
+echo -e "\r"
+echo -e ">Copying: ${enable_ufw_before_login_sh_filename}>"
+echo -e ">from: ${home_lttp3rootfs_services_ufw_dir}"
+echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}"
+	cp ${src_enable_ufw_before_login_sh_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}
+
+echo -e "\r"
+echo -e ">>>Change ownership to <root> for file: ${enable_ufw_before_login_sh_filename}"
+	chown root:root ${dst_enable_ufw_before_login_sh_fpath}
+
+echo -e "\r"
+echo -e ">>>Change permission to <-rw-r--r--> for file: ${enable_ufw_before_login_sh_filename}"
+	chmod 755 ${dst_enable_ufw_before_login_sh_fpath}
+
 
 press_any_key__localfunc
 echo -e "\r"
-echo ">>>Navigate to ${kernel_dir}"
-	cd ${kernel_dir}
+echo -e "---Kernel Configuration File"
+echo -e ">Copying: ${make_menuconfig_filename}"
+echo -e ">from: ${home_lttp3rootfs_kernel_dir}"
+echo -e ">to: ${SP7xxx_linux_kernel_dir}"
+echo -e ">as: ${make_menuconfig_default_filename}"
+echo -e "\r"
+echo -e "\r"
+	cp ${src_make_menuconfig_fpath} ${dst_make_menuconfig_fpath}
 
 press_any_key__localfunc
 echo -e "\r"
-echo ">>>>>Importing Kernel config-file: ${make_menuconfig_default_filename}"
-echo ">from: ${kernel_dir}"
-	sudo make oldconfig
+echo -e ">>>Navigate to ${SP7xxx_linux_kernel_dir}"
+	cd ${SP7xxx_linux_kernel_dir}
+
+press_any_key__localfunc
+echo -e "\r"
+echo -e ">>>>>Importing Kernel config-file: ${make_menuconfig_default_filename}"
+echo -e ">from: ${SP7xxx_linux_kernel_dir}"
+	make oldconfig
 echo -e "\r"
 echo -e "\r"
 
@@ -643,25 +640,25 @@ echo -e "\r"
 ###FIX error messages:
 #	WARN:	uid is 0 but '/etc' is owned by 1000
 echo -e "\r"
-echo ">chown root:root ${etc_dir}"
-echo ">in: ${extra_dir}"
-	sudo chown root:root ${extra_etc_dir}
+echo -e ">chown root:root ${etc_dir}"
+echo -e ">in: ${SP7xxx_linux_rootfs_initramfs_extra_dir}"
+	chown root:root ${SP7xxx_linux_rootfs_initramfs_extra_etc_dir}
 
-#>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>	
+
 ###FIX error messages:
-#	WARN:	/etc is group writable
+#	WARN:	owner has write permission for '/etc' folder
 echo -e "\r"
-echo ">chmod 755 ${etc_dir}"
-echo ">in: ${extra_dir}"
-	sudo chmod 755 ${extra_etc_dir}
+echo -e ">Change permission of folder: ${etc_dir}"
+echo -e ">in: ${SP7xxx_linux_rootfs_initramfs_extra_dir}"
+echo -e ">to: drwxr-xr-x"
+	chmod 755 ${SP7xxx_linux_rootfs_initramfs_extra_etc_dir}
 
 
-#Rename "build_disk.sh" to "build_disk.sh.bak"
 press_any_key__localfunc
 echo -e "\r"
-echo ">Renaming ${build_disk_filename}" 
-echo -e "to: ${build_disk_bck_filename}"
-echo -e "in: ${initramfs_dir}"
+echo -e ">Backup '${build_disk_filename}' by renaming" 
+echo -e ">to: ${build_disk_bck_filename}"
+echo -e ">in: ${initramfs_dir}"
 echo -e "\r"
 sudo mv ${build_disk_fpath} ${build_disk_bck_fpath}
 
@@ -669,10 +666,10 @@ sudo mv ${build_disk_fpath} ${build_disk_bck_fpath}
 #Copy modified file to location: ~/SP7021/linux/rootfs/initramfs
 press_any_key__localfunc
 echo -e "\r"
-echo ">Copying ${build_disk_mod_filename}" 
-echo -e "as: ${build_disk_filename}"
-echo -e "from: ${home_scripts_dir}"
-echo -e "to: ${initramfs_dir}"
+echo -e ">Copying ${build_disk_mod_filename}" 
+echo -e ">as: ${build_disk_filename}"
+echo -e ">from: ${home_scripts_dir}"
+echo -e ">to: ${initramfs_dir}"
 echo -e "\r"
 sudo cp ${build_disk_mod_fpath}  ${build_disk_fpath}
 
@@ -680,7 +677,40 @@ sudo cp ${build_disk_mod_fpath}  ${build_disk_fpath}
 #Make file "build_disk.sh" executable
 press_any_key__localfunc
 echo -e "\r"
-echo ">Changing permission of ${build_disk_filename}"
-echo -e "in: ${initramfs_dir}"
+echo -e ">Changing permission of ${build_disk_filename}"
+echo -e ">in: ${initramfs_dir}"
+echo -e ">to: -rwxr-xr-x"
 echo -e "\r"
 sudo chmod +x ${build_disk_fpath}
+
+
+
+#Rename "build_disk.sh" to "build_disk.sh.bak"
+press_any_key__localfunc
+echo -e "\r"
+echo -e ">Renaming ${build_disk_filename}" 
+echo -e ">to: ${build_disk_bck_filename}"
+echo -e ">in: ${SP7xxx_linux_rootfs_initramfs_dir}"
+echo -e "\r"
+mv ${build_disk_fpath} ${build_disk_bck_fpath}
+
+
+#Copy modified file to location: ~/SP7021/linux/rootfs/initramfs
+press_any_key__localfunc
+echo -e "\r"
+echo -e ">Copying ${build_disk_mod_filename}" 
+echo -e ">as: ${build_disk_filename}"
+echo -e ">from: ${home_lttp3rootfs_kernel_dir}"
+echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_dir}"
+echo -e "\r"
+cp ${build_disk_mod_fpath} ${SP7xxx_linux_rootfs_initramfs_build_disk_etc_dir}
+
+
+#Make file "build_disk.sh" executable
+press_any_key__localfunc
+echo -e "\r"
+echo -e ">Changing permission of ${build_disk_filename}"
+echo -e ">in: ${SP7xxx_linux_rootfs_initramfs_dir}"
+echo -e ">to: -rwxr-xr-x"
+echo -e "\r"
+chmod +x ${SP7xxx_linux_rootfs_initramfs_build_disk_etc_dir}
