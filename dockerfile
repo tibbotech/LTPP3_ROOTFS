@@ -34,10 +34,10 @@ RUN apt-get -y install	bison			    \
 RUN cd ~ && git clone https://github.com/tibbotech/LTPP3_ROOTFS.git
 
 #---Run Sunplus installation and Configuration
-RUN cd ~/LTPP3_ROOTFS && ./sunplus_inst.sh
+RUN cd ~ && ~/LTPP3_ROOTFS/sunplus_inst.sh
 
 #---Update local Git repository
 #RUN cd ~/LTPP3_ROOTFS && git pull
 
 #---Run Prepreparation of Disk (before Chroot)
-RUN cd ~/LTPP3_ROOTFS && ./disk_PRE_prep.sh
+RUN cd ~ && ~/LTPP3_ROOTFS/disk_PRE_prep.sh
