@@ -687,7 +687,6 @@ echo -e "\r"
 chmod +x ${build_disk_fpath}
 
 
-
 #Rename "build_disk.sh" to "build_disk.sh.bak"
 press_any_key__localfunc
 echo -e "\r"
@@ -706,7 +705,7 @@ echo -e ">as: ${build_disk_filename}"
 echo -e ">from: ${home_lttp3rootfs_kernel_dir}"
 echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_dir}"
 echo -e "\r"
-cp ${build_disk_mod_fpath} ${SP7xxx_linux_rootfs_initramfs_build_disk_etc_dir}
+cp ${build_disk_mod_fpath} ${SP7xxx_linux_rootfs_initramfs_dir}
 
 
 #Make file "build_disk.sh" executable
@@ -716,4 +715,4 @@ echo -e ">Changing permission of ${build_disk_filename}"
 echo -e ">in: ${SP7xxx_linux_rootfs_initramfs_dir}"
 echo -e ">to: -rwxr-xr-x"
 echo -e "\r"
-chmod +x ${SP7xxx_linux_rootfs_initramfs_build_disk_etc_dir}
+chmod +x ${build_disk_fpath}
