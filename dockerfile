@@ -50,10 +50,8 @@ CMD ["/usr/sbin/sshd", "-D"]
 #---Retrieve files from git
 RUN cd ~ && git clone https://github.com/tibbotech/LTPP3_ROOTFS.git
 
-RUN passwd root
-
 #---Run Sunplus installation and Configuration
-#RUN cd ~ && ~/LTPP3_ROOTFS/sunplus_inst.sh
+RUN cd ~ && ~/LTPP3_ROOTFS/sunplus_inst.sh
 
 
 #---Run Prepreparation of Disk (before Chroot)
