@@ -53,6 +53,5 @@ RUN cd ~ && git clone https://github.com/tibbotech/LTPP3_ROOTFS.git
 #---Run Sunplus installation and Configuration
 RUN cd ~ && ~/LTPP3_ROOTFS/sunplus_inst.sh
 
-
 #---Run Prepreparation of Disk (before Chroot)
 #RUN cd ~ && ~/LTPP3_ROOTFS/disk_PRE_prep.sh
