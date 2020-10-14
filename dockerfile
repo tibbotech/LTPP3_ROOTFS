@@ -37,7 +37,7 @@ RUN cd ~ && git clone https://github.com/tibbotech/LTPP3_ROOTFS.git
 RUN cd ~/LTPP3_ROOTFS && ./sunplus_inst.sh
 
 #---Update local Git repository
-RUN cd ~/LTPP3_ROOTFS && git pull
+#RUN cd ~/LTPP3_ROOTFS && git pull
 
 #---Run Prepreparation of Disk (before Chroot)
 RUN cd ~/LTPP3_ROOTFS && ./disk_PRE_prep.sh
