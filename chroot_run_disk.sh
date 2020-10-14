@@ -38,7 +38,7 @@ initramfs_dir=${sunplus_dir}/linux/rootfs/initramfs
 disk_foldername="disk"
 disk_dir=${initramfs_dir}/${disk_foldername}
 disk_scripts_dir=${disk_dir}/${scripts_foldername}
-qemu_fpath=${usr_bin_dir}/qemu-user-static
+qemu_fpath=${usr_bin_dir}/qemu-arm-static
 bash_fpath=${usr_bin_dir}/bash
 
 chroot_exec_cmd_inside_chroot_filename="chroot_exec_cmd_inside_chroot.sh"

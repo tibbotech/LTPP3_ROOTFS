@@ -38,13 +38,13 @@ press_any_key__localfunc() {
 #---Define path variables
 press_any_key__localfunc
 echo -e "\r"
-echo -e "---Defining Varabiles (Filenames, Directories, Paths, Full-Paths)---"
+echo -e "---Define Environmental Variables---"
 echo -e "\r"
 armhf_filename="ubuntu-base-20.04.1-base-armhf.tar.gz"
 disk_foldername="disk"
 make_menuconfig_filename="armhf_kernel.config"
 make_menuconfig_default_filename=".config"
-qemu_user_static_filename="qemu-user-static"
+qemu_user_static_filename="qemu-arm-static"
 resolve_filename="resolv.conf"
 usb_mount_rules_filename="usb-mount.rules"
 usb_mount_service_filename="usb-mount@.service"
@@ -78,7 +78,8 @@ home_downloads_dir=${home_dir}/Downloads
 home_downloads_disk_dir=${home_downloads_dir}/${disk_foldername}
 home_downloads_disk_lib_dir=${home_downloads_dir}/disk/lib
 
-scripts_dir=/scripts
+scripts_foldername="scripts"
+scripts_dir=/${scripts_foldername}
 home_lttp3rootfs_dir=${home_dir}/LTPP3_ROOTFS
 home_lttp3rootfs_services_automount_dir=${home_lttp3rootfs_dir}/services/automount
 home_lttp3rootfs_services_oobe_resize2fs_dir=${home_lttp3rootfs_dir}/services/oobe/resize2fs
@@ -311,6 +312,8 @@ if [[ -d ${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir} ]]; then
 		echo -e "\r"
 		echo -e ">>>>>>>Removing file <${usb_mount_service_filename}>"
 			rm ${dst_usb_mount_service_fpath}
+	else
+		echo -e ">>>>>--does not exist, continue..."
 	fi
 else
 	echo -e "\r"
@@ -660,7 +663,7 @@ echo -e ">Backup '${build_disk_filename}' by renaming"
 echo -e ">to: ${build_disk_bck_filename}"
 echo -e ">in: ${initramfs_dir}"
 echo -e "\r"
-sudo mv ${build_disk_fpath} ${build_disk_bck_fpath}
+mv ${build_disk_fpath} ${build_disk_bck_fpath}
 
 
 #Copy modified file to location: ~/SP7021/linux/rootfs/initramfs
@@ -671,7 +674,7 @@ echo -e ">as: ${build_disk_filename}"
 echo -e ">from: ${home_scripts_dir}"
 echo -e ">to: ${initramfs_dir}"
 echo -e "\r"
-sudo cp ${build_disk_mod_fpath}  ${build_disk_fpath}
+cp ${build_disk_mod_fpath}  ${build_disk_fpath}
 
 
 #Make file "build_disk.sh" executable
@@ -681,7 +684,7 @@ echo -e ">Changing permission of ${build_disk_filename}"
 echo -e ">in: ${initramfs_dir}"
 echo -e ">to: -rwxr-xr-x"
 echo -e "\r"
-sudo chmod +x ${build_disk_fpath}
+chmod +x ${build_disk_fpath}
 
 
 

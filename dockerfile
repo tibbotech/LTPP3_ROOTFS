@@ -31,6 +31,7 @@ RUN apt-get -y install	bison			    \
                         vim                 \
                         openssh-server
 
+
 #---SSH Config---
 #Create directory
 RUN mkdir /var/run/sshd
@@ -47,14 +48,15 @@ RUN echo "export VISIBLE=now" >> /etc/profile
 EXPOSE 22
 CMD ["/usr/sbin/sshd", "-D"]
 
+
 #---Retrieve files from git
 RUN cd ~ && git clone https://github.com/tibbotech/LTPP3_ROOTFS.git
 
 #---Run Sunplus installation and Configuration
-RUN cd ~ && ~/LTPP3_ROOTFS/sunplus_inst.sh
+RUN cd ~/LTPP3_ROOTFS && ./sunplus_inst.sh
 
 #---Pull Git Repository
 RUN cd ~/LTPP3_ROOTFS && git pull
 
 #---Run Prepreparation of Disk (before Chroot)
-RUN cd ~ && ~/LTPP3_ROOTFS/disk_PRE_prep.sh
+RUN cd ~/LTPP3_ROOTFS && ./disk_PRE_prep.sh
