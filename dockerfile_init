@@ -13,4 +13,6 @@ RUN apt-get -y update
 
 RUN apt-get -y upgrade
 
+RUN cd ~ && git clone https://github.com/tibbotech/LTPP3_ROOTFS.git
+
 RUN cd ~ && ~/LTPP3_ROOTFS/docker_init.sh
