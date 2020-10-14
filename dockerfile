@@ -37,4 +37,4 @@ RUN cd ~ && git clone https://github.com/tibbotech/LTPP3_ROOTFS.git
 RUN cd ~ && ~/LTPP3_ROOTFS/sunplus_inst.sh
 
 #---Run Prepreparation of Disk (before Chroot)
-#RUN cd ~ && ~/LTPP3_ROOTFS/disk_PRE_prep.sh
+RUN cd ~ && ~/LTPP3_ROOTFS/disk_PRE_prep.sh
