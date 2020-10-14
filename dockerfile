@@ -28,7 +28,7 @@ RUN apt-get -y install	bison			    \
                         wget                \
                         bc                  \
                         nano                \
-                        vim                 \
+                        vim
 
 #---Retrieve files from git
 #RUN cd ~ && git clone https://github.com/tibbotech/LTPP3_ROOTFS.git
