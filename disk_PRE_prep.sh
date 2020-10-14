@@ -167,20 +167,16 @@ echo -e "---------------------------------------------------------------"
 echo -e "\tPRE-PREPARATION of DISK for CHROOT"
 echo -e "---------------------------------------------------------------"
 
+press_any_key__localfunc
 #---Create Download directory (if needed)
 if [[ ! -d ${home_downloads_dir} ]]; then
 	echo -e "\r"
 	echo -e ">Create ${home_downloads_dir}"
 	mkdir ${home_downloads_dir}
-
-	echo -e "\r"
-	echo -e ">Downloading ${armhf_filename}"
-	press_any_key__localfunc
-	wget http://cdimage.ubuntu.com/cdimage/ubuntu-base/releases//20.04/release/${armhf_filename}
 fi
 
+exit
 
-press_any_key__localfunc
 #---Download armhf-image (if needed)
 if [[ ! -f ${armhf_fpath} ]]; then
 	echo -e "\r"
