@@ -175,7 +175,6 @@ if [[ ! -d ${home_downloads_dir} ]]; then
 	mkdir ${home_downloads_dir}
 fi
 
-exit
 
 #---Download armhf-image (if needed)
 if [[ ! -f ${armhf_fpath} ]]; then
