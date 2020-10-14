@@ -31,4 +31,6 @@ RUN apt-get -y install	bison			    \
 
 RUN cd ~ && git clone https://github.com/tibbotech/LTPP3_ROOTFS.git
 
-RUN cd ~ && ~/LTPP3_ROOTFS/sunplus_inst.sh
+RUN cd ~ && ~/LTPP3_ROOTFS/docker_init.sh
+
+#RUN cd ~ && ~/LTPP3_ROOTFS/sunplus_inst.sh
