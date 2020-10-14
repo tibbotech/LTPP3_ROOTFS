@@ -43,7 +43,6 @@ Downloads_dir=${home_dir}/Downloads
 sunplus_foldername="SP7021"
 sunplus_dir=${home_dir}/${sunplus_foldername}
 
-
 #---Check if current working directory
 echo -e "\r"
 echo "---Checking current working directory---"
