@@ -682,12 +682,3 @@ echo -e ">to: -rwxr-xr-x"
 echo -e "\r"
 chmod +x ${build_disk_fpath}
 
-
-#Rename "build_disk.sh" to "build_disk.sh.bak"
-press_any_key__localfunc
-echo -e "\r"
-echo -e ">Renaming ${build_disk_filename}" 
-echo -e ">to: ${build_disk_bck_filename}"
-echo -e ">in: ${SP7xxx_linux_rootfs_initramfs_dir}"
-echo -e "\r"
-mv ${build_disk_fpath} ${build_disk_bck_fpath}
