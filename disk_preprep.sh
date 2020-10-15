@@ -656,7 +656,7 @@ press_any_key__localfunc
 echo -e "\r"
 echo -e ">Backup '${build_disk_filename}' by renaming" 
 echo -e ">to: ${build_disk_bck_filename}"
-echo -e ">in: ${initramfs_dir}"
+echo -e ">in: ${SP7xxx_linux_rootfs_initramfs_dir}"
 echo -e "\r"
 mv ${build_disk_fpath} ${build_disk_bck_fpath}
 
@@ -668,7 +668,7 @@ echo -e "\r"
 echo -e ">Copying ${build_disk_mod_filename}" 
 echo -e ">as: ${build_disk_filename}"
 echo -e ">from: ${home_lttp3rootfs_dir}"
-echo -e ">to: ${initramfs_dir}"
+echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_dir}"
 echo -e "\r"
 cp ${build_disk_mod_fpath}  ${build_disk_fpath}
 
@@ -677,7 +677,7 @@ cp ${build_disk_mod_fpath}  ${build_disk_fpath}
 press_any_key__localfunc
 echo -e "\r"
 echo -e ">Changing permission of ${build_disk_filename}"
-echo -e ">in: ${initramfs_dir}"
+echo -e ">in: ${SP7xxx_linux_rootfs_initramfs_dir}"
 echo -e ">to: -rwxr-xr-x"
 echo -e "\r"
 chmod +x ${build_disk_fpath}
