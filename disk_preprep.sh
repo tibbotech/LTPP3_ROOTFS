@@ -106,7 +106,7 @@ SP7xxx_linux_rootfs_initramfs_build_disk_etc_dir
 
 build_disk_fpath=${SP7xxx_linux_rootfs_initramfs_dir}/${build_disk_filename}
 build_disk_bck_fpath=${SP7xxx_linux_rootfs_initramfs_dir}/${build_disk_bck_filename} 
-build_disk_mod_fpath=${home_lttp3rootfs_kernel_dir}/${build_disk_mod_filename} 
+build_disk_mod_fpath=${home_lttp3rootfs_dir}/${build_disk_mod_filename} 
 
 # dev_dir=/dev
 # mmcblk0p8_part="mmcblk0p8"
@@ -661,12 +661,13 @@ echo -e "\r"
 mv ${build_disk_fpath} ${build_disk_bck_fpath}
 
 
+
 #Copy modified file to location: ~/SP7021/linux/rootfs/initramfs
 press_any_key__localfunc
 echo -e "\r"
 echo -e ">Copying ${build_disk_mod_filename}" 
 echo -e ">as: ${build_disk_filename}"
-echo -e ">from: ${home_scripts_dir}"
+echo -e ">from: ${home_lttp3rootfs_dir}"
 echo -e ">to: ${initramfs_dir}"
 echo -e "\r"
 cp ${build_disk_mod_fpath}  ${build_disk_fpath}
@@ -690,24 +691,3 @@ echo -e ">to: ${build_disk_bck_filename}"
 echo -e ">in: ${SP7xxx_linux_rootfs_initramfs_dir}"
 echo -e "\r"
 mv ${build_disk_fpath} ${build_disk_bck_fpath}
-
-
-#Copy modified file to location: ~/SP7021/linux/rootfs/initramfs
-press_any_key__localfunc
-echo -e "\r"
-echo -e ">Copying ${build_disk_mod_filename}" 
-echo -e ">as: ${build_disk_filename}"
-echo -e ">from: ${home_lttp3rootfs_kernel_dir}"
-echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_dir}"
-echo -e "\r"
-cp ${build_disk_mod_fpath} ${SP7xxx_linux_rootfs_initramfs_dir}
-
-
-#Make file "build_disk.sh" executable
-press_any_key__localfunc
-echo -e "\r"
-echo -e ">Changing permission of ${build_disk_filename}"
-echo -e ">in: ${SP7xxx_linux_rootfs_initramfs_dir}"
-echo -e ">to: -rwxr-xr-x"
-echo -e "\r"
-chmod +x ${build_disk_fpath}

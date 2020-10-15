@@ -1,30 +1,7 @@
 #!/bin/bash
-# chroot into '~/SP7021/linux/rootfs/initramfs/disk/', then
-# 	run 'qemu-arm-static /usr/bin/bash'
-# This chroots; runs the emulator; and the emulator runs bash
-
-#---Check if currently NOT logged in as "root"
-echo -e "\r"
-echo "---Checking current user---"
-echo -e "\r"
-current_user=`whoami`
-
-if [[ ${current_user} == "root" ]]; then
-	echo -e "\r"
-	echo ">Current user is <root>..."
-	echo ">>>Please login as a normal user (e.g. imcase)"
-	echo -e "\r"
-	echo "Exiting Now..."
-	echo -e "\r"
-	echo -e "\r"
-
-	exit
-fi
-
-
 #---Define variables
 echo -e "\r"
-echo "---Defining Varabiles (Filenames, Directories, Paths, Full-Paths)---"
+echo -e "---Defining Environmental variables---"
 echo -e "\r"
 home_dir=~
 usr_dir=/usr
@@ -51,50 +28,50 @@ scripts_build_BOOOT_BIN_fpath=${home_scripts_dir}/${build_BOOOT_BIN_filename}
 
 #---Show mmessage
 echo -e "\r"
-echo "---------------------------------------------------------------"
+echo -e "---------------------------------------------------------------"
 echo -e "\tPREPARING CHROOT"
-echo "---------------------------------------------------------------"
+echo -e "---------------------------------------------------------------"
 
 #---Create directory "~/SP7021/linux/rootfs/initramfs/disk/scripts"
 echo -e "\r"
-echo ">Creating <${scripts_foldername}>"
-echo ">in: ${disk_dir}"
+echo -e ">Creating <${scripts_foldername}>"
+echo -e ">in: ${disk_dir}"
 if [[ ! -d ${disk_scripts_dir} ]]; then
 	sudo mkdir ${disk_scripts_dir}
 fi
 
 #---Copy "chroot_exec_cmd_inside_chroot.sh" to "~/SP7021/linux/rootfs/initramfs/disk/scripts"
 echo -e "\r"
-echo ">Copying: ${chroot_exec_cmd_inside_chroot_filename}"
-echo ">from: ${home_scripts_dir}"
-echo ">to: ${disk_scripts_dir}"
+echo -e ">Copying: ${chroot_exec_cmd_inside_chroot_filename}"
+echo -e ">from: ${home_scripts_dir}"
+echo -e ">to: ${disk_scripts_dir}"
 echo -e "\r"
 sudo cp ${scripts_chroot_exec_cmd_inside_chroot_fpath} ${disk_scripts_dir}
 
 
 #---Make "chroot_exec_cmd_inside_chroot.sh" executable
 echo -e "\r"
-echo ">chmod +x ${chroot_exec_cmd_inside_chroot_filename}"
-echo ">in: ${disk_scripts_dir}"
+echo -e ">chmod +x ${chroot_exec_cmd_inside_chroot_filename}"
+echo -e ">in: ${disk_scripts_dir}"
 sudo chmod +x ${disk_scripts_chroot_exec_cmd_inside_chroot_fpath}
 
 
 #---Go into CHROOT
 #Note: anything inside EOF is run inside your chrooted directory
 echo -e "\r"
-echo "---------------------------------------------------------------"
+echo -e "---------------------------------------------------------------"
 echo -e "\tENTERING CHROOT ENVIRONMENT"
-echo "---------------------------------------------------------------"
+echo -e "---------------------------------------------------------------"
 echo -e "\r"
 read -N 1 -p "Do you wish to auto-run scripts within CHROOT (y/n): " answer
 echo -e "\r"
 
 if [[ ${answer} == "n" ]] || [[ ${answer} == "N" ]]; then
-	echo "---------------------------------------------------------------"
-	echo "To Manually Initialize and Prepare <rootfs>..."
-	echo "...run the following script:"
+	echo -e "---------------------------------------------------------------"
+	echo -e "To Manually Initialize and Prepare <rootfs>..."
+	echo -e "...run the following script:"
 	echo -e "\t${chroot_scripts_chroot_exec_cmd_inside_chroot_fpath}"
-	echo "---------------------------------------------------------------"
+	echo -e "---------------------------------------------------------------"
 	echo -e "\r"
  	sudo chroot ${disk_dir} ${qemu_fpath} ${bash_fpath}
 		
@@ -103,28 +80,28 @@ fi
 
 
 #---answer == "y" or "Y"
-echo "---------------------------------------------------------------"
-echo "Auto Initialization and Preparation of <rootfs>...In Progress"
-echo "Running script:"
+echo -e "---------------------------------------------------------------"
+echo -e "Auto Initialization and Preparation of <rootfs>...In Progress"
+echo -e "Running script:"
 echo -e "\t${chroot_scripts_chroot_exec_cmd_inside_chroot_fpath}"
-echo "---------------------------------------------------------------"
+echo -e "---------------------------------------------------------------"
 echo -e "\r"
 
 cat << EOF | sudo chroot ${disk_dir} ${qemu_fpath} ${bash_fpath}
 	source ${chroot_scripts_chroot_exec_cmd_inside_chroot_fpath}
 EOF
 
-echo "---------------------------------------------------------------"
-echo "Auto Initialization and Preparation of <rootfs>...Completed"
+echo -e "---------------------------------------------------------------"
+echo -e "Auto Initialization and Preparation of <rootfs>...Completed"
 echo -e "\r"
-echo "To BUILD the <ISPBOOOT.BIN>, please run the following command:"
+echo -e "To BUILD the <ISPBOOOT.BIN>, please run the following command:"
 echo -e "\t${scripts_build_BOOOT_BIN_fpath}"
-echo "---------------------------------------------------------------"
+echo -e "---------------------------------------------------------------"
 echo -e "\r"
 
 #---Enter CHROOT
 echo -e "\r"
-echo ">Removing: ${chroot_exec_cmd_inside_chroot_filename}"
-echo ">from: ${disk_scripts_dir}"
+echo -e ">Removing: ${chroot_exec_cmd_inside_chroot_filename}"
+echo -e ">from: ${disk_scripts_dir}"
 echo -e "\r"
 sudo rm ${disk_scripts_chroot_exec_cmd_inside_chroot_fpath}

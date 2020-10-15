@@ -1,0 +1,16 @@
+#---Continue from REPOSITORY:TAG=ubuntu_init:latest
+FROM ubuntu_init:latest
+
+#---LABEL about the custom image
+LABEL maintainer="hien@tibbo.com"
+LABEL version="0.1"
+LABEL description="Continue from image 'ubuntu_init:latest', and install & configure 'SUNPLUS'"
+
+#---Disable Prompt During Packages Installation
+ARG DEBIAN_FRONTEND=noninteractive
+
+#---Retrieve files from Git
+RUN cd ~ && git clone https://github.com/tibbotech/LTPP3_ROOTFS.git
+
+#---Run Sunplus installation and Configuration
+RUN cd ~ && ~/LTPP3_ROOTFS/sunplus_inst.sh

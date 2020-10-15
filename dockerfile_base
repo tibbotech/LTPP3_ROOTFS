@@ -1,0 +1,10 @@
+#---Download base image ubuntu 20.04
+FROM ubuntu:20.04
+
+#---LABEL about the custom image
+LABEL maintainer="hien@tibbo.com"
+LABEL version="0.1"
+LABEL description="This is an image for our base linux image creation. Tag this base image as 'ubuntu_base:20.04'"
+
+#---Disable Prompt During Packages Installation
+ARG DEBIAN_FRONTEND=noninteractive
