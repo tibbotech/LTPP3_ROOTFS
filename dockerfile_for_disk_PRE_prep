@@ -1,0 +1,5 @@
+#---Update local Git repository
+RUN cd ~/LTPP3_ROOTFS && git pull
+
+#---Run Prepreparation of Disk (before Chroot)
+RUN cd ~ && ~/LTPP3_ROOTFS/disk_PRE_prep.sh
