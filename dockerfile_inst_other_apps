@@ -9,21 +9,23 @@ LABEL description="Continue from 'ubuntu_base:20.04' image, and install updates,
 #---Disable Prompt During Packages Installation
 ARG DEBIAN_FRONTEND=noninteractive
 
-#---Install required apps
-RUN apt-get -y install	systemd
-
-#---Fixing ERROR regarding dpkg
-RUN apt-get -y reinstall gconf2 && dpkg-reconfigure gconf2 && dpkg --configure -a && apt-get -y install -f
-
-#---Installing required apps (After error fix)
-RUN apt-get -y install iputils-ping         \
-                        net-tools           \ 
+#---Installing additional apps:
+RUN apt-get -y install net-tools            \
+                        iputils-ping        \ 
                         iproute2            \
                         iproute2-doc        \ 
                         netplan.io          \ 
                         udev			    \
                         kmod                \
-                        openssh-server	    
+                        openssh-server	    \
+                        apt-utils		    \
+                        dbus			    \ 
+                        networkd-dispatcher \
+                        systemd
+
+#---Fixing ERROR regarding dpkg
+RUN apt-get -y reinstall gconf2 && dpkg-reconfigure gconf2 && dpkg --configure -a && apt-get -y install -f
+
 
 #---Configure SSH
 RUN mkdir /var/run/sshd
