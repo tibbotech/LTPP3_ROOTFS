@@ -37,7 +37,7 @@ echo -e "\r"
 echo -e ">Creating <${scripts_foldername}>"
 echo -e ">in: ${disk_dir}"
 if [[ ! -d ${disk_scripts_dir} ]]; then
-	sudo mkdir ${disk_scripts_dir}
+	mkdir ${disk_scripts_dir}
 fi
 
 #---Copy "chroot_exec_cmd_inside_chroot.sh" to "~/SP7021/linux/rootfs/initramfs/disk/scripts"
@@ -46,14 +46,14 @@ echo -e ">Copying: ${chroot_exec_cmd_inside_chroot_filename}"
 echo -e ">from: ${home_scripts_dir}"
 echo -e ">to: ${disk_scripts_dir}"
 echo -e "\r"
-sudo cp ${scripts_chroot_exec_cmd_inside_chroot_fpath} ${disk_scripts_dir}
+cp ${scripts_chroot_exec_cmd_inside_chroot_fpath} ${disk_scripts_dir}
 
 
 #---Make "chroot_exec_cmd_inside_chroot.sh" executable
 echo -e "\r"
 echo -e ">chmod +x ${chroot_exec_cmd_inside_chroot_filename}"
 echo -e ">in: ${disk_scripts_dir}"
-sudo chmod +x ${disk_scripts_chroot_exec_cmd_inside_chroot_fpath}
+chmod +x ${disk_scripts_chroot_exec_cmd_inside_chroot_fpath}
 
 
 #---Go into CHROOT
@@ -73,7 +73,7 @@ if [[ ${answer} == "n" ]] || [[ ${answer} == "N" ]]; then
 	echo -e "\t${chroot_scripts_chroot_exec_cmd_inside_chroot_fpath}"
 	echo -e "---------------------------------------------------------------"
 	echo -e "\r"
- 	sudo chroot ${disk_dir} ${qemu_fpath} ${bash_fpath}
+ 	chroot ${disk_dir} ${qemu_fpath} ${bash_fpath}
 		
 	exit
 fi
@@ -87,7 +87,7 @@ echo -e "\t${chroot_scripts_chroot_exec_cmd_inside_chroot_fpath}"
 echo -e "---------------------------------------------------------------"
 echo -e "\r"
 
-cat << EOF | sudo chroot ${disk_dir} ${qemu_fpath} ${bash_fpath}
+cat << EOF | chroot ${disk_dir} ${qemu_fpath} ${bash_fpath}
 	source ${chroot_scripts_chroot_exec_cmd_inside_chroot_fpath}
 EOF
 
@@ -104,4 +104,4 @@ echo -e "\r"
 echo -e ">Removing: ${chroot_exec_cmd_inside_chroot_filename}"
 echo -e ">from: ${disk_scripts_dir}"
 echo -e "\r"
-sudo rm ${disk_scripts_chroot_exec_cmd_inside_chroot_fpath}
+rm ${disk_scripts_chroot_exec_cmd_inside_chroot_fpath}

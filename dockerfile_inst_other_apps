@@ -1,0 +1,38 @@
+#---Continue from REPOSITORY:TAG=ubuntu_base:20.04
+FROM ubuntu_base:20.04
+
+#---LABEL about the custom image
+LABEL maintainer="hien@tibbo.com"
+LABEL version="0.1"
+LABEL description="Continue from 'ubuntu_base:20.04' image, and install updates, upgrades, and required apps"
+
+#---Disable Prompt During Packages Installation
+ARG DEBIAN_FRONTEND=noninteractive
+
+#---Update and Upgrade
+RUN apt-get -y update
+RUN apt-get -y upgrade
+
+#---Install required apps
+RUN apt-get -y install	apt-utils		    \
+                        dbus			    \ 
+                        networkd-dispatcher \
+                        systemd
+
+#---Fixing ERROR regarding dpkg
+RUN apt-get -y reinstall gconf2 && dpkg-reconfigure gconf2 && dpkg --configure -a && apt-get -y install -f
+
+#---Installing required apps (After error fix)
+RUN apt-get -y install iputils-ping         \
+                        net-tools           \ 
+                        iproute2            \
+                        iproute2-doc        \ 
+                        netplan.io          \ 
+                        udev			    \
+                        kmod                \
+                        openssh-server	    
+
+#---Configure SSH
+RUN mkdir /var/run/sshd
+RUN echo 'root:root' | chpasswd
+RUN sed -i 's/#*PermitRootLogin prohibit-password/PermitRootLogin yes/g' /etc/ssh/sshd_config

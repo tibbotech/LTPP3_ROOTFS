@@ -28,4 +28,5 @@ RUN apt-get -y install	bison			    \
                         wget                \
                         bc                  \
                         nano                \
-                        vim
+                        vim                 \
+                        curl
