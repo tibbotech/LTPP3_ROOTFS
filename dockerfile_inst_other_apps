@@ -10,17 +10,17 @@ LABEL description="Continue from 'ubuntu_base:20.04' image, and install updates,
 ARG DEBIAN_FRONTEND=noninteractive
 
 #---Install important apps
-RUN apt-get -y install systemd              \
+RUN apt-get -y install systemd          \
                     apt-utils		    \
                     dbus			    \ 
-                    networkd-dispatcher \
+                    networkd-dispatcher 
 
 #---Fixing ERROR regarding dpkg
 RUN apt-get -y reinstall gconf2 && dpkg-reconfigure gconf2 && dpkg --configure -a && apt-get -y install -f
 
 
 #---Installing additional apps:
-RUN apt-get -y install net-tools            \
+RUN apt-get -y install net-tools        \
                     iputils-ping        \ 
                     iproute2            \
                     iproute2-doc        \ 
