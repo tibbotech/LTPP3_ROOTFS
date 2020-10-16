@@ -10,10 +10,7 @@ LABEL description="Continue from 'ubuntu_base:20.04' image, and install updates,
 ARG DEBIAN_FRONTEND=noninteractive
 
 #---Install required apps
-RUN apt-get -y install	apt-utils		    \
-                        dbus			    \ 
-                        networkd-dispatcher \
-                        systemd
+RUN apt-get -y install	systemd
 
 #---Fixing ERROR regarding dpkg
 RUN apt-get -y reinstall gconf2 && dpkg-reconfigure gconf2 && dpkg --configure -a && apt-get -y install -f
