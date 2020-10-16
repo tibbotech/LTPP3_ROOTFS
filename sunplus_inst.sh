@@ -1,6 +1,6 @@
 #!/bin/bash
 #---Local Functions
-press_any_key__localfunc() {
+press_any_key__func() {
 	#Define constants
 	local cTIMEOUT_ANYKEY=0
 
@@ -32,7 +32,7 @@ press_any_key__localfunc() {
 
 
 #---Define path variables
-press_any_key__localfunc
+press_any_key__func
 echo -e "\r"
 echo "---Defining Varabiles (Filenames, Directories, Paths, Full-Paths)---"
 echo -e "\r"
@@ -73,13 +73,13 @@ fi
 
 
 #---Execute commands
-press_any_key__localfunc
+press_any_key__func
 echo -e "\r"
 echo "---Installing Libraries for Sunplus---"
 echo -e "\r"
 apt-get install openssl libssl-dev bison flex -y
 
-press_any_key__localfunc
+press_any_key__func
 echo -e "\r"
 echo "---Cloning Sunplus Image (in other words: writing data to local disk)---"
 echo -e "\r"
@@ -103,13 +103,13 @@ PATH=`perl -e 'print join ":", grep {!$h{$_}++} split ":", $ENV{PATH}'`
 export PATH
 
 
-press_any_key__localfunc
+press_any_key__func
 echo -e "\r"
 echo "---Executing script <${home_dir}/.bashrc>---"
 echo -e "\r"
 source ${home_dir}/.bashrc
 
-press_any_key__localfunc
+press_any_key__func
 echo -e "\r"
 echo "---Updating submodules with git-command---"
 echo -e "\r"
@@ -122,13 +122,13 @@ echo ">Navigating to ${sunplus_dir}"
 echo -e "\r"
 cd ${sunplus_dir}
 
-press_any_key__localfunc
+press_any_key__func
 echo -e "\r"
 echo "---Executing: <make config <<< 2>---"
 echo -e "\r"
 make config <<< 2 		#Select: [2] LTPP3G2 Board
 
-press_any_key__localfunc
+press_any_key__func
 echo -e "\r"
 echo "---Executing: <make all>---"
 echo -e "\r"

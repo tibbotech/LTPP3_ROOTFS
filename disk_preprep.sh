@@ -1,6 +1,6 @@
 #!/bin/bash
 #---Local Functions
-press_any_key__localfunc() {
+press_any_key__func() {
 	#Define constants
 	local cTIMEOUT_ANYKEY=0
 
@@ -36,7 +36,7 @@ press_any_key__localfunc() {
 
 
 #---Define path variables
-press_any_key__localfunc
+press_any_key__func
 echo -e "\r"
 echo -e "---Define Environmental Variables---"
 echo -e "\r"
@@ -167,7 +167,7 @@ echo -e "---------------------------------------------------------------"
 echo -e "\tPRE-PREPARATION of DISK for CHROOT"
 echo -e "---------------------------------------------------------------"
 
-press_any_key__localfunc
+press_any_key__func
 #---Create Download directory (if needed)
 if [[ ! -d ${home_downloads_dir} ]]; then
 	echo -e "\r"
@@ -184,31 +184,31 @@ if [[ ! -f ${armhf_fpath} ]]; then
 
 	echo -e "\r"
 	echo -e ">Downloading ${armhf_filename}"
-	press_any_key__localfunc
+	press_any_key__func
 	wget http://cdimage.ubuntu.com/cdimage/ubuntu-base/releases//20.04/release/${armhf_filename}
 fi
 
 
 if [[ -d ${home_downloads_disk_dir} ]]; then
-	press_any_key__localfunc
+	press_any_key__func
 	echo -e "\r"
 	echo -e ">Removing: ${disk_foldername}"
 	rm -r ${home_downloads_disk_dir}
 fi
 
-press_any_key__localfunc
+press_any_key__func
 echo -e "\r"
 echo -e ">Moving current: ${disk_foldername}"
 echo -e ">from: ${SP7xxx_linux_rootfs_initramfs_dir}"
 echo -e ">to: ${home_downloads_dir}"
 	mv ${SP7xxx_linux_rootfs_initramfs_disk_dir} ${home_downloads_dir}/
 
-press_any_key__localfunc
+press_any_key__func
 echo -e "\r"
 echo -e ">Navigate to ${home_downloads_dir}"
 	cd ${home_downloads_dir}
 
-press_any_key__localfunc
+press_any_key__func
 	disk_tspan=$(date +%Y%m%d%H%M%S)
 	disk_targz_filename="disk.${disk_tspan}.tar.gz"
 echo -e "\r"
@@ -216,40 +216,40 @@ echo -e ">Compressing (BACKUP): ${disk_foldername}"
 echo -e ">at: ${home_downloads_dir}"
 	tar -czvf ${disk_targz_filename} ${disk_foldername}
 
-press_any_key__localfunc
+press_any_key__func
 echo -e "\r"
 echo -e ">Creating: ${disk_foldername}"
 echo -e ">at: ${SP7xxx_linux_rootfs_initramfs_dir}"
 	mkdir ${SP7xxx_linux_rootfs_initramfs_disk_dir}
 
-press_any_key__localfunc
+press_any_key__func
 echo -e "\r"
 echo -e ">Copying: ${armhf_filename}"
 echo -e ">from: ${home_downloads_dir}"
 echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_dir}"
 	cp ${home_downloads_dir}/${armhf_filename} ${SP7xxx_linux_rootfs_initramfs_disk_dir}
 
-press_any_key__localfunc
+press_any_key__func
 echo -e "\r"
 echo -e ">Navigate to ${SP7xxx_linux_rootfs_initramfs_disk_dir}"
 	cd ${SP7xxx_linux_rootfs_initramfs_disk_dir}
 
-press_any_key__localfunc
+press_any_key__func
 echo -e "\r"
 echo -e ">Extracting: ${armhf_filename}"
 	tar -xzvf ${armhf_filename}
 
-press_any_key__localfunc
+press_any_key__func
 echo -e "\r"
 echo -e ">Removing: ${armhf_filename}"
 	rm ${armhf_filename}
 
-press_any_key__localfunc
+press_any_key__func
 echo -e "\r"
 echo -e ">Navigate to ${home_downloads_disk_lib_dir}"
 	cd ${home_downloads_disk_lib_dir}
 
-press_any_key__localfunc
+press_any_key__func
 echo -e "\r"
 echo -e ">Copying folders (incl. contents): firmware and modules"
 echo -e ">from: ${home_downloads_disk_lib_dir}"
@@ -257,7 +257,7 @@ echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_dir}"
 	cp -R firmware/ ${SP7xxx_linux_rootfs_initramfs_disk_lib_dir}
 	cp -R modules/ ${SP7xxx_linux_rootfs_initramfs_disk_lib_dir}
 
-press_any_key__localfunc
+press_any_key__func
 echo -e "\r"
 echo -e ">Copying: ${qemu_user_static_filename}"
 echo -e ">from: ${usr_bin_dir}"
@@ -265,7 +265,7 @@ echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_usr_bin_dir}"
 	cp ${usr_bin_dir}/${qemu_user_static_filename} ${SP7xxx_linux_rootfs_initramfs_disk_usr_bin_dir}
 
 
-# press_any_key__localfunc
+# press_any_key__func
 # #For directory: ~/SP7021/linux/rootfs/initramfs/disk, change ownership to imcase:imcase
 # current_user=`whoami`
 # if [[ "${current_user}" == "root" ]]; then
@@ -277,13 +277,13 @@ echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_usr_bin_dir}"
 # echo -e ">to: ${current_user}:${current_user}"
 # chown ${current_user}:${current_user} -R ${SP7xxx_linux_rootfs_initramfs_disk_dir}
 
-press_any_key__localfunc
+press_any_key__func
 echo -e "\r"
 echo -e ">Removing: ${disk_foldername}"
 echo -e ">in: ${home_downloads_dir}"
 	rm -rf ${home_downloads_disk_dir}
 
-press_any_key__localfunc
+press_any_key__func
 echo -e "\r"
 echo -e ">Copying: ${resolve_filename}"
 echo -e ">from: ${etc_dir}"
@@ -292,7 +292,7 @@ echo -e "\r"
 echo -e "\r"
 	cp ${src_resolve_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}
 
-press_any_key__localfunc
+press_any_key__func
 echo -e "\r"
 echo -e "---AUTO-MOUNT USB & MMC-SD---"
 echo -e "\r"
@@ -359,7 +359,7 @@ echo -e ">>>Change permission to <-rw-r--r--> for file: ${sd_detect_service_file
 
 
 
-press_any_key__localfunc
+press_any_key__func
 echo -e "\r"
 echo -e "\r"
 echo -e ">Checking if directory <${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}> exists?"
@@ -435,7 +435,7 @@ echo -e ">>>Change permission to <-rwxr-xr-x> for file: ${sd_detect_remove_sh_fi
 
 
 
-press_any_key__localfunc
+press_any_key__func
 echo -e "\r"
 echo -e "\r"
 echo -e ">Checking if directory <${SP7xxx_linux_rootfs_initramfs_disk_etc_udev_rulesd_dir}> exists"
@@ -497,7 +497,7 @@ echo -e ">>>Change permission to <-rw-r--r--> for file: ${sd_detect_rules_filena
 
 
 
-press_any_key__localfunc
+press_any_key__func
 echo -e "\r"
 echo -e "---Services to run BEFORE login---"
 echo -e "\r"
@@ -610,7 +610,7 @@ echo -e ">>>Change permission to <-rw-r--r--> for file: ${enable_ufw_before_logi
 	chmod 755 ${dst_enable_ufw_before_login_sh_fpath}
 
 
-press_any_key__localfunc
+press_any_key__func
 echo -e "\r"
 echo -e "---Kernel Configuration File"
 echo -e ">Copying: ${make_menuconfig_filename}"
@@ -621,12 +621,12 @@ echo -e "\r"
 echo -e "\r"
 	cp ${src_make_menuconfig_fpath} ${dst_make_menuconfig_fpath}
 
-press_any_key__localfunc
+press_any_key__func
 echo -e "\r"
 echo -e ">>>Navigate to ${SP7xxx_linux_kernel_dir}"
 	cd ${SP7xxx_linux_kernel_dir}
 
-press_any_key__localfunc
+press_any_key__func
 echo -e "\r"
 echo -e ">>>>>Importing Kernel config-file: ${make_menuconfig_default_filename}"
 echo -e ">from: ${SP7xxx_linux_kernel_dir}"
@@ -652,7 +652,7 @@ echo -e ">to: drwxr-xr-x"
 	chmod 755 ${SP7xxx_linux_rootfs_initramfs_extra_etc_dir}
 
 
-press_any_key__localfunc
+press_any_key__func
 echo -e "\r"
 echo -e ">Backup '${build_disk_filename}' by renaming" 
 echo -e ">to: ${build_disk_bck_filename}"
@@ -663,7 +663,7 @@ mv ${build_disk_fpath} ${build_disk_bck_fpath}
 
 
 #Copy modified file to location: ~/SP7021/linux/rootfs/initramfs
-press_any_key__localfunc
+press_any_key__func
 echo -e "\r"
 echo -e ">Copying ${build_disk_mod_filename}" 
 echo -e ">as: ${build_disk_filename}"
@@ -674,7 +674,7 @@ cp ${build_disk_mod_fpath}  ${build_disk_fpath}
 
 
 #Make file "build_disk.sh" executable
-press_any_key__localfunc
+press_any_key__func
 echo -e "\r"
 echo -e ">Changing permission of ${build_disk_filename}"
 echo -e ">in: ${SP7xxx_linux_rootfs_initramfs_dir}"
