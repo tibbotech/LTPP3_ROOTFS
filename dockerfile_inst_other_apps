@@ -1,5 +1,5 @@
 #---Continue from REPOSITORY:TAG=ubuntu_base:20.04
-FROM ubuntu_base:20.04
+FROM ubuntu_init:latest
 
 #---LABEL about the custom image
 LABEL maintainer="hien@tibbo.com"
@@ -9,23 +9,26 @@ LABEL description="Continue from 'ubuntu_base:20.04' image, and install updates,
 #---Disable Prompt During Packages Installation
 ARG DEBIAN_FRONTEND=noninteractive
 
-#---Installing additional apps:
-RUN apt-get -y install net-tools            \
-                        iputils-ping        \ 
-                        iproute2            \
-                        iproute2-doc        \ 
-                        netplan.io          \ 
-                        udev			    \
-                        kmod                \
-                        openssh-server	    \
-                        apt-utils		    \
-                        dbus			    \ 
-                        networkd-dispatcher \
-                        systemd
+#---Install important apps
+RUN apt-get -y install systemd              \
+                    apt-utils		    \
+                    dbus			    \ 
+                    networkd-dispatcher \
 
 #---Fixing ERROR regarding dpkg
 RUN apt-get -y reinstall gconf2 && dpkg-reconfigure gconf2 && dpkg --configure -a && apt-get -y install -f
 
+
+#---Installing additional apps:
+RUN apt-get -y install net-tools            \
+                    iputils-ping        \ 
+                    iproute2            \
+                    iproute2-doc        \ 
+                    netplan.io          \ 
+                    udev			    \
+                    kmod                \
+                    openssh-server	    
+                    
 
 #---Configure SSH
 RUN mkdir /var/run/sshd

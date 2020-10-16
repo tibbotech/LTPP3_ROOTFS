@@ -14,19 +14,19 @@ RUN apt-get -y update
 RUN apt-get -y upgrade
 
 #---Install required apps
-RUN apt-get -y install	bison			    \
-                        build-essential	    \
-                        flex			    \ 
-                        git			        \
-                        libncurses5-dev     \
-                        libssl-dev		    \
-                        openssl			    \ 
-                        qemu			    \ 
-                        qemu-user-static    \ 
-                        sshfs			    \
-                        u-boot-tools	    \
-                        wget                \
-                        bc                  \
-                        nano                \
-                        vim                 \
-                        curl
+RUN apt -y install	bison			    \
+                    build-essential	    \
+                    flex			    \ 
+                    git			        \
+                    libncurses5-dev     \
+                    libssl-dev		    \
+                    openssl			    \ 
+                    qemu			    \ 
+                    qemu-user-static    \ 
+                    sshfs			    \
+                    u-boot-tools	    \
+                    wget                \
+                    bc                  \
+                    nano                \
+                    vim                 \
+                    curl
