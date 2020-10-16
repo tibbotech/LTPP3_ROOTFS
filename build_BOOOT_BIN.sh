@@ -33,16 +33,16 @@ press_any_key__localfunc() {
 
 #---Check if currently NOT logged in as "root"
 echo -e "\r"
-echo "---Checking current user---"
+echo -e "---Checking current user---"
 echo -e "\r"
 current_user=`whoami`
 
 if [[ ${current_user} == "root" ]]; then
 	echo -e "\r"
-	echo ">Current user is <root>..."
-	echo ">>>Please login as a normal user (e.g. imcase)"
+	echo -e ">Current user is <root>..."
+	echo -e ">>>Please login as a normal user (e.g. imcase)"
 	echo -e "\r"
-	echo "Exiting Now..."
+	echo -e "Exiting Now..."
 	echo -e "\r"
 	echo -e "\r"
 
@@ -53,46 +53,46 @@ fi
 #---Define variables
 press_any_key__localfunc
 echo -e "\r"
-echo "---Defining Varabiles (Filenames, Directories, Paths, Full-Paths)---"
+echo -e "---Defining Varabiles (Filenames, Directories, Paths, Full-Paths)---"
 echo -e "\r"
 home_dir=~
-sunplus_foldername="SP7021"
-working_dir=${home_dir}/${sunplus_foldername}
+SP7xxx_foldername="SP7021"
+SP7xxx_dir=${home_dir}/${SP7xxx_foldername}
 
 #Navigate to ~/SP7021/
 echo -e "\r"
-echo ">Navigating to <${working_dir}>"
-cd ${working_dir}
+echo -e ">Navigating to <${SP7xxx_dir}>"
+cd ${SP7xxx_dir}
 
 #---Adding Entry to PATH
 press_any_key__localfunc
 echo -e "\r"
-echo ">Adding <${working_dir}/boot/uboot/tools> to <PATH>"
+echo -e ">Adding <${SP7xxx_dir}/boot/uboot/tools> to <PATH>"
 echo -e "\r"
-echo "export PATH=\$PATH:"${working_dir}/boot/uboot/tools
+echo -e "export PATH=\$PATH:"${SP7xxx_dir}/boot/uboot/tools
 
 # #---Remove DOUBLE ENTRIES
 # echo -e "\r"
-# echo ">Removing double-entries in <PATH> (if any)"
+# echo -e ">Removing double-entries in <PATH> (if any)"
 # echo -e "\r"
 # PATH=`perl -e 'print join ":", grep {!$h{$_}++} split ":", $ENV{PATH}'`
 # export PATH
 
 checkif_matchisFound=`cat ${home_dir}/.bashrc | grep "${tobeExported_entry}"`
 if [[ -z "${checkif_matchisFound}" ]]; then
-	echo "${tobeExported_entry}" >> ${home_dir}/.bashrc
+	echo -e "${tobeExported_entry}" >> ${home_dir}/.bashrc
 fi
 
 #---Execute '.bashrc'
 echo -e "\r"
-echo "---Executing script <${home_dir}/.bashrc>---"
+echo -e "---Executing script <${home_dir}/.bashrc>---"
 echo -e "\r"
 source ${home_dir}/.bashrc
 
 #---Build files
 press_any_key__localfunc
 echo -e "\r"
-echo "---Executing: <make all>---"
+echo -e "---Executing: <make all>---"
 echo -e "\r"
-sudo env "PATH=$PATH" make all
+env "PATH=$PATH" make all
 
