@@ -31,25 +31,6 @@ press_any_key__localfunc() {
 }
 
 
-#---Check if currently NOT logged in as "root"
-echo -e "\r"
-echo -e "---Checking current user---"
-echo -e "\r"
-current_user=`whoami`
-
-if [[ ${current_user} == "root" ]]; then
-	echo -e "\r"
-	echo -e ">Current user is <root>..."
-	echo -e ">>>Please login as a normal user (e.g. imcase)"
-	echo -e "\r"
-	echo -e "Exiting Now..."
-	echo -e "\r"
-	echo -e "\r"
-
-	exit
-fi
-
-
 #---Define variables
 press_any_key__localfunc
 echo -e "\r"
@@ -66,10 +47,13 @@ cd ${SP7xxx_dir}
 
 #---Adding Entry to PATH
 press_any_key__localfunc
+#Define environment variable
+SP7xxx_boot_uboot_tools_dir=${SP7xxx_dir}/boot/uboot/tools
+
 echo -e "\r"
-echo -e ">Adding <${SP7xxx_dir}/boot/uboot/tools> to <PATH>"
+echo -e ">Adding <${SP7xxx_boot_uboot_tools_dir} to <PATH>"
 echo -e "\r"
-echo -e "export PATH=\$PATH:"${SP7xxx_dir}/boot/uboot/tools
+echo -e "export PATH=\$PATH:${SP7xxx_boot_uboot_tools_dir}"
 
 # #---Remove DOUBLE ENTRIES
 # echo -e "\r"
@@ -78,9 +62,9 @@ echo -e "export PATH=\$PATH:"${SP7xxx_dir}/boot/uboot/tools
 # PATH=`perl -e 'print join ":", grep {!$h{$_}++} split ":", $ENV{PATH}'`
 # export PATH
 
-checkif_matchisFound=`cat ${home_dir}/.bashrc | grep "${tobeExported_entry}"`
+checkif_matchisFound=`cat ${home_dir}/.bashrc | grep "${SP7xxx_boot_uboot_tools_dir}"`
 if [[ -z "${checkif_matchisFound}" ]]; then
-	echo -e "${tobeExported_entry}" >> ${home_dir}/.bashrc
+	echo -e "export PATH=\$PATH:${SP7xxx_boot_uboot_tools_dir}" >> ${home_dir}/.bashrc
 fi
 
 #---Execute '.bashrc'
@@ -95,4 +79,3 @@ echo -e "\r"
 echo -e "---Executing: <make all>---"
 echo -e "\r"
 env "PATH=$PATH" make all
-

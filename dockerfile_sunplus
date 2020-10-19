@@ -1,10 +1,10 @@
 #---Continue from REPOSITORY:TAG=ubuntu_init:latest
-FROM ubuntu_init:latest
+FROM ubuntu_apps:latest
 
 #---LABEL about the custom image
 LABEL maintainer="hien@tibbo.com"
 LABEL version="0.1"
-LABEL description="Continue from image 'ubuntu_init:latest', and install & configure 'SUNPLUS'"
+LABEL description="Continue from image 'ubuntu_apps:latest', and install & configure 'SUNPLUS'"
 
 #---Disable Prompt During Packages Installation
 ARG DEBIAN_FRONTEND=noninteractive
