@@ -102,7 +102,6 @@ SP7xxx_linux_rootfs_initramfs_disk_scripts_dir=${SP7xxx_linux_rootfs_initramfs_d
 
 SP7xxx_linux_rootfs_initramfs_extra_dir=${SP7xxx_linux_rootfs_initramfs_dir}/extra
 SP7xxx_linux_rootfs_initramfs_extra_etc_dir=${SP7xxx_linux_rootfs_initramfs_extra_dir}${etc_dir}
-SP7xxx_linux_rootfs_initramfs_build_disk_etc_dir
 
 build_disk_fpath=${SP7xxx_linux_rootfs_initramfs_dir}/${build_disk_filename}
 build_disk_bck_fpath=${SP7xxx_linux_rootfs_initramfs_dir}/${build_disk_bck_filename} 
