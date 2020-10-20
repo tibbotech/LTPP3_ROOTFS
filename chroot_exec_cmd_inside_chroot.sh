@@ -285,7 +285,7 @@ echo -e "\r"
 
 press_any_key__localfunc
 echo -e "\r"
-echo "---Installing <vim, lrzsz, wget, bsdmainutils, less, bsdmainutils>---"
+echo "---Installing <vim, lrzsz, wget, mtools, less, bsdmainutils>---"
 echo -e "\r"
 	apt-get install vim -y
 	apt-get install lrzsz -y
