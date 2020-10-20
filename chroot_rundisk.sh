@@ -28,7 +28,6 @@ src_chroot_exec_cmd_inside_chroot_fpath=${home_lttp3rootfs_dir}/${chroot_exec_cm
 dst_chroot_exec_cmd_inside_chroot_fpath=${SP7xxx_linux_rootfs_initramfs_disk_scripts_dir}/${chroot_exec_cmd_inside_chroot_filename}
 chroot_exec_cmd_inside_chroot_fpath=${scripts_dir}/${chroot_exec_cmd_inside_chroot_filename}
 
-build_BOOOT_BIN_fpath=${home_lttp3rootfs_dir}/${build_BOOOT_BIN_filename}
 
 #---Show mmessage
 echo -e "\r"
@@ -66,24 +65,7 @@ echo -e "\r"
 echo -e "---------------------------------------------------------------"
 echo -e "\tENTERING CHROOT ENVIRONMENT"
 echo -e "---------------------------------------------------------------"
-echo -e "\r"
-read -N 1 -p "Do you wish to auto-run scripts within CHROOT (y/n): " answer
-echo -e "\r"
 
-if [[ ${answer} == "n" ]] || [[ ${answer} == "N" ]]; then
-	echo -e "---------------------------------------------------------------"
-	echo -e "To Manually Initialize and Prepare <rootfs>..."
-	echo -e "...run the following script:"
-	echo -e "\t${chroot_exec_cmd_inside_chroot_fpath}"
-	echo -e "---------------------------------------------------------------"
-	echo -e "\r"
- 	chroot ${SP7xxx_linux_rootfs_initramfs_disk_dir} ${qemu_fpath} ${bash_fpath}
-		
-	exit
-fi
-
-
-#---answer == "y" or "Y"
 echo -e "---------------------------------------------------------------"
 echo -e "Auto Initialization and Preparation of <rootfs>...In Progress"
 echo -e "Running script:"
@@ -95,15 +77,6 @@ cat << EOF | chroot ${SP7xxx_linux_rootfs_initramfs_disk_dir} ${qemu_fpath} ${ba
 	source ${chroot_exec_cmd_inside_chroot_fpath}
 EOF
 
-echo -e "---------------------------------------------------------------"
-echo -e "Auto Initialization and Preparation of <rootfs>...Completed"
-echo -e "\r"
-echo -e "To BUILD the <ISPBOOOT.BIN>, please run the following command:"
-echo -e "\t${build_BOOOT_BIN_fpath}"
-echo -e "---------------------------------------------------------------"
-echo -e "\r"
-
-#---Enter CHROOT
 echo -e "\r"
 echo -e ">Removing: ${chroot_exec_cmd_inside_chroot_filename}"
 echo -e ">from: ${SP7xxx_linux_rootfs_initramfs_disk_scripts_dir}"

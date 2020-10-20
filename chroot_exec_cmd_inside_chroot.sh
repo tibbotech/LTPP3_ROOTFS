@@ -292,7 +292,7 @@ echo -e "\r"
 	apt-get install wget -y
 	apt-get install bsdmainutils -y
 	apt-get install less -y
-	apt-get install mlabel -y
+	apt-get install mtools -y
 
 
 echo -e "\r"
