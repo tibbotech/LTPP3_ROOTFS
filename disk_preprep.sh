@@ -520,7 +520,7 @@ echo -e ">>>Change ownership to <root> for file: ${enable_eth1_before_login_serv
 	chown root:root ${dst_enable_eth1_before_login_service_fpath}
 
 echo -e "\r"
-echo -e ">>>Change permission to <-rw-r--r--> for file: ${enable_eth1_before_login_service_filename}"
+echo -e ">>>Change permission to <-rwxr-xr-x> for file: ${enable_eth1_before_login_service_filename}"
 	chmod 644 ${dst_enable_eth1_before_login_service_fpath}
 
 echo -e "\r"
@@ -534,7 +534,7 @@ echo -e ">>>Change ownership to <root> for file: ${enable_eth1_before_login_sh_f
 	chown root:root ${dst_enable_eth1_before_login_sh_fpath}
 
 echo -e "\r"
-echo -e ">>>Change permission to <-rw-r--r--> for file: ${enable_eth1_before_login_sh_filename}"
+echo -e ">>>Change permission to <-rwxr-xr-x> for file: ${enable_eth1_before_login_sh_filename}"
 	chmod 755 ${dst_enable_eth1_before_login_sh_fpath}
 
 
@@ -549,7 +549,7 @@ echo -e ">>>Change ownership to <root> for file: ${resize2fs_exec_filename}"
 	chown root:root ${dst_resize2fs_exec_fpath}
 
 echo -e "\r"
-echo -e ">>>Change permission to <-rw-r--r--> for file: ${resize2fs_exec_filename}"
+echo -e ">>>Change permission to <-rwxr-xr-x> for file: ${resize2fs_exec_filename}"
 	chmod 755 ${dst_resize2fs_exec_fpath}
 
 echo -e "\r"
@@ -577,7 +577,7 @@ echo -e ">>>Change ownership to <root> for file: ${resize2fs_before_login_sh_fil
 	chown root:root ${dst_resize2fs_before_login_sh_fpath}
 
 echo -e "\r"
-echo -e ">>>Change permission to <-rw-r--r--> for file: ${resize2fs_before_login_sh_filename}"
+echo -e ">>>Change permission to <-rwxr-xr-x> for file: ${resize2fs_before_login_sh_filename}"
 	chmod 755 ${dst_resize2fs_before_login_sh_fpath}
 
 echo -e "\r"
@@ -605,7 +605,7 @@ echo -e ">>>Change ownership to <root> for file: ${enable_ufw_before_login_sh_fi
 	chown root:root ${dst_enable_ufw_before_login_sh_fpath}
 
 echo -e "\r"
-echo -e ">>>Change permission to <-rw-r--r--> for file: ${enable_ufw_before_login_sh_filename}"
+echo -e ">>>Change permission to <-rwxr-xr-x> for file: ${enable_ufw_before_login_sh_filename}"
 	chmod 755 ${dst_enable_ufw_before_login_sh_fpath}
 
 
