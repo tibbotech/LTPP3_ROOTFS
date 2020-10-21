@@ -1,4 +1,4 @@
-#---Continue from REPOSITORY:TAG=ubuntu_base:20.04
+#---Continue from REPOSITORY:TAG=ubuntu_base:latest
 FROM ubuntu_base:20.04
 
 #---LABEL about the custom image
