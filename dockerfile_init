@@ -1,10 +1,10 @@
 #---Continue from REPOSITORY:TAG=ubuntu_base:latest
-FROM ubuntu_base:20.04
+FROM ubuntu_base:latest
 
 #---LABEL about the custom image
 LABEL maintainer="hien@tibbo.com"
 LABEL version="0.1"
-LABEL description="Continue from 'ubuntu_base:20.04' image, and install updates, upgrades, and required apps"
+LABEL description="Continue from 'ubuntu_base:latest' image, and install updates, upgrades, and required apps"
 
 #---Disable Prompt During Packages Installation
 ARG DEBIAN_FRONTEND=noninteractive
