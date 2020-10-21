@@ -1,0 +1,16 @@
+#---Continue from REPOSITORY:TAG=ubuntu_buildbin:latest
+FROM ubuntu_buildbin:latest
+
+#---LABEL about the custom image
+LABEL maintainer="hien@tibbo.com"
+LABEL version="0.1"
+LABEL description="Continue from image 'ubuntu_buildbin:latest', and run 'copy_BOOOT_BIN_to_netshare.sh'"
+
+#---Disable Prompt During Packages Installation
+#ARG DEBIAN_FRONTEND=noninteractive
+
+#---Update local Git repository
+RUN cd ~/LTPP3_ROOTFS && git pull
+
+#---Run Prepreparation of Disk (before Chroot)
+RUN cd ~ && ~/LTPP3_ROOTFS/development\ tools/build_BOOOT_BIN.sh
