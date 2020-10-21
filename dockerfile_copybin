@@ -13,4 +13,4 @@ LABEL description="Continue from image 'ubuntu_buildbin:latest', and run 'copy_B
 RUN cd ~/LTPP3_ROOTFS && git pull
 
 #---Run Prepreparation of Disk (before Chroot)
-RUN cd ~ && ~/LTPP3_ROOTFS/development\ tools/build_BOOOT_BIN.sh
+RUN cd ~ && ~/LTPP3_ROOTFS/development\ tools/copy_BOOOT_BIN_to_netshare.sh
