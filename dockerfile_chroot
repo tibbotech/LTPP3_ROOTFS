@@ -5,6 +5,7 @@ FROM ubuntu_diskpreprep:latest
 LABEL maintainer="hien@tibbo.com"
 LABEL version="0.1"
 LABEL description="Continue from image 'ubuntu_diskpreprep:latest', and run 'chroot_rundisk.sh'"
+LABEL repository:tag="ubuntu_chroot:latest"
 
 #---Disable Prompt During Packages Installation
 ARG DEBIAN_FRONTEND=noninteractive

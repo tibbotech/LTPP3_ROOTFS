@@ -5,6 +5,7 @@ FROM ubuntu_base:latest
 LABEL maintainer="hien@tibbo.com"
 LABEL version="0.1"
 LABEL description="Continue from 'ubuntu_base:latest' image, and install updates, upgrades, and required apps"
+LABEL repository:tag="ubuntu_init:latest"
 
 #---Disable Prompt During Packages Installation
 ARG DEBIAN_FRONTEND=noninteractive
