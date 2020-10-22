@@ -1,0 +1,14 @@
+#---Continue from REPOSITORY:TAG=ubuntu_chroot:latest
+FROM ubuntu_buildbin:latest 
+
+#---LABEL about the custom image
+LABEL maintainer="hien@tibbo.com"
+LABEL version="0.1"
+LABEL description="Continue from image 'ubuntu_buildbin:latest'"
+LABEL repository:tag="ubuntu_test:test"
+
+#---Disable Prompt During Packages Installation
+#ARG DEBIAN_FRONTEND=noninteractive
+
+#---Update local Git repository
+RUN read -p "input: " input_test && echo "my input: ${input_test}"
