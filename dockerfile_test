@@ -1,4 +1,4 @@
-#---Continue from REPOSITORY:TAG=ubuntu_chroot:latest
+#---Continue from REPOSITORY:TAG=ubuntu_buildbin:latest
 FROM ubuntu_buildbin:latest 
 
 #---LABEL about the custom image
@@ -8,7 +8,11 @@ LABEL description="Continue from image 'ubuntu_buildbin:latest'"
 LABEL repository:tag="ubuntu_test:test"
 
 #---Disable Prompt During Packages Installation
-#ARG DEBIAN_FRONTEND=noninteractive
+ARG DEBIAN_FRONTEND=interactive
 
 #---Update local Git repository
-RUN read -p "input: " input_test && echo "my input: ${input_test}"
+RUN cd ~/LTPP3_ROOTFS && git pull
+
+#---Run Prepreparation of Disk (before Chroot)
+RUN cd ~ && ~/LTPP3_ROOTFS/development\ tools/read_echo_test.sh
+
