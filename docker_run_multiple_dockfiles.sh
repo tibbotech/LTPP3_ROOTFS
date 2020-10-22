@@ -37,7 +37,8 @@ verify_if_file_exists__func() {
     #Execute Docker command
     if [[ ! -f ${dockerfile_fpath} ]]; then
         echo -e "\r"
-        echo -e "***${DOCKER_LIGHTRED}ERROR${DOCKER_NOCOLOR}: docker file ${DOCKER_LIGHTRED}${dockerfile_fpath}${DOCKER_NOCOLOR} not found..."
+        echo -e "\r"
+        echo -e "***${DOCKER_LIGHTRED}ERROR${DOCKER_NOCOLOR}: docker file ${DOCKER_ORANGE}${dockerfile_fpath}${DOCKER_NOCOLOR} not found..."
         echo -e "\r"
         echo -e "Verify the location of the file."
         echo -e "\r"
@@ -53,10 +54,12 @@ checkif_cmd_exec_was_successful__func() {
     
     if [[ ${exit_code} -eq 0 ]]; then
         echo -e "\r"
+        echo -e "\r"
         echo -e "script was executed ${DOCKER_LIGHTGREEN}successfully${DOCKER_NOCOLOR}..."
         echo -e "\r"
-
+        echo -e "\r"
     else
+        echo -e "\r"
         echo -e "\r"
         echo -e "***${DOCKER_LIGHTRED}ERROR${DOCKER_NOCOLOR}: script was stopped due to an error occurred..."
         echo -e "\r"
@@ -80,7 +83,7 @@ run_dockercmd_with_error_check__func() {
     local dockerfile_fpath=${docker_repo_LTPP3_ROOTFS_dir}/${dockerfile}
 
     #Get REPOSITORY:TAG from dockerfile
-    local dockerfile_repository_tag=`egrep -w "${GREP_PATTERN}" ${dockerfile_fpath} | cut -d"\"" -f2`
+    local dockerfile_repository_tag=`grep -w "${GREP_PATTERN}" ${dockerfile_fpath} | cut -d"\"" -f2`
 
     #Define Docker command
     local dockercmd="docker build - < ${dockerfile_fpath}"  #without REPOSITORY:TAG
@@ -107,7 +110,6 @@ run_dockercmd_with_error_check__func() {
     echo -e "\r"
     sudo sh -c "docker image ls"    #show Docker IMAGE list
     echo -e "\r"
-    echo -e "\r"
 }
 
 
@@ -116,7 +118,7 @@ verify_if_file_exists__func "${docker_multiple_input_files_fpath}"
 
 #---Read contents of the file
 #Each LINE of the file represents a 'dockerfile' containing the instructions to-be-executed
-while IFS='' read LINE
+sed 1d  ${docker_multiple_input_files_fpath} | while read LINE  #skip header
 do
     run_dockercmd_with_error_check__func ${LINE}
-done < ${docker_multiple_input_files_fpath} | tail -n +2    #skip header
+done
