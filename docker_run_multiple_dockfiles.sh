@@ -118,7 +118,7 @@ verify_if_file_exists__func "${docker_multiple_input_files_fpath}"
 
 #---Read contents of the file
 #Each LINE of the file represents a 'dockerfile' containing the instructions to-be-executed
-sed 1d  ${docker_multiple_input_files_fpath} | while read LINE  #skip header
+sed 1d ${docker_multiple_input_files_fpath} | while read LINE  #skip header
 do
     run_dockercmd_with_error_check__func ${LINE}
 done
