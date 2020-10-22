@@ -4,7 +4,7 @@ FROM ubuntu:20.04
 #---LABEL about the custom image
 LABEL maintainer="hien@tibbo.com"
 LABEL version="0.1"
-LABEL description="This is an image for our base linux image creation.
+LABEL description="This is an image for our base linux image creation."
 LABEL repository:tag="ubuntu_base:latest"
 
 #---Disable Prompt During Packages Installation
