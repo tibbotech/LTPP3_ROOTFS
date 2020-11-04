@@ -1,12 +1,13 @@
 #!/bin/bash
 #---Define colors
-DOCKER_NOCOLOR='\033[0m'
 DOCKER_ORANGE='\033[0;33m'
 DOCKER_LIGHTRED='\033[1;31m'
 DOCKER_LIGHTGREEN='\033[1;32m'
 DOCKER_YELLOW='\033[1;33m'
 DOCKER_LIGHTBLUE='\033[1;34m'
 DOCKER_LIGHTCYAN='\033[1;36m'
+DOCKER_PURPLE='\033[0;35m'
+DOCKER_NOCOLOR='\033[0m'
 
 #---Define constants
 DOCKER_SSH_LOCALPORT=10022
@@ -176,7 +177,7 @@ do
                                     sudo sh -c "docker container ls"
                                 echo -e "\r"
                                 echo -e "Summary:"
-                                echo -e "\tChosen REPOSITORY:\t\t\t${DOCKER_LIGHTRED}${myrepository}${DOCKER_NOCOLOR}"
+                                echo -e "\tChosen REPOSITORY:\t\t\t${DOCKER_PURPLE}${myrepository}${DOCKER_NOCOLOR}"
                                 echo -e "\tCreated CONTAINER-ID:\t\t\t${DOCKER_ORANGE}${container_name}${DOCKER_NOCOLOR}"
                                 echo -e "\tTCP-port to-used-for SSH:\t\t${DOCKER_LIGHTBLUE}${DOCKER_SSH_LOCALPORT}${DOCKER_NOCOLOR}"
                                     get_assigned_ipv4_addresses__func
