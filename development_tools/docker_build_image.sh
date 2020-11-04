@@ -50,14 +50,14 @@ create_dockerfile__sub() {
 
     #Define dockerfile content
     DOCKERFILE_CONTENT_ARR=(\
-        "#---Continue from REPOSITORY:TAG=${myrepositoryid}:${mytag_input}"\
-        "FROM ${myrepositoryid}:${mytag_input}"\
+        "#---Continue from REPOSITORY:TAG=${myrepository}:${mytag}"\
+        "FROM ${myrepository}:${mytag}"\
         ""\
         "#---LABEL about the custom image"\
         "LABEL maintainer=\"hien@tibbo.com\""\
         "LABEL version=\"0.1\""\
-        "LABEL description=\"Continue from image '${myrepositoryid}:${mytag_input}', and run 'build_BOOOT_BIN.sh'\""\
-        "LABEL NEW repository:tag=\"${myrepositoryid_new}:${mytag_input}\""\
+        "LABEL description=\"Continue from image '${myrepository}:${mytag}', and run 'build_BOOOT_BIN.sh'\""\
+        "LABEL NEW repository:tag=\"${myrepository_new}:${mytag}\""\
         ""\
         "#---Disable Prompt During Packages Installation"\
         "ARG DEBIAN_FRONTEND=noninteractive"\
@@ -92,31 +92,33 @@ dockerfile_timestamp=$(date +%y%m%d%H%M%S)
 while true
 do
     #Provide a CONTAINER-ID from which you want to create an Image
-    read -p "Choose a ${DOCKER_READ_PURPLE}REPOSITORY${DOCKER_READ_NOCOLOR} name from list (e.g. ubuntu_buildbin): " myrepositoryid
-    if [[ ! -z ${myrepositoryid} ]]; then    #input is NOT an EMPTY STRING
+    read -p "Choose a ${DOCKER_READ_PURPLE}REPOSITORY${DOCKER_READ_NOCOLOR} name from list (e.g. ubuntu_buildbin): " myrepository
+    if [[ ! -z ${myrepository} ]]; then    #input is NOT an EMPTY STRING
 
-        #Check if 'myrepositoryid' is found in ' docker container ls'
-        myrepositoryid_isFound=`sudo docker image ls | awk '{print $1}' | grep -w ${myrepositoryid}`
-        if [[ ! -z ${myrepositoryid_isFound} ]]; then    #match was found
+        #Check if 'myrepository' is found in ' docker container ls'
+        myrepository_isFound=`sudo docker image ls | awk '{print $1}' | grep -w ${myrepository}`
+        if [[ ! -z ${myrepository_isFound} ]]; then    #match was found
 
             while true
             do
-                #Provide a TAG for this new image
-                read -p "Provide the ${DOCKER_READ_ORANGE}TAG${DOCKER_READ_NOCOLOR} (e.g. latest) matching with REPOSITORY ${DOCKER_READ_PURPLE}${myrepositoryid}${DOCKER_READ_NOCOLOR}: " mytag_input
-                if [[ ! -z ${mytag_input} ]]; then   #input is NOT an Empty String        
+                #Find tag belonging to 'myrepository' (Exact Match)
+                myrepository_tag=$(sudo docker image ls | grep -w "${myrepository}" | awk '{print $2}')
 
-                    #Find tag belonging to 'myrepositoryid' (Exact Match)
-                    myrepositoryid_tag=$(sudo docker image ls | grep -w "${myrepositoryid}" | awk '{print $2}')
-                    if [[ ${myrepositoryid_tag} == ${mytag_input} ]]; then
+                #Provide a TAG for this new image
+                read -e -p "Provide the ${DOCKER_READ_ORANGE}TAG${DOCKER_READ_NOCOLOR} (e.g. latest) matching with REPOSITORY ${DOCKER_READ_PURPLE}${myrepository}${DOCKER_READ_NOCOLOR}: " -i ${myrepository_tag} mytag
+                if [[ ! -z ${mytag} ]]; then   #input is NOT an Empty String        
+
+                    mytag_isFound=`sudo docker image ls | grep -w "${myrepository}" | grep -w "${mytag}"`    #check if 'myrepository' AND 'mytag' is found in 'docker image ls'
+                    if [[ ! -z ${mytag_isFound} ]]; then    #match was found
 
                         while true
                         do
                             #Provide a NEW CONTAINER-ID for the NEW image
-                            read -p "Provide a ${DOCKER_READ_RGB_GREENBLUE}NEW REPOSITORY${DOCKER_READ_NOCOLOR} name (e.g. ubuntu_buildbin_NEW): " myrepositoryid_new
+                            read -p "Provide a ${DOCKER_READ_RGB_GREENBLUE}NEW REPOSITORY${DOCKER_READ_NOCOLOR} name (e.g. ubuntu_buildbin_NEW): " myrepository_new
                                                     
-                            #Check if 'myrepositoryid' is UNIQUE
-                            myrepositoryid_new_isFound=`sudo docker image ls | awk '{print $1}' | grep -w ${myrepositoryid_new}`                           
-                            if  [[ -z ${myrepositoryid_new_isFound} ]]; then    #match was NOT found
+                            #Check if 'myrepository' is UNIQUE
+                            myrepository_new_isFound=`sudo docker image ls | awk '{print $1}' | grep -w ${myrepository_new}`                           
+                            if  [[ -z ${myrepository_new_isFound} ]]; then    #match was NOT found
 
                                 while true
                                 do
@@ -132,15 +134,15 @@ do
                                         echo -e "------------------------------------------------------------"
                                         echo -e "Summary"
                                         echo -e "------------------------------------------------------------"
-                                        echo -e "CREATE ${DOCKER_RGB_GREENBLUE}REPOSITORY${DOCKER_NOCOLOR}:${DOCKER_READ_ORANGE}TAG${DOCKER_READ_NOCOLOR}:\t\t${myrepositoryid_new}:${mytag_input}"
-                                        echo -e "BUILD WITH ${DOCKER_READ_PURPLE}REPOSITORY${DOCKER_READ_NOCOLOR}:${DOCKER_READ_ORANGE}TAG${DOCKER_READ_NOCOLOR}:\t${myrepositoryid}:${mytag_input}"                                        
+                                        echo -e "CREATE ${DOCKER_RGB_GREENBLUE}REPOSITORY${DOCKER_NOCOLOR}:${DOCKER_READ_ORANGE}TAG${DOCKER_READ_NOCOLOR}:\t\t${myrepository_new}:${mytag}"
+                                        echo -e "BUILD WITH ${DOCKER_READ_PURPLE}REPOSITORY${DOCKER_READ_NOCOLOR}:${DOCKER_READ_ORANGE}TAG${DOCKER_READ_NOCOLOR}:\t${myrepository}:${mytag}"                                        
                                         echo -e "Dockerfile Location:\t\t${dockerfile_fpath}"
                                         echo -e ""
 
                                         #Confirm if user wants to continue
                                         read -p "Do you wish to continue (y/n)? " myanswer
                                         if [[ ${myanswer} == "y" ]]; then
-                                            sudo sh -c "docker build --tag ${myrepositoryid_new}:${mytag_input} - < ${dockerfile_fpath}"
+                                            sudo sh -c "docker build --tag ${myrepository_new}:${mytag} - < ${dockerfile_fpath}"
                                         fi
 
                                         exit  #Exit function
@@ -162,7 +164,7 @@ do
                                 done
                             else
                                 echo -e "\r"
-                                echo -e "***${DOCKER_LIGHTRED}ERROR${DOCKER_NOCOLOR}: REPOSITORY ${DOCKER_RGB_GREENBLUE}${myrepositoryid_new}${DOCKER_NOCOLOR} already exist!!!"
+                                echo -e "***${DOCKER_LIGHTRED}ERROR${DOCKER_NOCOLOR}: REPOSITORY ${DOCKER_RGB_GREENBLUE}${myrepository_new}${DOCKER_NOCOLOR} already exist!!!"
 
                                 sleep 3
 
@@ -194,7 +196,7 @@ do
             done
         else    #NO match was found
             echo -e "\r"
-            echo -e "***${DOCKER_LIGHTRED}ERROR${DOCKER_NOCOLOR}: ${DOCKER_PURPLE}${myrepositoryid}${DOCKER_NOCOLOR} not found!!!"
+            echo -e "***${DOCKER_LIGHTRED}ERROR${DOCKER_NOCOLOR}: ${DOCKER_PURPLE}${myrepository}${DOCKER_NOCOLOR} not found!!!"
 
             sleep 2
 

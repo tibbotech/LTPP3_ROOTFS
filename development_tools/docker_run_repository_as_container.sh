@@ -9,6 +9,14 @@ DOCKER_LIGHTCYAN='\033[1;36m'
 DOCKER_PURPLE='\033[0;35m'
 DOCKER_NOCOLOR='\033[0m'
 
+DOCKER_READ_LIGHTGREEN=$'\e[1;32m'
+DOCKER_READ_ORANGE=$'\e[0;33m'
+DOCKER_READ_LIGHTRED=$'\e[1;31m'
+DOCKER_READ_PURPLE=$'\e[0;35m'
+DOCKER_READ_RGB_GREENBLUE=$'\e[38;5;79m'
+DOCKER_READ_NOCOLOR=$'\e[0;0m'
+
+
 #---Define constants
 DOCKER_SSH_LOCALPORT=10022
 DOCKER_SSH_PORT=22
@@ -136,15 +144,19 @@ echo -e "\r"
 while true
 do
     #Request for REPOSITORY input
-    read -p "Provide ${DOCKER_READ_LIGHTRED}REPOSITORY${DOCKER_READ_NOCOLOR} (e.g. ubuntu_sunplus)? " myrepository
+    read -p "Provide ${DOCKER_READ_PURPLE}REPOSITORY${DOCKER_READ_NOCOLOR} (e.g. ubuntu_sunplus): " myrepository
     if [[ ! -z ${myrepository} ]]; then #input was NOT an EMPTY STRING
 
         myrepository_isFound=`sudo docker image ls | grep -w "${myrepository}"` #check if 'myrepository' is found in 'docker image ls'
         if [[ ! -z ${myrepository_isFound} ]]; then #match was found
             while true
-            do        
+            do
+
+                #Find tag belonging to 'myrepository' (Exact Match)
+                myrepository_tag=$(sudo docker image ls | grep -w "${myrepository}" | awk '{print $2}')
+
                 #Request for TAG input
-                read -p "Provide ${DOCKER_READ_ORANGE}TAG${DOCKER_READ_NOCOLOR} (e.g. latest)? " mytag
+                read -e -p "Provide ${DOCKER_READ_ORANGE}TAG${DOCKER_READ_NOCOLOR} (e.g. latest): " -i ${myrepository_tag} mytag
                 if [[ ! -z ${mytag} ]]; then    #input was NOT an EMPTY STRING
 
                     mytag_isFound=`sudo docker image ls | grep -w "${myrepository}" | grep -w "${mytag}"`    #check if 'myrepository' AND 'mytag' is found in 'docker image ls'
