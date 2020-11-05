@@ -71,6 +71,9 @@ build_disk_filename="build_disk.sh"
 build_disk_bck_filename=${build_disk_filename}.bak
 build_disk_mod_filename=${build_disk_filename}.mod
 
+sp7021_ltpp3g2revD_filename="sp7021-ltpp3g2revD.dtsi"
+
+
 home_dir=~	#this is the /root directory
 etc_dir=/etc
 usr_bin_dir=/usr/bin
@@ -86,8 +89,10 @@ home_lttp3rootfs_services_oobe_resize2fs_dir=${home_lttp3rootfs_dir}/services/oo
 home_lttp3rootfs_services_network_dir=${home_lttp3rootfs_dir}/services/network
 home_lttp3rootfs_services_ufw_dir=${home_lttp3rootfs_dir}/services/ufw
 home_lttp3rootfs_kernel_dir=${home_lttp3rootfs_dir}/kernel
+home_lttp3rootfs_kernel_dts_dir=${home_lttp3rootfs_kernel_dir}/dts
 SP7xxx_dir=${home_dir}/SP7021
 SP7xxx_linux_kernel_dir=${SP7xxx_dir}/linux/kernel
+SP7xxx_linux_kernel_arch_arm_boot_dts_dir=${SP7xxx_linux_kernel_dir}/arch/arm/boot/dts
 SP7xxx_linux_rootfs_initramfs_dir=${SP7xxx_dir}/linux/rootfs/initramfs
 SP7xxx_linux_rootfs_initramfs_disk_dir=${SP7xxx_linux_rootfs_initramfs_dir}/${disk_foldername}
 SP7xxx_linux_rootfs_initramfs_disk_etc_dir=${SP7xxx_linux_rootfs_initramfs_disk_dir}/etc
@@ -160,6 +165,9 @@ dst_enable_ufw_before_login_service_fpath=${SP7xxx_linux_rootfs_initramfs_disk_e
 src_enable_ufw_before_login_sh_fpath=${home_lttp3rootfs_services_ufw_dir}/${enable_ufw_before_login_sh_filename}
 dst_enable_ufw_before_login_sh_fpath=${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}/${enable_ufw_before_login_sh_filename}
 
+src_sp7021_ltpp3g2revD_fpath=${home_lttp3rootfs_kernel_dts_dir}/${sp7021_ltpp3g2revD_filename}
+dst_sp7021_ltpp3g2revD_fpath=${SP7xxx_linux_kernel_arch_arm_boot_dts_dir}/${sp7021_ltpp3g2revD_filename}
+
 
 echo -e "\r"
 echo -e "---------------------------------------------------------------"
@@ -184,7 +192,7 @@ if [[ ! -f ${armhf_fpath} ]]; then
 	echo -e "\r"
 	echo -e ">Downloading ${armhf_filename}"
 	press_any_key__func
-	wget http://cdimage.ubuntu.com/cdimage/ubuntu-base/releases//20.04/release/${armhf_filename}
+	wget http://cdimage.ubuntu.com/cdimage/ubuntu-base/releases/20.04/release/${armhf_filename}
 fi
 
 
@@ -607,6 +615,25 @@ echo -e ">>>Change ownership to <root> for file: ${enable_ufw_before_login_sh_fi
 echo -e "\r"
 echo -e ">>>Change permission to <-rwxr-xr-x> for file: ${enable_ufw_before_login_sh_filename}"
 	chmod 755 ${dst_enable_ufw_before_login_sh_fpath}
+
+
+
+press_any_key__func
+echo -e "\r"
+echo -e "---UART config file"
+echo -e ">Copying: ${sp7021_ltpp3g2revD_filename}>"
+echo -e ">from: ${home_lttp3rootfs_kernel_dts_dir}"
+echo -e ">to: ${SP7xxx_linux_kernel_arch_arm_boot_dts_dir}"
+	cp ${src_sp7021_ltpp3g2revD_fpath} ${SP7xxx_linux_kernel_arch_arm_boot_dts_dir}
+
+echo -e "\r"
+echo -e ">>>Change ownership to <root> for file: ${sp7021_ltpp3g2revD_filename}"
+	chown root:root ${dst_sp7021_ltpp3g2revD_fpath}
+
+echo -e "\r"
+echo -e ">>>Change permission to <-rw-r--r--> for file: ${sp7021_ltpp3g2revD_filename}"
+	chmod 644 ${dst_sp7021_ltpp3g2revD_fpath}
+
 
 
 press_any_key__func
