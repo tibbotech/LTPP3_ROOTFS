@@ -9,7 +9,7 @@ DOCKER_NOCOLOR='\033[0m'
 
 
 #---Define variables
-docker_multiple_input_files_filename="docker_from_diskpreprep_to_buildbin_input_files.txt"
+docker_multiple_input_files_filename="docker_from_diskpreprep_input_files.txt"
 
 docker_work_dir=`dirname "$(realpath "${0}")"`
 docker_repo_LTPP3_ROOTFS_dir=/repo/LTPP3_ROOTFS
@@ -82,6 +82,16 @@ run_dockercmd_with_error_check__func() {
 
     #Define variables
     local dockerfile_fpath=${docker_repo_LTPP3_ROOTFS_dir}/${dockerfile}
+
+    #Check if path exists
+    if [[ ! -f ${dockerfile_fpath} ]]; then #fullpatth does not exist
+        echo -e "\r"
+        echo -e "***${DOCKER_LIGHTRED}ERROR${DOCKER_NOCOLOR}: unknown or not a file:"
+        echo -e "\t${dockerfile_fpath}"
+        echo -e "\r"
+
+        return  #exit function
+    fi
 
     #Get REPOSITORY:TAG from dockerfile
     local dockerfile_repository_tag=`grep -w "${GREP_PATTERN}" ${dockerfile_fpath} | cut -d"\"" -f2`
