@@ -9,7 +9,7 @@ DOCKER_NOCOLOR='\033[0m'
 
 
 #---Define variables
-docker_multiple_input_files_filename="docker_multiple_input_files.txt"
+docker_multiple_input_files_filename="docker_from_diskpreprep_to_buildbin_input_files.txt"
 
 docker_work_dir=`dirname "$(realpath "${0}")"`
 docker_repo_LTPP3_ROOTFS_dir=/repo/LTPP3_ROOTFS
