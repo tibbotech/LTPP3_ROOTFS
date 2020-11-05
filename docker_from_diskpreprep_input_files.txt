@@ -1,5 +1,2 @@
 #List of Docker files to-be-executed
 dockerfile_diskpreprep
-dockerfile_chroot
-dockerfile_buildbin
-
