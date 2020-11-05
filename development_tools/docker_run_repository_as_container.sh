@@ -191,7 +191,7 @@ do
                                 echo -e "Summary:"
                                 echo -e "\tChosen REPOSITORY:\t\t\t${DOCKER_PURPLE}${myrepository}${DOCKER_NOCOLOR}"
                                 echo -e "\tCreated CONTAINER-ID:\t\t\t${DOCKER_ORANGE}${container_name}${DOCKER_NOCOLOR}"
-                                echo -e "\tTCP-port to-used-for SSH:\t\t${DOCKER_LIGHTBLUE}${DOCKER_SSH_LOCALPORT}${DOCKER_NOCOLOR}"
+                                echo -e "\tTCP-port to-used-for SSH:\t\t${DOCKER_LIGHTBLUE}${docker_ssh_localport}${DOCKER_NOCOLOR}"
                                     get_assigned_ipv4_addresses__func
                                 echo -e "\tAvailable ip-address(es) for SSH:"
                                     for ipv4 in "${docker_ipv4_addr_summarize_arr[@]}"; do 
@@ -206,7 +206,7 @@ do
                                 echo -e "How to SSH from a remote PC?"
                                 echo -e "\tDefault login/pass: ${DOCKER_LIGHTGREEN}root/root${DOCKER_NOCOLOR}"
                                 echo -e "\tSample:"
-                                echo -e "\t\tssh ${DOCKER_LIGHTGREEN}root${DOCKER_NOCOLOR}@${DOCKER_LIGHTCYAN}${docker_ip4addr1}${DOCKER_NOCOLOR} -p ${DOCKER_LIGHTBLUE}${DOCKER_SSH_LOCALPORT}${DOCKER_NOCOLOR}"
+                                echo -e "\t\tssh ${DOCKER_LIGHTGREEN}root${DOCKER_NOCOLOR}@${DOCKER_LIGHTCYAN}${docker_ip4addr1}${DOCKER_NOCOLOR} -p ${DOCKER_LIGHTBLUE}${docker_ssh_localport}${DOCKER_NOCOLOR}"
                                 echo -e "\r"
 
                                 exit
