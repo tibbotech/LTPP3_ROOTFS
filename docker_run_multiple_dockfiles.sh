@@ -168,13 +168,10 @@ checkif_cmd_exec_was_successful__sub() {
 }
 run_dockercmd_with_error_check__sub() {
     #Input args
-    local dockerfile=${1}
+    local dockerfile_fpath=${1}
 
     #Define constants
     GREP_PATTERN="LABEL repository:tag"
-
-    #Define variables
-    local dockerfile_fpath=${docker__repo_LTPP3_ROOTFS_docker_dockerfiles_dir}/${dockerfile}
 
     #Get REPOSITORY:TAG from dockerfile
     local dockerfile_repository_tag=`egrep -w "${GREP_PATTERN}" ${dockerfile_fpath} | cut -d"\"" -f2`
@@ -204,10 +201,13 @@ run_dockercmd_with_error_check__sub() {
 
 handle_chosen_dockerfile_list__sub() {
     #---Read contents of the file
-    #Each LINE of the file represents a 'dockerfile' containing the instructions to-be-executed
-    while IFS='' read LINE
+    #Each line of the file represents a 'dockerfile' containing the instructions to-be-executed
+    while IFS='' read file_line
     do
-        run_dockercmd_with_error_check__sub ${LINE}
+        #Check if file exists
+        if [[ -f ${file_line} ]]; then
+            run_dockercmd_with_error_check__sub ${file_line}
+        fi
     done < ${docker__dockerfile_list_fpath} | tail -n +2    #skip header
 }
 
