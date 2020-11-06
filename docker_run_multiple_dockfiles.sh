@@ -50,7 +50,6 @@ show_dockerfile_list_files__sub() {
     #Get all files at the specified location
     local dockerfile_list_fpath_string=`find ${docker__repo_LTPP3_ROOTFS_docker_list_dir} -maxdepth 1 -type f`    local arr_line=""
 
-dockerfile_list_fpath_string=""
 
     #Check if '' is an EMPTY STRING
     if [[ -z ${dockerfile_list_fpath_string} ]]; then
