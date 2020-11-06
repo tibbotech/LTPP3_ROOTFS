@@ -1,0 +1,8 @@
+#List of Docker files to-be-executed
+/repo/LTPP3_ROOTFS/docker/dockerfiles/dockerfile_base
+/repo/LTPP3_ROOTFS/docker/dockerfiles/dockerfile_init
+/repo/LTPP3_ROOTFS/docker/dockerfiles/dockerfile_apps
+/repo/LTPP3_ROOTFS/docker/dockerfiles/dockerfile_sunplus
+/repo/LTPP3_ROOTFS/docker/dockerfiles/dockerfile_diskpreprep
+/repo/LTPP3_ROOTFS/docker/dockerfiles/dockerfile_chroot
+/repo/LTPP3_ROOTFS/docker/dockerfiles/dockerfile_buildbin

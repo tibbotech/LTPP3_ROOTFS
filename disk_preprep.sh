@@ -81,6 +81,7 @@ home_downloads_disk_lib_dir=${home_downloads_dir}/disk/lib
 scripts_foldername="scripts"
 scripts_dir=/${scripts_foldername}
 home_lttp3rootfs_dir=${home_dir}/LTPP3_ROOTFS
+home_lttp3rootfs_rootfs_initramfs_dir=${home_lttp3rootfs_dir}/rootfs/initramfs
 home_lttp3rootfs_services_automount_dir=${home_lttp3rootfs_dir}/services/automount
 home_lttp3rootfs_services_oobe_resize2fs_dir=${home_lttp3rootfs_dir}/services/oobe/resize2fs
 home_lttp3rootfs_services_network_dir=${home_lttp3rootfs_dir}/services/network
@@ -105,7 +106,7 @@ SP7xxx_linux_rootfs_initramfs_extra_etc_dir=${SP7xxx_linux_rootfs_initramfs_extr
 
 build_disk_fpath=${SP7xxx_linux_rootfs_initramfs_dir}/${build_disk_filename}
 build_disk_bck_fpath=${SP7xxx_linux_rootfs_initramfs_dir}/${build_disk_bck_filename} 
-build_disk_mod_fpath=${home_lttp3rootfs_dir}/${build_disk_mod_filename} 
+build_disk_mod_fpath=${home_lttp3rootfs_rootfs_initramfs_dir}/${build_disk_mod_filename} 
 
 # dev_dir=/dev
 # mmcblk0p8_part="mmcblk0p8"
@@ -666,7 +667,7 @@ press_any_key__func
 echo -e "\r"
 echo -e ">Copying ${build_disk_mod_filename}" 
 echo -e ">as: ${build_disk_filename}"
-echo -e ">from: ${home_lttp3rootfs_dir}"
+echo -e ">from: ${home_lttp3rootfs_rootfs_initramfs_dir}"
 echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_dir}"
 echo -e "\r"
 cp ${build_disk_mod_fpath}  ${build_disk_fpath}

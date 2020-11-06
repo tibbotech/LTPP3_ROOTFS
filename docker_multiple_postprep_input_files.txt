@@ -1,3 +1,0 @@
-#List of Docker files to-be-executed
-dockerfile_diskpostprep
-dockerfile_diskpostprep_buildbin

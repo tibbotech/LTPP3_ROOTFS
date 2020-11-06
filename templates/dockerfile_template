@@ -2,9 +2,12 @@
 FROM ubuntu:20.04
 
 #---LABEL about the custom image
-LABEL maintainer="luis@tibbo.com"
+LABEL maintainer="hien@tibbo.com"
 LABEL version="0.1"
 LABEL description="This is an image for our base linux image creation"
+
+#---IMPORTANT: provide the REPOSITORY:TAG of this IMAGE
+LABEL repository:tag="ubuntu_init:latest"
 
 #---Disable Prompt During Packages Installation
 ARG DEBIAN_FRONTEND=noninteractive
@@ -26,3 +29,4 @@ RUN apt-get -y install	bison			    \
                         sshfs			    \
                         u-boot-tools	    \
                         wget
+
