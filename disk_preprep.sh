@@ -137,8 +137,8 @@ dst_sd_detect_service_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_sys
 src_sd_detect_rules_fpath=${home_lttp3rootfs_services_automount_dir}/${sd_detect_rules_filename}
 dst_sd_detect_rules_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_udev_rulesd_dir}/${sd_detect_rules_filename}
 
-src_ninetynine_com_rules_fpath=${home_lttp3rootfs_services_permissions_dir}/${sd_detect_rules_filename}
-dst_ninetynine_com_rules_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_udev_rulesd_dir}/${sd_detect_rules_filename}
+src_ninetynine_com_rules_fpath=${home_lttp3rootfs_services_permissions_dir}/${ninetynine_com_rules_filename}
+dst_ninetynine_com_rules_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_udev_rulesd_dir}/${ninetynine_com_rules_filename}
 
 src_sd_detect_add_sh_fpath=${home_lttp3rootfs_services_automount_dir}/${sd_detect_add_sh_filename}
 dst_sd_detect_add_sh_fpath=${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}/${sd_detect_add_sh_filename}
