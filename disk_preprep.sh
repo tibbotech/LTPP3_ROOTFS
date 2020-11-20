@@ -55,6 +55,8 @@ sd_detect_service_filename="sd-detect@.service"
 sd_detect_add_sh_filename="sd-detect-add.sh"
 sd_detect_remove_sh_filename="sd-detect-remove.sh"
 
+ninetynine_com_rules_filename="99-com.rules"
+
 sunplus_foldername="SP7021"
 resize2fs_exec_filename="resize2fs_exec.sh"
 profile_filename="profile"
@@ -86,6 +88,7 @@ home_lttp3rootfs_services_automount_dir=${home_lttp3rootfs_dir}/services/automou
 home_lttp3rootfs_services_oobe_resize2fs_dir=${home_lttp3rootfs_dir}/services/oobe/resize2fs
 home_lttp3rootfs_services_network_dir=${home_lttp3rootfs_dir}/services/network
 home_lttp3rootfs_services_ufw_dir=${home_lttp3rootfs_dir}/services/ufw
+home_lttp3rootfs_services_permissions_dir=${home_lttp3rootfs_dir}/services/permissions
 home_lttp3rootfs_kernel_dir=${home_lttp3rootfs_dir}/kernel
 SP7xxx_dir=${home_dir}/SP7021
 SP7xxx_linux_kernel_dir=${SP7xxx_dir}/linux/kernel
@@ -133,6 +136,9 @@ dst_sd_detect_service_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_sys
 
 src_sd_detect_rules_fpath=${home_lttp3rootfs_services_automount_dir}/${sd_detect_rules_filename}
 dst_sd_detect_rules_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_udev_rulesd_dir}/${sd_detect_rules_filename}
+
+src_ninetynine_com_rules_fpath=${home_lttp3rootfs_services_permissions_dir}/${sd_detect_rules_filename}
+dst_ninetynine_com_rules_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_udev_rulesd_dir}/${sd_detect_rules_filename}
 
 src_sd_detect_add_sh_fpath=${home_lttp3rootfs_services_automount_dir}/${sd_detect_add_sh_filename}
 dst_sd_detect_add_sh_fpath=${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}/${sd_detect_add_sh_filename}
@@ -495,6 +501,19 @@ echo -e "\r"
 echo -e ">>>Change permission to <-rw-r--r--> for file: ${sd_detect_rules_filename}"
 	chmod 644 ${dst_sd_detect_rules_fpath}
 
+echo -e "\r"
+echo -e ">Copy file: ${ninetynine_com_rules_filename}"
+echo -e ">from: ${home_lttp3rootfs_services_permissions_dir}"
+echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_etc_udev_rulesd_dir}"
+	cp ${src_ninetynine_com_rules_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_etc_udev_rulesd_dir}
+
+echo -e "\r"
+echo -e ">>>Change ownership to <root> for file: ${ninetynine_com_rules_filename}"
+	chown root:root ${dst_ninetynine_com_rules_fpath}
+
+echo -e "\r"
+echo -e ">>>Change permission to <-rw-r--r--> for file: ${ninetynine_com_rules_filename}"
+	chmod 644 ${dst_ninetynine_com_rules_fpath}
 
 
 press_any_key__func

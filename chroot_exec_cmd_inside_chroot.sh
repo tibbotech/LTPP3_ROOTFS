@@ -131,6 +131,18 @@ echo -e "\r"
 echo ">>>Add <${username}> to group <dip>"
 	usermod -a -G dip ubuntu
 
+echo -e "\r"
+echo ">>>Create group <gpio>"
+	groupadd gpio
+
+echo -e "\r"
+echo ">>>Add <${username}> to group <gpio>"
+	usermod -a -G gpio ubuntu
+
+echo -e "\r"
+echo ">>>Add <root> to group <gpio>"
+	usermod -a -G gpio root	
+
 press_any_key__localfunc
 echo -e "\r"
 echo "---Updates & Upgrades--"
