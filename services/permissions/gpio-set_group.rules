@@ -1,3 +1,3 @@
 SUBSYSTEM=="gpio*", PROGRAM="/bin/sh -c 'find -L /sys/class/gpio/ -maxdepth 2 -exec chown root:gpio {} \; -exec chmod 770 {} \; || true'"
 
-SUBSYSTEM=="gpio*", PROGRAM="/bin/sh -c 'find -L /var/backups/gpio -maxdepth 2 -exec chown root:gpio {} \; -exec chmod 770 {} \; || true'"
+SUBSYSTEM=="gpio*", PROGRAM="/bin/sh -c 'find -L /var/backups/gpio/ -maxdepth 2 -exec chown -R root:gpio {} \; -exec chmod 770 {} \; || true'"
