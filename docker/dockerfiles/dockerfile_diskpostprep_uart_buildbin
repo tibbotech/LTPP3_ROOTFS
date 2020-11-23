@@ -1,0 +1,17 @@
+#---Continue from REPOSITORY:TAG=ubuntu_diskpostprep_uart:latest
+FROM ubuntu_diskpostprep_uart:latest 
+
+#---LABEL about the custom image
+LABEL maintainer="hien@tibbo.com"
+LABEL version="0.1"
+LABEL description="Continue from image 'ubuntu_diskpostprep_uart:latest', and run 'build_BOOOT_BIN.sh'"
+LABEL repository:tag="ubuntu_diskpostprep_uart_buildbin:latest"
+
+#---Disable Prompt During Packages Installation
+ARG DEBIAN_FRONTEND=noninteractive
+
+#---Update local Git repository
+RUN cd ~/LTPP3_ROOTFS && git pull
+
+#---Run Prepreparation of Disk (AFTER Chroot)
+RUN cd ~ && ~/LTPP3_ROOTFS/build_BOOOT_BIN.sh

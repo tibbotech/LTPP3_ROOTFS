@@ -97,6 +97,7 @@ SP7xxx_linux_rootfs_initramfs_disk_dir=${SP7xxx_linux_rootfs_initramfs_dir}/${di
 SP7xxx_linux_rootfs_initramfs_disk_etc_dir=${SP7xxx_linux_rootfs_initramfs_disk_dir}/etc
 SP7xxx_linux_rootfs_initramfs_disk_lib_dir=${SP7xxx_linux_rootfs_initramfs_disk_dir}/lib
 SP7xxx_linux_rootfs_initramfs_disk_usr_bin_dir=${SP7xxx_linux_rootfs_initramfs_disk_dir}/usr/bin
+SP7xxx_linux_rootfs_initramfs_disk_var_backups_gpio_dir=${SP7xxx_linux_rootfs_initramfs_disk_dir}/var/backups/gpio
 
 SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir=${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}/systemd/system
 SP7xxx_linux_rootfs_initramfs_disk_etc_udev_rulesd_dir=${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}/udev/rules.d
@@ -500,6 +501,24 @@ echo -e ">>>Change ownership to <root> for file: ${sd_detect_rules_filename}"
 echo -e "\r"
 echo -e ">>>Change permission to <-rw-r--r--> for file: ${sd_detect_rules_filename}"
 	chmod 644 ${dst_sd_detect_rules_fpath}
+
+
+press_any_key__func
+echo -e "\r"
+echo -e "\r"
+echo -e ">Checking if directory <${SP7xxx_linux_rootfs_initramfs_disk_var_backups_gpio_dir}> exists"
+if [[ -d ${SP7xxx_linux_rootfs_initramfs_disk_var_backups_gpio_dir} ]]; then
+	echo -e "\r"
+	echo -e ">>>--does exist"
+	echo -e "\r"
+else
+	echo -e "\r"
+	echo -e ">>>--does NOT exist"
+	echo -e "\r"
+	echo -e ">>>>>Creating directory <${SP7xxx_linux_rootfs_initramfs_disk_var_backups_gpio_dir}>"
+		mkdir -p ${SP7xxx_linux_rootfs_initramfs_disk_var_backups_gpio_dir}
+
+fi
 
 echo -e "\r"
 echo -e ">Copy file: ${gpio_gpio_set_group_rules_filename}"
