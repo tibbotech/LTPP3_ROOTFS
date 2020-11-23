@@ -55,7 +55,7 @@ sd_detect_service_filename="sd-detect@.service"
 sd_detect_add_sh_filename="sd-detect-add.sh"
 sd_detect_remove_sh_filename="sd-detect-remove.sh"
 
-ninetynine_com_rules_filename="99-com.rules"
+gpio_gpio_set_group_rules_filename="gpio-set_group.rules"
 
 sunplus_foldername="SP7021"
 resize2fs_exec_filename="resize2fs_exec.sh"
@@ -137,8 +137,8 @@ dst_sd_detect_service_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_sys
 src_sd_detect_rules_fpath=${home_lttp3rootfs_services_automount_dir}/${sd_detect_rules_filename}
 dst_sd_detect_rules_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_udev_rulesd_dir}/${sd_detect_rules_filename}
 
-src_ninetynine_com_rules_fpath=${home_lttp3rootfs_services_permissions_dir}/${ninetynine_com_rules_filename}
-dst_ninetynine_com_rules_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_udev_rulesd_dir}/${ninetynine_com_rules_filename}
+src_gpio_set_group_rules_fpath=${home_lttp3rootfs_services_permissions_dir}/${gpio_gpio_set_group_rules_filename}
+dst_gpio_set_group_rules_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_udev_rulesd_dir}/${gpio_gpio_set_group_rules_filename}
 
 src_sd_detect_add_sh_fpath=${home_lttp3rootfs_services_automount_dir}/${sd_detect_add_sh_filename}
 dst_sd_detect_add_sh_fpath=${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}/${sd_detect_add_sh_filename}
@@ -502,18 +502,18 @@ echo -e ">>>Change permission to <-rw-r--r--> for file: ${sd_detect_rules_filena
 	chmod 644 ${dst_sd_detect_rules_fpath}
 
 echo -e "\r"
-echo -e ">Copy file: ${ninetynine_com_rules_filename}"
+echo -e ">Copy file: ${gpio_gpio_set_group_rules_filename}"
 echo -e ">from: ${home_lttp3rootfs_services_permissions_dir}"
 echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_etc_udev_rulesd_dir}"
-	cp ${src_ninetynine_com_rules_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_etc_udev_rulesd_dir}
+	cp ${src_gpio_set_group_rules_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_etc_udev_rulesd_dir}
 
 echo -e "\r"
-echo -e ">>>Change ownership to <root> for file: ${ninetynine_com_rules_filename}"
-	chown root:root ${dst_ninetynine_com_rules_fpath}
+echo -e ">>>Change ownership to <root> for file: ${gpio_gpio_set_group_rules_filename}"
+	chown root:root ${dst_gpio_set_group_rules_fpath}
 
 echo -e "\r"
-echo -e ">>>Change permission to <-rw-r--r--> for file: ${ninetynine_com_rules_filename}"
-	chmod 644 ${dst_ninetynine_com_rules_fpath}
+echo -e ">>>Change permission to <-rw-r--r--> for file: ${gpio_gpio_set_group_rules_filename}"
+	chmod 644 ${dst_gpio_set_group_rules_fpath}
 
 
 press_any_key__func
