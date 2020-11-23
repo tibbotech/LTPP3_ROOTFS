@@ -1,3 +1,3 @@
 #List of Docker files to-be-executed
-/repo/LTPP3_ROOTFS/docker/dockerfiles/dockerfile_diskpostprep
-/repo/LTPP3_ROOTFS/docker/dockerfiles/dockerfile_diskpostprep_buildbin
+/repo/LTPP3_ROOTFS/docker/dockerfiles/dockerfile_diskpostprep_uart
+/repo/LTPP3_ROOTFS/docker/dockerfiles/dockerfile_diskpostprep_uart_buildbin

@@ -5,4 +5,5 @@
 /repo/LTPP3_ROOTFS/docker/dockerfiles/dockerfile_sunplus
 /repo/LTPP3_ROOTFS/docker/dockerfiles/dockerfile_diskpreprep
 /repo/LTPP3_ROOTFS/docker/dockerfiles/dockerfile_chroot
-/repo/LTPP3_ROOTFS/docker/dockerfiles/dockerfile_buildbin
+/repo/LTPP3_ROOTFS/docker/dockerfiles/dockerfile_diskpostprep_uart
+/repo/LTPP3_ROOTFS/docker/dockerfiles/dockerfile_diskpostprep_uart_buildbin
