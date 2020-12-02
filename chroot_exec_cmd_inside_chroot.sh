@@ -297,7 +297,7 @@ echo -e "\r"
 
 press_any_key__localfunc
 echo -e "\r"
-echo "---Installing <vim, lrzsz, wget, mtools, less, bsdmainutils>---"
+echo "---Installing <vim, lrzsz, wget, mtools, less, bsdmainutils,tcpdump,socat>---"
 echo -e "\r"
 	apt-get install vim -y
 	apt-get install lrzsz -y
@@ -306,7 +306,8 @@ echo -e "\r"
 	apt-get install mtools -y
 	apt-get install bsdmainutils -y
 	apt-get install tcpdump -y
-	apt-get install tshark -y
+	#socat is used for sending AT-commands
+	apt-get install socat -y
 
 
 echo -e "\r"
