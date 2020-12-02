@@ -307,7 +307,7 @@ echo -e "\r"
 	apt-get install bsdmainutils -y
 	apt-get install tcpdump -y
 	#socat is used for sending AT-commands
-	apt-get install socat -y
+	apt-get install ppp -y
 
 
 echo -e "\r"
