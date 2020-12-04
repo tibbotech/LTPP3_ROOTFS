@@ -26,7 +26,7 @@ DOCKER_READ_NOCOLOR=$'\e[0;0m'
 #---Show Docker Image List
 echo -e "\r"
 echo -e "------------------------------------------------------------"
-echo -e "\t${DOCKER_YELLOW}Remove${DOCKER_NOCOLOR} Docker Image(s)"
+echo -e "\t${DOCKER_YELLOW}Remove${DOCKER_NOCOLOR} Docker Container(s)"
 echo -e "------------------------------------------------------------"
 sudo sh -c "docker container ls"
 echo -e "\r"
