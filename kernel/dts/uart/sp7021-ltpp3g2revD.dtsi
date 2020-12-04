@@ -85,7 +85,7 @@
 &uart3 {
  pinctrl-names = "default";
  pinctrl-0 = <&pins_uart3>;
- status = "disabled";
+ status = "okay";
  // this: enable, pins_uart3
 };
 &uart4 {
@@ -95,7 +95,30 @@
  status = "disabled";
  // this: enable (bt) | enable (uart4), pins_uart4
 };
-
+&uart5 {
+ pinctrl-names = "default";
+ pinctrl-0 = <&pins_uart5>;
+ status = "okay";
+ // this: enable, pins_uart5
+};
+&uart6 {
+ pinctrl-names = "default";
+ pinctrl-0 = <&pins_uart6>;
+ status = "disabled";
+ // this: enable, pins_uart6
+};
+&uart7 {
+ pinctrl-names = "default";
+ pinctrl-0 = <&pins_uart7>;
+ status = "okay";
+ // this: enable, pins_uart7
+};
+&uart8 {
+ pinctrl-names = "default";
+ pinctrl-0 = <&pins_uart8>;
+ status = "disabled";
+ // this: enable, pins_uart8
+};
 &i2cm0 {  status = "disabled";  };
 &i2cm1 {  status = "disabled";  };
 &i2cm2 {  status = "disabled";  };
@@ -198,6 +221,42 @@
       SPPCTL_IOPAD(21,SPPCTL_PCTL_G_PMUX,MUXF_UA4_RX,0)
       SPPCTL_IOPAD(22,SPPCTL_PCTL_G_PMUX,MUXF_UA4_RTS,0)
       SPPCTL_IOPAD(23,SPPCTL_PCTL_G_PMUX,MUXF_UA4_CTS,0)
+    >;
+ };
+ // this:
+ pins_uart5: pins_uart5 {
+    sppctl,pins = <
+      SPPCTL_IOPAD(24,SPPCTL_PCTL_G_PMUX,MUXF_UA5_TX,0)
+      SPPCTL_IOPAD(25,SPPCTL_PCTL_G_PMUX,MUXF_UA5_RX,0)
+      SPPCTL_IOPAD(26,SPPCTL_PCTL_G_PMUX,MUXF_UA5_RTS,0)
+      SPPCTL_IOPAD(27,SPPCTL_PCTL_G_PMUX,MUXF_UA5_CTS,0)
+    >;
+ };
+ // this:
+ pins_uart6: pins_uart6 {
+    sppctl,pins = <
+      SPPCTL_IOPAD(28,SPPCTL_PCTL_G_PMUX,MUXF_UA6_TX,0)
+      SPPCTL_IOPAD(29,SPPCTL_PCTL_G_PMUX,MUXF_UA6_RX,0)
+      SPPCTL_IOPAD(30,SPPCTL_PCTL_G_PMUX,MUXF_UA6_RTS,0)
+      SPPCTL_IOPAD(31,SPPCTL_PCTL_G_PMUX,MUXF_UA6_CTS,0)
+    >;
+ };
+ // this:
+ pins_uart7: pins_uart7 {
+    sppctl,pins = <
+      SPPCTL_IOPAD(32,SPPCTL_PCTL_G_PMUX,MUXF_UA7_TX,0)
+      SPPCTL_IOPAD(33,SPPCTL_PCTL_G_PMUX,MUXF_UA7_RX,0)
+      SPPCTL_IOPAD(34,SPPCTL_PCTL_G_PMUX,MUXF_UA7_RTS,0)
+      SPPCTL_IOPAD(35,SPPCTL_PCTL_G_PMUX,MUXF_UA7_CTS,0)
+    >;
+ };
+ // this:
+ pins_uart8: pins_uart8 {
+    sppctl,pins = <
+      SPPCTL_IOPAD(36,SPPCTL_PCTL_G_PMUX,MUXF_UA8_TX,0)
+      SPPCTL_IOPAD(37,SPPCTL_PCTL_G_PMUX,MUXF_UA8_RX,0)
+      SPPCTL_IOPAD(38,SPPCTL_PCTL_G_PMUX,MUXF_UA8_RTS,0)
+      SPPCTL_IOPAD(39,SPPCTL_PCTL_G_PMUX,MUXF_UA8_CTS,0)
     >;
  };
 // this/
