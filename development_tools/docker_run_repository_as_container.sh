@@ -1,45 +1,42 @@
 #!/bin/bash
 #---Define colors
-DOCKER_ORANGE='\033[0;33m'
-DOCKER_LIGHTRED='\033[1;31m'
-DOCKER_LIGHTGREEN='\033[1;32m'
-DOCKER_YELLOW='\033[1;33m'
-DOCKER_LIGHTBLUE='\033[1;34m'
-DOCKER_LIGHTCYAN='\033[1;36m'
-DOCKER_PURPLE='\033[0;35m'
-DOCKER_NOCOLOR='\033[0m'
+DOCKER__ORANGE='\033[0;33m'
+DOCKER__LIGHTRED='\033[1;31m'
+DOCKER__LIGHTGREEN='\033[1;32m'
+DOCKER__YELLOW='\033[1;33m'
+DOCKER__LIGHTBLUE='\033[1;34m'
+DOCKER__LIGHTCYAN='\033[1;36m'
+DOCKER__PURPLE='\033[0;35m'
+DOCKER__NOCOLOR='\033[0m'
 
-DOCKER_READ_LIGHTGREEN=$'\e[1;32m'
-DOCKER_READ_ORANGE=$'\e[0;33m'
-DOCKER_READ_LIGHTRED=$'\e[1;31m'
-DOCKER_READ_PURPLE=$'\e[0;35m'
-DOCKER_READ_RGB_GREENBLUE=$'\e[38;5;79m'
-DOCKER_READ_NOCOLOR=$'\e[0;0m'
+DOCKER__READ_LIGHTGREEN=$'\e[1;32m'
+DOCKER__READ_ORANGE=$'\e[0;33m'
+DOCKER__READ_LIGHTRED=$'\e[1;31m'
+DOCKER__READ_PURPLE=$'\e[0;35m'
+DOCKER__READ_RGB_GREENBLUE=$'\e[38;5;79m'
+DOCKER__READ_NOCOLOR=$'\e[0;0m'
 
+DOCKER__BG_LIGHTBLUE='\e[30;48;5;45m'
 
 #---Define constants
-DOCKER_SSH_LOCALPORT=10022
-DOCKER_SSH_PORT=22
-
+DOCKER__SSH_LOCALPORT=10022
+DOCKER__SSH_PORT=22
 
 
 #---Trap ctrl-c and Call ctrl_c()
-trap CTRL_C_func INT
+trap CTRL_C__sub INT
 
-function CTRL_C_func() {
+function CTRL_C__sub() {
     echo -e "\r"
     echo -e "\r"
-    echo -e "${DOCKER_LIGHTRED}Saving${DOCKER_NOCOLOR} Docker Image Interrupted..."
-    echo -e "\r"
-    echo -e "Exiting now..."
+    echo -e "${DOCKER__EXITING_NOW}"
     echo -e "\r"
     echo -e "\r"
 
     exit
 }
 
-
-#---Local functions
+#---Local functions & subroutines
 cmd_was_executed_successfully__func() {
     RESULT=$?
     if [ $RESULT -ne 0 ]; then
@@ -48,7 +45,7 @@ cmd_was_executed_successfully__func() {
 }
 
 get_available_localport__func() {
-    local ssh_localport=${DOCKER_SSH_LOCALPORT}    #initial value
+    local ssh_localport=${DOCKER__SSH_LOCALPORT}    #initial value
     local pattern=""
 
     while true
@@ -123,20 +120,24 @@ get_assigned_ipv4_addresses__func() {
     fi
 }
 
+#---Show Main Banner
+echo -e "\r"
+echo -e "${DOCKER__BG_LIGHTBLUE}                               DOCKER${DOCKER__BG_LIGHTBLUE}                               ${DOCKER__NOCOLOR}"
+
 
 #---Define and Initalize Variables
 docker_ipv4_addr_summarize_str=""
 docker_ipv4_addr_summarize_arr=()
-docker_ssh_localport=${DOCKER_SSH_LOCALPORT}
+docker_ssh_localport=${DOCKER__SSH_LOCALPORT}
 
 
 #Select REPOSITORY
 #1. Show docker image list
 #2. Ask for the REPOSITORY to run
 echo -e "\r"
-echo -e "------------------------------------------------------------"
-echo -e "\t${DOCKER_ORANGE}RUN${DOCKER_NOCOLOR} CONTAINER ${DOCKER_ORANGE}w${DOCKER_NOCOLOR}/ ${DOCKER_YELLOW}SSH${DOCKER_NOCOLOR} CAPABILITY"
-echo -e "------------------------------------------------------------"
+echo -e "--------------------------------------------------------------------"
+echo -e "\t${DOCKER__ORANGE}RUN${DOCKER__NOCOLOR} CONTAINER ${DOCKER__ORANGE}w${DOCKER__NOCOLOR}/ ${DOCKER__YELLOW}SSH${DOCKER__NOCOLOR} CAPABILITY"
+echo -e "--------------------------------------------------------------------"
 echo -e "\r"
     sudo sh -c "docker image ls"
 echo -e "\r"
@@ -144,7 +145,7 @@ echo -e "\r"
 while true
 do
     #Request for REPOSITORY input
-    read -p "Provide ${DOCKER_READ_PURPLE}REPOSITORY${DOCKER_READ_NOCOLOR} (e.g. ubuntu_sunplus): " myrepository
+    read -p "Provide ${DOCKER__READ_PURPLE}REPOSITORY${DOCKER__READ_NOCOLOR} (e.g. ubuntu_sunplus): " myrepository
     if [[ ! -z ${myrepository} ]]; then #input was NOT an EMPTY STRING
 
         myrepository_isFound=`sudo docker image ls | grep -w "${myrepository}"` #check if 'myrepository' is found in 'docker image ls'
@@ -156,7 +157,7 @@ do
                 myrepository_tag=$(sudo docker image ls | grep -w "${myrepository}" | awk '{print $2}')
 
                 #Request for TAG input
-                read -e -p "Provide ${DOCKER_READ_ORANGE}TAG${DOCKER_READ_NOCOLOR} (e.g. latest): " -i ${myrepository_tag} mytag
+                read -e -p "Provide ${DOCKER__READ_ORANGE}TAG${DOCKER__READ_NOCOLOR} (e.g. latest): " -i ${myrepository_tag} mytag
                 if [[ ! -z ${mytag} ]]; then    #input was NOT an EMPTY STRING
 
                     mytag_isFound=`sudo docker image ls | grep -w "${myrepository}" | grep -w "${mytag}"`    #check if 'myrepository' AND 'mytag' is found in 'docker image ls'
@@ -178,7 +179,7 @@ do
 
                             #Run Docker Container
                             echo -e "\r"
-                            sudo sh -c "docker run -d -p ${docker_ssh_localport}:${DOCKER_SSH_PORT} --name ${container_name} ${myrespository_colon_tag} " > /dev/null
+                            sudo sh -c "docker run -d -p ${docker_ssh_localport}:${DOCKER__SSH_PORT} --name ${container_name} ${myrespository_colon_tag} " > /dev/null
                             echo -e "\r"
 
                             #Check if exitcode=0
@@ -189,13 +190,13 @@ do
                                     sudo sh -c "docker container ls"
                                 echo -e "\r"
                                 echo -e "Summary:"
-                                echo -e "\tChosen REPOSITORY:\t\t\t${DOCKER_PURPLE}${myrepository}${DOCKER_NOCOLOR}"
-                                echo -e "\tCreated CONTAINER-ID:\t\t\t${DOCKER_ORANGE}${container_name}${DOCKER_NOCOLOR}"
-                                echo -e "\tTCP-port to-used-for SSH:\t\t${DOCKER_LIGHTBLUE}${docker_ssh_localport}${DOCKER_NOCOLOR}"
+                                echo -e "\tChosen REPOSITORY:\t\t\t${DOCKER__PURPLE}${myrepository}${DOCKER__NOCOLOR}"
+                                echo -e "\tCreated CONTAINER-ID:\t\t\t${DOCKER__ORANGE}${container_name}${DOCKER__NOCOLOR}"
+                                echo -e "\tTCP-port to-used-for SSH:\t\t${DOCKER__LIGHTBLUE}${docker_ssh_localport}${DOCKER__NOCOLOR}"
                                     get_assigned_ipv4_addresses__func
                                 echo -e "\tAvailable ip-address(es) for SSH:"
                                     for ipv4 in "${docker_ipv4_addr_summarize_arr[@]}"; do 
-                                        echo -e "\t\t\t\t\t\t${DOCKER_LIGHTCYAN}${ipv4}${DOCKER_NOCOLOR}"
+                                        echo -e "\t\t\t\t\t\t${DOCKER__LIGHTCYAN}${ipv4}${DOCKER__NOCOLOR}"
                                     done
                                 echo -e "\r"
 
@@ -204,9 +205,9 @@ do
                                     docker_ip4addr1=$(cut -d" " -f1 <<< ${docker_ipv4_addr_summarize_str})
                                 echo -e "\r"
                                 echo -e "How to SSH from a remote PC?"
-                                echo -e "\tDefault login/pass: ${DOCKER_LIGHTGREEN}root/root${DOCKER_NOCOLOR}"
+                                echo -e "\tDefault login/pass: ${DOCKER__LIGHTGREEN}root/root${DOCKER__NOCOLOR}"
                                 echo -e "\tSample:"
-                                echo -e "\t\tssh ${DOCKER_LIGHTGREEN}root${DOCKER_NOCOLOR}@${DOCKER_LIGHTCYAN}${docker_ip4addr1}${DOCKER_NOCOLOR} -p ${DOCKER_LIGHTBLUE}${docker_ssh_localport}${DOCKER_NOCOLOR}"
+                                echo -e "\t\tssh ${DOCKER__LIGHTGREEN}root${DOCKER__NOCOLOR}@${DOCKER__LIGHTCYAN}${docker_ip4addr1}${DOCKER__NOCOLOR} -p ${DOCKER__LIGHTBLUE}${docker_ssh_localport}${DOCKER__NOCOLOR}"
                                 echo -e "\r"
 
                                 exit
@@ -215,7 +216,7 @@ do
                             fi
                         else
                             echo -e "\r"
-                            echo -e "A Container of selected Image '${DOCKER_LIGHTRED}${myrepository}${DOCKER_NOCOLOR}:${DOCKER_LIGHTRED}${mytag}${DOCKER_NOCOLOR}' already running..."
+                            echo -e "A Container of selected Image '${DOCKER__LIGHTRED}${myrepository}${DOCKER__NOCOLOR}:${DOCKER__LIGHTRED}${mytag}${DOCKER__NOCOLOR}' already running..."
 
                             sleep 3
 
@@ -232,7 +233,7 @@ do
                         fi
                     else
                         echo -e "\r"
-                        echo -e "Provided TAG: ${DOCKER_LIGHTRED}${mytag}${DOCKER_NOCOLOR} does NOT belong to REPOSITORY: ${DOCKER_LIGHTRED}${myrepository}${DOCKER_NOCOLOR}"
+                        echo -e "Provided TAG: ${DOCKER__LIGHTRED}${mytag}${DOCKER__NOCOLOR} does NOT belong to REPOSITORY: ${DOCKER__LIGHTRED}${myrepository}${DOCKER__NOCOLOR}"
 
                         sleep 2
 
@@ -250,7 +251,7 @@ do
             done
         else
             echo -e "\r"
-            echo -e "Provided REPOSITORY: ${DOCKER_LIGHTRED}${myrepository}${DOCKER_NOCOLOR} does NOT exist"
+            echo -e "Provided REPOSITORY: ${DOCKER__LIGHTRED}${myrepository}${DOCKER__NOCOLOR} does NOT exist"
 
             sleep 2
 

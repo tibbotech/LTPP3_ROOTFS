@@ -12,17 +12,27 @@ function CTRL_C_func() {
     exit
 }
 
+#---Define colors
+DOCKER__NOCOLOR='\033[0;0m'
+DOCKER__BG_LIGHTBLUE='\e[30;48;5;45m'
 
-#Define variables
+#---Define variables
 enkrypted_text__filename="enkrypted_git_txt.bin"
 krypt_key__filename="mykryptonyte_key.rsa"
 
-#Define paths
+#---Define paths
 home_dir="/home/imcase"
 home_scripts_dir=${home_dir}/scripts
 home_scripts_encrypted_keys_dir=${home_scripts_dir}/encrypted_keys
 krypt_key__fpath=${home_scripts_encrypted_keys_dir}/${krypt_key__filename}
 enkrypted_text__fpath=${home_scripts_encrypted_keys_dir}/${enkrypted_text__filename}
+
+
+#---Show Main Banner
+echo -e "\r"
+echo -e "${DOCKER__BG_LIGHTBLUE}                            GIT PUSH${DOCKER__BG_LIGHTBLUE}                             ${DOCKER__NOCOLOR}"
+
+
 
 #login
 username="imcase"
@@ -30,6 +40,7 @@ username="imcase"
 if [[ -f ${enkrypted_text__fpath} ]] && [[ -f ${krypt_key__fpath} ]] ; then
 	password=`openssl rsautl -inkey ${krypt_key__fpath} -decrypt < ${enkrypted_text__fpath}`
 else
+    echo -e "\r"
 	read -e  -r -s -p "${username}-Password: " password
 fi
 

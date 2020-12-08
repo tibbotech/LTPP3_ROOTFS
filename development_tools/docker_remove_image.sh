@@ -14,30 +14,37 @@ function CTRL_C__func() {
 
 
 #---Define colors
-DOCKER_NOCOLOR='\033[0;0m'
-DOCKER_YELLOW='\033[1;33m'
-DOCKER_ORANGE='\033[0;33m'
-DOCKER_LIGHTRED='\033[1;31m'
+DOCKER__NOCOLOR='\033[0;0m'
+DOCKER__YELLOW='\033[1;33m'
+DOCKER__ORANGE='\033[0;33m'
+DOCKER__LIGHTRED='\033[1;31m'
 
-DOCKER_READ_LIGHTRED=$'\e[1;31m'
-DOCKER_READ_NOCOLOR=$'\e[0;0m'
+DOCKER__READ_LIGHTRED=$'\e[1;31m'
+DOCKER__READ_NOCOLOR=$'\e[0;0m'
+
+DOCKER__BG_LIGHTBLUE='\e[30;48;5;45m'
+
+
+#---Show Main Banner
+echo -e "\r"
+echo -e "${DOCKER__BG_LIGHTBLUE}                               DOCKER${DOCKER__BG_LIGHTBLUE}                               ${DOCKER__NOCOLOR}"
 
 
 #---Show Docker Image List
 echo -e "\r"
-echo -e "------------------------------------------------------------"
-echo -e "\t${DOCKER_YELLOW}Remove${DOCKER_NOCOLOR} Docker Image(s)"
-echo -e "------------------------------------------------------------"
+echo -e "--------------------------------------------------------------------"
+echo -e "\t${DOCKER__YELLOW}Remove${DOCKER__NOCOLOR} Docker Image(s)"
+echo -e "--------------------------------------------------------------------"
 sudo sh -c "docker image ls"
 echo -e "\r"
 
 while true
 do
     #Show input field
-    echo -e "${DOCKER_ORANGE}Remarks:${DOCKER_NOCOLOR}" 
+    echo -e "${DOCKER__ORANGE}Remarks:${DOCKER__NOCOLOR}" 
     echo -e "- multiple image-ids can be removed."
     echo -e "- Use comma as separator (e.g. 0f7478cf7cab,5f1b8726ca97)"
-    read -p "Remove the following ${DOCKER_READ_LIGHTRED}IMAGE-ID(s)${DOCKER_READ_NOCOLOR}: " myimageid_input
+    read -p "Remove the following ${DOCKER__READ_LIGHTRED}IMAGE-ID(s)${DOCKER__READ_NOCOLOR}: " myimageid_input
     if [[ ! -z ${myimageid_input} ]]; then
         #Substitute COMMA with SPACE
         myimageid_input_subst=`echo ${myimageid_input} | sed 's/,/\ /g'`
@@ -55,7 +62,7 @@ do
                 if [[ ! -z ${myimageid_isFound} ]]; then
                     sudo sh -c "docker image rmi -f ${myimageid_item}" > /dev/null
                     echo -e "\r"
-                    echo -e "Removed IMAGE-ID: ${DOCKER_LIGHTRED}${myimageid_item}${DOCKER_NOCOLOR}"
+                    echo -e "Removed IMAGE-ID: ${DOCKER__LIGHTRED}${myimageid_item}${DOCKER__NOCOLOR}"
                     echo -e "\r"
                     echo -e "Removing ALL unlinked images"
                     echo -e "y\n" | sudo sh -c "docker image prune"
@@ -63,7 +70,7 @@ do
                     echo -e "y\n" | sudo sh -c "docker container prune"
                 else
                     echo -e "\r"
-                    echo -e "***ERROR: Invalid IMAGE-ID: ${DOCKER_LIGHTRED}${myimageid_item}${DOCKER_NOCOLOR}"
+                    echo -e "***ERROR: Invalid IMAGE-ID: ${DOCKER__LIGHTRED}${myimageid_item}${DOCKER__NOCOLOR}"
                 fi
             done
 
