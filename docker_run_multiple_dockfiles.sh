@@ -14,17 +14,15 @@ DOCKER__BG_LIGHTBLUE='\e[30;48;5;45m'
 DOCKER__YES="y"
 DOCKER__FIVE_SPACES="     "
 DOCKER__LATEST="latest"
+DOCKER__EXITING_NOW="Exiting now..."
 
 
-#---Define variables
-docker__curr_dir=`pwd`
-docker__repo_LTPP3_ROOTFS_dir=/repo/LTPP3_ROOTFS
-docker__repo_LTPP3_ROOTFS_docker_dir=${docker__repo_LTPP3_ROOTFS_dir}/docker
-docker__repo_LTPP3_ROOTFS_docker_list_dir=${docker__repo_LTPP3_ROOTFS_docker_dir}/list
-docker__repo_LTPP3_ROOTFS_docker_dockerfiles_dir=${docker__repo_LTPP3_ROOTFS_docker_dir}/dockerfiles
+#---Define PATHS
+docker__LICENSE_filename="LICENSE"
+docker__README_md_filename="README.md"
+docker__LTPP3_ROOTFS_foldername="LTPP3_ROOTFS"
 
 docker__dockerfile_list_fpath=""
-
 
 
 #---Trap ctrl-c and Call ctrl_c()
@@ -33,7 +31,7 @@ trap CTRL_C__sub INT
 function CTRL_C__sub() {
     echo -e "\r"
     echo -e "\r"
-    echo -e "Exiting now..."
+    echo -e "${DOCKER__EXITING_NOW}"
     echo -e "\r"
     echo -e "\r"
 
@@ -71,7 +69,12 @@ press_any_key__localfunc() {
 }
 
 #---Local functions & subroutines
-docker__mandatory_check__sub() {
+docker__load_header__sub() {
+    echo -e "\r"
+    echo -e "${DOCKER__BG_LIGHTBLUE}                               DOCKER${DOCKER__BG_LIGHTBLUE}                               ${DOCKER__NOCOLOR}"
+}
+
+docker__mandatory_apps_check__sub() {
     #Define local constants
     local DOCKER_IO="docker.io"
     local QEMU_USER_STATIC="qemu-user-static"
@@ -80,8 +83,6 @@ docker__mandatory_check__sub() {
     local qemu_user_static_isInstalled=`dpkg -l | grep "${QEMU_USER_STATIC}"`
 
     if [[ -z ${docker_io_isInstalled} ]] || [[ -z ${qemu_user_static_isInstalled} ]]; then
-        echo -e "\r"
-        echo -e "${DOCKER__BG_LIGHTBLUE}                               DOCKER${DOCKER__BG_LIGHTBLUE}                               ${DOCKER__NOCOLOR}"
         echo -e "${DOCKER__FIVE_SPACES}The following mandatory software is/are not installed:"
         if [[ -z ${docker_io_isInstalled} ]]; then
             echo -e "${DOCKER__FIVE_SPACES}- docker.io"
@@ -91,35 +92,57 @@ docker__mandatory_check__sub() {
         fi
         echo -e "\r"
         echo -e "${DOCKER__FIVE_SPACES}PLEASE INSTALL the missing software."
-        echo -e "${DOCKER__BG_LIGHTBLUE}                                    ${DOCKER__BG_LIGHTBLUE}                                ${DOCKER__NOCOLOR}"
+        echo -e "\r"
+    fi
+
+    press_any_key__localfunc
+}
+
+docker__get_this_running_script_dir__sub() {
+    #Define local variables
+    local script_basename=`basename $0`
+
+    docker__your_repodir_LTPP3_ROOTFS_dir=`dirname "$0"`
+    docker__your_repodir_LTPP3_ROOTFS_docker_dir=${docker__your_repodir_LTPP3_ROOTFS_dir}/docker
+    docker__your_repodir_LTPP3_ROOTFS_docker_list_dir=${docker__your_repodir_LTPP3_ROOTFS_docker_dir}/list
+    docker__your_repodir_LTPP3_ROOTFS_docker_dockerfiles_dir=${docker__your_repodir_LTPP3_ROOTFS_docker_dir}/dockerfiles
+
+    docker__your_repodir_LTPP3_ROOTFS_LICENSE_fpath=${docker__your_repodir_LTPP3_ROOTFS_dir}/${docker__LICENSE_filename}
+    docker__your_repodir_LTPP3_ROOTFS_README_md_fpath=${docker__your_repodir_LTPP3_ROOTFS_dir}/${docker__README_md_filename}
+
+    if [[ ! -f ${docker__your_repodir_LTPP3_ROOTFS_LICENSE_fpath} ]] && [[ ! -f ${docker__your_repodir_LTPP3_ROOTFS_README_md_fpath} ]]; then
+        echo -e "***${DOCKER__LIGHTRED}ERROR${DOCKER__NOCOLOR}: script '${DOCKER__ORANGE}${script_basename}${DOCKER__NOCOLOR}' might not be up-to-date."
+        echo -e "Please use 'git pull' to update the scripts and then try again..."
+        echo -e "\r"
+        echo -e "${DOCKER__EXITING_NOW}"
         echo -e "\r"
         echo -e "\r"
 
-        press_any_key__localfunc
+        exit
     fi
 
 }
 
-
 docker__show_dockerfile_list_files__sub() {
     #Clear terminal screen
-    tput clear
+    # tput clear
 
     #Define variables
     local arr_line=""
     local dockerfile_list_filename=""
 
     #Get all files at the specified location
-    local dockerfile_list_fpath_string=`find ${docker__repo_LTPP3_ROOTFS_docker_list_dir} -maxdepth 1 -type f`    local arr_line=""
+    local dockerfile_list_fpath_string=`find ${docker__your_repodir_LTPP3_ROOTFS_docker_list_dir} -maxdepth 1 -type f`
+    local arr_line=""
 
     #Check if '' is an EMPTY STRING
     if [[ -z ${dockerfile_list_fpath_string} ]]; then
         echo -e "\r"
         echo -e "--------------------------------------------------------------------"
         echo -e "***${DOCKER__LIGHTRED}ERROR${DOCKER__NOCOLOR}: no files found in directory:"
-        echo -e "${DOCKER__FIVE_SPACES}${docker__repo_LTPP3_ROOTFS_docker_list_dir}"
+        echo -e "${DOCKER__FIVE_SPACES}${docker__your_repodir_LTPP3_ROOTFS_docker_list_dir}"
         echo -e "\r"
-        echo -e "***Please put all ${DOCKER__YELLOW}dockerfile-list${DOCKER__NOCOLOR} files in this directory"
+        echo -e "Please put all ${DOCKER__YELLOW}dockerfile-list${DOCKER__NOCOLOR} files in this directory"
         echo -e "--------------------------------------------------------------------"
         echo -e "\r"
         echo -e "\r"
@@ -185,10 +208,12 @@ docker__show_dockerfile_list_files__sub() {
         #Extract the chosen file from array and assign to the GLOBAL variable 'docker__dockerfile_list_fpath'
         docker__dockerfile_list_fpath=${dockerfile_list_fpath_arr[index]}
 
+        local dockerfile_list_filename=`basename ${docker__dockerfile_list_fpath}`
+
         #Show chosen file contents
         echo -e "\r"
         echo -e "--------------------------------------------------------------------"
-        echo -e "File contents"
+        echo -e "Contents of File '${dockerfile_list_filename}'"
         echo -e "--------------------------------------------------------------------"
         while read file_line
         do
@@ -236,7 +261,7 @@ docker__checkif_cmd_exec_was_successful__sub() {
         echo -e "\r"
         echo -e "Please resolve the issue..."
         echo -e "\r"
-        echo -e "Exiting now..."
+        echo -e "${DOCKER__EXITING_NOW}"
         echo -e "\r"
         echo -e "\r"
 
@@ -290,7 +315,11 @@ docker__handle_chosen_dockerfile_list__sub() {
 
 
 main_sub() {
-    docker__mandatory_check__sub
+    docker__load_header__sub
+
+    docker__get_this_running_script_dir__sub
+
+    docker__mandatory_apps_check__sub
 
     docker__show_dockerfile_list_files__sub
 

@@ -19,15 +19,17 @@ DOCKER__SPACE=" "
 
 
 #---Define colors
-DOCKER_NOCOLOR='\033[0;0m'
-DOCKER_YELLOW='\033[1;33m'
-DOCKER_ORANGE='\033[0;33m'
-DOCKER_LIGHTRED='\033[1;31m'
+DOCKER__NOCOLOR='\033[0;0m'
+DOCKER__YELLOW='\033[1;33m'
+DOCKER__ORANGE='\033[0;33m'
+DOCKER__LIGHTRED='\033[1;31m'
 
-DOCKER_READ_LIGHTRED=$'\e[1;31m'
-DOCKER_READ_NOCOLOR=$'\e[0;0m'
-DOCKER_READ_LIGHTCYAN=$'\e[1;36m'
-DOCKER_READ_ORANGE=$'\e[0;33m'
+DOCKER__BG_LIGHTBLUE='\e[30;48;5;45m'
+
+DOCKER__READ_LIGHTRED=$'\e[1;31m'
+DOCKER__READ_NOCOLOR=$'\e[0;0m'
+DOCKER__READ_LIGHTCYAN=$'\e[1;36m'
+DOCKER__READ_ORANGE=$'\e[0;33m'
 
 
 #---Define PATHS
@@ -37,11 +39,16 @@ docker__current_dir=`pwd`
 DOCKER__ROOT_SP7XXX_OUT_DIR=/root/SP7021/out
 
 
+#Show DOCKER
+echo -e "\r"
+echo -e "${DOCKER__BG_LIGHTBLUE}                               DOCKER${DOCKER__BG_LIGHTBLUE}                               ${DOCKER__NOCOLOR}"
+
+
 #---Show Docker Containers' List
 echo -e "\r"
-echo -e "------------------------------------------------------------"
-echo -e "\tDocker ${DOCKER_YELLOW}Containers${DOCKER_NOCOLOR}' List"
-echo -e "------------------------------------------------------------"
+echo -e "--------------------------------------------------------------------"
+echo -e "\tDocker ${DOCKER__YELLOW}Containers${DOCKER__NOCOLOR}' List"
+echo -e "--------------------------------------------------------------------"
 sudo sh -c "docker container ls"
 
 #---Choose to Copy from Inside to Outside or Vice versa
@@ -77,14 +84,14 @@ echo -e "\r"
 
 while true
 do
-	read -p "Provide the ${DOCKER_READ_LIGHTRED}CONTAINER-ID${DOCKER_READ_NOCOLOR}: " mycontainerid
+	read -p "Provide the ${DOCKER__READ_LIGHTRED}CONTAINER-ID${DOCKER__READ_NOCOLOR}: " mycontainerid
 	
 	mycontainerid_isFound=`sudo docker container ls | awk '{print $1}' | grep -w ${mycontainerid}`
 	if [[ ! -z ${mycontainerid_isFound} ]]; then
 		break         
 	else
 		echo -e "\r"
-		echo -e "***ERROR: Invalid CONTAINER-ID: ${DOCKER_LIGHTRED}${mycontainerid}${DOCKER_NOCOLOR}"
+		echo -e "***ERROR: Invalid CONTAINER-ID: ${DOCKER__LIGHTRED}${mycontainerid}${DOCKER__NOCOLOR}"
 
 		sleep 3
 
@@ -102,7 +109,7 @@ if [[ ${mycopychoice} -eq 1 ]]; then
 	echo -e "\r"
 	while true
 	do
-		read -e -p "Provide ${DOCKER_READ_LIGHTCYAN}Source-Location${DOCKER_READ_NOCOLOR} (inside Container): " -i "${DOCKER__ROOT_SP7XXX_OUT_DIR}" mysource_dir
+		read -e -p "Provide ${DOCKER__READ_LIGHTCYAN}Source-Location${DOCKER__READ_NOCOLOR} (inside Container): " -i "${DOCKER__ROOT_SP7XXX_OUT_DIR}" mysource_dir
 
 		if [[ ! -z ${mysource_dir} ]]; then
 			break
@@ -113,7 +120,7 @@ if [[ ${mycopychoice} -eq 1 ]]; then
 	echo -e "\r"
 	while true
 	do
-		read -e -p "Provide ${DOCKER_READ_LIGHTCYAN}Source-Filename${DOCKER_READ_NOCOLOR} (inside Container): " -i "${DOCKER__ISPBOOOT_BIN_FILENAME}" mysource_filename
+		read -e -p "Provide ${DOCKER__READ_LIGHTCYAN}Source-Filename${DOCKER__READ_NOCOLOR} (inside Container): " -i "${DOCKER__ISPBOOOT_BIN_FILENAME}" mysource_filename
 
 		if [[ ! -z ${mysource_filename} ]]; then
 			break
@@ -124,7 +131,7 @@ if [[ ${mycopychoice} -eq 1 ]]; then
 	echo -e "\r"
 	while true
 	do
-		read -e -p "Provide ${DOCKER_READ_ORANGE}Destination-Location${DOCKER_READ_NOCOLOR} (outside Container): " -i "${docker__current_dir}" mydest_dir
+		read -e -p "Provide ${DOCKER__READ_ORANGE}Destination-Location${DOCKER__READ_NOCOLOR} (outside Container): " -i "${docker__current_dir}" mydest_dir
 
 		if [[ ! -z ${mydest_dir} ]]; then
 			break
@@ -135,7 +142,7 @@ else
 	echo -e "\r"
 	while true
 	do
-		read -e -p "Provide ${DOCKER_READ_LIGHTCYAN}Source-Location${DOCKER_READ_NOCOLOR} (outside Container): " -i "${docker__current_dir}" mysource_dir 
+		read -e -p "Provide ${DOCKER__READ_LIGHTCYAN}Source-Location${DOCKER__READ_NOCOLOR} (outside Container): " -i "${docker__current_dir}" mysource_dir 
 
 		if [[ ! -z ${mysource_dir} ]]; then
 			break
@@ -146,7 +153,7 @@ else
 	echo -e "\r"
 	while true
 	do
-		read -e -p "Provide ${DOCKER_READ_LIGHTCYAN}Source-Filename${DOCKER_READ_NOCOLOR} (inside Container): " -i "${DOCKER__ISPBOOOT_BIN_FILENAME}" mysource_filename
+		read -e -p "Provide ${DOCKER__READ_LIGHTCYAN}Source-Filename${DOCKER__READ_NOCOLOR} (inside Container): " -i "${DOCKER__ISPBOOOT_BIN_FILENAME}" mysource_filename
 
 		if [[ ! -z ${mysource_filename} ]]; then
 			break
@@ -157,7 +164,7 @@ else
 	echo -e "\r"
 	while true
 	do
-		read -e -p "Provide ${DOCKER_READ_ORANGE}Destination-Location${DOCKER_READ_NOCOLOR} (inside Container): " -i "${DOCKER__ROOT_SP7XXX_OUT_DIR}" mydest_dir
+		read -e -p "Provide ${DOCKER__READ_ORANGE}Destination-Location${DOCKER__READ_NOCOLOR} (inside Container): " -i "${DOCKER__ROOT_SP7XXX_OUT_DIR}" mydest_dir
 
 		if [[ ! -z ${mydest_dir} ]]; then
 			break
@@ -167,12 +174,12 @@ fi
 
 #---Summary
 echo -e "\r"
-echo "----------------------------------------------------------------------"
+echo -e "--------------------------------------------------------------------"
 echo "Overview:"
-echo "----------------------------------------------------------------------"
-echo "${DOCKER_READ_LIGHTCYAN}Source${DOCKER_READ_NOCOLOR} Full-path: ${DOCKER_READ_LIGHTCYAN}${mysource_dir}/${mysource_filename}${DOCKER_READ_NOCOLOR}"
-echo "${DOCKER_READ_ORANGE}Destination${DOCKER_READ_NOCOLOR} Full-path: ${DOCKER_READ_ORANGE}${mydest_dir}/${mysource_filename}${DOCKER_READ_NOCOLOR}"
-echo "----------------------------------------------------------------------"
+echo -e "--------------------------------------------------------------------"
+echo "${DOCKER__READ_LIGHTCYAN}Source${DOCKER__READ_NOCOLOR} Full-path: ${DOCKER__READ_LIGHTCYAN}${mysource_dir}/${mysource_filename}${DOCKER__READ_NOCOLOR}"
+echo "${DOCKER__READ_ORANGE}Destination${DOCKER__READ_NOCOLOR} Full-path: ${DOCKER__READ_ORANGE}${mydest_dir}/${mysource_filename}${DOCKER__READ_NOCOLOR}"
+echo -e "--------------------------------------------------------------------"
 
 #---COPY: ~/SP7021/out/ISPBOOOT.BIN (within a container) to /mnt/<networkdrive>
 echo -e "\r"

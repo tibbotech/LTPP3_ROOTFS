@@ -18,7 +18,6 @@
 &rtc {  charging-mode = <0x0E>;  };
 
 &sp_spinor0 {  status = "disabled";  };
-
 &spi_controller0 {  status = "disabled";  };
 &spi_controller1 {  status = "disabled";  };
 &spi_controller2 {  status = "disabled";  };
@@ -77,21 +76,18 @@
  status = "okay";
  // this: enable, pins_uart1
 };
-
 &uart2 {
  pinctrl-names = "default";
  pinctrl-0 = <&pins_uart2>;
  status = "okay";
  // this: enable, pins_uart2
 };
-
 &uart3 {
  pinctrl-names = "default";
  pinctrl-0 = <&pins_uart3>;
  status = "okay";
  // this: enable, pins_uart3
 };
-
 &uart4 {
  pinctrl-names = "default";
  /* pinctrl-0 = <&pins_uart4>; */
@@ -100,36 +96,10 @@
  // this: enable (bt) | enable (uart4), pins_uart4
 };
 
-&i2cm0 {
-	clock-frequency = <400000>;
-	pinctrl-names = "default";
-	pinctrl-0 = <&i2cm0_pins>;
-	status = "okay";
-};
-
-&i2cm1 {
-	clock-frequency = <400000>;
-	pinctrl-names = "default";
-	pinctrl-0 = <&i2cm1_pins>;
-	status = "okay";
-};
-
+&i2cm0 {  status = "disabled";  };
+&i2cm1 {  status = "disabled";  };
 &i2cm2 {  status = "disabled";  };
 &i2cm3 {  status = "disabled";  };
-
-&sp_display {
-	ui_width = <1280>;
-	ui_height = <720>;
-	ui_format = <0x8>;
-		/* 0x2 = 8bpp (ARGB)
-		 * 0x4 = YUY2
-		 * 0x8 = RGB565
-		 * 0x9 = ARGB1555
-		 * 0xa = RGBA4444
-		 * 0xb = ARGB4444
-		 * 0xd = RGBA8888
-		  0xe = ARGB8888 /
-};
 
 &pctl {
  /*** all non-device binded that you want to set mode ***/
@@ -145,6 +115,7 @@
      MUXF_L2SW_LED_ON1
      MUXF_L2SW_P0_MAC_RMII_RXER
      MUXF_L2SW_P1_MAC_RMII_RXER
+     GROP_SPI_FLASH
    >;
  };
  
@@ -155,7 +126,7 @@
  };
  pins_gpio_nobinded: pins_gpio_nobinded {
     sppctl,pins = <
-      SPPCTL_IOPAD(42,SPPCTL_PCTL_G_GPIO,0,0)   /* was L2SW_LED_FLASH0 */
+      /*SPPCTL_IOPAD(42,SPPCTL_PCTL_G_GPIO,0,0)*/   /* was L2SW_LED_FLASH0 */
       /*SPPCTL_IOPAD(51,SPPCTL_PCTL_G_GPIO,0,0)*/   /* was L2SW_LED_ON0 */
       SPPCTL_IOPAD(30,SPPCTL_PCTL_G_GPIO,0,0)   /* was L2SW_LED_FLASH1 */
       SPPCTL_IOPAD(39,SPPCTL_PCTL_G_GPIO,0,0)   /* was L2SW_LED_ON1  */
@@ -191,21 +162,6 @@
       SPPCTL_IOPAD(5,SPPCTL_PCTL_G_GPIO,0,0)
     >;
  };
-
- i2cm0_pins: i2cm0_pins {
-    sppctl,pins = <
-      SPPCTL_IOPAD(12,SPPCTL_PCTL_G_PMUX,MUXF_I2CM0_DAT,0)
-      SPPCTL_IOPAD(13,SPPCTL_PCTL_G_PMUX,MUXF_I2CM0_CLK,0)
-    >;
- };
-
- i2cm1_pins: i2cm1_pins {
-    sppctl,pins = <
-      SPPCTL_IOPAD(20,SPPCTL_PCTL_G_PMUX,MUXF_I2CM1_DAT,0)
-      SPPCTL_IOPAD(21,SPPCTL_PCTL_G_PMUX,MUXF_I2CM1_CLK,0)
-    >;
- }; 
-
 // this:
  pins_uart1: pins_uart1 {
     sppctl,pins = <
@@ -219,20 +175,20 @@
 // this:
  pins_uart2: pins_uart2 {
     sppctl,pins = <
-      SPPCTL_IOPAD(16,SPPCTL_PCTL_G_PMUX,MUXF_UA2_TX,0)
-      SPPCTL_IOPAD(17,SPPCTL_PCTL_G_PMUX,MUXF_UA2_RX,0)
-      SPPCTL_IOPAD(18,SPPCTL_PCTL_G_PMUX,MUXF_UA2_RTS,0)
-      SPPCTL_IOPAD(19,SPPCTL_PCTL_G_PMUX,MUXF_UA2_CTS,0)
+      SPPCTL_IOPAD(12,SPPCTL_PCTL_G_PMUX,MUXF_UA2_TX,0)
+      SPPCTL_IOPAD(13,SPPCTL_PCTL_G_PMUX,MUXF_UA2_RX,0)
+      SPPCTL_IOPAD(14,SPPCTL_PCTL_G_PMUX,MUXF_UA2_RTS,0)
+      SPPCTL_IOPAD(15,SPPCTL_PCTL_G_PMUX,MUXF_UA2_CTS,0)
     >;
  };
 // this/
 // this:
  pins_uart3: pins_uart3 {
     sppctl,pins = <
-      SPPCTL_IOPAD(24,SPPCTL_PCTL_G_PMUX,MUXF_UA3_TX,0)
-      SPPCTL_IOPAD(25,SPPCTL_PCTL_G_PMUX,MUXF_UA3_RX,0)
-      SPPCTL_IOPAD(26,SPPCTL_PCTL_G_PMUX,MUXF_UA3_RTS,0)
-      SPPCTL_IOPAD(27,SPPCTL_PCTL_G_PMUX,MUXF_UA3_CTS,0)
+      SPPCTL_IOPAD(16,SPPCTL_PCTL_G_PMUX,MUXF_UA3_TX,0)
+      SPPCTL_IOPAD(17,SPPCTL_PCTL_G_PMUX,MUXF_UA3_RX,0)
+      SPPCTL_IOPAD(18,SPPCTL_PCTL_G_PMUX,MUXF_UA3_RTS,0)
+      SPPCTL_IOPAD(19,SPPCTL_PCTL_G_PMUX,MUXF_UA3_CTS,0)
     >;
  };
 // this/
