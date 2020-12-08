@@ -7,6 +7,8 @@ DOCKER__YELLOW='\033[1;33m'
 DOCKER__LIGHTBLUE='\033[1;34m'
 DOCKER__NOCOLOR='\033[0m'
 
+DOCKER__BG_LIGHTBLUE='\e[30;48;5;45m'
+
 
 #---Define constants
 DOCKER__YES="y"
@@ -15,6 +17,7 @@ DOCKER__LATEST="latest"
 
 
 #---Define variables
+docker__curr_dir=`pwd`
 docker__repo_LTPP3_ROOTFS_dir=/repo/LTPP3_ROOTFS
 docker__repo_LTPP3_ROOTFS_docker_dir=${docker__repo_LTPP3_ROOTFS_dir}/docker
 docker__repo_LTPP3_ROOTFS_docker_list_dir=${docker__repo_LTPP3_ROOTFS_docker_dir}/list
@@ -37,9 +40,68 @@ function CTRL_C__sub() {
     exit
 }
 
+press_any_key__localfunc() {
+	#Define constants
+	local cTIMEOUT_ANYKEY=10
 
-#---Local functions
-show_dockerfile_list_files__sub() {
+	#Initialize variables
+	local keypressed=""
+	local tcounter=0
+
+	#Show Press Any Key message with count-down
+	echo -e "\r"
+	while [[ ${tcounter} -le ${cTIMEOUT_ANYKEY} ]];
+	do
+		delta_tcounter=$(( ${cTIMEOUT_ANYKEY} - ${tcounter} ))
+
+		echo -e "\rPress (a)bort or any key to continue... (${delta_tcounter}) \c"
+		read -N 1 -t 1 -s -r keypressed
+
+		if [[ ! -z "${keypressed}" ]]; then
+			if [[ "${keypressed}" == "a" ]] || [[ "${keypressed}" == "A" ]]; then
+				exit
+			else
+				break
+			fi
+		fi
+		
+		tcounter=$((tcounter+1))
+	done
+	echo -e "\r"
+}
+
+#---Local functions & subroutines
+docker__mandatory_check__sub() {
+    #Define local constants
+    local DOCKER_IO="docker.io"
+    local QEMU_USER_STATIC="qemu-user-static"
+
+    local docker_io_isInstalled=`dpkg -l | grep "${DOCKER_IO}"`
+    local qemu_user_static_isInstalled=`dpkg -l | grep "${QEMU_USER_STATIC}"`
+
+    if [[ -z ${docker_io_isInstalled} ]] || [[ -z ${qemu_user_static_isInstalled} ]]; then
+        echo -e "\r"
+        echo -e "${DOCKER__BG_LIGHTBLUE}                               DOCKER${DOCKER__BG_LIGHTBLUE}                               ${DOCKER__NOCOLOR}"
+        echo -e "${DOCKER__FIVE_SPACES}The following mandatory software is/are not installed:"
+        if [[ -z ${docker_io_isInstalled} ]]; then
+            echo -e "${DOCKER__FIVE_SPACES}- docker.io"
+        fi
+        if [[ -z ${qemu_user_static_isInstalled} ]]; then
+            echo -e "${DOCKER__FIVE_SPACES}- qemu-user-static"
+        fi
+        echo -e "\r"
+        echo -e "${DOCKER__FIVE_SPACES}PLEASE INSTALL the missing software."
+        echo -e "${DOCKER__BG_LIGHTBLUE}                                    ${DOCKER__BG_LIGHTBLUE}                                ${DOCKER__NOCOLOR}"
+        echo -e "\r"
+        echo -e "\r"
+
+        press_any_key__localfunc
+    fi
+
+}
+
+
+docker__show_dockerfile_list_files__sub() {
     #Clear terminal screen
     tput clear
 
@@ -49,7 +111,6 @@ show_dockerfile_list_files__sub() {
 
     #Get all files at the specified location
     local dockerfile_list_fpath_string=`find ${docker__repo_LTPP3_ROOTFS_docker_list_dir} -maxdepth 1 -type f`    local arr_line=""
-
 
     #Check if '' is an EMPTY STRING
     if [[ -z ${dockerfile_list_fpath_string} ]]; then
@@ -161,8 +222,7 @@ show_dockerfile_list_files__sub() {
     done   
 }
 
-
-checkif_cmd_exec_was_successful__sub() {
+docker__checkif_cmd_exec_was_successful__sub() {
     exit_code=$?
     
     if [[ ${exit_code} -eq 0 ]]; then
@@ -183,7 +243,7 @@ checkif_cmd_exec_was_successful__sub() {
         exit
     fi
 }
-run_dockercmd_with_error_check__sub() {
+docker__run_dockercmd_with_error_check__sub() {
     #Input args
     local dockerfile_fpath=${1}
 
@@ -208,7 +268,7 @@ run_dockercmd_with_error_check__sub() {
 
     sudo sh -c "${dockercmd}" #execute cmd
 
-    checkif_cmd_exec_was_successful__sub   #check if cmd ran successfully
+    docker__checkif_cmd_exec_was_successful__sub   #check if cmd ran successfully
 
     echo -e "\r"
     sudo sh -c "docker image ls"    #show Docker IMAGE list
@@ -216,23 +276,25 @@ run_dockercmd_with_error_check__sub() {
     echo -e "\r"
 }
 
-handle_chosen_dockerfile_list__sub() {
+docker__handle_chosen_dockerfile_list__sub() {
     #---Read contents of the file
     #Each line of the file represents a 'dockerfile' containing the instructions to-be-executed
     while IFS='' read file_line
     do
         #Check if file exists
         if [[ -f ${file_line} ]]; then
-            run_dockercmd_with_error_check__sub ${file_line}
+            docker__run_dockercmd_with_error_check__sub ${file_line}
         fi
     done < ${docker__dockerfile_list_fpath} | tail -n +2    #skip header
 }
 
 
 main_sub() {
-    show_dockerfile_list_files__sub
+    docker__mandatory_check__sub
 
-    handle_chosen_dockerfile_list__sub
+    docker__show_dockerfile_list_files__sub
+
+    docker__handle_chosen_dockerfile_list__sub
 }
 
 
