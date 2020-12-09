@@ -93,9 +93,9 @@ docker__mandatory_apps_check__sub() {
         echo -e "\r"
         echo -e "${DOCKER__FIVE_SPACES}PLEASE INSTALL the missing software."
         echo -e "\r"
+        
+        press_any_key__localfunc
     fi
-
-    press_any_key__localfunc
 }
 
 docker__get_this_running_script_dir__sub() {
