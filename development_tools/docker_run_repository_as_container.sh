@@ -3,12 +3,13 @@
 DOCKER__READ_FG_LIGHTRED=$'\e[1;31m'
 DOCKER__READ_FG_LIGHTGREEN=$'\e[1;32m'
 DOCKER__READ_FG_YELLOW=$'\e[1;33m'
-DOCKER__READ_FG_ORANGE=$'\e[0;33m'
 DOCKER__READ_FG_LIGHTBLUE=$'\e[1;34m'
 DOCKER__READ_FG_PURPLE=$'\e[0;35m'
 DOCKER__READ_FG_LIGHTCYAN=$'\e[1;36m'
 DOCKER__READ_FG_RGB_GREENBLUE=$'\e[38;5;79m'
-DOCKER__READ_FG_NOCOLOR=$'\e[0;0m'
+DOCKER__READ_FG_ORANGE=$'\e[30;38;5;208m'
+DOCKER__READ_FG_LIGHTPINK=$'\e[30;38;5;218m'
+DOCKER__READ_NOCOLOR=$'\e[0;0m'
 
 DOCKER__READ_BG_LIGHTBLUE='\e[30;48;5;45m'
 
@@ -24,7 +25,6 @@ function CTRL_C__sub() {
     echo -e "\r"
     echo -e "\r"
     echo -e "${DOCKER__EXITING_NOW}"
-    echo -e "\r"
     echo -e "\r"
     echo -e "\r"
     
@@ -117,7 +117,7 @@ get_assigned_ipv4_addresses__func() {
 
 #---Show Main Banner
 echo -e "\r"
-echo -e "${DOCKER__READ_BG_LIGHTBLUE}                               DOCKER${DOCKER__READ_BG_LIGHTBLUE}                               ${DOCKER__READ_FG_NOCOLOR}"
+echo -e "${DOCKER__READ_BG_LIGHTBLUE}                               DOCKER${DOCKER__READ_BG_LIGHTBLUE}                               ${DOCKER__READ_NOCOLOR}"
 
 
 #---Define and Initalize Variables
@@ -131,7 +131,7 @@ docker_ssh_localport=${DOCKER__SSH_LOCALPORT}
 #2. Ask for the REPOSITORY to run
 echo -e "\r"
 echo -e "--------------------------------------------------------------------"
-echo -e "\t${DOCKER__READ_FG_ORANGE}RUN${DOCKER__READ_FG_NOCOLOR} CONTAINER ${DOCKER__READ_FG_ORANGE}w${DOCKER__READ_FG_NOCOLOR}/ ${DOCKER__READ_FG_YELLOW}SSH${DOCKER__READ_FG_NOCOLOR} CAPABILITY"
+echo -e "\t${DOCKER__READ_FG_YELLOW}RUN${DOCKER__READ_NOCOLOR} CONTAINER ${DOCKER__READ_FG_YELLOW}w${DOCKER__READ_NOCOLOR}/ ${DOCKER__READ_FG_YELLOW}SSH${DOCKER__READ_NOCOLOR} CAPABILITY"
 echo -e "--------------------------------------------------------------------"
 echo -e "\r"
     sudo sh -c "docker image ls"
@@ -140,7 +140,7 @@ echo -e "\r"
 while true
 do
     #Request for REPOSITORY input
-    read -p "Provide ${DOCKER__READ_FG_PURPLE}REPOSITORY${DOCKER__READ_FG_NOCOLOR} (e.g. ubuntu_sunplus): " myrepository
+    read -p "Provide ${DOCKER__READ_FG_PURPLE}REPOSITORY${DOCKER__READ_NOCOLOR} (e.g. ubuntu_sunplus): " myrepository
     if [[ ! -z ${myrepository} ]]; then #input was NOT an EMPTY STRING
 
         myrepository_isFound=`sudo docker image ls | awk '{print $1}' | grep -w "${myrepository}"` #check if 'myrepository' is found in 'docker image ls'
@@ -152,7 +152,7 @@ do
                 myrepository_tag=$(sudo docker image ls | grep -w "${myrepository}" | awk '{print $2}')
 
                 #Request for TAG input
-                read -e -p "Provide ${DOCKER__READ_FG_ORANGE}TAG${DOCKER__READ_FG_NOCOLOR} (e.g. latest): " -i ${myrepository_tag} mytag
+                read -e -p "Provide ${DOCKER__READ_FG_LIGHTPINK}TAG${DOCKER__READ_NOCOLOR} (e.g. latest): " -i ${myrepository_tag} mytag
                 if [[ ! -z ${mytag} ]]; then    #input was NOT an EMPTY STRING
 
                     mytag_isFound=`sudo docker image ls | grep -w "${myrepository}" | grep -w "${mytag}"`    #check if 'myrepository' AND 'mytag' is found in 'docker image ls'
@@ -184,13 +184,13 @@ do
                                     sudo sh -c "docker container ls"
                                 echo -e "\r"
                                 echo -e "Summary:"
-                                echo -e "\tChosen REPOSITORY:\t\t\t${DOCKER__READ_FG_PURPLE}${myrepository}${DOCKER__READ_FG_NOCOLOR}"
-                                echo -e "\tCreated CONTAINER-ID:\t\t\t${DOCKER__READ_FG_ORANGE}${container_name}${DOCKER__READ_FG_NOCOLOR}"
-                                echo -e "\tTCP-port to-used-for SSH:\t\t${DOCKER__READ_FG_LIGHTBLUE}${docker_ssh_localport}${DOCKER__READ_FG_NOCOLOR}"
+                                echo -e "\tChosen REPOSITORY:\t\t\t${DOCKER__READ_FG_PURPLE}${myrepository}${DOCKER__READ_NOCOLOR}"
+                                echo -e "\tCreated CONTAINER-ID:\t\t\t${DOCKER__READ_FG_ORANGE}${container_name}${DOCKER__READ_NOCOLOR}"
+                                echo -e "\tTCP-port to-used-for SSH:\t\t${DOCKER__READ_FG_LIGHTBLUE}${docker_ssh_localport}${DOCKER__READ_NOCOLOR}"
                                     get_assigned_ipv4_addresses__func
                                 echo -e "\tAvailable ip-address(es) for SSH:"
                                     for ipv4 in "${docker_ipv4_addr_summarize_arr[@]}"; do 
-                                        echo -e "\t\t\t\t\t\t${DOCKER__READ_FG_LIGHTCYAN}${ipv4}${DOCKER__READ_FG_NOCOLOR}"
+                                        echo -e "\t\t\t\t\t\t${DOCKER__READ_FG_LIGHTCYAN}${ipv4}${DOCKER__READ_NOCOLOR}"
                                     done
                                 echo -e "\r"
 
@@ -199,9 +199,9 @@ do
                                     docker_ip4addr1=$(cut -d" " -f1 <<< ${docker_ipv4_addr_summarize_str})
                                 echo -e "\r"
                                 echo -e "How to SSH from a remote PC?"
-                                echo -e "\tDefault login/pass: ${DOCKER__READ_FG_LIGHTGREEN}root/root${DOCKER__READ_FG_NOCOLOR}"
+                                echo -e "\tDefault login/pass: ${DOCKER__READ_FG_LIGHTGREEN}root/root${DOCKER__READ_NOCOLOR}"
                                 echo -e "\tSample:"
-                                echo -e "\t\tssh ${DOCKER__READ_FG_LIGHTGREEN}root${DOCKER__READ_FG_NOCOLOR}@${DOCKER__READ_FG_LIGHTCYAN}${docker_ip4addr1}${DOCKER__READ_FG_NOCOLOR} -p ${DOCKER__READ_FG_LIGHTBLUE}${docker_ssh_localport}${DOCKER__READ_FG_NOCOLOR}"
+                                echo -e "\t\tssh ${DOCKER__READ_FG_LIGHTGREEN}root${DOCKER__READ_NOCOLOR}@${DOCKER__READ_FG_LIGHTCYAN}${docker_ip4addr1}${DOCKER__READ_NOCOLOR} -p ${DOCKER__READ_FG_LIGHTBLUE}${docker_ssh_localport}${DOCKER__READ_NOCOLOR}"
                                 echo -e "\r"
                                 echo -e "\r"
                                 
@@ -210,8 +210,11 @@ do
                                 break
                             fi
                         else
+                            #Get running Container-ID
+                            containerid=`sudo  sh -c "docker container ls" | grep -w "${myrepository}:${mytag}" | awk '{print $1}'`
+
                             echo -e "\r"
-                            echo -e "A Container of selected Image '${DOCKER__READ_FG_LIGHTRED}${myrepository}${DOCKER__READ_FG_NOCOLOR}:${DOCKER__READ_FG_LIGHTRED}${mytag}${DOCKER__READ_FG_NOCOLOR}' already running..."
+                            echo -e "***${DOCKER__READ_FG_LIGHTRED}ERROR${DOCKER__READ_NOCOLOR}: ${DOCKER__READ_FG_PURPLE}${myrepository}${DOCKER__READ_NOCOLOR}:${DOCKER__READ_FG_LIGHTPINK}${mytag}${DOCKER__READ_NOCOLOR} already running under CONTAINER-ID ${DOCKER__READ_FG_ORANGE}${containerid}${DOCKER__READ_NOCOLOR}"
 
                             sleep 3
 
@@ -228,7 +231,7 @@ do
                         fi
                     else
                         echo -e "\r"
-                        echo -e "Provided TAG: ${DOCKER__READ_FG_LIGHTRED}${mytag}${DOCKER__READ_FG_NOCOLOR} does NOT belong to REPOSITORY: ${DOCKER__READ_FG_LIGHTRED}${myrepository}${DOCKER__READ_FG_NOCOLOR}"
+                        echo -e "***${DOCKER__READ_FG_LIGHTRED}ERROR${DOCKER__READ_NOCOLOR}: TAG ${DOCKER__READ_FG_LIGHTPINK}${mytag}${DOCKER__READ_NOCOLOR} does NOT belong to REPOSITORY ${DOCKER__READ_FG_PURPLE}${myrepository}${DOCKER__READ_NOCOLOR}"
 
                         sleep 2
 
@@ -246,7 +249,7 @@ do
             done
         else
             echo -e "\r"
-            echo -e "***${DOCKER__READ_FG_LIGHTRED}ERROR${DOCKER__READ_FG_NOCOLOR}: non-existing repository '${myrepository}'"
+            echo -e "***${DOCKER__READ_FG_LIGHTRED}ERROR${DOCKER__READ_NOCOLOR}: non-existing repository ${DOCKER__READ_FG_PURPLE}${myrepository}${DOCKER__READ_NOCOLOR}"
 
             sleep 2
 

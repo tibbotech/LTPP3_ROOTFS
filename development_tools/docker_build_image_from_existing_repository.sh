@@ -1,4 +1,24 @@
 #!/bin/bash
+#---Define colors
+DOCKER__READ_FG_YELLOW=$'\e[1;33m'
+DOCKER__READ_FG_LIGHTGREEN=$'\e[1;32m'
+DOCKER__READ_FG_ORANGE=$'\e[0;33m'
+DOCKER__READ_FG_LIGHTRED=$'\e[1;31m'
+DOCKER__READ_FG_CYAN=$'\e[0;36m'
+DOCKER__READ_FG_PURPLE=$'\e[0;35m'
+DOCKER__READ_FG_RGB_GREENBLUE=$'\e[38;5;79m'
+DOCKER__READ_FG_LIGHTPINK=$'\e[30;38;5;218m'
+DOCKER__READ_NOCOLOR=$'\e[0;0m'
+
+DOCKER__READ_BG_LIGHTBLUE='\e[30;48;5;45m'
+
+#Define paths
+dockerfile_filename="dockerfile_autocreated_on"
+dockerfile_dir=/repo/LTPP3_ROOTFS/docker/dockerfiles
+
+dockerfile_fpath=""
+
+
 #---Trap ctrl-c and Call ctrl_c()
 trap CTRL_C__func INT
 
@@ -11,36 +31,6 @@ function CTRL_C__func() {
 
     exit
 }
-
-
-#---Define colors
-DOCKER__YELLOW='\033[1;33m'
-DOCKER__LIGHTGREEN='\033[1;32m'
-DOCKER__ORANGE='\033[0;33m'
-DOCKER__LIGHTRED='\033[1;31m'
-DOCKER__CYAN='\033[0;36m'
-DOCKER__PURPLE='\033[0;35m'
-DOCKER__RGB_GREENBLUE='\033[38;5;79m'
-DOCKER__NOCOLOR='\033[0;0m'
-
-DOCKER__READ_LIGHTGREEN=$'\e[1;32m'
-DOCKER__READ_ORANGE=$'\e[0;33m'
-DOCKER__READ_LIGHTRED=$'\e[1;31m'
-DOCKER__READ_PURPLE=$'\e[0;35m'
-DOCKER__READ_RGB_GREENBLUE=$'\e[38;5;79m'
-DOCKER__READ_NOCOLOR=$'\e[0;0m'
-
-DOCKER__BG_LIGHTBLUE='\e[30;48;5;45m'
-
-
-#Define paths
-dockerfile_filename="dockerfile_autocreated_on"
-dockerfile_fpath=""
-
-
-#---SHow Main Banner
-echo -e "\r"
-echo -e "${DOCKER__BG_LIGHTBLUE}                               DOCKER${DOCKER__BG_LIGHTBLUE}                               ${DOCKER__NOCOLOR}"
 
 
 #---Define subroutines
@@ -71,10 +61,10 @@ create_dockerfile__sub() {
         "ARG DEBIAN_FRONTEND=noninteractive"\
         ""\
         "#---Update local Git repository"\
-        "RUN cd ~/LTPP3_ROOTFS && git pull"\
+        "#RUN cd ~/LTPP3_ROOTFS && git pull"\
         ""\
         "#---Run Prepreparation of Disk (before Chroot)"\
-        "RUN cd ~ && ~/LTPP3_ROOTFS/build_BOOOT_BIN.sh"\
+        "#RUN cd ~ && ~/LTPP3_ROOTFS/build_BOOOT_BIN.sh"\
     )
 
 
@@ -86,13 +76,16 @@ create_dockerfile__sub() {
 }
 
 
+#---SHow Main Banner
+echo -e "\r"
+echo -e "${DOCKER__READ_BG_LIGHTBLUE}                                DOCKER${DOCKER__READ_BG_LIGHTBLUE}                                ${DOCKER__READ_NOCOLOR}"
 
 
 #---Show Docker Image List
 echo -e "\r"
-echo -e "--------------------------------------------------------------------"
-echo -e "\t${DOCKER__YELLOW}Build${DOCKER__NOCOLOR} Docker ${DOCKER__CYAN}Image${DOCKER__NOCOLOR} from existing ${DOCKER__READ_PURPLE}REPOSITORY${DOCKER__NOCOLOR}"
-echo -e "--------------------------------------------------------------------"
+echo -e "----------------------------------------------------------------------"
+echo -e "\t${DOCKER__READ_FG_YELLOW}Build${DOCKER__READ_NOCOLOR} Docker ${DOCKER__READ_FG_CYAN}Image${DOCKER__READ_NOCOLOR} from existing ${DOCKER__READ_FG_PURPLE}REPOSITORY${DOCKER__READ_NOCOLOR}"
+echo -e "----------------------------------------------------------------------"
 sudo sh -c "docker image ls"
 echo -e "\r"
 
@@ -103,7 +96,7 @@ dockerfile_timestamp=$(date +%y%m%d%H%M%S)
 while true
 do
     #Provide a CONTAINER-ID from which you want to create an Image
-    read -p "Choose a ${DOCKER__READ_PURPLE}REPOSITORY${DOCKER__READ_NOCOLOR} name from list (e.g. ubuntu_buildbin): " myrepository
+    read -p "Choose a ${DOCKER__READ_FG_PURPLE}REPOSITORY${DOCKER__READ_NOCOLOR} name from list (e.g. ubuntu_buildbin): " myrepository
     if [[ ! -z ${myrepository} ]]; then    #input is NOT an EMPTY STRING
 
         #Check if 'myrepository' is found in ' docker container ls'
@@ -116,7 +109,7 @@ do
                 myrepository_tag=$(sudo docker image ls | grep -w "${myrepository}" | awk '{print $2}')
 
                 #Provide a TAG for this new image
-                read -e -p "Provide the ${DOCKER__READ_ORANGE}TAG${DOCKER__READ_NOCOLOR} (e.g. latest) matching with REPOSITORY ${DOCKER__READ_PURPLE}${myrepository}${DOCKER__READ_NOCOLOR}: " -i ${myrepository_tag} mytag
+                read -e -p "Provide the ${DOCKER__READ_FG_LIGHTPINK}TAG${DOCKER__READ_NOCOLOR} (e.g. latest) matching with REPOSITORY ${DOCKER__READ_FG_PURPLE}${myrepository}${DOCKER__READ_NOCOLOR}: " -i ${myrepository_tag} mytag
                 if [[ ! -z ${mytag} ]]; then   #input is NOT an Empty String        
 
                     mytag_isFound=`sudo docker image ls | grep -w "${myrepository}" | grep -w "${mytag}"`    #check if 'myrepository' AND 'mytag' is found in 'docker image ls'
@@ -125,7 +118,7 @@ do
                         while true
                         do
                             #Provide a NEW CONTAINER-ID for the NEW image
-                            read -p "Provide a ${DOCKER__READ_RGB_GREENBLUE}NEW REPOSITORY${DOCKER__READ_NOCOLOR} name (e.g. ubuntu_buildbin_NEW): " myrepository_new
+                            read -p "Provide a ${DOCKER__READ_FG_RGB_GREENBLUE}NEW${DOCKER__READ_NOCOLOR} REPOSITORY name (e.g. ubuntu_buildbin_NEW): " myrepository_new
                                                     
                             #Check if 'myrepository' is UNIQUE
                             myrepository_new_isFound=`sudo docker image ls | awk '{print $1}' | grep -w ${myrepository_new}`                           
@@ -134,8 +127,9 @@ do
                                 while true
                                 do
                                     #Provide a REPOSITORY for this new image
-                                    echo -e "Provide ${DOCKER__READ_LIGHTGREEN}dockerfile location${DOCKER__READ_NOCOLOR} (e.g. /repo/LTPP3_ROOTFS): "
-                                    read -p "" mydockerfile_location_input
+                                    echo -e "Provide ${DOCKER__READ_FG_LIGHTGREEN}dockerfile location${DOCKER__READ_NOCOLOR} (e.g., /repo/LTPP3_ROOTFS/docker/dockerfiles): "
+                                    read -e -p "" -i "${dockerfile_dir}" mydockerfile_location_input
+
                                     if [[ -d ${mydockerfile_location_input} ]]; then   #input was NOT an Empty String
                                         #Generate a 'dockerfile' with content
                                         #OUTPUT: dockerfile_fpath
@@ -145,8 +139,8 @@ do
                                         echo -e "--------------------------------------------------------------------"
                                         echo -e "Summary"
                                         echo -e "--------------------------------------------------------------------"
-                                        echo -e "CREATE ${DOCKER__RGB_GREENBLUE}REPOSITORY${DOCKER__NOCOLOR}:${DOCKER__READ_ORANGE}TAG${DOCKER__READ_NOCOLOR}:\t\t${myrepository_new}:${mytag}"
-                                        echo -e "BUILD WITH ${DOCKER__READ_PURPLE}REPOSITORY${DOCKER__READ_NOCOLOR}:${DOCKER__READ_ORANGE}TAG${DOCKER__READ_NOCOLOR}:\t${myrepository}:${mytag}"                                        
+                                        echo -e "CREATE ${DOCKER__READ_FG_RGB_GREENBLUE}REPOSITORY${DOCKER__READ_NOCOLOR}:${DOCKER__READ_FG_LIGHTPINK}TAG${DOCKER__READ_NOCOLOR}:\t\t${myrepository_new}:${mytag}"
+                                        echo -e "BUILD WITH ${DOCKER__READ_FG_PURPLE}REPOSITORY${DOCKER__READ_NOCOLOR}:${DOCKER__READ_FG_LIGHTPINK}TAG${DOCKER__READ_NOCOLOR}:\t${myrepository}:${mytag}"                                        
                                         echo -e "Dockerfile Location:\t\t${dockerfile_fpath}"
                                         echo -e ""
 
@@ -154,12 +148,18 @@ do
                                         read -p "Do you wish to continue (y/n)? " myanswer
                                         if [[ ${myanswer} == "y" ]]; then
                                             sudo sh -c "docker build --tag ${myrepository_new}:${mytag} - < ${dockerfile_fpath}"
+                                            
+                                            echo -e "\r"
+                                            echo -e "\r"
+                                            sudo sh -c "docker image ls"
+                                            echo -e "\r"
+                                            echo -e "\r"
                                         fi
 
                                         exit  #Exit function
                                     else    #input was an Empty String
                                         echo -e "\r"
-                                        echo -e "***${DOCKER__LIGHTRED}ERROR${DOCKER__NOCOLOR}: unknown directory: ${mydockerfile_location_input}!!!"
+                                        echo -e "***${DOCKER__READ_FG_LIGHTRED}ERROR${DOCKER__READ_NOCOLOR}: unknown directory: ${mydockerfile_location_input}!!!"
 
                                         sleep 3
 
@@ -175,7 +175,7 @@ do
                                 done
                             else
                                 echo -e "\r"
-                                echo -e "***${DOCKER__LIGHTRED}ERROR${DOCKER__NOCOLOR}: REPOSITORY ${DOCKER__RGB_GREENBLUE}${myrepository_new}${DOCKER__NOCOLOR} already exist!!!"
+                                echo -e "***${DOCKER__READ_FG_LIGHTRED}ERROR${DOCKER__READ_NOCOLOR}: REPOSITORY ${DOCKER__READ_FG_RGB_GREENBLUE}${myrepository_new}${DOCKER__READ_NOCOLOR} already exist!!!"
 
                                 sleep 3
 
@@ -189,7 +189,7 @@ do
                         done
                     else    #input was an Empty String
                         echo -e "\r"
-                        echo -e "***${DOCKER__LIGHTRED}ERROR${DOCKER__NOCOLOR}: ${DOCKER__ORANGE}TAG${DOCKER__NOCOLOR} and ${DOCKER__READ_PURPLE}REPOSITORY${DOCKER__NOCOLOR} do NOT match!!!"
+                        echo -e "***${DOCKER__READ_FG_LIGHTRED}ERROR${DOCKER__READ_NOCOLOR}: ${DOCKER__READ_FG_LIGHTPINK}TAG${DOCKER__READ_NOCOLOR} and ${DOCKER__READ_FG_PURPLE}REPOSITORY${DOCKER__READ_NOCOLOR} do NOT match!!!"
 
                         sleep 2
 
@@ -207,7 +207,7 @@ do
             done
         else    #NO match was found
             echo -e "\r"
-            echo -e "***${DOCKER__LIGHTRED}ERROR${DOCKER__NOCOLOR}: ${DOCKER__PURPLE}${myrepository}${DOCKER__NOCOLOR} not found!!!"
+            echo -e "***${DOCKER__READ_FG_LIGHTRED}ERROR${DOCKER__READ_NOCOLOR}: ${DOCKER__READ_FG_PURPLE}${myrepository}${DOCKER__READ_NOCOLOR} not found!!!"
 
             sleep 2
 

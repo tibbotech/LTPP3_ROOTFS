@@ -1,20 +1,21 @@
 #!/bin/bash
 #---Define colors
-DOCKER__ORANGE='\033[0;33m'
-DOCKER__LIGHTRED='\033[1;31m'
-DOCKER__LIGHTGREEN='\033[1;32m'
-DOCKER__YELLOW='\033[1;33m'
-DOCKER__LIGHTBLUE='\033[1;34m'
-DOCKER__NOCOLOR='\033[0m'
+DOCKER__READ_FG_ORANGE='\033[0;33m'
+DOCKER__READ_FG_LIGHTRED='\033[1;31m'
+DOCKER__READ_FG_LIGHTGREEN='\033[1;32m'
+DOCKER__READ_FG_YELLOW='\033[1;33m'
+DOCKER__READ_FG_LIGHTBLUE='\033[1;34m'
+DOCKER__READ_FG_LIGHTCYAN=$'\e[1;36m'
+DOCKER__READ_NOCOLOR='\033[0m'
 
-DOCKER__BG_LIGHTBLUE='\e[30;48;5;45m'
+DOCKER__READ_BG_LIGHTBLUE='\e[30;48;5;45m'
 
 
 #---Define constants
-DOCKER__YES="y"
-DOCKER__FIVE_SPACES="     "
-DOCKER__LATEST="latest"
-DOCKER__EXITING_NOW="Exiting now..."
+DOCKER__READ_FG_YES="y"
+DOCKER__READ_FG_FIVE_SPACES="     "
+DOCKER__READ_FG_LATEST="latest"
+DOCKER__READ_FG_EXITING_NOW="Exiting now..."
 
 
 #---Define PATHS
@@ -31,7 +32,7 @@ trap CTRL_C__sub INT
 function CTRL_C__sub() {
     echo -e "\r"
     echo -e "\r"
-    echo -e "${DOCKER__EXITING_NOW}"
+    echo -e "${DOCKER__READ_FG_EXITING_NOW}"
     echo -e "\r"
     echo -e "\r"
 
@@ -71,7 +72,7 @@ press_any_key__localfunc() {
 #---Local functions & subroutines
 docker__load_header__sub() {
     echo -e "\r"
-    echo -e "${DOCKER__BG_LIGHTBLUE}                               DOCKER${DOCKER__BG_LIGHTBLUE}                               ${DOCKER__NOCOLOR}"
+    echo -e "${DOCKER__READ_BG_LIGHTBLUE}                                DOCKER${DOCKER__READ_BG_LIGHTBLUE}                                ${DOCKER__READ_NOCOLOR}"
 }
 
 docker__mandatory_apps_check__sub() {
@@ -83,15 +84,15 @@ docker__mandatory_apps_check__sub() {
     local qemu_user_static_isInstalled=`dpkg -l | grep "${QEMU_USER_STATIC}"`
 
     if [[ -z ${docker_io_isInstalled} ]] || [[ -z ${qemu_user_static_isInstalled} ]]; then
-        echo -e "${DOCKER__FIVE_SPACES}The following mandatory software is/are not installed:"
+        echo -e "${DOCKER__READ_FG_FIVE_SPACES}The following mandatory software is/are not installed:"
         if [[ -z ${docker_io_isInstalled} ]]; then
-            echo -e "${DOCKER__FIVE_SPACES}- docker.io"
+            echo -e "${DOCKER__READ_FG_FIVE_SPACES}- docker.io"
         fi
         if [[ -z ${qemu_user_static_isInstalled} ]]; then
-            echo -e "${DOCKER__FIVE_SPACES}- qemu-user-static"
+            echo -e "${DOCKER__READ_FG_FIVE_SPACES}- qemu-user-static"
         fi
         echo -e "\r"
-        echo -e "${DOCKER__FIVE_SPACES}PLEASE INSTALL the missing software."
+        echo -e "${DOCKER__READ_FG_FIVE_SPACES}PLEASE INSTALL the missing software."
         echo -e "\r"
         
         press_any_key__localfunc
@@ -111,10 +112,10 @@ docker__get_this_running_script_dir__sub() {
     docker__your_repodir_LTPP3_ROOTFS_README_md_fpath=${docker__your_repodir_LTPP3_ROOTFS_dir}/${docker__README_md_filename}
 
     if [[ ! -f ${docker__your_repodir_LTPP3_ROOTFS_LICENSE_fpath} ]] && [[ ! -f ${docker__your_repodir_LTPP3_ROOTFS_README_md_fpath} ]]; then
-        echo -e "***${DOCKER__LIGHTRED}ERROR${DOCKER__NOCOLOR}: script '${DOCKER__ORANGE}${script_basename}${DOCKER__NOCOLOR}' might not be up-to-date."
+        echo -e "***${DOCKER__READ_FG_LIGHTRED}ERROR${DOCKER__READ_NOCOLOR}: script '${DOCKER__READ_FG_ORANGE}${script_basename}${DOCKER__READ_NOCOLOR}' might not be up-to-date."
         echo -e "Please use 'git pull' to update the scripts and then try again..."
         echo -e "\r"
-        echo -e "${DOCKER__EXITING_NOW}"
+        echo -e "${DOCKER__READ_FG_EXITING_NOW}"
         echo -e "\r"
         echo -e "\r"
 
@@ -138,12 +139,12 @@ docker__show_dockerfile_list_files__sub() {
     #Check if '' is an EMPTY STRING
     if [[ -z ${dockerfile_list_fpath_string} ]]; then
         echo -e "\r"
-        echo -e "--------------------------------------------------------------------"
-        echo -e "***${DOCKER__LIGHTRED}ERROR${DOCKER__NOCOLOR}: no files found in directory:"
-        echo -e "${DOCKER__FIVE_SPACES}${docker__your_repodir_LTPP3_ROOTFS_docker_list_dir}"
+        echo -e "----------------------------------------------------------------------"
+        echo -e "***${DOCKER__READ_FG_LIGHTRED}ERROR${DOCKER__READ_NOCOLOR}: no files found in directory:"
+        echo -e "${DOCKER__READ_FG_FIVE_SPACES}${docker__your_repodir_LTPP3_ROOTFS_docker_list_dir}"
         echo -e "\r"
-        echo -e "Please put all ${DOCKER__YELLOW}dockerfile-list${DOCKER__NOCOLOR} files in this directory"
-        echo -e "--------------------------------------------------------------------"
+        echo -e "Please put all ${DOCKER__READ_FG_YELLOW}dockerfile-list${DOCKER__READ_NOCOLOR} files in this directory"
+        echo -e DOCKER__READ_FG_NOCOLOR
         echo -e "\r"
         echo -e "\r"
 
@@ -162,21 +163,21 @@ docker__show_dockerfile_list_files__sub() {
 
         #Show all 'dockerfile-list' files
         echo -e "\r"
-        echo -e "--------------------------------------------------------------------"
-        echo -e "Overview of all ${DOCKER__YELLOW}dockerfile-list${DOCKER__NOCOLOR} files"
-        echo -e "--------------------------------------------------------------------"
+        echo -e "----------------------------------------------------------------------"
+        echo -e "Overview of all ${DOCKER__READ_FG_YELLOW}dockerfile-list${DOCKER__READ_NOCOLOR} files"
+        echo -e "----------------------------------------------------------------------"
         for arr_line in "${dockerfile_list_fpath_arr[@]}"
         do
             #Get filename only
             dockerfile_list_filename=`basename ${arr_line}`  
         
             #Show filename
-            echo -e "${DOCKER__FIVE_SPACES}${seqnum}. ${dockerfile_list_filename}"
+            echo -e "${DOCKER__READ_FG_FIVE_SPACES}${seqnum}. ${dockerfile_list_filename}"
 
             #increment sequence-number
             seqnum=$((seqnum+1))
         done
-        echo -e "--------------------------------------------------------------------"
+        echo -e "----------------------------------------------------------------------"
 
         #Read-input handler
         while true
@@ -212,15 +213,15 @@ docker__show_dockerfile_list_files__sub() {
 
         #Show chosen file contents
         echo -e "\r"
-        echo -e "--------------------------------------------------------------------"
-        echo -e "Contents of File '${dockerfile_list_filename}'"
-        echo -e "--------------------------------------------------------------------"
+        echo -e "----------------------------------------------------------------------"
+        echo -e "Contents of File ${DOCKER__READ_FG_LIGHTCYAN}${dockerfile_list_filename}${DOCKER__READ_NOCOLOR}"
+        echo -e "----------------------------------------------------------------------"
         while read file_line
         do
-            echo -e "${DOCKER__FIVE_SPACES}${file_line}"
+            echo -e "${DOCKER__READ_FG_FIVE_SPACES}${file_line}"
 
         done < ${docker__dockerfile_list_fpath}
-        echo -e "--------------------------------------------------------------------"
+        echo -e "----------------------------------------------------------------------"
 
         #Read-input handler
         while true
@@ -234,7 +235,7 @@ docker__show_dockerfile_list_files__sub() {
                 echo -e "\r"
                 echo -e "\r"
 
-                if [[ ${mychoice} == ${DOCKER__YES} ]]; then
+                if [[ ${mychoice} == ${DOCKER__READ_FG_YES} ]]; then
                     return  #exit function
                 else
                     break   #exit THIS loop
@@ -252,16 +253,16 @@ docker__checkif_cmd_exec_was_successful__sub() {
     
     if [[ ${exit_code} -eq 0 ]]; then
         echo -e "\r"
-        echo -e "script was executed ${DOCKER__LIGHTGREEN}successfully${DOCKER__NOCOLOR}..."
+        echo -e "script was executed ${DOCKER__READ_FG_LIGHTGREEN}successfully${DOCKER__READ_NOCOLOR}..."
         echo -e "\r"
 
     else
         echo -e "\r"
-        echo -e "***${DOCKER__LIGHTRED}ERROR${DOCKER__NOCOLOR}: script was stopped due to an error occurred..."
+        echo -e "***${DOCKER__READ_FG_LIGHTRED}ERROR${DOCKER__READ_NOCOLOR}: script was stopped due to an error occurred..."
         echo -e "\r"
         echo -e "Please resolve the issue..."
         echo -e "\r"
-        echo -e "${DOCKER__EXITING_NOW}"
+        echo -e "${DOCKER__READ_FG_EXITING_NOW}"
         echo -e "\r"
         echo -e "\r"
 
@@ -280,7 +281,7 @@ docker__run_dockercmd_with_error_check__sub() {
 
     #Check if '' is an EMPTY STRING
     if [[ -z ${dockerfile_repository_tag} ]]; then
-        dockerfile_repository_tag="${dockerfile}:${DOCKER__LATEST}"
+        dockerfile_repository_tag="${dockerfile}:${DOCKER__READ_FG_LATEST}"
     fi
 
     #Define Docker command
@@ -288,7 +289,7 @@ docker__run_dockercmd_with_error_check__sub() {
 
     #Execute Docker command
     echo -e "\r"
-    echo -e "Running: ${DOCKER__ORANGE}${dockerfile_fpath}${DOCKER__NOCOLOR}"
+    echo -e "Running: ${DOCKER__READ_FG_ORANGE}${dockerfile_fpath}${DOCKER__READ_NOCOLOR}"
     echo -e "\r"
 
     sudo sh -c "${dockercmd}" #execute cmd

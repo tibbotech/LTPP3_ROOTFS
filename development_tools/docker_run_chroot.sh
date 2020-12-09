@@ -1,10 +1,12 @@
 #!/bin/bash
 #---Define colors
-DOCKER__YELLOW='\033[1;33m'
-DOCKER__LIGHTBLUE='\033[1;34m'
-DOCKER__NOCOLOR='\033[0m'
+DOCKER__READ_FG_LIGHTRED=$'\e[1;31m'
+DOCKER__READ_FG_YELLOW=$'\e[1;33m'
+DOCKER__READ_FG_LIGHTBLUE=$'\e[1;34m'
+DOCKER__READ_FG_LIGHTCYAN=$'\e[1;36m'
+DOCKER__READ_NOCOLOR=$'\e[0m'
 
-DOCKER__BG_LIGHTBLUE='\e[30;48;5;45m'
+DOCKER__READ_BG_LIGHTBLUE='\e[30;48;5;45m'
 
 #---Define PATHS
 SP7xxx_foldername="SP7021"
@@ -29,7 +31,7 @@ trap CTRL_C__sub INT
 function CTRL_C__sub() {
     echo -e "\r"
     echo -e "\r"
-    echo -e "${DOCKER__EXITING_NOW}"
+    echo -e "${DOCKER__READ_FG_EXITING_NOW}"
     echo -e "\r"
     echo -e "\r"
 
@@ -38,7 +40,7 @@ function CTRL_C__sub() {
 
 press_any_key__localfunc() {
 	#Define constants
-	local cTIMEOUT_ANYKEY=10
+	local cTIMEOUT_ANYKEY=3
 
 	#Initialize variables
 	local keypressed=""
@@ -72,17 +74,20 @@ press_any_key__localfunc() {
 #SHOW DOCKER BANNER
 docker__load_header__sub() {
     echo -e "\r"
-    echo -e "${DOCKER__BG_LIGHTBLUE}                               DOCKER${DOCKER__BG_LIGHTBLUE}                               ${DOCKER__NOCOLOR}"
+    echo -e "${DOCKER__READ_BG_LIGHTBLUE}                               DOCKER${DOCKER__READ_BG_LIGHTBLUE}                               ${DOCKER__READ_NOCOLOR}"
 }
 
 docker__mandatory_apps_check__sub() {
     echo -e "\r"
     echo -e "Before we continue..."
     echo -e "\r"
-    echo -e "Please make sure that to have ${DOCKER__YELLOW}manually${DOCKER__NOCOLOR} installed '${qemu_user_static_filename}'"
-    echo -e "\r"
-    echo -e "Using the already ${DOCKER__YELLOW}built-in${DOCKER__NOCOLOR} '${qemu_user_static_filename}' may result in errors."
-    echo -e "\r"
+    echo -e "Please make sure that to have ${DOCKER__READ_FG_YELLOW}manually${DOCKER__READ_NOCOLOR} installed ${DOCKER__READ_FG_LIGHTCYAN}${qemu_user_static_filename}${DOCKER__READ_NOCOLOR}..."
+
+    press_any_key__localfunc
+
+    echo -e "\r"  
+    echo -e "\r"    
+    echo -e "Using the already ${DOCKER__READ_FG_YELLOW}built-in${DOCKER__READ_NOCOLOR} ${DOCKER__READ_FG_LIGHTCYAN}${qemu_user_static_filename}${DOCKER__READ_NOCOLOR} may result in ${DOCKER__READ_FG_LIGHTRED}ERRORs${DOCKER__READ_NOCOLOR}."
 
     press_any_key__localfunc
 }
