@@ -24,6 +24,7 @@ DOCKER__YELLOW='\033[1;33m'
 DOCKER__ORANGE='\033[0;33m'
 DOCKER__LIGHTRED='\033[1;31m'
 
+DOCKER__BG_WHITE='\e[30;48;5;15m'
 DOCKER__BG_LIGHTBLUE='\e[30;48;5;45m'
 
 DOCKER__READ_LIGHTRED=$'\e[1;31m'
@@ -54,8 +55,8 @@ sudo sh -c "docker container ls"
 #---Choose to Copy from Inside to Outside or Vice versa
 echo -e "\r"
 echo -e "Do you wish to Copy from:"
-echo -e "${DOCKER__SPACE}1. INSIDE > OUTSIDE container"
-echo -e "${DOCKER__SPACE}2. OUTSIDE > INSIDE container"
+echo -e "${DOCKER__SPACE}1. ${DOCKER__BG_WHITE}INSIDE${DOCKER__NOCOLOR} > OUTSIDE container"
+echo -e "${DOCKER__SPACE}2. OUTSIDE > ${DOCKER__BG_WHITE}INSIDE${DOCKER__NOCOLOR} container"
 echo -e "\r"
 
 while true
