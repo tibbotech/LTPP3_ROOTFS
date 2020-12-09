@@ -13,8 +13,8 @@ function CTRL_C_func() {
 }
 
 #---Define colors
-DOCKER__NOCOLOR='\033[0;0m'
-DOCKER__BG_LIGHTBLUE='\e[30;48;5;45m'
+DOCKER__READ_FG_NOCOLOR=$'\e[0;0m'
+DOCKER__READ_BG_LIGHTBLUE='\e[30;48;5;45m'
 
 #---Define variables
 enkrypted_text__filename="enkrypted_git_txt.bin"
@@ -30,27 +30,26 @@ enkrypted_text__fpath=${home_scripts_encrypted_keys_dir}/${enkrypted_text__filen
 
 #---Show Main Banner
 echo -e "\r"
-echo -e "${DOCKER__BG_LIGHTBLUE}                            GIT PUSH${DOCKER__BG_LIGHTBLUE}                             ${DOCKER__NOCOLOR}"
+echo -e "${DOCKER__READ_BG_LIGHTBLUE}                            GIT PUSH${DOCKER__READ_BG_LIGHTBLUE}                             ${DOCKER__READ_FG_NOCOLOR}"
 
 
-
-#login
+#---Login
 username="imcase"
 
 if [[ -f ${enkrypted_text__fpath} ]] && [[ -f ${krypt_key__fpath} ]] ; then
-	password=`openssl rsautl -inkey ${krypt_key__fpath} -decrypt < ${enkrypted_text__fpath}`
+	password=`sudo sh -c "openssl rsautl -inkey ${krypt_key__fpath} -decrypt < ${enkrypted_text__fpath}"`
 else
     echo -e "\r"
 	read -e  -r -s -p "${username}-Password: " password
 fi
 
-#Add items to commit
+#---Add items to commit
 sudo sh -c "git add ."
 
-#timespan
+#---Timespan
 ts_current=$(date +%Y%m%d_%H%M%S)
 
-#Commit
+#---Commit
 echo -e "\r"
 read -p "Provide a description for this commit: " commit_description
 
