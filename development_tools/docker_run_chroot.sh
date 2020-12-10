@@ -1,28 +1,27 @@
 #!/bin/bash
 #---Define colors
-DOCKER__READ_FG_LIGHTRED=$'\e[1;31m'
-DOCKER__READ_FG_YELLOW=$'\e[1;33m'
-DOCKER__READ_FG_LIGHTBLUE=$'\e[1;34m'
-DOCKER__READ_FG_LIGHTCYAN=$'\e[1;36m'
-DOCKER__READ_NOCOLOR=$'\e[0m'
+DOCKER__NOCOLOR=$'\e[0m'
+DOCKER__ERROR_FG_LIGHTRED=$'\e[1;31m'
+DOCKER__GENERAL_FG_YELLOW=$'\e[1;33m'
+DOCKER__FILES_FG_ORANGE=$'\e[30;38;5;215m'
 
-DOCKER__READ_BG_LIGHTBLUE='\e[30;48;5;45m'
+DOCKER__TITLE_BG_LIGHTBLUE='\e[30;48;5;45m'
 
 #---Define PATHS
-SP7xxx_foldername="SP7021"
-disk_foldername="disk"
-qemu_user_static_filename="qemu-user-static"
+docker__SP7xxx_foldername="SP7021"
+docker__disk_foldername="disk"
+docker__qemu_user_static_filename="qemu-user-static"
 
-usr_dir=/usr
-usr_bin_dir=${usr_dir}/bin
+docker__usr_dir=/usr
+docker__usr_bin_dir=${docker__usr_dir}/bin
 
-home_dir=~
-SP7xxx_dir=${home_dir}/${SP7xxx_foldername}
-SP7xxx_linux_rootfs_initramfs_dir=${SP7xxx_dir}/linux/rootfs/initramfs
-SP7xxx_linux_rootfs_initramfs_disk_dir=${SP7xxx_linux_rootfs_initramfs_dir}/${disk_foldername}
+docker__home_dir=~
+docker__SP7xxx_dir=${docker__home_dir}/${docker__SP7xxx_foldername}
+docker__SP7xxx_linux_rootfs_initramfs_dir=${docker__SP7xxx_dir}/linux/rootfs/initramfs
+docker__SP7xxx_linux_rootfs_initramfs_disk_dir=${docker__SP7xxx_linux_rootfs_initramfs_dir}/${docker__disk_foldername}
 
-qemu_fpath=${usr_bin_dir}/qemu-arm-static
-bash_fpath=${usr_bin_dir}/bash
+docker__qemu_fpath=${docker__usr_bin_dir}/qemu-arm-static
+docker__bash_fpath=${docker__usr_bin_dir}/bash
 
 
 #---Trap ctrl-c and Call ctrl_c()
@@ -40,7 +39,7 @@ function CTRL_C__sub() {
 
 press_any_key__localfunc() {
 	#Define constants
-	local cTIMEOUT_ANYKEY=3
+	local cTIMEOUT_ANYKEY=10
 
 	#Initialize variables
 	local keypressed=""
@@ -74,20 +73,20 @@ press_any_key__localfunc() {
 #SHOW DOCKER BANNER
 docker__load_header__sub() {
     echo -e "\r"
-    echo -e "${DOCKER__READ_BG_LIGHTBLUE}                               DOCKER${DOCKER__READ_BG_LIGHTBLUE}                               ${DOCKER__READ_NOCOLOR}"
+    echo -e "${DOCKER__TITLE_BG_LIGHTBLUE}                               DOCKER${DOCKER__TITLE_BG_LIGHTBLUE}                               ${DOCKER__NOCOLOR}"
 }
 
 docker__mandatory_apps_check__sub() {
     echo -e "\r"
     echo -e "Before we continue..."
     echo -e "\r"
-    echo -e "Please make sure that to have ${DOCKER__READ_FG_YELLOW}manually${DOCKER__READ_NOCOLOR} installed ${DOCKER__READ_FG_LIGHTCYAN}${qemu_user_static_filename}${DOCKER__READ_NOCOLOR}..."
+    echo -e "Please make sure that to have ${DOCKER__GENERAL_FG_YELLOW}manually${DOCKER__NOCOLOR} installed ${DOCKER__FILES_FG_ORANGE}${docker__qemu_user_static_filename}${DOCKER__NOCOLOR}..."
 
     press_any_key__localfunc
 
     echo -e "\r"  
     echo -e "\r"    
-    echo -e "Using the already ${DOCKER__READ_FG_YELLOW}built-in${DOCKER__READ_NOCOLOR} ${DOCKER__READ_FG_LIGHTCYAN}${qemu_user_static_filename}${DOCKER__READ_NOCOLOR} may result in ${DOCKER__READ_FG_LIGHTRED}ERRORs${DOCKER__READ_NOCOLOR}."
+    echo -e "Using the already ${DOCKER__GENERAL_FG_YELLOW}built-in${DOCKER__NOCOLOR} ${DOCKER__FILES_FG_ORANGE}${docker__qemu_user_static_filename}${DOCKER__NOCOLOR} may result in ${DOCKER__ERROR_FG_LIGHTRED}ERRORs${DOCKER__NOCOLOR}."
 
     press_any_key__localfunc
 }
@@ -100,7 +99,7 @@ docker__run_script__sub() {
     echo -e "REMARK:"
     echo -e "\tTo EXIT 'chroot', type 'exit'"
         echo -e "--------------------------------------------------------------------"
-    chroot ${SP7xxx_linux_rootfs_initramfs_disk_dir} ${qemu_fpath} ${bash_fpath}
+    chroot ${docker__SP7xxx_linux_rootfs_initramfs_disk_dir} ${docker__qemu_fpath} ${docker__bash_fpath}
 }
 
 docker__main__sub(){

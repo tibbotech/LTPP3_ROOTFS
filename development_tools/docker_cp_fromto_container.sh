@@ -2,24 +2,29 @@
 #---Define constants
 DOCKER__SPACE=" "
 
-
 #---Define colors
-DOCKER__READ_NOCOLOR=$'\e[0;0m'
-DOCKER__READ_FG_LIGHTRED=$'\e[1;31m'
-DOCKER__READ_FG_PURPLE=$'\e[0;35m'
-DOCKER__READ_FG_YELLOW=$'\e[1;33m'
-DOCKER__READ_FG_ORANGE=$'\e[30;38;5;208m'
-DOCKER__READ_FG_PURPLE=$'\e[0;35m'
+DOCKER__NOCOLOR=$'\e[0;0m'
+DOCKER__ERROR_FG_LIGHTRED=$'\e[1;31m'
+DOCKER__REPOSITORY_FG_PURPLE=$'\e[30;38;5;93m'
+DOCKER__INSIDE_FG_LIGHTGREY=$'\e[30;38;5;246m'
+DOCKER__OUTSIDE_FG_WHITE=$'\e[30;38;5;231m'
 
-DOCKER__READ_BG_WHITE=$'\e[30;48;5;15m'
-DOCKER__READ_BG_LIGHTBLUE=$'\e[30;48;5;45m'
-DOCKER__READ_BG_LIGHTPINK=$'\e[30;48;5;218m'
+DOCKER__TITLE_BG_LIGHTBLUE='\e[30;48;5;45m'
+DOCKER__INSIDE_BG_WHITE=$'\e[30;48;5;15m'
+DOCKER__OUTSIDE_BG_LIGHTGREY=$'\e[30;48;5;246m'
 
+
+#---Define variables
+docker__mycopychoice=""
+docker__mycontainerid=""
+docker__mysource_dir=""
+docker__mysource_filename=""
+docker__mydest_dir=""
+docker__myanswer=""
 
 #---Define PATHS
 DOCKER__ISPBOOOT_BIN_FILENAME="ISPBOOOT.BIN"
-
-docker__current_dir=`pwd`
+DOCKER__CURR_DIR=`pwd`
 DOCKER__ROOT_SP7XXX_OUT_DIR=/root/SP7021/out
 
 
@@ -36,7 +41,37 @@ function CTRL_C_func() {
     exit
 }
 
-#---Local Functions
+#---Local functions & subroutines
+press_any_key__localfunc() {
+	#Define constants
+	local cTIMEOUT_ANYKEY=10
+
+	#Initialize variables
+	local keypressed=""
+	local tcounter=0
+
+	#Show Press Any Key message with count-down
+	echo -e "\r"
+	while [[ ${tcounter} -le ${cTIMEOUT_ANYKEY} ]];
+	do
+		delta_tcounter=$(( ${cTIMEOUT_ANYKEY} - ${tcounter} ))
+
+		echo -e "\rPress (a)bort or any key to continue... (${delta_tcounter}) \c"
+		read -N 1 -t 1 -s -r keypressed
+
+		if [[ ! -z "${keypressed}" ]]; then
+			if [[ "${keypressed}" == "a" ]] || [[ "${keypressed}" == "A" ]]; then
+				exit
+			else
+				break
+			fi
+		fi
+		
+		tcounter=$((tcounter+1))
+	done
+	echo -e "\r"
+}
+
 function cell__remove_whitespaces__func() {
     #Input args
     local orgstring=${1}
@@ -48,209 +83,257 @@ function cell__remove_whitespaces__func() {
     echo ${outputstring}
 }
 
+docker__load_header__sub() {
+    echo -e "\r"
+    echo -e "${DOCKER__TITLE_BG_LIGHTBLUE}                                DOCKER${DOCKER__TITLE_BG_LIGHTBLUE}                                ${DOCKER__NOCOLOR}"
+}
 
-#---Show Main Banner
-echo -e "\r"
-echo -e "${DOCKER__READ_BG_LIGHTBLUE}                                DOCKER${DOCKER__READ_BG_LIGHTBLUE}                                ${DOCKER__READ_NOCOLOR}"
+docker__choose_copy_direction__sub() {
+	echo -e "\r"
+	echo -e "Do you wish to Copy from:"
+	echo -e "${DOCKER__SPACE}1. ${DOCKER__INSIDE_BG_WHITE}${DOCKER__INSIDE_FG_LIGHTGREY}INSIDE${DOCKER__NOCOLOR} > ${DOCKER__OUTSIDE_BG_LIGHTGREY}${DOCKER__OUTSIDE_FG_WHITE}OUTSIDE${DOCKER__NOCOLOR} container"
+	echo -e "${DOCKER__SPACE}2. ${DOCKER__OUTSIDE_BG_LIGHTGREY}${DOCKER__OUTSIDE_FG_WHITE}OUTSIDE${DOCKER__NOCOLOR} > ${DOCKER__INSIDE_BG_WHITE}${DOCKER__INSIDE_FG_LIGHTGREY}INSIDE${DOCKER__NOCOLOR} container"
+	echo -e "\r"
 
+	while true
+	do
+		read -N1 -p "Choose an option: " docker__mycopychoice
 
-#---Choose to Copy from Inside to Outside or Vice versa
-echo -e "\r"
-echo -e "Do you wish to Copy from:"
-echo -e "${DOCKER__SPACE}1. ${DOCKER__READ_BG_WHITE}INSIDE${DOCKER__READ_NOCOLOR} > ${DOCKER__READ_BG_LIGHTPINK}OUTSIDE${DOCKER__READ_NOCOLOR} container"
-echo -e "${DOCKER__SPACE}2. ${DOCKER__READ_BG_LIGHTPINK}OUTSIDE${DOCKER__READ_NOCOLOR} > ${DOCKER__READ_BG_WHITE}INSIDE${DOCKER__READ_NOCOLOR} container"
-echo -e "\r"
+		docker__mycopychoice=`cell__remove_whitespaces__func "${docker__mycopychoice}"`
 
-while true
-do
-	read -N1 -p "Choose an option: " mycopychoice
+		if [[ ! -z ${docker__mycopychoice} ]]; then
+			if [[ ${docker__mycopychoice} =~ [1,2] ]]; then
+				echo -e "\r"
 
-	mycopychoice=`cell__remove_whitespaces__func "${mycopychoice}"`
+				break  
+			else
+				echo -e "\r"
+				echo -e "***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Invalid option '${docker__mycopychoice}'"
 
-	if [[ ! -z ${mycopychoice} ]]; then
-		if [[ ${mycopychoice} =~ [1,2] ]]; then
-			break      
+				press_any_key__localfunc
+
+				tput cuu1
+				tput el
+				tput cuu1
+				tput el
+				tput cuu1
+				tput el
+				tput cuu1
+				tput el
+			fi
 		else
-			echo -e "\r"
-			echo -e "***${DOCKER__READ_FG_LIGHTRED}ERROR${DOCKER__READ_NOCOLOR}: Invalid option '${mycopychoice}'"
-
-			sleep 1
-
-			tput cuu1
-			tput el
 			tput cuu1
 			tput el
 		fi
-	else
-		tput cuu1
-		tput el
-	fi
-done
+	done
+}
 
-#---Show Docker Containers' List
-echo -e "\r"
-echo -e "----------------------------------------------------------------------"
-echo -e "\tDocker '${DOCKER__READ_FG_YELLOW}Containers${DOCKER__READ_NOCOLOR}' List"
-echo -e "----------------------------------------------------------------------"
-sudo sh -c "docker container ls"
+docker__choose_containerid__sub() {
+    #Get number of containers
+    local numof_containers=`sudo sh -c "docker container ls | head -n -1 | wc -l"`
 
-#Choose a docker container id
-echo -e "\r"
+    #---Show Docker Image List
+    echo -e "\r"
+    echo -e "----------------------------------------------------------------------"
+    echo -e "\t${DOCKER__GENERAL_FG_YELLOW}Create${DOCKER__NOCOLOR} Docker ${DOCKER__IMAGEID_FG_BORDEAUX}IMAGE${DOCKER__NOCOLOR} from ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}CONTAINER${DOCKER__NOCOLOR}"
+    echo -e "----------------------------------------------------------------------"
+        sudo sh -c "docker container ls"
 
-while true
-do
-	read -p "Provide the ${DOCKER__READ_FG_PURPLE}CONTAINER-ID${DOCKER__READ_NOCOLOR}: " mycontainerid
-	
-	mycontainerid=`cell__remove_whitespaces__func "${mycontainerid}"`
+        if [[ ${numof_containers} -eq 0 ]]; then
+            echo -e "\r"
+            echo -e "\t\t=:${DOCKER__ERROR_FG_LIGHTRED}NO CONTAINERS FOUND${DOCKER__NOCOLOR}:="
+            echo -e "----------------------------------------------------------------------"
+            echo -e "\r"
 
-	if [[ ! -z ${mycontainerid} ]]; then
-		mycontainerid_isFound=`sudo docker container ls | awk '{print $1}' | grep -w ${mycontainerid}`
+            exit
+        else
+            echo -e "----------------------------------------------------------------------"
+        fi
+    echo -e "\r"
+
+	while true
+	do
+		read -p "Provide the ${DOCKER__REPOSITORY_FG_PURPLE}CONTAINER-ID${DOCKER__NOCOLOR}: " docker__mycontainerid
 		
-		if [[ ! -z ${mycontainerid_isFound} ]]; then
-			break         
+		docker__mycontainerid=`cell__remove_whitespaces__func "${docker__mycontainerid}"`
+
+		if [[ ! -z ${docker__mycontainerid} ]]; then
+			docker__mycontainerid_isFound=`sudo docker container ls | awk '{print $1}' | grep -w ${docker__mycontainerid}`
+			
+			if [[ ! -z ${docker__mycontainerid_isFound} ]]; then
+				break         
+			else
+				echo -e "\r"
+				echo -e "***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Invalid CONTAINER-ID: '${DOCKER__LIGHTRED}${docker__mycontainerid}${DOCKER__NOCOLOR}'"
+
+				press_any_key__localfunc
+
+				tput cuu1
+				tput el
+				tput cuu1
+				tput el
+				tput cuu1
+				tput el
+				tput cuu1
+				tput el
+				tput cuu1
+				tput el
+				tput cuu1
+				tput el
+			fi
 		else
-			echo -e "\r"
-			echo -e "***${DOCKER__READ_FG_LIGHTRED}ERROR${DOCKER__READ_NOCOLOR}: Invalid CONTAINER-ID: '${DOCKER__LIGHTRED}${mycontainerid}${DOCKER__READ_NOCOLOR}'"
-
-			sleep 2
-
-			tput cuu1
-			tput el
-			tput cuu1
-			tput el
 			tput cuu1
 			tput el
 		fi
+	done
+}
+
+docker__get_source_destination_fpath__sub() {
+	if [[ ${docker__mycopychoice} -eq 1 ]]; then
+		#---SOURCE: Provide the Location of the file which you want to copy (located INSIDE the container!)
+		echo -e "\r"
+		while true
+		do
+			read -e -p "Input SOURCE-DIR (${DOCKER__INSIDE_BG_WHITE}${DOCKER__INSIDE_FG_LIGHTGREY}INSIDE${DOCKER__NOCOLOR}): " -i "${DOCKER__ROOT_SP7XXX_OUT_DIR}" docker__mysource_dir
+
+			if [[ ! -z ${docker__mysource_dir} ]]; then
+				break
+			else
+				tput cuu1
+			fi
+		done
+
+		#---SOURCE: Provide the file which you want to copy (located INSIDE the container!)
+		echo -e "\r"
+		while true
+		do
+			read -e -p "Input SOURCE-FILE (${DOCKER__INSIDE_BG_WHITE}${DOCKER__INSIDE_FG_LIGHTGREY}INSIDE${DOCKER__NOCOLOR}): " -i "${DOCKER__ISPBOOOT_BIN_FILENAME}" docker__mysource_filename
+
+			if [[ ! -z ${docker__mysource_filename} ]]; then
+				break
+			fi
+		done
+
+		#---DESTINATION: Provide the location where you want to copy to (located OUTSIDE the container!)
+		echo -e "\r"
+		while true
+		do
+			read -e -p "Input DEST-DIR (${DOCKER__OUTSIDE_BG_LIGHTGREY}${DOCKER__OUTSIDE_FG_WHITE}OUTSIDE${DOCKER__NOCOLOR}): " -i "${DOCKER__CURR_DIR}" docker__mydest_dir
+
+			if [[ ! -z ${docker__mydest_dir} ]]; then
+				break
+			fi
+		done
+
+
+		#---Summary
+		echo -e "\r"
+		echo -e "--------------------------------------------------------------------"
+		echo "Overview:"
+		echo -e "--------------------------------------------------------------------"
+		echo "${DOCKER__INSIDE_BG_WHITE}Source Full-path${DOCKER__NOCOLOR}: ${docker__mysource_dir}/${docker__mysource_filename}"
+		echo "${DOCKER__OUTSIDE_BG_LIGHTGREY}Destination Full-path${DOCKER__NOCOLOR}: ${docker__mydest_dir}/${docker__mysource_filename}"
+		echo -e "--------------------------------------------------------------------"
+		echo -e "\r"
 	else
-		tput cuu1
-		tput el
+		#---SOURCE: Provide the location where you want to copy to (located OUTSIDE the container!)
+		echo -e "\r"
+		while true
+		do
+			read -e -p "Input SOURCE-DIR (${DOCKER__OUTSIDE_BG_LIGHTGREY}${DOCKER__OUTSIDE_FG_WHITE}OUTSIDE${DOCKER__NOCOLOR}): " -i "${DOCKER__CURR_DIR}" docker__mysource_dir 
+
+			if [[ ! -z ${docker__mysource_dir} ]]; then
+				break
+			fi
+		done	
+
+		#---SOURCE: Provide the file which you want to copy (located INSIDE the container!)
+		echo -e "\r"
+		while true
+		do
+			read -e -p "Input SOURCE-FILE (${DOCKER__OUTSIDE_BG_LIGHTGREY}${DOCKER__OUTSIDE_FG_WHITE}OUTSIDE${DOCKER__NOCOLOR}): " -i "${DOCKER__ISPBOOOT_BIN_FILENAME}" docker__mysource_filename
+
+			if [[ ! -z ${docker__mysource_filename} ]]; then
+				break
+			fi
+		done
+
+		#---DESTINATION: Provide the Location of the file which you want to copy (located INSIDE the container!)
+		echo -e "\r"
+		while true
+		do
+			read -e -p "Input DEST-DIR (${DOCKER__INSIDE_BG_WHITE}${DOCKER__INSIDE_FG_LIGHTGREY}INSIDE${DOCKER__NOCOLOR}): " -i "${DOCKER__ROOT_SP7XXX_OUT_DIR}" docker__mydest_dir
+
+			if [[ ! -z ${docker__mydest_dir} ]]; then
+				break
+			fi
+		done
+
+		#---Summary
+		echo -e "\r"
+		echo -e "--------------------------------------------------------------------"
+		echo "Overview:"
+		echo -e "--------------------------------------------------------------------"
+		echo "${DOCKER__OUTSIDE_BG_LIGHTGREY}Source Full-path${DOCKER__NOCOLOR}: ${docker__mysource_dir}/${docker__mysource_filename}"
+		echo "${DOCKER__INSIDE_BG_WHITE}Destination Full-path${DOCKER__NOCOLOR}: ${docker__mydest_dir}/${docker__mysource_filename}"
+		echo -e "--------------------------------------------------------------------"
+		echo -e "\r"
 	fi
-done
+}
 
-
-if [[ ${mycopychoice} -eq 1 ]]; then
-	#---SOURCE: Provide the Location of the file which you want to copy (located INSIDE the container!)
-	echo -e "\r"
+docker__copy_from_source_to_destination__sub() {
 	while true
 	do
-		read -e -p "Provide ${DOCKER__READ_BG_WHITE}Source-Location${DOCKER__READ_NOCOLOR} (inside Container): " -i "${DOCKER__ROOT_SP7XXX_OUT_DIR}" mysource_dir
+		read -N1 -p "Do you wish to continue (y/n)?" docker__myanswer
 
-		if [[ ! -z ${mysource_dir} ]]; then
-			break
-		else
-			tput cuu1
-		fi
-	done
+		docker__myanswer=`cell__remove_whitespaces__func "${docker__myanswer}"`
 
-	#---SOURCE: Provide the file which you want to copy (located INSIDE the container!)
-	echo -e "\r"
-	while true
-	do
-		read -e -p "Provide ${DOCKER__READ_BG_WHITE}Source-Filename${DOCKER__READ_NOCOLOR} (inside Container): " -i "${DOCKER__ISPBOOOT_BIN_FILENAME}" mysource_filename
+		if [[ ! -z ${docker__myanswer} ]]; then
+			if [[ ${docker__myanswer} =~ [y,n] ]]; then
+				break
+			else
+				echo -e "\r"	#add empty line (necessary to clean 'read' line)
 
-		if [[ ! -z ${mysource_filename} ]]; then
-			break
-		fi
-	done
-
-	#---DESTINATION: Provide the location where you want to copy to (located OUTSIDE the container!)
-	echo -e "\r"
-	while true
-	do
-		read -e -p "Provide ${DOCKER__READ_BG_LIGHTPINK}Destination-Location${DOCKER__READ_NOCOLOR} (outside Container): " -i "${docker__current_dir}" mydest_dir
-
-		if [[ ! -z ${mydest_dir} ]]; then
-			break
-		fi
-	done
-
-
-	#---Summary
-	echo -e "\r"
-	echo -e "--------------------------------------------------------------------"
-	echo "Overview:"
-	echo -e "--------------------------------------------------------------------"
-	echo "${DOCKER__READ_BG_WHITE}Source Full-path${DOCKER__READ_NOCOLOR}: ${mysource_dir}/${mysource_filename}"
-	echo "${DOCKER__READ_BG_LIGHTPINK}Destination Full-path${DOCKER__READ_NOCOLOR}: ${mydest_dir}/${mysource_filename}"
-	echo -e "--------------------------------------------------------------------"
-
-else
-	#---SOURCE: Provide the location where you want to copy to (located OUTSIDE the container!)
-	echo -e "\r"
-	while true
-	do
-		read -e -p "Provide ${DOCKER__READ_BG_LIGHTPINK}Source-Location${DOCKER__READ_NOCOLOR} (outside Container): " -i "${docker__current_dir}" mysource_dir 
-
-		if [[ ! -z ${mysource_dir} ]]; then
-			break
-		fi
-	done	
-
-	#---SOURCE: Provide the file which you want to copy (located INSIDE the container!)
-	echo -e "\r"
-	while true
-	do
-		read -e -p "Provide ${DOCKER__READ_BG_LIGHTPINK}Source-Filename${DOCKER__READ_NOCOLOR} (inside Container): " -i "${DOCKER__ISPBOOOT_BIN_FILENAME}" mysource_filename
-
-		if [[ ! -z ${mysource_filename} ]]; then
-			break
-		fi
-	done
-
-	#---DESTINATION: Provide the Location of the file which you want to copy (located INSIDE the container!)
-	echo -e "\r"
-	while true
-	do
-		read -e -p "Provide ${DOCKER__READ_BG_WHITE}Destination-Location${DOCKER__READ_NOCOLOR} (inside Container): " -i "${DOCKER__ROOT_SP7XXX_OUT_DIR}" mydest_dir
-
-		if [[ ! -z ${mydest_dir} ]]; then
-			break
-		fi
-	done
-
-	#---Summary
-	echo -e "\r"
-	echo -e "--------------------------------------------------------------------"
-	echo "Overview:"
-	echo -e "--------------------------------------------------------------------"
-	echo "${DOCKER__READ_BG_LIGHTPINK}Source Full-path${DOCKER__READ_NOCOLOR}: ${mysource_dir}/${mysource_filename}"
-	echo "${DOCKER__READ_BG_WHITE}Destination Full-path${DOCKER__READ_NOCOLOR}: ${mydest_dir}/${mysource_filename}"
-	echo -e "--------------------------------------------------------------------"
-
-fi
-
-#---COPY: ~/SP7021/out/ISPBOOOT.BIN (within a container) to /mnt/<networkdrive>
-echo -e "\r"
-while true
-do
-	read -N1 -p "Do you wish to continue (y/n)?" myanswer
-
-	if [[ ! -z ${myanswer} ]]; then
-		if [[ ${myanswer} =~ [y,n] ]]; then
-			break
-		else
+				tput cuu1
+				tput el
+			fi
+		else 
 			tput cuu1
 			tput el
 		fi
-	else 
-		tput cuu1
-		tput el
-	fi
-done
-echo -e "\r"
+	done
+	echo -e "\r"
 
-#---Confirm answer and take action
-if [[ ${myanswer} == "y" ]]; then
-	echo -e "\r"
-	echo -e "Copy in Progress... Please wait..."
+	#---Confirm answer and take action
+	if [[ ${docker__myanswer} == "y" ]]; then
+		echo -e "\r"
+		echo -e "Copy in Progress... Please wait..."
 
-	if [[ ${mycopychoice} -eq 1 ]]; then
-		sudo sh -c "docker cp ${mycontainerid}:${mysource_dir}/${mysource_filename} ${mydest_dir}/${mysource_filename}"
-	else
-		sudo sh -c "docker cp ${mysource_dir}/${mysource_filename} ${mycontainerid}:${mydest_dir}/${mysource_filename}"
+		if [[ ${docker__mycopychoice} -eq 1 ]]; then
+			sudo sh -c "docker cp ${docker__mycontainerid}:${docker__mysource_dir}/${docker__mysource_filename} ${docker__mydest_dir}/${docker__mysource_filename}"
+		else
+			sudo sh -c "docker cp ${docker__mysource_dir}/${docker__mysource_filename} ${docker__mycontainerid}:${docker__mydest_dir}/${docker__mysource_filename}"
+		fi
+		
+		echo -e "Copy completed...Exiting now..."
+		echo -e "\r"
+		echo -e "\r"
 	fi
-	
-	echo -e "Copy completed...Exiting now..."
-	echo -e "\r"
-	echo -e "\r"
-fi
+}
+
+
+main_sub() {
+    docker__load_header__sub
+
+	docker__choose_copy_direction__sub
+
+	docker__choose_containerid__sub
+
+	docker__get_source_destination_fpath__sub
+
+	docker__copy_from_source_to_destination__sub
+}
+
+
+#Execute main subroutine
+main_sub

@@ -1,15 +1,13 @@
 #!/bin/bash
 #---Define colors
-DOCKER__READ_FG_ORANGE='\033[0;33m'
-DOCKER__READ_FG_LIGHTRED='\033[1;31m'
-DOCKER__READ_FG_LIGHTGREEN='\033[1;32m'
-DOCKER__READ_FG_YELLOW='\033[1;33m'
-DOCKER__READ_FG_LIGHTBLUE='\033[1;34m'
-DOCKER__READ_FG_LIGHTCYAN=$'\e[1;36m'
-DOCKER__READ_NOCOLOR='\033[0m'
+DOCKER__NOCOLOR=$'\e[0m'
+DOCKER__ERROR_FG_LIGHTRED=$'\e[1;31m'
+DOCKER__SUCCESS_FG_LIGHTGREEN=$'\e[1;32m'
+DOCKER__GENERAL_FG_YELLOW=$'\e[1;33m'
 
-DOCKER__READ_BG_LIGHTBLUE='\e[30;48;5;45m'
-
+DOCKER__FILES_FG_ORANGE=$'\e[30;38;5;215m'
+DOCKER__DIRS_FG_VERYLIGHTORANGE=$'\e[30;38;5;223m'
+DOCKER__TITLE_BG_LIGHTBLUE=$'\e[30;48;5;45m'
 
 #---Define constants
 DOCKER__READ_FG_YES="y"
@@ -39,6 +37,7 @@ function CTRL_C__sub() {
     exit
 }
 
+#---Local functions & subroutines
 press_any_key__localfunc() {
 	#Define constants
 	local cTIMEOUT_ANYKEY=10
@@ -69,10 +68,9 @@ press_any_key__localfunc() {
 	echo -e "\r"
 }
 
-#---Local functions & subroutines
 docker__load_header__sub() {
     echo -e "\r"
-    echo -e "${DOCKER__READ_BG_LIGHTBLUE}                                DOCKER${DOCKER__READ_BG_LIGHTBLUE}                                ${DOCKER__READ_NOCOLOR}"
+    echo -e "${DOCKER__TITLE_BG_LIGHTBLUE}                                DOCKER${DOCKER__TITLE_BG_LIGHTBLUE}                                ${DOCKER__NOCOLOR}"
 }
 
 docker__mandatory_apps_check__sub() {
@@ -112,8 +110,7 @@ docker__get_this_running_script_dir__sub() {
     docker__your_repodir_LTPP3_ROOTFS_README_md_fpath=${docker__your_repodir_LTPP3_ROOTFS_dir}/${docker__README_md_filename}
 
     if [[ ! -f ${docker__your_repodir_LTPP3_ROOTFS_LICENSE_fpath} ]] && [[ ! -f ${docker__your_repodir_LTPP3_ROOTFS_README_md_fpath} ]]; then
-        echo -e "***${DOCKER__READ_FG_LIGHTRED}ERROR${DOCKER__READ_NOCOLOR}: script '${DOCKER__READ_FG_ORANGE}${script_basename}${DOCKER__READ_NOCOLOR}' might not be up-to-date."
-        echo -e "Please use 'git pull' to update the scripts and then try again..."
+        echo -e "***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: not running script '${DOCKER__FILES_FG_ORANGE}${script_basename}${DOCKER__NOCOLOR}' from location ${DOCKER__DIRS_FG_VERYLIGHTORANGE}./..../${docker__LTPP3_ROOTFS_foldername}${DOCKER__NOCOLOR}"
         echo -e "\r"
         echo -e "${DOCKER__READ_FG_EXITING_NOW}"
         echo -e "\r"
@@ -140,10 +137,10 @@ docker__show_dockerfile_list_files__sub() {
     if [[ -z ${dockerfile_list_fpath_string} ]]; then
         echo -e "\r"
         echo -e "----------------------------------------------------------------------"
-        echo -e "***${DOCKER__READ_FG_LIGHTRED}ERROR${DOCKER__READ_NOCOLOR}: no files found in directory:"
+        echo -e "***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: no files found in directory:"
         echo -e "${DOCKER__READ_FG_FIVE_SPACES}${docker__your_repodir_LTPP3_ROOTFS_docker_list_dir}"
         echo -e "\r"
-        echo -e "Please put all ${DOCKER__READ_FG_YELLOW}dockerfile-list${DOCKER__READ_NOCOLOR} files in this directory"
+        echo -e "Please put all ${DOCKER__GENERAL_FG_YELLOW}dockerfile-list${DOCKER__NOCOLOR} files in this directory"
         echo -e DOCKER__READ_FG_NOCOLOR
         echo -e "\r"
         echo -e "\r"
@@ -164,7 +161,7 @@ docker__show_dockerfile_list_files__sub() {
         #Show all 'dockerfile-list' files
         echo -e "\r"
         echo -e "----------------------------------------------------------------------"
-        echo -e "Overview of all ${DOCKER__READ_FG_YELLOW}dockerfile-list${DOCKER__READ_NOCOLOR} files"
+        echo -e "Overview of all ${DOCKER__GENERAL_FG_YELLOW}dockerfile-list${DOCKER__NOCOLOR} files"
         echo -e "----------------------------------------------------------------------"
         for arr_line in "${dockerfile_list_fpath_arr[@]}"
         do
@@ -214,7 +211,7 @@ docker__show_dockerfile_list_files__sub() {
         #Show chosen file contents
         echo -e "\r"
         echo -e "----------------------------------------------------------------------"
-        echo -e "Contents of File ${DOCKER__READ_FG_LIGHTCYAN}${dockerfile_list_filename}${DOCKER__READ_NOCOLOR}"
+        echo -e "Contents of File ${DOCKER__FILES_FG_ORANGE}${dockerfile_list_filename}${DOCKER__NOCOLOR}"
         echo -e "----------------------------------------------------------------------"
         while read file_line
         do
@@ -253,12 +250,12 @@ docker__checkif_cmd_exec_was_successful__sub() {
     
     if [[ ${exit_code} -eq 0 ]]; then
         echo -e "\r"
-        echo -e "script was executed ${DOCKER__READ_FG_LIGHTGREEN}successfully${DOCKER__READ_NOCOLOR}..."
+        echo -e "script was executed ${DOCKER__SUCCESS_FG_LIGHTGREEN}successfully${DOCKER__NOCOLOR}..."
         echo -e "\r"
 
     else
         echo -e "\r"
-        echo -e "***${DOCKER__READ_FG_LIGHTRED}ERROR${DOCKER__READ_NOCOLOR}: script was stopped due to an error occurred..."
+        echo -e "***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: script was stopped due to an error occurred..."
         echo -e "\r"
         echo -e "Please resolve the issue..."
         echo -e "\r"
@@ -289,7 +286,7 @@ docker__run_dockercmd_with_error_check__sub() {
 
     #Execute Docker command
     echo -e "\r"
-    echo -e "Running: ${DOCKER__READ_FG_ORANGE}${dockerfile_fpath}${DOCKER__READ_NOCOLOR}"
+    echo -e "Running: ${DOCKER__FILES_FG_ORANGE}${dockerfile_fpath}${DOCKER__NOCOLOR}"
     echo -e "\r"
 
     sudo sh -c "${dockercmd}" #execute cmd
