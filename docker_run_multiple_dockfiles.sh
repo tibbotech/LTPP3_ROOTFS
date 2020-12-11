@@ -4,6 +4,8 @@ DOCKER__NOCOLOR=$'\e[0m'
 DOCKER__ERROR_FG_LIGHTRED=$'\e[1;31m'
 DOCKER__SUCCESS_FG_LIGHTGREEN=$'\e[1;32m'
 DOCKER__GENERAL_FG_YELLOW=$'\e[1;33m'
+DOCKER__TITLE_FG_LIGHTBLUE=$'\e[30;38;5;45m'
+DOCKER__IMAGEID_FG_BORDEAUX=$'\e[30;38;5;198m'
 
 DOCKER__FILES_FG_ORANGE=$'\e[30;38;5;215m'
 DOCKER__DIRS_FG_VERYLIGHTORANGE=$'\e[30;38;5;223m'
@@ -159,9 +161,8 @@ docker__show_dockerfile_list_files__sub() {
         local seqnum=1
 
         #Show all 'dockerfile-list' files
-        echo -e "\r"
         echo -e "----------------------------------------------------------------------"
-        echo -e "Overview of all ${DOCKER__GENERAL_FG_YELLOW}dockerfile-list${DOCKER__NOCOLOR} files"
+        echo -e "${DOCKER__GENERAL_FG_YELLOW}Create${DOCKER__NOCOLOR} multiple ${DOCKER__IMAGEID_FG_BORDEAUX}IMAGES${DOCKER__NOCOLOR} with ${DOCKER__TITLE_FG_LIGHTBLUE}DOCKER-FILES${DOCKER__NOCOLOR}"
         echo -e "----------------------------------------------------------------------"
         for arr_line in "${dockerfile_list_fpath_arr[@]}"
         do

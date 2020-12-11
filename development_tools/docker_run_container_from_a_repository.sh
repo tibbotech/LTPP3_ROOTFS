@@ -163,9 +163,8 @@ docker__run_specified_repository_as_container__sub() {
 
     #1. Show docker image list
     #2. Ask for the REPOSITORY to run
-    echo -e "\r"
     echo -e "----------------------------------------------------------------------"
-    echo -e "\t${DOCKER__GENERAL_FG_YELLOW}RUN${DOCKER__NOCOLOR} CONTAINER ${DOCKER__GENERAL_FG_YELLOW}w${DOCKER__NOCOLOR}/ ${DOCKER__GENERAL_FG_YELLOW}SSH${DOCKER__NOCOLOR} CAPABILITY"
+    echo -e "\tRun ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}CONTAINER${DOCKER__NOCOLOR} from specfied ${DOCKER__REPOSITORY_FG_PURPLE}REPOSITORY${DOCKER__NOCOLOR}"
     echo -e "----------------------------------------------------------------------"
         sudo sh -c "docker image ls"
 
@@ -174,6 +173,8 @@ docker__run_specified_repository_as_container__sub() {
             echo -e "\t\t=:${DOCKER__ERROR_FG_LIGHTRED}NO IMAGES FOUND${DOCKER__NOCOLOR}:="
             echo -e "----------------------------------------------------------------------"
             echo -e "\r"
+
+            press_any_key__localfunc
 
             exit
         else

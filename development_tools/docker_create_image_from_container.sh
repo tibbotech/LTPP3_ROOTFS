@@ -64,7 +64,6 @@ docker__create_image_of_specified_container__sub() {
     local numof_containers=`sudo sh -c "docker container ls | head -n -1 | wc -l"`
 
     #---Show Docker Image List
-    echo -e "\r"
     echo -e "----------------------------------------------------------------------"
     echo -e "\t${DOCKER__GENERAL_FG_YELLOW}Create${DOCKER__NOCOLOR} Docker ${DOCKER__IMAGEID_FG_BORDEAUX}IMAGE${DOCKER__NOCOLOR} from ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}CONTAINER${DOCKER__NOCOLOR}"
     echo -e "----------------------------------------------------------------------"
@@ -75,6 +74,8 @@ docker__create_image_of_specified_container__sub() {
             echo -e "\t\t=:${DOCKER__ERROR_FG_LIGHTRED}NO CONTAINERS FOUND${DOCKER__NOCOLOR}:="
             echo -e "----------------------------------------------------------------------"
             echo -e "\r"
+
+            press_any_key__localfunc
 
             exit
         else

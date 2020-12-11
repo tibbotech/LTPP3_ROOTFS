@@ -1,6 +1,7 @@
 #!/bin/bash
 #Define constants
 DOCKER__EMPTYSTRING=""
+DOCKER__READ_FG_EXITING_NOW="Exiting now..."
 
 #---Define colors
 DOCKER__NOCOLOR=$'\e[0;0m'
@@ -17,7 +18,7 @@ DOCKER__DIRS_BG_VERYLIGHTORANGE=$'\e[30;48;5;223m'
 
 #---Define variables
 docker__myrepository=""
-docker__myrepository_new""
+docker__myrepository_new=""
 docker__myrepository_tag=""
 docker__myrepository_isFound=""
 docker__myrepository_new_isFound=""
@@ -38,7 +39,7 @@ trap CTRL_C__func INT
 function CTRL_C__func() {
     echo -e "\r"
     echo -e "\r"
-    echo -e "Exiting now..."
+    echo -e ${DOCKER__READ_FG_EXITING_NOW}
     echo -e "\r"
     echo -e "\r"
 
@@ -130,9 +131,8 @@ docker__build_image_from_specified_repository__sub() {
     local numof_images=`sudo sh -c "docker image ls | head -n -1 | wc -l"`
 
     #Show Docker Image List
-    echo -e "\r"
     echo -e "----------------------------------------------------------------------"
-    echo -e "\t${DOCKER__GENERAL_FG_YELLOW}Build${DOCKER__NOCOLOR} Docker ${DOCKER__IMAGEID_FG_BORDEAUX}Image${DOCKER__NOCOLOR} from existing ${DOCKER__REPOSITORY_FG_PURPLE}REPOSITORY${DOCKER__NOCOLOR}"
+    echo -e "\t${DOCKER__GENERAL_FG_YELLOW}Create${DOCKER__NOCOLOR} Docker ${DOCKER__IMAGEID_FG_BORDEAUX}IMAGE${DOCKER__NOCOLOR} from existing ${DOCKER__REPOSITORY_FG_PURPLE}REPOSITORY${DOCKER__NOCOLOR}"
     echo -e "----------------------------------------------------------------------"
         sudo sh -c "docker image ls"
 
@@ -141,6 +141,8 @@ docker__build_image_from_specified_repository__sub() {
         echo -e "\t\t=:${DOCKER__ERROR_FG_LIGHTRED}NO IMAGES FOUND${DOCKER__NOCOLOR}:="
         echo -e "----------------------------------------------------------------------"
         echo -e "\r"
+        
+        press_any_key__localfunc
 
         exit
     else
@@ -227,7 +229,7 @@ docker__build_image_from_specified_repository__sub() {
                                                         break
                                                     elif [[ ${docker__myanswer} == "q" ]]; then
                                                         echo -e "\r"
-                                                        echo -e "Exiting now..."
+                                                        echo -e ${DOCKER__READ_FG_EXITING_NOW}
                                                         echo -e "\r"
                                                         echo -e "\r"
 

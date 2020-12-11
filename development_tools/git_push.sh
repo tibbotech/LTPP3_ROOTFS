@@ -1,18 +1,22 @@
 #!/bin/bash
 #---Define colors
-GIT__NOCOLOR=$'\e[0;0m'
-GIT__TITLE_BG_LIGHTBLUE='\e[30;48;5;45m'
+DOCKER__NOCOLOR=$'\e[0m'
+DOCKER__GENERAL_FG_YELLOW=$'\e[1;33m'
+DOCKER__INSIDE_FG_LIGHTGREY=$'\e[30;38;5;246m'
+DOCKER__GIT_FG_WHITE=$'\e[30;38;5;243m'
+
+DOCKER__TITLE_FG_LIGHTBLUE='\e[30;48;5;45m'
 
 #---Define variables
-git__enkrypted_text__filename="enkrypted_git_txt.bin"
-git__krypt_key__filename="mykryptonyte_key.rsa"
+docker__enkrypted_text__filename="enkrypted_git_txt.bin"
+docker__krypt_key__filename="mykryptonyte_key.rsa"
 
 #---Define paths
-git__home_dir="/home/imcase"
-git__home_scripts_dir=${git__home_dir}/scripts
-git__home_scripts_encrypted_keys_dir=${git__home_scripts_dir}/encrypted_keys
-git__krypt_key__fpath=${git__home_scripts_encrypted_keys_dir}/${git__krypt_key__filename}
-git__enkrypted_text__fpath=${git__home_scripts_encrypted_keys_dir}/${git__enkrypted_text__filename}
+docker__home_dir="/home/imcase"
+docker__home_scripts_dir=${docker__home_dir}/scripts
+docker__home_scripts_encrypted_keys_dir=${docker__home_scripts_dir}/encrypted_keys
+docker__krypt_key__fpath=${docker__home_scripts_encrypted_keys_dir}/${docker__krypt_key__filename}
+docker__enkrypted_text__fpath=${docker__home_scripts_encrypted_keys_dir}/${docker__enkrypted_text__filename}
 
 
 #---Trap ctrl-c and Call ctrl_c()
@@ -28,23 +32,27 @@ function CTRL_C_func() {
     exit
 }
 
-git__load_header__sub() {
+docker__load_header__sub() {
     echo -e "\r"
-    echo -e "${GIT__TITLE_BG_LIGHTBLUE}                                DOCKER${GIT__TITLE_BG_LIGHTBLUE}                                ${GIT__NOCOLOR}"
+    echo -e "${DOCKER__TITLE_FG_LIGHTBLUE}                                DOCKER${DOCKER__TITLE_FG_LIGHTBLUE}                                ${DOCKER__NOCOLOR}"
 }
 
 
-git__add_comment_push__sub() {
+docker__add_comment_push__sub() {
     #Define local variables
     local username=""
     local password=""
     local commit_description=""
     local ts_current=""
 
+
+    echo -e "----------------------------------------------------------------------"
+    echo -e "${DOCKER__GENERAL_FG_YELLOW}Pushing${DOCKER__NOCOLOR} To ${DOCKER__INSIDE_FG_LIGHTGREY}GIT${DOCKER__NOCOLOR}"
+    echo -e "----------------------------------------------------------------------"
     
-    if [[ -f ${git__enkrypted_text__fpath} ]] && [[ -f ${git__krypt_key__fpath} ]] ; then
+    if [[ -f ${docker__enkrypted_text__fpath} ]] && [[ -f ${docker__krypt_key__fpath} ]] ; then
         username="imcase"
-        password=`sudo sh -c "openssl rsautl -inkey ${git__krypt_key__fpath} -decrypt < ${git__enkrypted_text__fpath}"`
+        password=`sudo sh -c "openssl rsautl -inkey ${docker__krypt_key__fpath} -decrypt < ${docker__enkrypted_text__fpath}"`
     else
         echo -e "\r"
 
@@ -98,9 +106,9 @@ git__add_comment_push__sub() {
 }
 
 main_sub() {
-    git__load_header__sub
+    docker__load_header__sub
 
-    git__add_comment_push__sub
+    docker__add_comment_push__sub
 }
 
 

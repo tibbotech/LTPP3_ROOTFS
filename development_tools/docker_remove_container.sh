@@ -114,9 +114,9 @@ docker_remove_specified_containers__sub() {
     #Get number of containers
     local numof_containers=`sudo sh -c "docker container ls | head -n -1 | wc -l"`
 
-    echo -e "\r"
     echo -e "----------------------------------------------------------------------"
-    echo -e "\t${DOCKER__GENERAL_FG_YELLOW}Remove${DOCKER__NOCOLOR} Docker Container(s)"
+    echo -e "\t${DOCKER__GENERAL_FG_YELLOW}Remove${DOCKER__NOCOLOR} ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}CONTAINER(s)${DOCKER__NOCOLOR}"
+    echo -e "----------------------------------------------------------------------"
         sudo sh -c "docker container ls"
 
         if [[ ${numof_containers} -eq 0 ]]; then
@@ -124,6 +124,8 @@ docker_remove_specified_containers__sub() {
             echo -e "\t\t=:${DOCKER__ERROR_FG_LIGHTRED}NO CONTAINERS FOUND${DOCKER__NOCOLOR}:="
             echo -e "----------------------------------------------------------------------"
             echo -e "\r"
+
+            press_any_key__localfunc
 
             exit
         else

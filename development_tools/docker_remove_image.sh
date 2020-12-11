@@ -113,9 +113,8 @@ docker__remove_specified_images__sub() {
     #Get number of images
     local numof_images=`sudo sh -c "docker image ls | head -n -1 | wc -l"`
 
-    echo -e "\r"
     echo -e "----------------------------------------------------------------------"
-    echo -e "\t${DOCKER__GENERAL_FG_YELLOW}Remove${DOCKER__NOCOLOR} Docker Image(s)"
+    echo -e "\t${DOCKER__GENERAL_FG_YELLOW}Remove${DOCKER__NOCOLOR} DOCKER ${DOCKER__IMAGEID_FG_BORDEAUX}IMAGE(s)${DOCKER__NOCOLOR}"
     echo -e "----------------------------------------------------------------------"
         sudo sh -c "docker image ls"
     
@@ -124,6 +123,8 @@ docker__remove_specified_images__sub() {
         echo -e "\t\t=:${DOCKER__ERROR_FG_LIGHTRED}NO IMAGES FOUND${DOCKER__NOCOLOR}:="
         echo -e "----------------------------------------------------------------------"
         echo -e "\r"
+
+        press_any_key__localfunc
 
         exit
     else

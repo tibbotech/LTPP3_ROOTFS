@@ -6,6 +6,8 @@ DOCKER__SPACE=" "
 DOCKER__NOCOLOR=$'\e[0;0m'
 DOCKER__ERROR_FG_LIGHTRED=$'\e[1;31m'
 DOCKER__REPOSITORY_FG_PURPLE=$'\e[30;38;5;93m'
+DOCKER__CONTAINER_FG_BRIGHTPRUPLE=$'\e[30;38;5;141m'
+DOCKER__FILES_FG_ORANGE=$'\e[30;38;5;215m'
 DOCKER__INSIDE_FG_LIGHTGREY=$'\e[30;38;5;246m'
 DOCKER__OUTSIDE_FG_WHITE=$'\e[30;38;5;231m'
 
@@ -89,7 +91,9 @@ docker__load_header__sub() {
 }
 
 docker__choose_copy_direction__sub() {
-	echo -e "\r"
+    echo -e "----------------------------------------------------------------------"
+    echo -e "Copy ${DOCKER__FILES_FG_ORANGE}FILE${DOCKER__NOCOLOR} From/To ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}CONTAINER${DOCKER__NOCOLOR}"
+    echo -e "----------------------------------------------------------------------"
 	echo -e "Do you wish to Copy from:"
 	echo -e "${DOCKER__SPACE}1. ${DOCKER__INSIDE_BG_WHITE}${DOCKER__INSIDE_FG_LIGHTGREY}INSIDE${DOCKER__NOCOLOR} > ${DOCKER__OUTSIDE_BG_LIGHTGREY}${DOCKER__OUTSIDE_FG_WHITE}OUTSIDE${DOCKER__NOCOLOR} container"
 	echo -e "${DOCKER__SPACE}2. ${DOCKER__OUTSIDE_BG_LIGHTGREY}${DOCKER__OUTSIDE_FG_WHITE}OUTSIDE${DOCKER__NOCOLOR} > ${DOCKER__INSIDE_BG_WHITE}${DOCKER__INSIDE_FG_LIGHTGREY}INSIDE${DOCKER__NOCOLOR} container"
@@ -144,6 +148,8 @@ docker__choose_containerid__sub() {
             echo -e "\t\t=:${DOCKER__ERROR_FG_LIGHTRED}NO CONTAINERS FOUND${DOCKER__NOCOLOR}:="
             echo -e "----------------------------------------------------------------------"
             echo -e "\r"
+
+			press_any_key__localfunc
 
             exit
         else
