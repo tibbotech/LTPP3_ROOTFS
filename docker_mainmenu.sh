@@ -30,6 +30,7 @@ docker__remove_container_filename="docker_remove_container.sh"
 docker__cp_fromto_container_filename="docker_cp_fromto_container.sh"
 docker__create_dockerfile_filename="docker_create_dockerfile_filename.sh"
 docker__git_push_filename="git_push.sh"
+docker__git_pull_filename="git_pull.sh"
 
 docker__repo_LTPP3_ROOTFS_dir=/repo/LTPP3_ROOTFS
 docker__repo_LTPP3_ROOTFS_development_tools_dir=/repo/LTPP3_ROOTFS/development_tools
@@ -43,8 +44,10 @@ docker__remove_container_fpath=${docker__repo_LTPP3_ROOTFS_development_tools_dir
 docker__cp_fromto_container_fpath=${docker__repo_LTPP3_ROOTFS_development_tools_dir}/${docker__cp_fromto_container_filename}
 docker__create_dockerfile_fpath=${docker__repo_LTPP3_ROOTFS_development_tools_dir}/${docker__create_dockerfile_filename}
 docker__git_push_fpath=${docker__repo_LTPP3_ROOTFS_development_tools_dir}/${docker__git_push_filename}
+docker__git_pull_fpath=${docker__repo_LTPP3_ROOTFS_development_tools_dir}/${docker__git_pull_filename}
 
 #---Trap ctrl-c and Call ctrl_c()
+
 # trap CTRL_C_func INT
 
 # function CTRL_C_func() {
@@ -112,19 +115,6 @@ docker__init_variables__sub() {
     docker__mychoice=""
 }
 
-docker__git_pull__sub() {
-    echo -e "\r"
-    docker__load_header__sub
-
-    echo -e "----------------------------------------------------------------------"
-    echo -e "${DOCKER__GENERAL_FG_YELLOW}Pulling${DOCKER__NOCOLOR} from ${DOCKER__INSIDE_FG_LIGHTGREY}GIT${DOCKER__NOCOLOR}"
-    echo -e "----------------------------------------------------------------------"
-
-        sudo sh -c "git pull"
-    echo -e "\r"
-    echo -e "\r"
-}
-
 docker__mainmenu__sub() {
     while true
     do
@@ -138,7 +128,6 @@ docker__mainmenu__sub() {
         echo -e "${DOCKER__FIVESPACES}5. Remove ${DOCKER__IMAGEID_FG_BORDEAUX}image(s)${DOCKER__NOCOLOR}"
         echo -e "${DOCKER__FIVESPACES}6. Remove ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}container(s)${DOCKER__NOCOLOR}"
         echo -e "${DOCKER__FIVESPACES}7. Copy a ${DOCKER__FILES_FG_ORANGE}file${DOCKER__NOCOLOR} from/to a ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
-        echo -e "${DOCKER__FIVESPACES}8. Create ${DOCKER__TITLE_FG_LIGHTBLUE}docker-file${DOCKER__NOCOLOR}"
         echo -e "----------------------------------------------------------------------"
         echo -e "${DOCKER__FIVESPACES}p. Git ${DOCKER__OUTSIDE_BG_LIGHTGREY}${DOCKER__OUTSIDE_FG_WHITE}Push${DOCKER__NOCOLOR}"
         echo -e "${DOCKER__FIVESPACES}g. Git ${DOCKER__INSIDE_BG_WHITE}${DOCKER__INSIDE_FG_LIGHTGREY}Pull${DOCKER__NOCOLOR}"
@@ -155,7 +144,7 @@ docker__mainmenu__sub() {
 
             #Only continue if a valid option is selected
             if [[ ! -z ${docker__mychoice} ]]; then
-                if [[ ${docker__mychoice} =~ [1-8,p,g,q] ]]; then
+                if [[ ${docker__mychoice} =~ [1-7,p,g,q] ]]; then
                     break
                 else
                     tput cuu1	#move UP with 1 line
@@ -196,18 +185,14 @@ docker__mainmenu__sub() {
 
             7)
                 ${docker__cp_fromto_container_fpath}
-                ;;
-
-            8)
-                ${docker__create_dockerfile_fpath}
-                ;;            
+                ;;        
             
             p)  
                 ${docker__git_push_fpath}
                 ;;
 
             g)  
-                docker__git_pull__sub
+                ${docker__git_pull_fpath}
                 ;;
 
             q)
