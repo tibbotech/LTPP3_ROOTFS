@@ -644,7 +644,7 @@ echo -e ">>>Change permission to <-rw-r--r--> for file: ${enable_ufw_before_logi
 	chmod 644 ${dst_enable_ufw_before_login_service_fpath}
 
 echo -e "\r"
-echo -e ">Copying: ${enable_ufw_before_login_sh_filename}>"
+echo -e ">Copying: ${enable_ufw_before_login_sh_filename}"
 echo -e ">from: ${home_lttp3rootfs_services_ufw_dir}"
 echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}"
 	cp ${src_enable_ufw_before_login_sh_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}
@@ -661,7 +661,7 @@ echo -e ">>>Change permission to <-rwxr-xr-x> for file: ${enable_ufw_before_logi
 #---HOSTNAME/HOSTS
 press_any_key__func
 echo -e "\r"
-echo -e ">Copying: ${hostname_filename}>"
+echo -e ">Copying: ${hostname_filename}"
 echo -e ">from: ${home_lttp3rootfs_rootfs_initramfs_disk_etc_dir}"
 echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}"
 	cp ${src_hostname_fpath} ${dst_hostname_fpath}
@@ -676,7 +676,7 @@ echo -e ">>>Change permission to <-rw-r--r--> for file: ${hostname_filename}"
 
 
 echo -e "\r"
-echo -e ">Copying: ${hosts_filename}>"
+echo -e ">Copying: ${hosts_filename}"
 echo -e ">from: ${home_lttp3rootfs_rootfs_initramfs_disk_etc_dir}"
 echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}"
 	cp ${src_hosts_fpath} ${dst_hosts_fpath}
