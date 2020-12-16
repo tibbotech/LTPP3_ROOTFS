@@ -69,6 +69,9 @@ resize2fs_before_login_sh_filename="resize2fs-before-login.sh"
 enable_ufw_before_login_service_filename="enable-ufw-before-login.service"
 enable_ufw_before_login_sh_filename="enable-ufw-before-login.sh"
 
+hostname_filename="hostname"
+hosts_filename="hosts"
+
 build_disk_filename="build_disk.sh"
 build_disk_bck_filename=${build_disk_filename}.bak
 build_disk_mod_filename=${build_disk_filename}.mod
@@ -84,6 +87,7 @@ scripts_foldername="scripts"
 scripts_dir=/${scripts_foldername}
 home_lttp3rootfs_dir=${home_dir}/LTPP3_ROOTFS
 home_lttp3rootfs_rootfs_initramfs_dir=${home_lttp3rootfs_dir}/rootfs/initramfs
+home_lttp3rootfs_rootfs_initramfs_disk_etc_dir=${home_lttp3rootfs_dir}/disk/etc
 home_lttp3rootfs_services_automount_dir=${home_lttp3rootfs_dir}/services/automount
 home_lttp3rootfs_services_oobe_resize2fs_dir=${home_lttp3rootfs_dir}/services/oobe/resize2fs
 home_lttp3rootfs_services_network_dir=${home_lttp3rootfs_dir}/services/network
@@ -167,6 +171,12 @@ dst_enable_ufw_before_login_service_fpath=${SP7xxx_linux_rootfs_initramfs_disk_e
 
 src_enable_ufw_before_login_sh_fpath=${home_lttp3rootfs_services_ufw_dir}/${enable_ufw_before_login_sh_filename}
 dst_enable_ufw_before_login_sh_fpath=${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}/${enable_ufw_before_login_sh_filename}
+
+src_hostname_fpath=${home_lttp3rootfs_rootfs_initramfs_disk_etc_dir}/${hostname_filename} 
+dst_hostname_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}/${hostname_filename} 
+
+src_hosts_fpath=${home_lttp3rootfs_rootfs_initramfs_disk_etc_dir}/${hosts_filename} 
+dst_hosts_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}/${hosts_filename} 
 
 
 echo -e "\r"
@@ -648,6 +658,39 @@ echo -e ">>>Change permission to <-rwxr-xr-x> for file: ${enable_ufw_before_logi
 	chmod 755 ${dst_enable_ufw_before_login_sh_fpath}
 
 
+#---HOSTNAME/HOSTS
+press_any_key__func
+echo -e "\r"
+echo -e ">Copying: ${hostname_filename}>"
+echo -e ">from: ${home_lttp3rootfs_rootfs_initramfs_disk_etc_dir}"
+echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}"
+	cp ${src_hostname_fpath} ${dst_hostname_fpath}
+
+echo -e "\r"
+echo -e ">>>Change ownership to <root> for file: ${hostname_filename}"
+	chown root:root ${dst_hostname_fpath}
+
+echo -e "\r"
+echo -e ">>>Change permission to <-rw-r--r--> for file: ${hostname_filename}"
+	chmod 644 ${dst_hostname_fpath}
+
+
+echo -e "\r"
+echo -e ">Copying: ${hosts_filename}>"
+echo -e ">from: ${home_lttp3rootfs_rootfs_initramfs_disk_etc_dir}"
+echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}"
+	cp ${src_hosts_fpath} ${dst_hosts_fpath}
+
+echo -e "\r"
+echo -e ">>>Change ownership to <root> for file: ${hosts_filename}"
+	chown root:root ${dst_hosts_fpath}
+
+echo -e "\r"
+echo -e ">>>Change permission to <-rw-r--r--> for file: ${hosts_filename}"
+	chmod 644 ${dst_hosts_fpath}
+
+
+#---KERNEL: MAKE MENUCONFIG
 press_any_key__func
 echo -e "\r"
 echo -e "---Kernel Configuration File"

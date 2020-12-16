@@ -5,7 +5,7 @@ FROM ubuntu_sunplus:latest
 LABEL maintainer="hien@tibbo.com"
 LABEL version="0.1"
 LABEL description="Continue from image 'ubuntu_sunplus:latest', and run 'disk_preprep.sh'"
-LABEL repository:tag="ubuntu_diskpreprep:latest"
+LABEL repository:tag="ubuntu_diskpreprep2:latest"
 
 #---Disable Prompt During Packages Installation
 ARG DEBIAN_FRONTEND=noninteractive
