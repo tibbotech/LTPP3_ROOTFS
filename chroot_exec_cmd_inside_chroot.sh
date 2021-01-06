@@ -307,8 +307,8 @@ echo -e "\r"
 	apt-get install mtools -y
 	apt-get install bsdmainutils -y
 	apt-get install tcpdump -y
-	#socat is used for sending AT-commands
-	apt-get install ppp -y
+	apt-get install build-essential -y
+	apt-get install gdb -y
 
 
 echo -e "\r"
