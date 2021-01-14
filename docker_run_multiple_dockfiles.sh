@@ -181,7 +181,7 @@ docker__show_dockerfile_list_files__sub() {
         while true
         do
             #Show read-input
-            read -p "Choose a file: " mychoice
+            read -p "Choose a file (ctrl+c: quit): " mychoice
 
             #Check if 'mychoice' is a numeric value
             if [[ ${mychoice} =~ [1-9,0] ]]; then
