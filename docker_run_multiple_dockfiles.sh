@@ -12,10 +12,10 @@ DOCKER__DIRS_FG_VERYLIGHTORANGE=$'\e[30;38;5;223m'
 DOCKER__TITLE_BG_LIGHTBLUE=$'\e[30;48;5;45m'
 
 #---Define constants
-DOCKER__READ_FG_YES="y"
-DOCKER__READ_FG_FIVE_SPACES="     "
-DOCKER__READ_FG_LATEST="latest"
-DOCKER__READ_FG_EXITING_NOW="Exiting now..."
+DOCKER__YES="y"
+DOCKER__FIVE_SPACES="     "
+DOCKER__LATEST="latest"
+DOCKER__EXITING_NOW="Exiting now..."
 
 
 #---Define PATHS
@@ -32,7 +32,7 @@ trap CTRL_C__sub INT
 function CTRL_C__sub() {
     echo -e "\r"
     echo -e "\r"
-    echo -e "${DOCKER__READ_FG_EXITING_NOW}"
+    echo -e "${DOCKER__EXITING_NOW}"
     echo -e "\r"
     echo -e "\r"
 
@@ -84,15 +84,15 @@ docker__mandatory_apps_check__sub() {
     local qemu_user_static_isInstalled=`dpkg -l | grep "${QEMU_USER_STATIC}"`
 
     if [[ -z ${docker_io_isInstalled} ]] || [[ -z ${qemu_user_static_isInstalled} ]]; then
-        echo -e "${DOCKER__READ_FG_FIVE_SPACES}The following mandatory software is/are not installed:"
+        echo -e "${DOCKER__FIVE_SPACES}The following mandatory software is/are not installed:"
         if [[ -z ${docker_io_isInstalled} ]]; then
-            echo -e "${DOCKER__READ_FG_FIVE_SPACES}- docker.io"
+            echo -e "${DOCKER__FIVE_SPACES}- docker.io"
         fi
         if [[ -z ${qemu_user_static_isInstalled} ]]; then
-            echo -e "${DOCKER__READ_FG_FIVE_SPACES}- qemu-user-static"
+            echo -e "${DOCKER__FIVE_SPACES}- qemu-user-static"
         fi
         echo -e "\r"
-        echo -e "${DOCKER__READ_FG_FIVE_SPACES}PLEASE INSTALL the missing software."
+        echo -e "${DOCKER__FIVE_SPACES}PLEASE INSTALL the missing software."
         echo -e "\r"
         
         press_any_key__localfunc
@@ -114,7 +114,7 @@ docker__get_this_running_script_dir__sub() {
     if [[ ! -f ${docker__your_repodir_LTPP3_ROOTFS_LICENSE_fpath} ]] && [[ ! -f ${docker__your_repodir_LTPP3_ROOTFS_README_md_fpath} ]]; then
         echo -e "***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: not running script '${DOCKER__FILES_FG_ORANGE}${script_basename}${DOCKER__NOCOLOR}' from location ${DOCKER__DIRS_FG_VERYLIGHTORANGE}./..../${docker__LTPP3_ROOTFS_foldername}${DOCKER__NOCOLOR}"
         echo -e "\r"
-        echo -e "${DOCKER__READ_FG_EXITING_NOW}"
+        echo -e "${DOCKER__EXITING_NOW}"
         echo -e "\r"
         echo -e "\r"
 
@@ -132,7 +132,7 @@ docker__show_dockerfile_list_files__sub() {
     local dockerfile_list_filename=""
 
     #Get all files at the specified location
-    local dockerfile_list_fpath_string=`find ${docker__your_repodir_LTPP3_ROOTFS_docker_list_dir} -type f -printf '%Ts\t%p\n' | sort -nr | cut -f2`
+    local dockerfile_list_fpath_string=`find ${docker__your_repodir_LTPP3_ROOTFS_docker_list_dir} -maxdepth 1 -type f`
     local arr_line=""
 
     #Check if '' is an EMPTY STRING
@@ -140,10 +140,10 @@ docker__show_dockerfile_list_files__sub() {
         echo -e "\r"
         echo -e "----------------------------------------------------------------------"
         echo -e "***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: no files found in directory:"
-        echo -e "${DOCKER__READ_FG_FIVE_SPACES}${docker__your_repodir_LTPP3_ROOTFS_docker_list_dir}"
+        echo -e "${DOCKER__FIVE_SPACES}${docker__your_repodir_LTPP3_ROOTFS_docker_list_dir}"
         echo -e "\r"
         echo -e "Please put all ${DOCKER__GENERAL_FG_YELLOW}dockerfile-list${DOCKER__NOCOLOR} files in this directory"
-        echo -e DOCKER__READ_FG_NOCOLOR
+
         echo -e "\r"
         echo -e "\r"
 
@@ -170,7 +170,7 @@ docker__show_dockerfile_list_files__sub() {
             dockerfile_list_filename=`basename ${arr_line}`  
         
             #Show filename
-            echo -e "${DOCKER__READ_FG_FIVE_SPACES}${seqnum}. ${dockerfile_list_filename}"
+            echo -e "${DOCKER__FIVE_SPACES}${seqnum}. ${dockerfile_list_filename}"
 
             #increment sequence-number
             seqnum=$((seqnum+1))
@@ -216,7 +216,7 @@ docker__show_dockerfile_list_files__sub() {
         echo -e "----------------------------------------------------------------------"
         while read file_line
         do
-            echo -e "${DOCKER__READ_FG_FIVE_SPACES}${file_line}"
+            echo -e "${DOCKER__FIVE_SPACES}${file_line}"
 
         done < ${docker__dockerfile_list_fpath}
         echo -e "----------------------------------------------------------------------"
@@ -233,7 +233,7 @@ docker__show_dockerfile_list_files__sub() {
                 echo -e "\r"
                 echo -e "\r"
 
-                if [[ ${mychoice} == ${DOCKER__READ_FG_YES} ]]; then
+                if [[ ${mychoice} == ${DOCKER__YES} ]]; then
                     return  #exit function
                 else
                     break   #exit THIS loop
@@ -260,7 +260,7 @@ docker__checkif_cmd_exec_was_successful__sub() {
         echo -e "\r"
         echo -e "Please resolve the issue..."
         echo -e "\r"
-        echo -e "${DOCKER__READ_FG_EXITING_NOW}"
+        echo -e "${DOCKER__EXITING_NOW}"
         echo -e "\r"
         echo -e "\r"
 
@@ -279,7 +279,7 @@ docker__run_dockercmd_with_error_check__sub() {
 
     #Check if '' is an EMPTY STRING
     if [[ -z ${dockerfile_repository_tag} ]]; then
-        dockerfile_repository_tag="${dockerfile}:${DOCKER__READ_FG_LATEST}"
+        dockerfile_repository_tag="${dockerfile}:${DOCKER__LATEST}"
     fi
 
     #Define Docker command
@@ -303,6 +303,7 @@ docker__run_dockercmd_with_error_check__sub() {
 docker__handle_chosen_dockerfile_list__sub() {
     #---Read contents of the file
     #Each line of the file represents a 'dockerfile' containing the instructions to-be-executed
+
     while IFS='' read file_line
     do
         #Check if file exists
