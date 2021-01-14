@@ -1,0 +1,17 @@
+#---Continue from REPOSITORY:TAG=ltps_preference:latest
+FROM ltps_preference:latest 
+
+#---LABEL about the custom image
+LABEL maintainer="hien@tibbo.com"
+LABEL version="0.1"
+LABEL description="Continue from image 'ltps_preference:latest', and run 'build_BOOOT_BIN.sh'"
+LABEL repository:tag="ltps_ispboootbin:latest"
+
+#---Disable Prompt During Packages Installation
+ARG DEBIAN_FRONTEND=noninteractive
+
+#---Update local Git repository
+RUN cd ~/LTPP3_ROOTFS && git pull
+
+#---Run Prepreparation of Disk (before Chroot)
+RUN cd ~ && ~/LTPP3_ROOTFS/build_BOOOT_BIN.sh

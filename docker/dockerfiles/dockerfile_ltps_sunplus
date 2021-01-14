@@ -1,0 +1,17 @@
+#---Continue from REPOSITORY:TAG=ltps_init:latest
+FROM ltps_init:latest
+
+#---LABEL about the custom image
+LABEL maintainer="hien@tibbo.com"
+LABEL version="0.1"
+LABEL description="Continue from image 'ltps_init:latest', and install & configure 'SUNPLUS'"
+LABEL repository:tag="ltps_sunplus:latest"
+
+#---Disable Prompt During Packages Installation
+ARG DEBIAN_FRONTEND=noninteractive
+
+#---Retrieve files from Git
+RUN cd ~ && git clone https://github.com/tibbotech/LTPP3_ROOTFS.git
+
+#---Run Sunplus installation and Configuration
+RUN cd ~ && ~/LTPP3_ROOTFS/sunplus_inst.sh

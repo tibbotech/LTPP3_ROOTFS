@@ -132,7 +132,7 @@ docker__show_dockerfile_list_files__sub() {
     local dockerfile_list_filename=""
 
     #Get all files at the specified location
-    local dockerfile_list_fpath_string=`find ${docker__your_repodir_LTPP3_ROOTFS_docker_list_dir} -maxdepth 1 -type f`
+    local dockerfile_list_fpath_string=`find ${docker__your_repodir_LTPP3_ROOTFS_docker_list_dir} -type f -printf '%Ts\t%p\n' | sort -nr | cut -f2`
     local arr_line=""
 
     #Check if '' is an EMPTY STRING

@@ -1,0 +1,5 @@
+#List of Docker files to-be-executed
+dockerfile_init
+dockerfile_sunplus
+dockerfile_chroot
+dockerfile_buildbin

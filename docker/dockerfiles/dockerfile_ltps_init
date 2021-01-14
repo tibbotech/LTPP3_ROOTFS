@@ -1,0 +1,68 @@
+#---Continue from REPOSITORY:TAG=ubuntu_base:latest
+FROM ubuntu_base:latest
+
+#---LABEL about the custom image
+LABEL maintainer="hien@tibbo.com"
+LABEL version="0.1"
+LABEL description="Continue from 'ubuntu_base:latest' image, and install updates, upgrades, and required apps"
+LABEL repository:tag="ltps_init:latest"
+
+#---Disable Prompt During Packages Installation
+ARG DEBIAN_FRONTEND=noninteractive
+
+#---Update and Upgrade
+RUN apt-get -y update
+RUN apt-get -y upgrade
+
+#---Install required apps
+RUN apt -y install	bison			    \
+                    build-essential	    \
+                    flex			    \ 
+                    git			        \
+                    libncurses5-dev     \
+                    libssl-dev		    \
+                    openssl			    \ 
+                    qemu			    \ 
+                    qemu-user-static    \ 
+                    sshfs			    \
+                    u-boot-tools	    \
+                    wget                \
+                    bc                  \
+                    nano                \
+                    vim                 \
+                    curl
+
+#---Install important apps
+RUN apt-get -y install systemd          \
+                    apt-utils		    \
+                    dbus			    \ 
+                    networkd-dispatcher 
+
+#---Fixing ERROR regarding dpkg
+RUN apt-get -y reinstall gconf2 && dpkg-reconfigure gconf2 && dpkg --configure -a && apt-get -y install -f
+
+
+#---Installing additional apps:
+RUN apt-get -y install net-tools        \
+                    iputils-ping        \ 
+                    iproute2            \
+                    iproute2-doc        \ 
+                    netplan.io          \ 
+                    udev			    \
+                    kmod                \
+                    openssh-server	    
+                    
+
+#---Configure SSH
+RUN mkdir /var/run/sshd
+RUN echo 'root:root' | chpasswd
+RUN sed -i 's/#*PermitRootLogin prohibit-password/PermitRootLogin yes/g' /etc/ssh/sshd_config
+ENV NOTVISIBLE="in users profile"
+RUN echo "export VISIBLE=now" >> /etc/profile
+
+EXPOSE 22
+CMD ["/usr/sbin/sshd", "-D"]
+
+#---Update and Upgrade
+RUN apt-get -y update
+RUN apt-get -y upgrade
