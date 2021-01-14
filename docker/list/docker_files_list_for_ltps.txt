@@ -1,5 +1,6 @@
 #List of Docker files to-be-executed
-dockerfile_init
-dockerfile_sunplus
-dockerfile_chroot
-dockerfile_buildbin
+dockerfile_ltps_init
+dockerfile_ltps_sunplus
+dockerfile_ltps_rootfs
+dockerfile_ltps_preference
+dockerfile_ltps_ispboootbin
