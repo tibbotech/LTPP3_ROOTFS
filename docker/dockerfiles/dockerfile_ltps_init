@@ -1,10 +1,10 @@
-#---Continue from REPOSITORY:TAG=ubuntu_base:latest
-FROM ubuntu_base:latest
+#---Continue from REPOSITORY:TAG=ubuntu:20.04
+FROM ubuntu:20.04
 
 #---LABEL about the custom image
 LABEL maintainer="hien@tibbo.com"
 LABEL version="0.1"
-LABEL description="Continue from 'ubuntu_base:latest' image, and install updates, upgrades, and required apps"
+LABEL description="Continue from 'ubuntu:20.04' image, and install updates, upgrades, and required apps"
 LABEL repository:tag="ltps_init:latest"
 
 #---Disable Prompt During Packages Installation
