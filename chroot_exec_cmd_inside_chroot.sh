@@ -296,6 +296,18 @@ else
 fi
 echo -e "\r"
 
+
+press_any_key__localfunc
+echo -e "\r"
+echo "---Creating /home/ubuntu/.ssh---"
+	mkdir /home/ubuntu/.ssh
+
+echo -e "\r"
+echo "---Generating ssh-key---"
+echo -e "\r"
+	ssh-keygen -t rsa -f /home/ubuntu/.ssh/id_rsa -q -P ""
+
+
 press_any_key__localfunc
 echo -e "\r"
 echo "---Installing <vim, lrzsz, wget, mtools, less, bsdmainutils,tcpdump,ppp>---"
