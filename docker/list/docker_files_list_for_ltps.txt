@@ -2,5 +2,5 @@
 dockerfile_ltps_init
 dockerfile_ltps_sunplus
 dockerfile_ltps_rootfs
-dockerfile_ltps_preference
-dockerfile_ltps_ispboootbin
+dockerfile_ltps_rootfs_preferences
+dockerfile_ltps_rootfs_ispboootbin

@@ -240,22 +240,6 @@ echo -e "\r"
 	ln -s ${systemd_fpath} ${sbin_init_dir}
 
 
-# press_any_key__localfunc
-# echo -e "\r"
-# echo ">Installing Locales"
-# echo -e "\r"
-# 	apt-get install locales -y
-
-# echo ">>>Fixing ERROR: regarding locales"
-# echo -e "\r"
-# 	locale-gen en_US.UTF-8
-# 	export LANGUAGE = en_US.UTF-8
-# 	export LANG = en_US.UTF-8
-# 	export LC_ALL = en_US.UTF-8
-# 	locale-gen en_US.UTF-8
-# 	echo -e "/n/n159/n3" | dpkg-reconfigure locales
-
-
 press_any_key__localfunc
 echo -e "\r"
 echo "---Installing Network related Tools---"
@@ -398,6 +382,23 @@ echo -e "\r"
 echo ">>>Applying <netplan>"
 echo -e "\r"
 	netplan apply
+	
+
+press_any_key__localfunc
+echo -e "\r"
+echo ">Installing Locales"
+echo -e "\r"
+	apt-get install locales -y
+
+
+# echo ">>>Fixing ERROR: regarding locales"
+# echo -e "\r"
+# 	locale-gen en_US.UTF-8
+# 	export LANGUAGE = en_US.UTF-8
+# 	export LANG = en_US.UTF-8
+# 	export LC_ALL = en_US.UTF-8
+# 	locale-gen en_US.UTF-8
+# 	echo -e "/n/n159/n3" | dpkg-reconfigure locales
 
 
 press_any_key__localfunc
