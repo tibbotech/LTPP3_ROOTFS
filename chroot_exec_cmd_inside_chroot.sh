@@ -302,10 +302,6 @@ echo -e "\r"
 	apt-get install less -y
 	apt-get install mtools -y
 	apt-get install bsdmainutils -y
-	apt-get install tcpdump -y
-	apt-get install build-essential -y
-	apt-get install gdb -y
-
 
 echo -e "\r"
 echo "---Installing <curl>---"
