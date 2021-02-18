@@ -4,6 +4,7 @@ DOCKER__NOCOLOR=$'\e[0m'
 DOCKER__ERROR_FG_LIGHTRED=$'\e[1;31m'
 DOCKER__GENERAL_FG_YELLOW=$'\e[1;33m'
 DOCKER__TITLE_FG_LIGHTBLUE=$'\e[30;38;5;45m'
+DOCKER__CHROOT_FG_GREEN=$'\e[30;38;5;82m'
 DOCKER__REPOSITORY_FG_PURPLE=$'\e[30;38;5;93m'
 DOCKER__CONTAINER_FG_BRIGHTPRUPLE=$'\e[30;38;5;141m'
 DOCKER__IMAGEID_FG_BORDEAUX=$'\e[30;38;5;198m'
@@ -29,6 +30,9 @@ docker__remove_image_filename="docker_remove_image.sh"
 docker__remove_container_filename="docker_remove_container.sh"
 docker__cp_fromto_container_filename="docker_cp_fromto_container.sh"
 docker__create_dockerfile_filename="docker_create_dockerfile_filename.sh"
+
+docker__run_chroot_filename="docker_run_chroot.sh"
+
 docker__git_push_filename="git_push.sh"
 docker__git_pull_filename="git_pull.sh"
 
@@ -43,6 +47,9 @@ docker__remove_image_fpath=${docker__repo_LTPP3_ROOTFS_development_tools_dir}/${
 docker__remove_container_fpath=${docker__repo_LTPP3_ROOTFS_development_tools_dir}/${docker__remove_container_filename}
 docker__cp_fromto_container_fpath=${docker__repo_LTPP3_ROOTFS_development_tools_dir}/${docker__cp_fromto_container_filename}
 docker__create_dockerfile_fpath=${docker__repo_LTPP3_ROOTFS_development_tools_dir}/${docker__create_dockerfile_filename}
+
+docker__run_chroot_fpath=${docker__repo_LTPP3_ROOTFS_development_tools_dir}/${docker__run_chroot_filename}
+
 docker__git_push_fpath=${docker__repo_LTPP3_ROOTFS_development_tools_dir}/${docker__git_push_filename}
 docker__git_pull_fpath=${docker__repo_LTPP3_ROOTFS_development_tools_dir}/${docker__git_pull_filename}
 
@@ -128,6 +135,7 @@ docker__mainmenu__sub() {
         echo -e "${DOCKER__FIVESPACES}5. Remove ${DOCKER__IMAGEID_FG_BORDEAUX}image(s)${DOCKER__NOCOLOR}"
         echo -e "${DOCKER__FIVESPACES}6. Remove ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}container(s)${DOCKER__NOCOLOR}"
         echo -e "${DOCKER__FIVESPACES}7. Copy a ${DOCKER__FILES_FG_ORANGE}file${DOCKER__NOCOLOR} from/to a ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
+        echo -e "${DOCKER__FIVESPACES}8. Run ${DOCKER__CHROOT_FG_GREEN}CHROOT${DOCKER__NOCOLOR} from *WITHIN* a ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
         echo -e "----------------------------------------------------------------------"
         echo -e "${DOCKER__FIVESPACES}p. Git ${DOCKER__OUTSIDE_BG_LIGHTGREY}${DOCKER__OUTSIDE_FG_WHITE}Push${DOCKER__NOCOLOR}"
         echo -e "${DOCKER__FIVESPACES}g. Git ${DOCKER__INSIDE_BG_WHITE}${DOCKER__INSIDE_FG_LIGHTGREY}Pull${DOCKER__NOCOLOR}"
@@ -144,7 +152,7 @@ docker__mainmenu__sub() {
 
             #Only continue if a valid option is selected
             if [[ ! -z ${docker__mychoice} ]]; then
-                if [[ ${docker__mychoice} =~ [1-7,p,g,q] ]]; then
+                if [[ ${docker__mychoice} =~ [1-8,p,g,q] ]]; then
                     break
                 else
                     tput cuu1	#move UP with 1 line
@@ -185,7 +193,11 @@ docker__mainmenu__sub() {
 
             7)
                 ${docker__cp_fromto_container_fpath}
-                ;;        
+                ;;
+
+            8)
+                ${docker__run_chroot_fpath}
+                ;;
             
             p)  
                 ${docker__git_push_fpath}

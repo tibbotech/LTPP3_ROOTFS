@@ -69,11 +69,52 @@ press_any_key__localfunc() {
 	echo -e "\r"
 }
 
+press_any_key_to_quit_localfunc() {
+	#Define constants
+	local cTIMEOUT_ANYKEY=3
+
+	#Initialize variables
+	local keypressed=""
+	local tcounter=0
+
+	#Show Press Any Key message with count-down
+	echo -e "\r"
+	while [[ ${tcounter} -le ${cTIMEOUT_ANYKEY} ]];
+	do
+		delta_tcounter=$(( ${cTIMEOUT_ANYKEY} - ${tcounter} ))
+
+		echo -e "\rPress any key to continue... (${delta_tcounter}) \c"
+		read -N 1 -t 1 -s -r keypressed
+
+		if [[ ! -z "${keypressed}" ]]; then
+			break
+		fi
+		
+		tcounter=$((tcounter+1))
+	done
+
+    echo -e "\r"
+    echo -e "\r"
+    echo -e "EXITING NOW..."
+    echo -e "\r"
+    echo -e "\r"
+
+    exit    #exit script
+}
 
 #SHOW DOCKER BANNER
 docker__load_header__sub() {
     echo -e "\r"
     echo -e "${DOCKER__TITLE_BG_LIGHTBLUE}                               DOCKER${DOCKER__TITLE_BG_LIGHTBLUE}                               ${DOCKER__NOCOLOR}"
+}
+
+docker__checkif_dir_exist__sub() {
+    if [[ ! -d ${docker__SP7xxx_linux_rootfs_initramfs_disk_dir} ]]; then
+        echo -e "\r"
+        echo -e "***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Please make sure to run chroot from WITHIN a CONTAINER!!!"
+
+        press_any_key_to_quit_localfunc
+    fi
 }
 
 docker__mandatory_apps_check__sub() {
@@ -104,6 +145,7 @@ docker__run_script__sub() {
 
 docker__main__sub(){
     docker__load_header__sub
+    docker__checkif_dir_exist__sub
     docker__mandatory_apps_check__sub
     docker__run_script__sub
 }
