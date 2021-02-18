@@ -143,8 +143,8 @@ disk_etc_profile_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}/${profile_f
 src_firmware_fpath=${home_lttp3rootfs_rootfs_initramfs_disk_etc_dir}/${firmware_foldername}
 dst_firmware_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}/${firmware_foldername}
 
-src_clkspq628c_filename_fpath=${home_lttp3rootfs_kernel_drivers_clk_dir}/${clkspq628c_filename}
-dst_clkspq628c_filename_fpath=${SP7xxx_linux_kernel_drivers_clk_dir}/${clkspq628c_filename}
+src_clkspq628c_fpath=${home_lttp3rootfs_kernel_drivers_clk_dir}/${clkspq628c_filename}
+dst_clkspq628c_fpath=${SP7xxx_linux_kernel_drivers_clk_dir}/${clkspq628c_filename}
 
 src_make_menuconfig_fpath=${home_lttp3rootfs_kernel_makeconfig_dir}/${make_menuconfig_filename}
 dst_make_menuconfig_fpath=${SP7xxx_linux_kernel_dir}/${make_menuconfig_default_filename}
@@ -739,15 +739,15 @@ echo -e "\r"
 echo -e ">Copying: ${clkspq628c_filename}"
 echo -e ">from: ${home_lttp3rootfs_kernel_drivers_clk_dir}"
 echo -e ">to: ${SP7xxx_linux_kernel_drivers_clk_dir}"
-	cp ${src_clkspq628c_filename_fpath} ${SP7xxx_linux_kernel_drivers_clk_dir}
+	cp ${src_clkspq628c_fpath} ${SP7xxx_linux_kernel_drivers_clk_dir}
 
 echo -e "\r"
 echo -e ">>>Change ownership to <root> for file: ${clkspq628c_filename}"
-	chown root:root ${dst_clkspq628c_filename_fpath}
+	chown root:root ${dst_clkspq628c_fpath}
 
 echo -e "\r"
 echo -e ">>>Change permission to <-rwxr-xr-x> for file: ${clkspq628c_filename}"
-	chmod 755 ${dst_clkspq628c_filename_fpath}
+	chmod 755 ${dst_clkspq628c_fpath}
 
 
 #---KERNEL: MAKE MENUCONFIG
