@@ -323,6 +323,8 @@ docker__handle_chosen_dockerfile_list__sub() {
                 echo -e "\r"       
             fi
         fi
+
+        linenum=$((linenum+1))  #increment index by 1
     done < ${docker__dockerfile_list_fpath}
 }
 
