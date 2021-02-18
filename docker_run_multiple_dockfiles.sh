@@ -305,22 +305,25 @@ docker__handle_chosen_dockerfile_list__sub() {
     #Each line of the file represents a 'dockerfile' containing the instructions to-be-executed
     
     #Define variables
+    local linenum=1
     local dockerfile_fpath=""
 
     while IFS='' read file_line
     do
-        #Get the fullpath
-        dockerfile_fpath=${docker__your_repodir_LTPP3_ROOTFS_docker_dockerfiles_dir}/${file_line}
+        if [[ ${linenum} -gt 1 ]]; then #skip the header
+            #Get the fullpath
+            dockerfile_fpath=${docker__your_repodir_LTPP3_ROOTFS_docker_dockerfiles_dir}/${file_line}
 
-        #Check if file exists
-        if [[ -f ${dockerfile_fpath} ]]; then
-            docker__run_dockercmd_with_error_check__sub ${dockerfile_fpath}
-        else
-            echo -e "\r"
-            echo -e "***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: non-existing file: ${dockerfile_fpath}"
-            echo -e "\r"       
+            #Check if file exists
+            if [[ -f ${dockerfile_fpath} ]]; then
+                docker__run_dockercmd_with_error_check__sub ${dockerfile_fpath}
+            else
+                echo -e "\r"
+                echo -e "***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: non-existing file: ${dockerfile_fpath}"
+                echo -e "\r"       
+            fi
         fi
-    done < ${docker__dockerfile_list_fpath} | tail -n +2   #skip header
+    done < ${docker__dockerfile_list_fpath}
 }
 
 
