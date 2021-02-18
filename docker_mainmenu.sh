@@ -38,7 +38,7 @@ docker__git_pull_filename="git_pull.sh"
 
 docker__your_LTPP3_ROOTFS_dir=`dirname "$0"`
 #docker__repo_LTPP3_ROOTFS_dir=/repo/LTPP3_ROOTFS
-docker__repo_LTPP3_ROOTFS_development_tools_dir=/repo/LTPP3_ROOTFS/development_tools
+docker__repo_LTPP3_ROOTFS_development_tools_dir=${docker__your_LTPP3_ROOTFS_dir}/development_tools
 
 docker__run_multiple_dockfiles_fpath=${docker__your_LTPP3_ROOTFS_dir}/${docker__run_multiple_dockfiles_filename}
 docker__create_image_from_existing_repository_fpath=${docker__repo_LTPP3_ROOTFS_development_tools_dir}/${docker__create_image_from_existing_repository_filename}
