@@ -46,7 +46,7 @@ armhf_filename="ubuntu-base-20.04.1-base-armhf.tar.gz"
 disk_foldername="disk"
 firmware_foldername="firmware"
 
-clkspq628c_filename = "clk-sp-q628.c"
+clkspq628c_filename="clk-sp-q628.c"
 
 make_menuconfig_filename="armhf_kernel.config"
 make_menuconfig_default_filename=".config"
