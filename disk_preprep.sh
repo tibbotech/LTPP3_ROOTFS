@@ -723,11 +723,11 @@ echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}"
 	cp -rf ${src_firmware_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}
 
 echo -e "\r"
-echo -e ">>>Change ownership to <root> for file: ${firmware_foldername}"
+echo -e ">>>Change ownership to <root> for folder: ${firmware_foldername}"
 	chown -R root:root ${dst_firmware_fpath}
 
 echo -e "\r"
-echo -e ">>>Change permission to <-rw-r--r--> for file: ${firmware_foldername}"
+echo -e ">>>Change permission to <-rw-r--r--> for folder: ${firmware_foldername}"
 	chmod -R 644 ${dst_firmware_fpath}
 
 
