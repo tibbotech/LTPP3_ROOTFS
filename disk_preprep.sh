@@ -110,7 +110,6 @@ home_lttp3rootfs_kernel_drivers_clk_dir=${home_lttp3rootfs_kernel_dir}/drivers/c
 home_lttp3rootfs_kernel_dts_dir=${home_lttp3rootfs_kernel_dir}/dts
 SP7xxx_dir=${home_dir}/SP7021
 SP7xxx_linux_kernel_dir=${SP7xxx_dir}/linux/kernel
-SP7xxx_linux_kernel_drivers_clk_dir=${SP7xxx_linux_kernel_dir}/drivers/clk
 SP7xxx_linux_kernel_arch_arm_boot_dts_dir=${SP7xxx_linux_kernel_dir}/arch/arm/boot/dts
 SP7xxx_linux_rootfs_initramfs_dir=${SP7xxx_dir}/linux/rootfs/initramfs
 SP7xxx_linux_rootfs_initramfs_disk_dir=${SP7xxx_linux_rootfs_initramfs_dir}/${disk_foldername}
@@ -144,7 +143,7 @@ src_firmware_fpath=${home_lttp3rootfs_rootfs_initramfs_disk_etc_dir}/${firmware_
 dst_firmware_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}/${firmware_foldername}
 
 src_clkspq628c_fpath=${home_lttp3rootfs_kernel_drivers_clk_dir}/${clkspq628c_filename}
-dst_clkspq628c_fpath=${SP7xxx_linux_kernel_drivers_clk_dir}/${clkspq628c_filename}
+dst_clkspq628c_fpath=${SP7xxx_linux_rootfs_initramfs_disk_scripts_dir}/${clkspq628c_filename}
 
 src_make_menuconfig_fpath=${home_lttp3rootfs_kernel_makeconfig_dir}/${make_menuconfig_filename}
 dst_make_menuconfig_fpath=${SP7xxx_linux_kernel_dir}/${make_menuconfig_default_filename}
@@ -738,8 +737,8 @@ press_any_key__func
 echo -e "\r"
 echo -e ">Copying: ${clkspq628c_filename}"
 echo -e ">from: ${home_lttp3rootfs_kernel_drivers_clk_dir}"
-echo -e ">to: ${SP7xxx_linux_kernel_drivers_clk_dir}"
-	cp ${src_clkspq628c_fpath} ${SP7xxx_linux_kernel_drivers_clk_dir}
+echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_scripts_dir}"
+	cp ${src_clkspq628c_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_scripts_dir}
 
 echo -e "\r"
 echo -e ">>>Change ownership to <root> for file: ${clkspq628c_filename}"
