@@ -147,8 +147,8 @@ press_any_key__localfunc
 echo -e "\r"
 echo "---Updates & Upgrades--"
 echo -e "\r"
-	apt-get update -y
-	apt-get upgrade -y
+	apt-get -y update
+	apt-get -y upgrade
 echo -e "\r"
 
 
@@ -156,7 +156,7 @@ press_any_key__localfunc
 echo -e "\r"
 echo "---MANDATORY: installing <apt-utils>---"
 echo -e "\r"
-apt-get install apt-utils -y
+apt-get -y install apt-utils
 echo -e "\r"
 
 
@@ -164,7 +164,7 @@ press_any_key__localfunc
 echo -e "\r"
 echo "---MANDATORY: installing <sudo>---"
 echo -e "\r"
-	apt-get install sudo -y
+	apt-get -y install sudo
 
 # echo -e "\r"
 # echo "---MANDATORY: chown & chmod of files and folders---"
@@ -212,17 +212,17 @@ press_any_key__localfunc
 echo -e "\r"
 echo "---MANDATORY: installing <dbus>---"
 echo -e "\r"
-	apt-get install dbus -y
+	apt-get -y install dbus
 
 echo -e "\r"
 echo "---MANDATORY: installing <networkd-dispatcher>---"
 echo -e "\r"
-	echo -e "6\n73" | apt-get install networkd-dispatcher -y
+	echo -e "6\n73" | apt-get -y install networkd-dispatcher
 
 echo -e "\r"
 echo "---MANDATORY: installing <systemd>---"
 echo -e "\r"
-	apt-get install systemd -y
+	apt-get -y install systemd
 
 echo -e "\r"
 echo ">>>Fixing ERROR: Sub-process ${usr_dir}/bin/dpkg returned an error code (1)"
@@ -230,7 +230,7 @@ echo -e "\r"
 	apt-get reinstall gconf2
 	dpkg-reconfigure gconf2
 	dpkg --configure -a
-	apt-get install -f
+	apt-get -y install -f
 
 
 press_any_key__localfunc
@@ -244,23 +244,23 @@ press_any_key__localfunc
 echo -e "\r"
 echo "---Installing Network related Tools---"
 echo -e "\r"
-	apt-get install iputils-ping -y
-	apt-get install net-tools -y
-	apt-get install iproute2 iproute2-doc -y
-	apt-get install netplan.io -y
-	apt-get install traceroute -y
+	apt-get -y install iputils-ping
+	apt-get -y install net-tools
+	apt-get -y install iproute2 iproute2-doc
+	apt-get -y install netplan.io
+	apt-get -y install traceroute
 
 echo -e "\r"
 echo ">>>Fixing ERROR: Dependency failed for Serial Getty on ttyS0"
 echo -e "\r"
-	apt-get install udev -y
+	apt-get -y install udev
 
 
 press_any_key__localfunc
 echo -e "\r"
 echo "---Installing <openssh-server>---"
 echo -e "\r"
-	apt-get install openssh-server -y
+	apt-get -y install openssh-server
 
 echo -e "\r"
 if [[ -f ${sshd_fpath} ]]; then
@@ -296,33 +296,34 @@ press_any_key__localfunc
 echo -e "\r"
 echo "---Installing <vim, lrzsz, wget, mtools, less, bsdmainutils,tcpdump,ppp>---"
 echo -e "\r"
-	apt-get install vim -y
-	apt-get install lrzsz -y
-	apt-get install wget -y
-	apt-get install less -y
-	apt-get install mtools -y
-	apt-get install bsdmainutils -y
+	apt-get -y install vim
+	apt-get -y install lrzsz
+	apt-get -y install wget
+	apt-get -y install less
+	apt-get -y install mtools
+	apt-get -y install bsdmainutils
+	apt-get -y install build-essential
 
 echo -e "\r"
 echo "---Installing <curl>---"
 echo -e "\r"
-	apt-get install curl -y
+	apt-get -y install curl
 
 # echo -e "\r"
 # echo "---Installing <pmount>---"
 # echo ">Will be used to AUTO-DETECT and MOUNT USB-devices"
 # echo -e "\r"
-# 	apt-get install pmount -y
+# 	apt-get -y install pmount
 
 echo -e "\r"
 echo "---Installing <modprobe = kmod>---"
 echo -e "\r"
-	apt-get install kmod -y
+	apt-get -y install kmod
 
 echo -e "\r"
 echo "---Installing <iptables>---"
 echo -e "\r"
-	apt-get install iptables -y
+	apt-get -y install iptables
 
 echo -e "\r"
 echo "---Applying <modprobe ip_tables>---"
@@ -332,7 +333,7 @@ echo -e "\r"
 echo -e "\r"
 echo "---Installing <ufw>---"
 echo -e "\r"
-	apt-get install ufw -y
+	apt-get -y install ufw
 
 echo -e "\r"
 echo "---Configuring <ufw-rules>---"
@@ -384,7 +385,7 @@ press_any_key__localfunc
 echo -e "\r"
 echo ">Installing Locales"
 echo -e "\r"
-	apt-get install locales -y
+	apt-get -y install locales
 
 
 # echo ">>>Fixing ERROR: regarding locales"
@@ -442,6 +443,6 @@ press_any_key__localfunc
 echo -e "\r"
 echo "---Updates & Upgrades (FINAL)--"
 echo -e "\r"
-	apt-get update -y
-	apt-get upgrade -y
+	apt-get -y update
+	apt-get -y upgrade
 echo -e "\r"

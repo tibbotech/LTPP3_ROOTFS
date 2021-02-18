@@ -93,7 +93,7 @@
 &uart2 {
  pinctrl-names = "default";
  pinctrl-0 = <&pins_uart2>;
- status = "okay";
+ status = "disabled";
  // this: enable, pins_uart2
 };
 &uart3 {

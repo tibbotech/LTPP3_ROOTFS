@@ -40,12 +40,23 @@ press_any_key__func
 echo -e "\r"
 echo -e "---Define Environmental Variables---"
 echo -e "\r"
+
 armhf_filename="ubuntu-base-20.04.1-base-armhf.tar.gz"
+
 disk_foldername="disk"
-make_menuconfig_filename="armhf_kernel_ppp_all.config"
+firmware_foldername="firmware"
+
+clkspq628c_filename = "clk-sp-q628.c"
+
+make_menuconfig_filename="armhf_kernel.config"
 make_menuconfig_default_filename=".config"
+
+sp7021_ltpp3g2revD_filename="sp7021-ltpp3g2revD.dtsi"
+
 qemu_user_static_filename="qemu-arm-static"
+
 resolve_filename="resolv.conf"
+
 usb_mount_rules_filename="usb-mount.rules"
 usb_mount_service_filename="usb-mount@.service"
 usb_mount_sh_filename="usb-mount.sh"
@@ -94,8 +105,13 @@ home_lttp3rootfs_services_network_dir=${home_lttp3rootfs_dir}/services/network
 home_lttp3rootfs_services_ufw_dir=${home_lttp3rootfs_dir}/services/ufw
 home_lttp3rootfs_services_permissions_dir=${home_lttp3rootfs_dir}/services/permissions
 home_lttp3rootfs_kernel_dir=${home_lttp3rootfs_dir}/kernel
+home_lttp3rootfs_kernel_makeconfig_dir=${home_lttp3rootfs_kernel_dir}/makeconfig
+home_lttp3rootfs_kernel_drivers_clk_dir=${home_lttp3rootfs_kernel_dir}/drivers/clk
+home_lttp3rootfs_kernel_dts_dir=${home_lttp3rootfs_kernel_dir}/dts
 SP7xxx_dir=${home_dir}/SP7021
 SP7xxx_linux_kernel_dir=${SP7xxx_dir}/linux/kernel
+SP7xxx_linux_kernel_drivers_clk_dir=${SP7xxx_linux_kernel_dir}/drivers/clk
+SP7xxx_linux_kernel_arch_arm_boot_dts_dir=${SP7xxx_linux_kernel_dir}/arch/arm/boot/dts
 SP7xxx_linux_rootfs_initramfs_dir=${SP7xxx_dir}/linux/rootfs/initramfs
 SP7xxx_linux_rootfs_initramfs_disk_dir=${SP7xxx_linux_rootfs_initramfs_dir}/${disk_foldername}
 SP7xxx_linux_rootfs_initramfs_disk_etc_dir=${SP7xxx_linux_rootfs_initramfs_disk_dir}/etc
@@ -124,8 +140,17 @@ src_resolve_fpath=${etc_dir}/${resolve_filename}
 armhf_fpath=${home_downloads_dir}/${armhf_filename}
 disk_etc_profile_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}/${profile_filename}
 
-src_make_menuconfig_fpath=${home_lttp3rootfs_kernel_dir}/${make_menuconfig_filename}
+src_firmware_fpath=${home_lttp3rootfs_rootfs_initramfs_disk_etc_dir}/${firmware_foldername}
+dst_firmware_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}/${firmware_foldername}
+
+src_clkspq628c_filename_fpath=${home_lttp3rootfs_kernel_drivers_clk_dir}/${clkspq628c_filename}
+dst_clkspq628c_filename_fpath=${SP7xxx_linux_kernel_drivers_clk_dir}/${clkspq628c_filename}
+
+src_make_menuconfig_fpath=${home_lttp3rootfs_kernel_makeconfig_dir}/${make_menuconfig_filename}
 dst_make_menuconfig_fpath=${SP7xxx_linux_kernel_dir}/${make_menuconfig_default_filename}
+
+src_sp7021_ltpp3g2revD_fpath=${home_lttp3rootfs_kernel_dts_dir}/${sp7021_ltpp3g2revD_filename}
+dst_sp7021_ltpp3g2revD_fpath=${SP7xxx_linux_kernel_arch_arm_boot_dts_dir}/${sp7021_ltpp3g2revD_filename}
 
 src_usb_mount_service_fpath=${home_lttp3rootfs_services_automount_dir}/${usb_mount_service_filename}
 dst_usb_mount_service_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}/${usb_mount_service_filename}
@@ -209,13 +234,13 @@ fi
 if [[ -d ${home_downloads_disk_dir} ]]; then
 	press_any_key__func
 	echo -e "\r"
-	echo -e ">Removing: ${disk_foldername}"
+	echo -e ">Removing (OLD): ${disk_foldername}"
 	rm -r ${home_downloads_disk_dir}
 fi
 
 press_any_key__func
 echo -e "\r"
-echo -e ">Moving current: ${disk_foldername}"
+echo -e ">Moving (UBUNTU): ${disk_foldername}"
 echo -e ">from: ${SP7xxx_linux_rootfs_initramfs_dir}"
 echo -e ">to: ${home_downloads_dir}"
 	mv ${SP7xxx_linux_rootfs_initramfs_disk_dir} ${home_downloads_dir}/
@@ -296,7 +321,7 @@ echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_usr_bin_dir}"
 
 press_any_key__func
 echo -e "\r"
-echo -e ">Removing: ${disk_foldername}"
+echo -e ">Removing (NEW): ${disk_foldername}"
 echo -e ">in: ${home_downloads_dir}"
 	rm -rf ${home_downloads_disk_dir}
 
@@ -690,12 +715,47 @@ echo -e ">>>Change permission to <-rw-r--r--> for file: ${hosts_filename}"
 	chmod 644 ${dst_hosts_fpath}
 
 
+#---FIRMWARE FOLDER
+press_any_key__func
+echo -e "\r"
+echo -e ">Copying: ${firmware_foldername}"
+echo -e ">from: ${home_lttp3rootfs_rootfs_initramfs_disk_etc_dir}"
+echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}"
+	cp -rf ${src_firmware_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}
+
+echo -e "\r"
+echo -e ">>>Change ownership to <root> for file: ${firmware_foldername}"
+	chown -R root:root ${dst_firmware_fpath}
+
+echo -e "\r"
+echo -e ">>>Change permission to <-rw-r--r--> for file: ${firmware_foldername}"
+	chmod -R 644 ${dst_firmware_fpath}
+
+
+#---FILE: clk-sp-q628.c
+#---REMARK: 'build-essential' has to be installed!!!
+press_any_key__func
+echo -e "\r"
+echo -e ">Copying: ${clkspq628c_filename}"
+echo -e ">from: ${home_lttp3rootfs_kernel_drivers_clk_dir}"
+echo -e ">to: ${SP7xxx_linux_kernel_drivers_clk_dir}"
+	cp ${src_clkspq628c_filename_fpath} ${SP7xxx_linux_kernel_drivers_clk_dir}
+
+echo -e "\r"
+echo -e ">>>Change ownership to <root> for file: ${clkspq628c_filename}"
+	chown root:root ${dst_clkspq628c_filename_fpath}
+
+echo -e "\r"
+echo -e ">>>Change permission to <-rwxr-xr-x> for file: ${clkspq628c_filename}"
+	chmod 755 ${dst_clkspq628c_filename_fpath}
+
+
 #---KERNEL: MAKE MENUCONFIG
 press_any_key__func
 echo -e "\r"
 echo -e "---Kernel Configuration File"
 echo -e ">Copying: ${make_menuconfig_filename}"
-echo -e ">from: ${home_lttp3rootfs_kernel_dir}"
+echo -e ">from: ${home_lttp3rootfs_kernel_makeconfig_dir}"
 echo -e ">to: ${SP7xxx_linux_kernel_dir}"
 echo -e ">as: ${make_menuconfig_default_filename}"
 echo -e "\r"
@@ -714,6 +774,24 @@ echo -e ">from: ${SP7xxx_linux_kernel_dir}"
 	make oldconfig
 echo -e "\r"
 echo -e "\r"
+
+#---DTSI
+press_any_key__func
+echo -e "\r"
+echo -e "---UART config file"
+echo -e ">Copying: ${sp7021_ltpp3g2revD_filename}>"
+echo -e ">from: ${home_lttp3rootfs_kernel_dts_uart_dir}"
+echo -e ">to: ${SP7xxx_linux_kernel_arch_arm_boot_dts_dir}"
+	cp ${src_sp7021_ltpp3g2revD_fpath} ${SP7xxx_linux_kernel_arch_arm_boot_dts_dir}
+
+echo -e "\r"
+echo -e ">>>Change ownership to <root> for file: ${sp7021_ltpp3g2revD_filename}"
+	chown root:root ${dst_sp7021_ltpp3g2revD_fpath}
+
+echo -e "\r"
+echo -e ">>>Change permission to <-rw-r--r--> for file: ${sp7021_ltpp3g2revD_filename}"
+	chmod 644 ${dst_sp7021_ltpp3g2revD_fpath}
+
 
 
 ###FIX error messages:
