@@ -26,12 +26,6 @@ docker__mydockerfile_location=""
 docker__mytag_isFound=""
 docker__myanswer=""
 
-#Define paths
-dockerfile_filename="dockerfile_auto"
-dockerfile_dir=/repo/LTPP3_ROOTFS/docker/dockerfiles
-
-dockerfile_fpath=""
-
 
 #---Trap ctrl-c and Call ctrl_c()
 trap CTRL_C__func INT
@@ -78,6 +72,15 @@ press_any_key__localfunc() {
 	echo -e "\r"
 }
 
+docker__environmental_variables__sub() {
+    #Define paths
+    dockerfile_filename="dockerfile_auto"
+    docker__current_dir=`dirname "$0"`
+    docker__parent_dir=${docker__current_dir%/*}    #gets one directory up
+    dockerfile_dir=${docker__parent_dir}/docker/dockerfiles
+    dockerfile_fpath=""
+}
+
 create_dockerfile__sub() {
     #Input args
     local dockerfile_input=${1}
@@ -116,7 +119,7 @@ create_dockerfile__sub() {
     #Cycle thru array and write each row to Global variable 'dockerfile_fpath'
 	for ((i=0; i<${#DOCKERFILE_CONTENT_ARR[@]}; i++))
 	do
-        sudo sh -c "printf '%s\n' '${DOCKERFILE_CONTENT_ARR[$i]}' >> ${dockerfile_fpath}"
+        echo -e "${DOCKERFILE_CONTENT_ARR[$i]}" >> ${dockerfile_fpath}
 	done
 }
 
@@ -128,13 +131,13 @@ docker__load_header__sub() {
 
 docker__build_image_from_specified_repository__sub() {
     #Get number of images
-    local numof_images=`sudo sh -c "docker image ls | head -n -1 | wc -l"`
+    local numof_images=`docker image ls | head -n -1 | wc -l`
 
     #Show Docker Image List
     echo -e "----------------------------------------------------------------------"
     echo -e "\t${DOCKER__GENERAL_FG_YELLOW}Create${DOCKER__NOCOLOR} Docker ${DOCKER__IMAGEID_FG_BORDEAUX}IMAGE${DOCKER__NOCOLOR} from existing ${DOCKER__REPOSITORY_FG_PURPLE}REPOSITORY${DOCKER__NOCOLOR}"
     echo -e "----------------------------------------------------------------------"
-        sudo sh -c "docker image ls"
+        docker image ls
 
     if [[ ${numof_images} -eq 0 ]]; then
         echo -e "\r"
@@ -160,19 +163,19 @@ docker__build_image_from_specified_repository__sub() {
         if [[ ! -z ${docker__myrepository} ]]; then    #input is NOT an EMPTY STRING
 
             #Check if 'docker__myrepository' is found in ' docker container ls'
-            docker__myrepository_isFound=`sudo docker image ls | awk '{print $1}' | grep -w ${docker__myrepository}`
+            docker__myrepository_isFound=`docker image ls | awk '{print $1}' | grep -w ${docker__myrepository}`
             if [[ ! -z ${docker__myrepository_isFound} ]]; then    #match was found
 
                 while true
                 do
                     #Find tag belonging to 'docker__myrepository' (Exact Match)
-                    docker__myrepository_tag=$(sudo docker image ls | grep -w "${docker__myrepository}" | awk '{print $2}')
+                    docker__myrepository_tag=$(docker image ls | grep -w "${docker__myrepository}" | awk '{print $2}')
 
                     #Provide a TAG for this new image
                     read -e -p "Provide the ${DOCKER__TAG_FG_LIGHTPINK}TAG${DOCKER__NOCOLOR} (e.g. latest) matching with REPOSITORY ${DOCKER__REPOSITORY_FG_PURPLE}${docker__myrepository}${DOCKER__NOCOLOR}: " -i ${docker__myrepository_tag} mytag
                     if [[ ! -z ${mytag} ]]; then   #input is NOT an Empty String        
 
-                        docker__mytag_isFound=`sudo docker image ls | grep -w "${docker__myrepository}" | grep -w "${mytag}"`    #check if 'docker__myrepository' AND 'mytag' is found in 'docker image ls'
+                        docker__mytag_isFound=`docker image ls | grep -w "${docker__myrepository}" | grep -w "${mytag}"`    #check if 'docker__myrepository' AND 'mytag' is found in 'docker image ls'
                         if [[ ! -z ${docker__mytag_isFound} ]]; then    #match was found
 
                             while true
@@ -182,13 +185,13 @@ docker__build_image_from_specified_repository__sub() {
                                 if [[ ! -z ${docker__myrepository_new} ]]; then #not an EMPTY STRING
 
                                     #Check if 'docker__myrepository' is UNIQUE
-                                    docker__myrepository_new_isFound=`sudo docker image ls | awk '{print $1}' | grep -w ${docker__myrepository_new}`                           
+                                    docker__myrepository_new_isFound=`docker image ls | awk '{print $1}' | grep -w ${docker__myrepository_new}`                           
                                     if  [[ -z ${docker__myrepository_new_isFound} ]]; then    #match was NOT found
 
                                         while true
                                         do
                                             #Provide a location where you want to create a *NEW DOCKERFILE*
-                                            echo -e "Provide ${DOCKER__DIRS_BG_VERYLIGHTORANGE}DOCKER-FILE LOCATION${DOCKER__NOCOLOR} (e.g., /repo/LTPP3_ROOTFS/docker/dockerfiles): "
+                                            echo -e "Provide ${DOCKER__DIRS_BG_VERYLIGHTORANGE}DOCKER-FILE LOCATION${DOCKER__NOCOLOR} (${dockerfile_dir}): "
                                             echo -e "${DOCKER__DIRS_FG_VERYLIGHTORANGE}"    #echo used to start a color for 'read'
                                             read -e -p $'\t' -i "${dockerfile_dir}" docker__mydockerfile_location
                                             echo -e "${DOCKER__NOCOLOR}"    #echo used to reset color
@@ -212,12 +215,12 @@ docker__build_image_from_specified_repository__sub() {
                                                 do
                                                     read -p "Do you wish to continue (y/n/q)? " docker__myanswer
                                                     if [[ ${docker__myanswer} == "y" ]]; then
-                                                        sudo sh -c "docker build --tag ${docker__myrepository_new}:${mytag} - < ${dockerfile_fpath}"
+                                                        docker build --tag ${docker__myrepository_new}:${mytag} - < ${dockerfile_fpath}
                                                         
                                                         echo -e "\r"
                                                         echo -e "\r"
                                                         echo -e "----------------------------------------------------------------------"
-                                                            sudo sh -c "docker image ls"
+                                                            docker image ls
                                                         echo -e "----------------------------------------------------------------------"
                                                         echo -e "\r"
 
@@ -313,7 +316,7 @@ docker__build_image_from_specified_repository__sub() {
                     if [[ ${docker__myanswer} == "n" ]]; then
                         echo -e "\r"
                         echo -e "----------------------------------------------------------------------"
-                            sudo sh -c "docker image ls"
+                            docker image ls
                         echo -e "----------------------------------------------------------------------"
                         
                         break
@@ -346,6 +349,8 @@ docker__build_image_from_specified_repository__sub() {
 
 main_sub() {
     docker__load_header__sub
+
+    docker__environmental_variables__sub
 
     docker__build_image_from_specified_repository__sub
 }

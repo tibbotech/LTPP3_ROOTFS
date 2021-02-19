@@ -103,13 +103,13 @@ docker__get_this_running_script_dir__sub() {
     #Define local variables
     local script_basename=`basename $0`
 
-    docker__your_repodir_LTPP3_ROOTFS_dir=`dirname "$0"`
-    docker__your_repodir_LTPP3_ROOTFS_docker_dir=${docker__your_repodir_LTPP3_ROOTFS_dir}/docker
-    docker__your_repodir_LTPP3_ROOTFS_docker_list_dir=${docker__your_repodir_LTPP3_ROOTFS_docker_dir}/list
-    docker__your_repodir_LTPP3_ROOTFS_docker_dockerfiles_dir=${docker__your_repodir_LTPP3_ROOTFS_docker_dir}/dockerfiles
+    docker__current_dir=`dirname "$0"`
+    docker___my_LTPP3_ROOTFS_docker_dir=${docker__current_dir}/docker
+    docker__your_repodir_LTPP3_ROOTFS_docker_list_dir=${docker___my_LTPP3_ROOTFS_docker_dir}/list
+    docker__your_repodir_LTPP3_ROOTFS_docker_dockerfiles_dir=${docker___my_LTPP3_ROOTFS_docker_dir}/dockerfiles
 
-    docker__your_repodir_LTPP3_ROOTFS_LICENSE_fpath=${docker__your_repodir_LTPP3_ROOTFS_dir}/${docker__LICENSE_filename}
-    docker__your_repodir_LTPP3_ROOTFS_README_md_fpath=${docker__your_repodir_LTPP3_ROOTFS_dir}/${docker__README_md_filename}
+    docker__your_repodir_LTPP3_ROOTFS_LICENSE_fpath=${docker__current_dir}/${docker__LICENSE_filename}
+    docker__your_repodir_LTPP3_ROOTFS_README_md_fpath=${docker__current_dir}/${docker__README_md_filename}
 
     if [[ ! -f ${docker__your_repodir_LTPP3_ROOTFS_LICENSE_fpath} ]] && [[ ! -f ${docker__your_repodir_LTPP3_ROOTFS_README_md_fpath} ]]; then
         echo -e "***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: not running script '${DOCKER__FILES_FG_ORANGE}${script_basename}${DOCKER__NOCOLOR}' from location ${DOCKER__DIRS_FG_VERYLIGHTORANGE}./..../${docker__LTPP3_ROOTFS_foldername}${DOCKER__NOCOLOR}"

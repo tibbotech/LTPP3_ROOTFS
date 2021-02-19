@@ -112,12 +112,12 @@ docker__input_containerid__sub() {
 
 docker_remove_specified_containers__sub() {
     #Get number of containers
-    local numof_containers=`sudo sh -c "docker container ls | head -n -1 | wc -l"`
+    local numof_containers=`docker container ls | head -n -1 | wc -l`
 
     echo -e "----------------------------------------------------------------------"
     echo -e "\t${DOCKER__GENERAL_FG_YELLOW}Remove${DOCKER__NOCOLOR} ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}CONTAINER(s)${DOCKER__NOCOLOR}"
     echo -e "----------------------------------------------------------------------"
-        sudo sh -c "docker container ls"
+        docker container ls
 
         if [[ ${numof_containers} -eq 0 ]]; then
             echo -e "\r"
@@ -155,16 +155,16 @@ docker_remove_specified_containers__sub() {
                     if [[ ${docker__myanswer} == "y" ]] || [[ ${docker__myanswer} == "Y" ]]; then
                         for docker__mycontainerid_item in "${docker__mycontainerid_arr[@]}"
                         do 
-                            docker__mycontainerid_isFound=`sudo docker container ls | awk '{print $1}' | grep -w ${docker__mycontainerid_item}`
+                            docker__mycontainerid_isFound=`docker container ls | awk '{print $1}' | grep -w ${docker__mycontainerid_item}`
                             if [[ ! -z ${docker__mycontainerid_isFound} ]]; then
-                                sudo sh -c "docker container rm -f ${docker__mycontainerid_item}" > /dev/null
+                                docker container rm -f ${docker__mycontainerid_item} > /dev/null
                                 echo -e "\r"
                                 echo -e "Removed CONTAINER-ID: ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}${docker__mycontainerid_item}${DOCKER__NOCOLOR}"
                                 echo -e "\r"
                                 echo -e "Removing ALL unlinked images"
-                                echo -e "y\n" | sudo sh -c "docker image prune"
+                                echo -e "y\n" | docker image prune
                                 echo -e "Removing ALL stopped containers"
-                                echo -e "y\n" | sudo sh -c "docker container prune"                
+                                echo -e "y\n" | docker container prune           
                             else
                                 echo -e "\r"
                                 echo -e "***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Invalid CONTAINER-ID: ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}${docker__mycontainerid_item}${DOCKER__NOCOLOR}"
@@ -172,11 +172,11 @@ docker_remove_specified_containers__sub() {
                         done
 
                         # echo -e "\r"
-                        # sudo sh -c "docker image ls"
+                        # docker image ls
                         echo -e "\r"
                         echo -e "\r"
                         echo -e "----------------------------------------------------------------------"
-                            sudo sh -c "docker container ls"
+                            docker container ls
                         echo -e "----------------------------------------------------------------------"
                         echo -e "\r"
 

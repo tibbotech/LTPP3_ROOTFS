@@ -111,12 +111,12 @@ docker__input_imageid__sub() {
 
 docker__remove_specified_images__sub() {
     #Get number of images
-    local numof_images=`sudo sh -c "docker image ls | head -n -1 | wc -l"`
+    local numof_images=`docker image ls | head -n -1 | wc -l`
 
     echo -e "----------------------------------------------------------------------"
     echo -e "\t${DOCKER__GENERAL_FG_YELLOW}Remove${DOCKER__NOCOLOR} DOCKER ${DOCKER__IMAGEID_FG_BORDEAUX}IMAGE(s)${DOCKER__NOCOLOR}"
     echo -e "----------------------------------------------------------------------"
-        sudo sh -c "docker image ls"
+        docker image ls
     
     if [[ ${numof_images} -eq 0 ]]; then
         echo -e "\r"
@@ -157,16 +157,16 @@ docker__remove_specified_images__sub() {
                     if [[ ${docker__myanswer} == "y" ]] || [[ ${docker__myanswer} == "Y" ]]; then
                         for docker__myimageid_item in "${docker__myimageid_arr[@]}"
                         do 
-                            docker__myimageid_isFound=`sudo docker image ls | awk '{print $3}' | grep -w ${docker__myimageid_item}`
+                            docker__myimageid_isFound=`docker image ls | awk '{print $3}' | grep -w ${docker__myimageid_item}`
                             if [[ ! -z ${docker__myimageid_isFound} ]]; then
-                                sudo sh -c "docker image rmi -f ${docker__myimageid_item}" > /dev/null
+                                docker image rmi -f ${docker__myimageid_item} > /dev/null
                                 echo -e "\r"
                                 echo -e "Removed IMAGE-ID: ${DOCKER__IMAGEID_FG_BORDEAUX}${docker__myimageid_item}${DOCKER__NOCOLOR}"
                                 echo -e "\r"
                                 echo -e "Removing ALL unlinked images"
-                                echo -e "y\n" | sudo sh -c "docker image prune"
+                                echo -e "y\n" | docker image prune
                                 echo -e "Removing ALL stopped containers"
-                                echo -e "y\n" | sudo sh -c "docker container prune"
+                                echo -e "y\n" | docker container prune
                             else
                                 echo -e "\r"
                                 echo -e "***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Invalid IMAGE-ID: ${DOCKER__IMAGEID_FG_BORDEAUX}${docker__myimageid_item}${DOCKER__NOCOLOR}"
@@ -175,7 +175,7 @@ docker__remove_specified_images__sub() {
 
                         echo -e "\r"
                         echo -e "----------------------------------------------------------------------"
-                        sudo sh -c "docker image ls"
+                            docker image ls
                         echo -e "----------------------------------------------------------------------"
                         echo -e "\r"
 

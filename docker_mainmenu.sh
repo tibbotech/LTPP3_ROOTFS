@@ -22,39 +22,6 @@ DOCKER__FIVESPACES="     "
 DOCKER__READ_FG_EXITING_NOW="Exiting Docker Main-menu..."
 
 
-#---Define PATHS
-docker__run_multiple_dockfiles_filename="docker_run_multiple_dockfiles.sh"
-docker__create_image_from_existing_repository_filename="docker_create_image_from_existing_repository.sh"
-docker__create_image_from_container_filename="docker_create_image_from_container.sh"
-docker__run_container_from_a_repository_filename="docker_run_container_from_a_repository.sh"
-docker__remove_image_filename="docker_remove_image.sh"
-docker__remove_container_filename="docker_remove_container.sh"
-docker__cp_fromto_container_filename="docker_cp_fromto_container.sh"
-docker__create_dockerfile_filename="docker_create_dockerfile_filename.sh"
-
-docker__run_chroot_filename="docker_run_chroot.sh"
-
-docker__git_push_filename="git_push.sh"
-docker__git_pull_filename="git_pull.sh"
-
-docker__your_LTPP3_ROOTFS_dir=`dirname "$0"`
-#docker__repo_LTPP3_ROOTFS_dir=/repo/LTPP3_ROOTFS
-docker__repo_LTPP3_ROOTFS_development_tools_dir=${docker__your_LTPP3_ROOTFS_dir}/development_tools
-
-docker__run_multiple_dockfiles_fpath=${docker__your_LTPP3_ROOTFS_dir}/${docker__run_multiple_dockfiles_filename}
-docker__create_image_from_existing_repository_fpath=${docker__repo_LTPP3_ROOTFS_development_tools_dir}/${docker__create_image_from_existing_repository_filename}
-docker__create_image_from_container_fpath=${docker__repo_LTPP3_ROOTFS_development_tools_dir}/${docker__create_image_from_container_filename}
-docker__run_container_from_a_repository_fpath=${docker__repo_LTPP3_ROOTFS_development_tools_dir}/${docker__run_container_from_a_repository_filename}
-docker__remove_image_fpath=${docker__repo_LTPP3_ROOTFS_development_tools_dir}/${docker__remove_image_filename}
-docker__remove_container_fpath=${docker__repo_LTPP3_ROOTFS_development_tools_dir}/${docker__remove_container_filename}
-docker__cp_fromto_container_fpath=${docker__repo_LTPP3_ROOTFS_development_tools_dir}/${docker__cp_fromto_container_filename}
-docker__create_dockerfile_fpath=${docker__repo_LTPP3_ROOTFS_development_tools_dir}/${docker__create_dockerfile_filename}
-
-docker__run_chroot_fpath=${docker__repo_LTPP3_ROOTFS_development_tools_dir}/${docker__run_chroot_filename}
-
-docker__git_push_fpath=${docker__repo_LTPP3_ROOTFS_development_tools_dir}/${docker__git_push_filename}
-docker__git_pull_fpath=${docker__repo_LTPP3_ROOTFS_development_tools_dir}/${docker__git_pull_filename}
-
 #---Trap ctrl-c and Call ctrl_c()
 
 # trap CTRL_C_func INT
@@ -124,16 +91,49 @@ docker__cmd_exec() {
 
     #Exec command
     if [[ ${currUser} != "root" ]]; then
-        sudo sh -c "${cmd}"
+        sudo ${cmd}
     else
         ${cmd}
     fi
 }
 
-docker__get_this_directory__sub() {
-    if [[ ${docker__your_LTPP3_ROOTFS_dir} == ${DOCKER__DOT} ]]; then
-        docker__your_LTPP3_ROOTFS_dir=$(pwd)
+docker__environmental_variables__sub() {
+    #---Define PATHS
+    docker__run_multiple_dockfiles_filename="docker_run_multiple_dockfiles.sh"
+    docker__create_image_from_existing_repository_filename="docker_create_image_from_existing_repository.sh"
+    docker__create_image_from_container_filename="docker_create_image_from_container.sh"
+    docker__run_container_from_a_repository_filename="docker_run_container_from_a_repository.sh"
+    docker__remove_image_filename="docker_remove_image.sh"
+    docker__remove_container_filename="docker_remove_container.sh"
+    docker__cp_fromto_container_filename="docker_cp_fromto_container.sh"
+    docker__create_dockerfile_filename="docker_create_dockerfile_filename.sh"
+    docker__ssh_to_host_filename="docker__ssh_to_host.sh"
+
+    docker__run_chroot_filename="docker_run_chroot.sh"
+
+    docker__git_push_filename="git_push.sh"
+    docker__git_pull_filename="git_pull.sh"
+
+    docker__current_dir=`dirname "$0"`
+    if [[ ${docker__current_dir} == ${DOCKER__DOT} ]]; then
+        docker__current_dir=$(pwd)
     fi
+    docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}/development_tools
+
+    docker__run_multiple_dockfiles_fpath=${docker__current_dir}/${docker__run_multiple_dockfiles_filename}
+    docker__create_image_from_existing_repository_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__create_image_from_existing_repository_filename}
+    docker__create_image_from_container_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__create_image_from_container_filename}
+    docker__run_container_from_a_repository_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__run_container_from_a_repository_filename}
+    docker__remove_image_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__remove_image_filename}
+    docker__remove_container_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__remove_container_filename}
+    docker__cp_fromto_container_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__cp_fromto_container_filename}
+    docker__create_dockerfile_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__create_dockerfile_filename}
+    docker__ssh_to_host_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__ssh_to_host_filename}
+
+    docker__run_chroot_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__run_chroot_filename}
+
+    docker__git_push_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__git_push_filename}
+    docker__git_pull_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__git_pull_filename}
 }
 
 docker__load_header__sub() {
@@ -160,6 +160,8 @@ docker__mainmenu__sub() {
         echo -e "${DOCKER__FIVESPACES}7. Copy a ${DOCKER__FILES_FG_ORANGE}file${DOCKER__NOCOLOR} from/to a ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
         echo -e "${DOCKER__FIVESPACES}8. Run ${DOCKER__CHROOT_FG_GREEN}CHROOT${DOCKER__NOCOLOR} from *WITHIN* a ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
         echo -e "----------------------------------------------------------------------"
+        echo -e "${DOCKER__FIVESPACES}s. SSH"
+        echo -e "----------------------------------------------------------------------"
         echo -e "${DOCKER__FIVESPACES}p. Git ${DOCKER__OUTSIDE_BG_LIGHTGREY}${DOCKER__OUTSIDE_FG_WHITE}Push${DOCKER__NOCOLOR}"
         echo -e "${DOCKER__FIVESPACES}g. Git ${DOCKER__INSIDE_BG_WHITE}${DOCKER__INSIDE_FG_LIGHTGREY}Pull${DOCKER__NOCOLOR}"
         echo -e "----------------------------------------------------------------------"
@@ -175,7 +177,7 @@ docker__mainmenu__sub() {
 
             #Only continue if a valid option is selected
             if [[ ! -z ${docker__mychoice} ]]; then
-                if [[ ${docker__mychoice} =~ [1-8,p,g,q] ]]; then
+                if [[ ${docker__mychoice} =~ [1-8,s,p,g,q] ]]; then
                     break
                 else
                     tput cuu1	#move UP with 1 line
@@ -191,43 +193,47 @@ docker__mainmenu__sub() {
         #Goto the selected option
         case ${docker__mychoice} in
             1)
-                ${docker__run_multiple_dockfiles_fpath}
+                docker__cmd_exec "${docker__run_multiple_dockfiles_fpath}"
                 ;;
 
             2)
-                ${docker__create_image_from_existing_repository_fpath}
+                docker__cmd_exec "${docker__create_image_from_existing_repository_fpath}"
                 ;;
 
             3)
-                ${docker__create_image_from_container_fpath}
+                docker__cmd_exec "${docker__create_image_from_container_fpath}"
                 ;;
 
             4)
-                ${docker__run_container_from_a_repository_fpath}
+                docker__cmd_exec "${docker__run_container_from_a_repository_fpath}"
                 ;;
 
             5)
-                ${docker__remove_image_fpath}
+                docker__cmd_exec "${docker__remove_image_fpath}"
                 ;;
 
             6)
-                ${docker__remove_container_fpath}
+                docker__cmd_exec "${docker__remove_container_fpath}"
                 ;;
 
             7)
-                ${docker__cp_fromto_container_fpath}
+                docker__cmd_exec "${docker__cp_fromto_container_fpath}"
                 ;;
 
             8)
-                ${docker__run_chroot_fpath}
+                docker__cmd_exec "${docker__run_chroot_fpath}"
                 ;;
-            
+
+            s)
+                docker__cmd_exec "${docker__ssh_to_host_fpath}"
+                ;;
+
             p)  
                 docker__cmd_exec "${docker__git_push_fpath}"
                 ;;
 
             g)  
-                ${docker__git_pull_fpath}
+                docker__cmd_exec "${docker__git_pull_fpath}"
                 ;;
 
             q)
@@ -241,7 +247,7 @@ docker__mainmenu__sub() {
 main_sub() {
     docker__load_header__sub
 
-    docker__get_this_directory__sub
+    docker__environmental_variables__sub
 
     docker__init_variables__sub
 

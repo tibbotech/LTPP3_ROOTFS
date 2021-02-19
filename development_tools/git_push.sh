@@ -11,13 +11,6 @@ DOCKER__TITLE_FG_LIGHTBLUE='\e[30;48;5;45m'
 docker__enkrypted_text__filename="enkrypted_git_txt.bin"
 docker__krypt_key__filename="mykryptonyte_key.rsa"
 
-#---Define paths
-docker__home_dir="/home/imcase"
-docker__home_scripts_dir=${docker__home_dir}/scripts
-docker__home_scripts_encrypted_keys_dir=${docker__home_scripts_dir}/encrypted_keys
-docker__krypt_key__fpath=${docker__home_scripts_encrypted_keys_dir}/${docker__krypt_key__filename}
-docker__enkrypted_text__fpath=${docker__home_scripts_encrypted_keys_dir}/${docker__enkrypted_text__filename}
-
 
 #---Trap ctrl-c and Call ctrl_c()
 trap CTRL_C_func INT
@@ -30,6 +23,15 @@ function CTRL_C_func() {
     echo -e "\r"
 
     exit
+}
+
+docker__environmental_variables__sub() {
+    #---Define paths
+    docker__home_dir="/home/imcase"
+    docker__home_scripts_dir=${docker__home_dir}/scripts
+    docker__home_scripts_encrypted_keys_dir=${docker__home_scripts_dir}/encrypted_keys
+    docker__krypt_key__fpath=${docker__home_scripts_encrypted_keys_dir}/${docker__krypt_key__filename}
+    docker__enkrypted_text__fpath=${docker__home_scripts_encrypted_keys_dir}/${docker__enkrypted_text__filename}
 }
 
 docker__load_header__sub() {
@@ -106,6 +108,8 @@ docker__add_comment_push__sub() {
 
 main_sub() {
     docker__load_header__sub
+
+    docker__environmental_variables__sub
 
     docker__add_comment_push__sub
 }

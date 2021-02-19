@@ -7,22 +7,6 @@ DOCKER__FILES_FG_ORANGE=$'\e[30;38;5;215m'
 
 DOCKER__TITLE_BG_LIGHTBLUE='\e[30;48;5;45m'
 
-#---Define PATHS
-docker__SP7xxx_foldername="SP7021"
-docker__disk_foldername="disk"
-docker__qemu_user_static_filename="qemu-user-static"
-
-docker__usr_dir=/usr
-docker__usr_bin_dir=${docker__usr_dir}/bin
-
-docker__home_dir=~
-docker__SP7xxx_dir=${docker__home_dir}/${docker__SP7xxx_foldername}
-docker__SP7xxx_linux_rootfs_initramfs_dir=${docker__SP7xxx_dir}/linux/rootfs/initramfs
-docker__SP7xxx_linux_rootfs_initramfs_disk_dir=${docker__SP7xxx_linux_rootfs_initramfs_dir}/${docker__disk_foldername}
-
-docker__qemu_fpath=${docker__usr_bin_dir}/qemu-arm-static
-docker__bash_fpath=${docker__usr_bin_dir}/bash
-
 
 #---Trap ctrl-c and Call ctrl_c()
 trap CTRL_C__sub INT
@@ -33,6 +17,8 @@ function CTRL_C__sub() {
     echo -e "${DOCKER__READ_FG_EXITING_NOW}"
     echo -e "\r"
     echo -e "\r"
+
+
 
     exit
 }
@@ -102,6 +88,25 @@ press_any_key_to_quit_localfunc() {
     exit    #exit script
 }
 
+docker__environmental_variables__sub() {
+    #---Define PATHS
+    docker__SP7xxx_foldername="SP7021"
+    docker__disk_foldername="disk"
+    docker__qemu_user_static_filename="qemu-user-static"
+
+    docker__usr_dir=/usr
+    docker__usr_bin_dir=${docker__usr_dir}/bin
+
+    docker__home_dir=~
+    docker__SP7xxx_dir=${docker__home_dir}/${docker__SP7xxx_foldername}
+    docker__SP7xxx_linux_rootfs_initramfs_dir=${docker__SP7xxx_dir}/linux/rootfs/initramfs
+    docker__SP7xxx_linux_rootfs_initramfs_disk_dir=${docker__SP7xxx_linux_rootfs_initramfs_dir}/${docker__disk_foldername}
+
+    docker__qemu_fpath=${docker__usr_bin_dir}/qemu-arm-static
+    docker__bash_fpath=${docker__usr_bin_dir}/bash
+}
+
+
 #SHOW DOCKER BANNER
 docker__load_header__sub() {
     echo -e "\r"
@@ -145,8 +150,13 @@ docker__run_script__sub() {
 
 docker__main__sub(){
     docker__load_header__sub
+
+    docker__environmental_variables__sub
+
     docker__checkif_dir_exist__sub
+
     docker__mandatory_apps_check__sub
+
     docker__run_script__sub
 }
 

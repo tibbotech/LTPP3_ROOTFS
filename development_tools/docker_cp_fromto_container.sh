@@ -24,11 +24,6 @@ docker__mysource_filename=""
 docker__mydest_dir=""
 docker__myanswer=""
 
-#---Define PATHS
-DOCKER__ISPBOOOT_BIN_FILENAME="ISPBOOOT.BIN"
-DOCKER__CURR_DIR=`pwd`
-DOCKER__ROOT_SP7XXX_OUT_DIR=/root/SP7021/out
-
 
 #---Trap ctrl-c and Call ctrl_c()
 trap CTRL_C_func INT
@@ -72,6 +67,13 @@ press_any_key__localfunc() {
 		tcounter=$((tcounter+1))
 	done
 	echo -e "\r"
+}
+
+docker__environmental_variables__sub() {
+	#---Define PATHS
+	DOCKER__ISPBOOOT_BIN_FILENAME="ISPBOOOT.BIN"
+	DOCKER__CURR_DIR=`pwd`
+	DOCKER__ROOT_SP7XXX_OUT_DIR=/root/SP7021/out
 }
 
 function cell__remove_whitespaces__func() {
@@ -134,14 +136,14 @@ docker__choose_copy_direction__sub() {
 
 docker__choose_containerid__sub() {
     #Get number of containers
-    local numof_containers=`sudo sh -c "docker container ls | head -n -1 | wc -l"`
+    local numof_containers=`docker container ls | head -n -1 | wc -l`
 
     #---Show Docker Image List
     echo -e "\r"
     echo -e "----------------------------------------------------------------------"
     echo -e "\t${DOCKER__GENERAL_FG_YELLOW}Create${DOCKER__NOCOLOR} Docker ${DOCKER__IMAGEID_FG_BORDEAUX}IMAGE${DOCKER__NOCOLOR} from ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}CONTAINER${DOCKER__NOCOLOR}"
     echo -e "----------------------------------------------------------------------"
-        sudo sh -c "docker container ls"
+        docker container ls
 
         if [[ ${numof_containers} -eq 0 ]]; then
             echo -e "\r"
@@ -164,7 +166,7 @@ docker__choose_containerid__sub() {
 		docker__mycontainerid=`cell__remove_whitespaces__func "${docker__mycontainerid}"`
 
 		if [[ ! -z ${docker__mycontainerid} ]]; then
-			docker__mycontainerid_isFound=`sudo docker container ls | awk '{print $1}' | grep -w ${docker__mycontainerid}`
+			docker__mycontainerid_isFound=`docker container ls | awk '{print $1}' | grep -w ${docker__mycontainerid}`
 			
 			if [[ ! -z ${docker__mycontainerid_isFound} ]]; then
 				break         
@@ -316,9 +318,9 @@ docker__copy_from_source_to_destination__sub() {
 		echo -e "Copy in Progress... Please wait..."
 
 		if [[ ${docker__mycopychoice} -eq 1 ]]; then
-			sudo sh -c "docker cp ${docker__mycontainerid}:${docker__mysource_dir}/${docker__mysource_filename} ${docker__mydest_dir}/${docker__mysource_filename}"
+			docker cp ${docker__mycontainerid}:${docker__mysource_dir}/${docker__mysource_filename} ${docker__mydest_dir}/${docker__mysource_filename}
 		else
-			sudo sh -c "docker cp ${docker__mysource_dir}/${docker__mysource_filename} ${docker__mycontainerid}:${docker__mydest_dir}/${docker__mysource_filename}"
+			docker cp ${docker__mysource_dir}/${docker__mysource_filename} ${docker__mycontainerid}:${docker__mydest_dir}/${docker__mysource_filename}
 		fi
 		
 		echo -e "Copy completed...Exiting now..."
@@ -330,6 +332,8 @@ docker__copy_from_source_to_destination__sub() {
 
 main_sub() {
     docker__load_header__sub
+
+	docker__environmental_variables__sub
 
 	docker__choose_copy_direction__sub
 

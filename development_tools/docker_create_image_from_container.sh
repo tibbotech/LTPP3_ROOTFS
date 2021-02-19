@@ -19,7 +19,7 @@ function CTRL_C_func() {
     echo -e "Exiting now..."
     echo -e "\r"
     echo -e "\r"
-
+    
     exit
 }
 
@@ -54,6 +54,16 @@ press_any_key__localfunc() {
 	echo -e "\r"
 }
 
+docker__environmental_variables__sub() {
+    #Define paths
+    docker__docker_mainmenu_sh_filename="docker_mainmenu.sh"
+
+    docker__current_dir=`dirname "$0"`
+    docker__parent_dir=${docker__current_dir%/*}    #gets one directory up
+
+    docker__docker_mainmenu_sh_fpath=${docker__parent_dir}/${docker__docker_mainmenu_sh_filename}
+}
+
 docker__load_header__sub() {
     echo -e "\r"
     echo -e "${DOCKER__TITLE_BG_LIGHTBLUE}                                DOCKER${DOCKER__TITLE_BG_LIGHTBLUE}                                ${DOCKER__NOCOLOR}"
@@ -61,13 +71,13 @@ docker__load_header__sub() {
 
 docker__create_image_of_specified_container__sub() {
     #Get number of containers
-    local numof_containers=`sudo sh -c "docker container ls | head -n -1 | wc -l"`
+    local numof_containers=`docker container ls | head -n -1 | wc -l`
 
     #---Show Docker Image List
     echo -e "----------------------------------------------------------------------"
     echo -e "\t${DOCKER__GENERAL_FG_YELLOW}Create${DOCKER__NOCOLOR} Docker ${DOCKER__IMAGEID_FG_BORDEAUX}IMAGE${DOCKER__NOCOLOR} from ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}CONTAINER${DOCKER__NOCOLOR}"
     echo -e "----------------------------------------------------------------------"
-        sudo sh -c "docker container ls"
+        docker container ls
 
         if [[ ${numof_containers} -eq 0 ]]; then
             echo -e "\r"
@@ -90,7 +100,7 @@ docker__create_image_of_specified_container__sub() {
         if [[ ! -z ${mycontainerid} ]]; then    #input is NOT an EMPTY STRING
 
             #Check if 'mycontainerid' is found in ' docker container ls'
-            mycontainerid_isFound=`sudo docker container ls | awk '{print $1}' | grep -w ${mycontainerid}`
+            mycontainerid_isFound=`docker container ls | awk '{print $1}' | grep -w ${mycontainerid}`
             if [[ ! -z ${mycontainerid_isFound} ]]; then    #match was found
                 #Get number of images
                 local numof_images=$((docker_image_ls_lines-1))
@@ -100,7 +110,7 @@ docker__create_image_of_specified_container__sub() {
                 echo -e "----------------------------------------------------------------------"
                 echo -e "\t${DOCKER__GENERAL_FG_YELLOW}Build${DOCKER__NOCOLOR} Docker ${DOCKER__IMAGEID_FG_BORDEAUX}IMAGE${DOCKER__NOCOLOR} from existing ${DOCKER__REPOSITORY_FG_PURPLE}REPOSITORY${DOCKER__NOCOLOR}"
                 echo -e "----------------------------------------------------------------------"
-                    sudo sh -c "docker image ls"
+                    docker image ls
 
                 if [[ ${numof_images} -eq 0 ]]; then
                     echo -e "\r"
@@ -125,14 +135,14 @@ docker__create_image_of_specified_container__sub() {
                             read -p "Give a ${DOCKER__TAG_FG_LIGHTPINK}TAG${DOCKER__NOCOLOR} (e.g. test) for this ${DOCKER__GENERAL_FG_YELLOW}NEW${DOCKER__NOCOLOR} ${DOCKER__IMAGEID_FG_BORDEAUX}IMAGE${DOCKER__NOCOLOR}: " mytag_input
                             if [[ ! -z ${mytag_input} ]]; then   #input is NOT an Empty String
 
-                                myrepository_with_this_tag_isUnique=`sudo docker image ls | grep -w "${myrepository_input}" | grep -w "${mytag_input}"`    #check if 'myrepository_input' AND 'mytag_input' is found in 'docker image ls'
+                                myrepository_with_this_tag_isUnique=`docker image ls | grep -w "${myrepository_input}" | grep -w "${mytag_input}"`    #check if 'myrepository_input' AND 'mytag_input' is found in 'docker image ls'
                                 if [[ -z ${myrepository_with_this_tag_isUnique} ]]; then    #match was NOT found
                                     #Create Docker Image based on chosen Container-ID                
-                                    sudo sh -c "docker commit ${mycontainerid} ${myrepository_input}:${mytag_input}"            
+                                    docker commit ${mycontainerid} ${myrepository_input}:${mytag_input}        
 
                                     #Show Docker Image List
                                     echo -e "\r"            
-                                    sudo sh -c "docker image ls"
+                                    docker image ls
                                     echo -e "\r"
 
                                     exit

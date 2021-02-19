@@ -20,7 +20,7 @@ docker__git_pull__sub() {
     echo -e "${DOCKER__GENERAL_FG_YELLOW}Pulling${DOCKER__NOCOLOR} From ${DOCKER__INSIDE_FG_LIGHTGREY}GIT${DOCKER__NOCOLOR}"
     echo -e "----------------------------------------------------------------------"
 
-        sudo sh -c "git pull"
+        git pull
 
     echo -e "\r"
     echo -e "\r"

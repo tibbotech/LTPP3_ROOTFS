@@ -18,12 +18,12 @@ DOCKER__SSH_LOCALPORT=10022
 DOCKER__SSH_PORT=22
 
 #---Trap ctrl-c and Call ctrl_c()
-trap CTRL_C__sub INT
+trap CTRL_C_func INT
 
-function CTRL_C__sub() {
+function CTRL_C_func() {
     echo -e "\r"
     echo -e "\r"
-    echo -e "${DOCKER__EXITING_NOW}"
+    echo -e "Exiting now..."
     echo -e "\r"
     echo -e "\r"
     
@@ -79,7 +79,7 @@ get_available_localport__func() {
         search_pattern="${ssh_localport}->22"
         
         #Check if 'search_pattern' can be found in 'docker image ls'
-        localport_isUnique=`sudo docker container ls | grep ${search_pattern}`
+        localport_isUnique=`docker container ls | grep ${search_pattern}`
         if [[ -z ${localport_isUnique} ]]; then #match was NOT found
             docker__ssh_localport=${ssh_localport}   #set value for 'docker__ssh_localport'
 
@@ -117,7 +117,7 @@ get_assigned_ipv4_addresses__func() {
                     ipv4addr=`echo ${iproute_line} | awk -v c=${src_colno} '{ print $c }'`	#get result on right-side of "src"
                     
                     #Check if 'nic_name' value is found in the 'docker network inspect bridge' result
-                    nic_belongs_toDocker=$(sudo sh -c "docker network inspect bridge | grep '${nic_name}'") 
+                    nic_belongs_toDocker=$(docker network inspect bridge | grep '${nic_name}') 
                     if [[ -z ${nic_belongs_toDocker} ]]; then   #'nic_name' does not belong to 'docker'
                         if [[ ${ipv4addr} =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then  #'ip4addr' is valid
                             
@@ -159,14 +159,14 @@ docker__init_variables__sub() {
 
 docker__run_specified_repository_as_container__sub() {
     #Get number of images
-    local numof_images=`sudo sh -c "docker image ls | head -n -1 | wc -l"`
+    local numof_images=`docker image ls | head -n -1 | wc -l`
 
     #1. Show docker image list
     #2. Ask for the REPOSITORY to run
     echo -e "----------------------------------------------------------------------"
     echo -e "\tRun ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}CONTAINER${DOCKER__NOCOLOR} from specfied ${DOCKER__REPOSITORY_FG_PURPLE}REPOSITORY${DOCKER__NOCOLOR}"
     echo -e "----------------------------------------------------------------------"
-        sudo sh -c "docker image ls"
+        docker image ls
 
         if [[ ${numof_images} -eq 0 ]]; then
             echo -e "\r"
@@ -198,25 +198,25 @@ docker__run_specified_repository_as_container__sub() {
         read -p "Provide ${DOCKER__REPOSITORY_FG_PURPLE}REPOSITORY${DOCKER__NOCOLOR} (e.g. ubuntu_sunplus): " myrepository
         if [[ ! -z ${myrepository} ]]; then #input was NOT an EMPTY STRING
 
-            myrepository_isFound=`sudo docker image ls | awk '{print $1}' | grep -w "${myrepository}"` #check if 'myrepository' is found in 'docker image ls'
+            myrepository_isFound=`docker image ls | awk '{print $1}' | grep -w "${myrepository}"` #check if 'myrepository' is found in 'docker image ls'
             if [[ ! -z ${myrepository_isFound} ]]; then #match was found
                 while true
                 do
 
                     #Find tag belonging to 'myrepository' (Exact Match)
-                    myrepository_tag=$(sudo docker image ls | grep -w "${myrepository}" | awk '{print $2}')
+                    myrepository_tag=$(docker image ls | grep -w "${myrepository}" | awk '{print $2}')
 
                     #Request for TAG input
                     read -e -p "Provide ${DOCKER__TAG_FG_LIGHTPINK}TAG${DOCKER__NOCOLOR} (e.g. latest): " -i ${myrepository_tag} mytag
                     if [[ ! -z ${mytag} ]]; then    #input was NOT an EMPTY STRING
 
-                        mytag_isFound=`sudo docker image ls | grep -w "${myrepository}" | grep -w "${mytag}"`    #check if 'myrepository' AND 'mytag' is found in 'docker image ls'
+                        mytag_isFound=`docker image ls | grep -w "${myrepository}" | grep -w "${mytag}"`    #check if 'myrepository' AND 'mytag' is found in 'docker image ls'
                         if [[ ! -z ${mytag_isFound} ]]; then    #match was found
                             
                             #Combine 'myrepository' and 'mytag', but separated by a colon ':'
                             myrespository_colon_tag="${myrepository}:${mytag}"
 
-                            myrespository_colon_tag_isFound=`sudo docker container ls | grep -w "${myrespository_colon_tag}"`    #check if 'myrespository_colon_tag' is found in 'docker container ls'
+                            myrespository_colon_tag_isFound=`docker container ls | grep -w "${myrespository_colon_tag}"`    #check if 'myrespository_colon_tag' is found in 'docker container ls'
                             if [[ -z ${myrespository_colon_tag_isFound} ]]; then    #match was NOT found, thus 'mytag_isFound' is an EMPTY STRING
                                 #Define Container Name
                                 container_name="containerOf__${myrepository}_${mytag}"
@@ -229,7 +229,7 @@ docker__run_specified_repository_as_container__sub() {
 
                                 #Run Docker Container
                                 echo -e "\r"
-                                sudo sh -c "docker run -d -p ${docker__ssh_localport}:${DOCKER__SSH_PORT} --name ${container_name} ${myrespository_colon_tag} " > /dev/null
+                                docker run -d -p ${docker__ssh_localport}:${DOCKER__SSH_PORT} --name ${container_name} ${myrespository_colon_tag} > /dev/null
 
                                 #Check if exitcode=0
                                 exitcode=$? #get exitcode
@@ -237,7 +237,7 @@ docker__run_specified_repository_as_container__sub() {
                                     #Show DOCKER CONTAINERS
                                     echo -e "\r"
                                     echo -e "----------------------------------------------------------------------"
-                                        sudo sh -c "docker container ls"
+                                        docker container ls
                                     echo -e "----------------------------------------------------------------------"
                                     echo -e "\r"
                                     echo -e "Summary:"
@@ -268,7 +268,7 @@ docker__run_specified_repository_as_container__sub() {
                                 fi
                             else
                                 #Get running Container-ID
-                                containerid=`sudo  sh -c "docker container ls" | grep -w "${myrepository}:${mytag}" | awk '{print $1}'`
+                                containerid=`docker container ls | grep -w "${myrepository}:${mytag}" | awk '{print $1}'`
 
                                 echo -e "\r"
                                 echo -e "***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: ${DOCKER__REPOSITORY_FG_PURPLE}${myrepository}${DOCKER__NOCOLOR}:${DOCKER__TAG_FG_LIGHTPINK}${mytag}${DOCKER__NOCOLOR} already running under CONTAINER-ID ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}${containerid}${DOCKER__NOCOLOR}"
