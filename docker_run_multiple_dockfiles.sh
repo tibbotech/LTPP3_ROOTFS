@@ -7,11 +7,13 @@ DOCKER__GENERAL_FG_YELLOW=$'\e[1;33m'
 DOCKER__TITLE_FG_LIGHTBLUE=$'\e[30;38;5;45m'
 DOCKER__IMAGEID_FG_BORDEAUX=$'\e[30;38;5;198m'
 
+DOCKER__TITLE_BG_ORANGE=$'\e[30;48;5;215m'
 DOCKER__FILES_FG_ORANGE=$'\e[30;38;5;215m'
 DOCKER__DIRS_FG_VERYLIGHTORANGE=$'\e[30;38;5;223m'
 DOCKER__TITLE_BG_LIGHTBLUE=$'\e[30;48;5;45m'
 
 #---Define constants
+DOCKER__TITLE="TIBBO"
 DOCKER__YES="y"
 DOCKER__FIVE_SPACES="     "
 DOCKER__LATEST="latest"
@@ -72,7 +74,7 @@ press_any_key__localfunc() {
 
 docker__load_header__sub() {
     echo -e "\r"
-    echo -e "${DOCKER__TITLE_BG_LIGHTBLUE}                                DOCKER${DOCKER__TITLE_BG_LIGHTBLUE}                                ${DOCKER__NOCOLOR}"
+    echo -e "${DOCKER__TITLE_BG_ORANGE}                                 ${DOCKER__TITLE}${DOCKER__TITLE_BG_ORANGE}                                ${DOCKER__NOCOLOR}"
 }
 
 docker__mandatory_apps_check__sub() {
@@ -162,7 +164,7 @@ docker__show_dockerfile_list_files__sub() {
 
         #Show all 'dockerfile-list' files
         echo -e "----------------------------------------------------------------------"
-        echo -e "${DOCKER__GENERAL_FG_YELLOW}Create${DOCKER__NOCOLOR} multiple ${DOCKER__IMAGEID_FG_BORDEAUX}IMAGES${DOCKER__NOCOLOR} with ${DOCKER__TITLE_FG_LIGHTBLUE}DOCKER-FILES${DOCKER__NOCOLOR}"
+        echo -e "\t${DOCKER__GENERAL_FG_YELLOW}Create${DOCKER__NOCOLOR} multiple ${DOCKER__IMAGEID_FG_BORDEAUX}IMAGES${DOCKER__NOCOLOR} with ${DOCKER__TITLE_FG_LIGHTBLUE}DOCKER-FILES${DOCKER__NOCOLOR}"
         echo -e "----------------------------------------------------------------------"
         for arr_line in "${dockerfile_list_fpath_arr[@]}"
         do

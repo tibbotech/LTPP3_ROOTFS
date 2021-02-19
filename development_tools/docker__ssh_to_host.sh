@@ -5,9 +5,12 @@ DOCKER__ERROR_FG_LIGHTRED=$'\e[1;31m'
 DOCKER__PORTS_FG_LIGHTBLUE=$'\e[1;34m'
 DOCKER__IP_FG_LIGHTCYAN=$'\e[1;36m'
 
+DOCKER__TITLE_BG_ORANGE=$'\e[30;48;5;215m'
 DOCKER__TITLE_BG_LIGHTBLUE=$'\e[30;48;5;45m'
 
 #---Define constants
+DOCKER__TITLE="TIBBO"
+DOCKER__TITLE_BG_ORANGE=$'\e[30;48;5;215m'
 DOCKER__SSH_LOCALPORT=10022
 DOCKER__SSH_PORT=22
 
@@ -80,7 +83,7 @@ docker__environmental_variables__sub() {
 
 docker__load_header__sub() {
     echo -e "\r"
-    echo -e "${DOCKER__TITLE_BG_LIGHTBLUE}                                DOCKER${DOCKER__TITLE_BG_LIGHTBLUE}                                ${DOCKER__NOCOLOR}"
+    echo -e "${DOCKER__TITLE_BG_ORANGE}                                 ${DOCKER__TITLE}${DOCKER__TITLE_BG_ORANGE}                                ${DOCKER__NOCOLOR}"
 }
 
 docker__init_variables__sub() {

@@ -11,13 +11,13 @@ DOCKER__FILES_FG_ORANGE=$'\e[30;38;5;215m'
 DOCKER__INSIDE_FG_LIGHTGREY=$'\e[30;38;5;246m'
 DOCKER__OUTSIDE_FG_WHITE=$'\e[30;38;5;231m'
 
-DOCKER__TITLE_BG_LIGHTBLUE='\e[30;48;5;45m'
+DOCKER__TITLE_BG_ORANGE=$'\e[30;48;5;215m'
+DOCKER__TITLE_BG_LIGHTBLUE=$'\e[30;48;5;45m'
 DOCKER__INSIDE_BG_WHITE=$'\e[30;48;5;15m'
 DOCKER__OUTSIDE_BG_LIGHTGREY=$'\e[30;48;5;246m'
 
-
-#---Define variables
-docker__mycopychoice=""
+#---Define constants
+DOCKER__TITLE="TIBBO"
 docker__mycontainerid=""
 docker__mysource_dir=""
 docker__mysource_filename=""
@@ -89,7 +89,7 @@ function cell__remove_whitespaces__func() {
 
 docker__load_header__sub() {
     echo -e "\r"
-    echo -e "${DOCKER__TITLE_BG_LIGHTBLUE}                                DOCKER${DOCKER__TITLE_BG_LIGHTBLUE}                                ${DOCKER__NOCOLOR}"
+    echo -e "${DOCKER__TITLE_BG_ORANGE}                                 ${DOCKER__TITLE}${DOCKER__TITLE_BG_ORANGE}                                ${DOCKER__NOCOLOR}"
 }
 
 docker__choose_copy_direction__sub() {

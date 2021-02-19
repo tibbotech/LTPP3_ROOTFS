@@ -13,10 +13,12 @@ DOCKER__NEW_REPOSITORY_FG_BRIGHTLIGHTPURPLE=$'\e[30;38;5;147m'
 DOCKER__TAG_FG_LIGHTPINK=$'\e[30;38;5;218m'
 DOCKER__DIRS_FG_VERYLIGHTORANGE=$'\e[30;38;5;223m'
 
+DOCKER__TITLE_BG_ORANGE=$'\e[30;48;5;215m'
 DOCKER__TITLE_BG_LIGHTBLUE='\e[30;48;5;45m'
 DOCKER__DIRS_BG_VERYLIGHTORANGE=$'\e[30;48;5;223m'
 
-#---Define variables
+#---Define constants
+DOCKER__TITLE="TIBBO"
 docker__myrepository=""
 docker__myrepository_new=""
 docker__myrepository_tag=""
@@ -72,6 +74,11 @@ press_any_key__localfunc() {
 	echo -e "\r"
 }
 
+docker__load_header__sub() {
+    echo -e "\r"
+    echo -e "${DOCKER__TITLE_BG_ORANGE}                                 ${DOCKER__TITLE}${DOCKER__TITLE_BG_ORANGE}                                ${DOCKER__NOCOLOR}"
+}
+
 docker__environmental_variables__sub() {
     #Define paths
     dockerfile_filename="dockerfile_auto"
@@ -121,12 +128,6 @@ create_dockerfile__sub() {
 	do
         echo -e "${DOCKERFILE_CONTENT_ARR[$i]}" >> ${dockerfile_fpath}
 	done
-}
-
-
-docker__load_header__sub() {
-    echo -e "\r"
-    echo -e "${DOCKER__TITLE_BG_LIGHTBLUE}                                DOCKER${DOCKER__TITLE_BG_LIGHTBLUE}                                ${DOCKER__NOCOLOR}"
 }
 
 docker__build_image_from_specified_repository__sub() {

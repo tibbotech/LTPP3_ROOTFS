@@ -11,9 +11,11 @@ DOCKER__IP_FG_LIGHTCYAN=$'\e[1;36m'
 DOCKER__FILES_FG_ORANGE=$'\e[30;38;5;215m'
 DOCKER__TAG_FG_LIGHTPINK=$'\e[30;38;5;218m'
 
+DOCKER__TITLE_BG_ORANGE=$'\e[30;48;5;215m'
 DOCKER__TITLE_BG_LIGHTBLUE=$'\e[30;48;5;45m'
 
 #---Define constants
+DOCKER__TITLE="TIBBO"
 DOCKER__SSH_LOCALPORT=10022
 DOCKER__SSH_PORT=22
 
@@ -59,6 +61,11 @@ press_any_key__localfunc() {
 		tcounter=$((tcounter+1))
 	done
 	echo -e "\r"
+}
+
+docker__load_header__sub() {
+    echo -e "\r"
+    echo -e "${DOCKER__TITLE_BG_ORANGE}                                 ${DOCKER__TITLE}${DOCKER__TITLE_BG_ORANGE}                                ${DOCKER__NOCOLOR}"
 }
 
 cmd_was_executed_successfully__func() {
@@ -145,11 +152,6 @@ get_assigned_ipv4_addresses__func() {
     fi
 }
 
-docker__load_header__sub() {
-    echo -e "\r"
-    echo -e "${DOCKER__TITLE_BG_LIGHTBLUE}                                DOCKER${DOCKER__TITLE_BG_LIGHTBLUE}                                ${DOCKER__NOCOLOR}"
-}
-
 docker__init_variables__sub() {
     docker__ipv4addr1=""
     docker__ipv4_addr_summarize_str=""
@@ -187,7 +189,7 @@ docker__run_specified_repository_as_container__sub() {
     local myrepository_isFound=""
     local mytag=""
     local mytag_isFound=""
-    local myrepository_tag=""
+    # local myrepository_tag=""
     local myrespository_colon_tag=""
     local myrespository_colon_tag_isFound=""
     local container_name=""
@@ -202,12 +204,11 @@ docker__run_specified_repository_as_container__sub() {
             if [[ ! -z ${myrepository_isFound} ]]; then #match was found
                 while true
                 do
-
                     #Find tag belonging to 'myrepository' (Exact Match)
-                    myrepository_tag=$(docker image ls | grep -w "${myrepository}" | awk '{print $2}')
+                    mytag=$(docker image ls | grep -w "${myrepository}" | awk '{print $2}')
 
                     #Request for TAG input
-                    read -e -p "Provide ${DOCKER__TAG_FG_LIGHTPINK}TAG${DOCKER__NOCOLOR} (e.g. latest): " -i ${myrepository_tag} mytag
+                    read -e -p "Provide ${DOCKER__TAG_FG_LIGHTPINK}TAG${DOCKER__NOCOLOR} (e.g. latest): " -i ${mytag} mytag
                     if [[ ! -z ${mytag} ]]; then    #input was NOT an EMPTY STRING
 
                         mytag_isFound=`docker image ls | grep -w "${myrepository}" | grep -w "${mytag}"`    #check if 'myrepository' AND 'mytag' is found in 'docker image ls'

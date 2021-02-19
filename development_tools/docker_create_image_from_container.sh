@@ -8,7 +8,12 @@ DOCKER__REPOSITORY_FG_PURPLE=$'\e[30;38;5;93m'
 DOCKER__CONTAINER_FG_BRIGHTPRUPLE=$'\e[30;38;5;141m'
 DOCKER__TAG_FG_LIGHTPINK=$'\e[30;38;5;218m'
 
+DOCKER__TITLE_BG_ORANGE=$'\e[30;48;5;215m'
 DOCKER__TITLE_BG_LIGHTBLUE=$'\e[30;48;5;45m'
+
+#---Define constants
+DOCKER__TITLE="TIBBO"
+
 
 #---Trap ctrl-c and Call ctrl_c()
 trap CTRL_C_func INT
@@ -54,6 +59,11 @@ press_any_key__localfunc() {
 	echo -e "\r"
 }
 
+docker__load_header__sub() {
+    echo -e "\r"
+    echo -e "${DOCKER__TITLE_BG_ORANGE}                                 ${DOCKER__TITLE}${DOCKER__TITLE_BG_ORANGE}                                ${DOCKER__NOCOLOR}"
+}
+
 docker__environmental_variables__sub() {
     #Define paths
     docker__docker_mainmenu_sh_filename="docker_mainmenu.sh"
@@ -62,11 +72,6 @@ docker__environmental_variables__sub() {
     docker__parent_dir=${docker__current_dir%/*}    #gets one directory up
 
     docker__docker_mainmenu_sh_fpath=${docker__parent_dir}/${docker__docker_mainmenu_sh_filename}
-}
-
-docker__load_header__sub() {
-    echo -e "\r"
-    echo -e "${DOCKER__TITLE_BG_LIGHTBLUE}                                DOCKER${DOCKER__TITLE_BG_LIGHTBLUE}                                ${DOCKER__NOCOLOR}"
 }
 
 docker__create_image_of_specified_container__sub() {

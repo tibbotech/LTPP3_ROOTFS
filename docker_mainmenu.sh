@@ -12,11 +12,13 @@ DOCKER__FILES_FG_ORANGE=$'\e[30;38;5;215m'
 DOCKER__INSIDE_FG_LIGHTGREY=$'\e[30;38;5;246m'
 DOCKER__OUTSIDE_FG_WHITE=$'\e[30;38;5;231m'
 
+DOCKER__TITLE_BG_ORANGE=$'\e[30;48;5;215m'
 DOCKER__TITLE_BG_LIGHTBLUE=$'\e[30;48;5;45m'
 DOCKER__INSIDE_BG_WHITE=$'\e[30;48;5;15m'
 DOCKER__OUTSIDE_BG_LIGHTGREY=$'\e[30;48;5;246m'
 
 #---Define constants
+DOCKER__TITLE="TIBBO"
 DOCKER__DOT="."
 DOCKER__FIVESPACES="     "
 DOCKER__READ_FG_EXITING_NOW="Exiting Docker Main-menu..."
@@ -109,6 +111,9 @@ docker__environmental_variables__sub() {
     docker__create_dockerfile_filename="docker_create_dockerfile_filename.sh"
     docker__ssh_to_host_filename="docker__ssh_to_host.sh"
 
+    docker__save_filename="docker_save.sh"
+    docker__load_filename="docker_load.sh"
+
     docker__run_chroot_filename="docker_run_chroot.sh"
 
     docker__git_push_filename="git_push.sh"
@@ -130,6 +135,9 @@ docker__environmental_variables__sub() {
     docker__create_dockerfile_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__create_dockerfile_filename}
     docker__ssh_to_host_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__ssh_to_host_filename}
 
+    docker__save_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__save_filename}
+    docker__load_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__load_filename}
+
     docker__run_chroot_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__run_chroot_filename}
 
     docker__git_push_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__git_push_filename}
@@ -138,7 +146,7 @@ docker__environmental_variables__sub() {
 
 docker__load_header__sub() {
     echo -e "\r"
-    echo -e "${DOCKER__TITLE_BG_LIGHTBLUE}                                DOCKER${DOCKER__TITLE_BG_LIGHTBLUE}                                ${DOCKER__NOCOLOR}"
+    echo -e "${DOCKER__TITLE_BG_ORANGE}                                 ${DOCKER__TITLE}${DOCKER__TITLE_BG_ORANGE}                                ${DOCKER__NOCOLOR}"
 }
 
 docker__init_variables__sub() {
@@ -162,6 +170,9 @@ docker__mainmenu__sub() {
         echo -e "----------------------------------------------------------------------"
         echo -e "${DOCKER__FIVESPACES}s. SSH"
         echo -e "----------------------------------------------------------------------"
+        echo -e "${DOCKER__FIVESPACES}i. Load from File"
+        echo -e "${DOCKER__FIVESPACES}e. Save to File"
+        echo -e "----------------------------------------------------------------------"
         echo -e "${DOCKER__FIVESPACES}p. Git ${DOCKER__OUTSIDE_BG_LIGHTGREY}${DOCKER__OUTSIDE_FG_WHITE}Push${DOCKER__NOCOLOR}"
         echo -e "${DOCKER__FIVESPACES}g. Git ${DOCKER__INSIDE_BG_WHITE}${DOCKER__INSIDE_FG_LIGHTGREY}Pull${DOCKER__NOCOLOR}"
         echo -e "----------------------------------------------------------------------"
@@ -177,7 +188,7 @@ docker__mainmenu__sub() {
 
             #Only continue if a valid option is selected
             if [[ ! -z ${docker__mychoice} ]]; then
-                if [[ ${docker__mychoice} =~ [1-8,s,p,g,q] ]]; then
+                if [[ ${docker__mychoice} =~ [1-8,s,e,i,p,g,q] ]]; then
                     break
                 else
                     tput cuu1	#move UP with 1 line
@@ -226,6 +237,14 @@ docker__mainmenu__sub() {
 
             s)
                 docker__cmd_exec "${docker__ssh_to_host_fpath}"
+                ;;
+
+            e)
+                docker__cmd_exec "${docker__save_fpath}"
+                ;;
+
+            i)
+                docker__cmd_exec "${docker__load_fpath}"
                 ;;
 
             p)  

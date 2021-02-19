@@ -5,8 +5,11 @@ DOCKER__ERROR_FG_LIGHTRED=$'\e[1;31m'
 DOCKER__GENERAL_FG_YELLOW=$'\e[1;33m'
 DOCKER__FILES_FG_ORANGE=$'\e[30;38;5;215m'
 
+DOCKER__TITLE_BG_ORANGE=$'\e[30;48;5;215m'
 DOCKER__TITLE_BG_LIGHTBLUE='\e[30;48;5;45m'
 
+#---Define constants
+DOCKER__TITLE="TIBBO"
 
 #---Trap ctrl-c and Call ctrl_c()
 trap CTRL_C__sub INT
@@ -17,8 +20,6 @@ function CTRL_C__sub() {
     echo -e "${DOCKER__READ_FG_EXITING_NOW}"
     echo -e "\r"
     echo -e "\r"
-
-
 
     exit
 }
@@ -110,13 +111,13 @@ docker__environmental_variables__sub() {
 #SHOW DOCKER BANNER
 docker__load_header__sub() {
     echo -e "\r"
-    echo -e "${DOCKER__TITLE_BG_LIGHTBLUE}                               DOCKER${DOCKER__TITLE_BG_LIGHTBLUE}                               ${DOCKER__NOCOLOR}"
+    echo -e "${DOCKER__TITLE_BG_ORANGE}                                 ${DOCKER__TITLE}${DOCKER__TITLE_BG_ORANGE}                                ${DOCKER__NOCOLOR}"
 }
 
 docker__checkif_dir_exist__sub() {
     if [[ ! -d ${docker__SP7xxx_linux_rootfs_initramfs_disk_dir} ]]; then
         echo -e "\r"
-        echo -e "***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Please make sure to run chroot from WITHIN a CONTAINER!!!"
+        echo -e "***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Please make sure to run chroot from ${DOCKER__ERROR_FG_LIGHTRED}WITHIN${DOCKER__NOCOLOR} a CONTAINER!!!"
 
         press_any_key_to_quit_localfunc
     fi

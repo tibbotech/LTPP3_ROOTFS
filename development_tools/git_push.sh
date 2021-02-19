@@ -7,7 +7,10 @@ DOCKER__GIT_FG_WHITE=$'\e[30;38;5;243m'
 
 DOCKER__TITLE_FG_LIGHTBLUE='\e[30;48;5;45m'
 
-#---Define variables
+DOCKER__TITLE_BG_ORANGE=$'\e[30;48;5;215m'
+
+#---Define constants
+DOCKER__TITLE="TIBBO"
 docker__enkrypted_text__filename="enkrypted_git_txt.bin"
 docker__krypt_key__filename="mykryptonyte_key.rsa"
 
@@ -36,7 +39,7 @@ docker__environmental_variables__sub() {
 
 docker__load_header__sub() {
     echo -e "\r"
-    echo -e "${DOCKER__TITLE_FG_LIGHTBLUE}                                DOCKER${DOCKER__TITLE_FG_LIGHTBLUE}                                ${DOCKER__NOCOLOR}"
+    echo -e "${DOCKER__TITLE_BG_ORANGE}                                 ${DOCKER__TITLE}${DOCKER__TITLE_BG_ORANGE}                                ${DOCKER__NOCOLOR}"
 }
 
 

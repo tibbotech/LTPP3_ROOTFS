@@ -6,9 +6,14 @@ DOCKER__ERROR_FG_LIGHTRED=$'\e[1;31m'
 DOCKER__IMAGEID_FG_BORDEAUX=$'\e[30;38;5;198m'
 DOCKER__OUTSIDE_FG_WHITE=$'\e[30;38;5;231m'
 
+DOCKER__TITLE_BG_ORANGE=$'\e[30;48;5;215m'
 DOCKER__TITLE_BG_LIGHTBLUE=$'\e[30;48;5;45m'
 DOCKER__IMAGEID_BG_BORDEAUX=$'\e[30;48;5;198m'
 DOCKER__REMARK_BG_ORANGE=$'\e[30;48;5;208m'
+
+#---Define constants
+DOCKER__TITLE="TIBBO"
+
 
 #---Trap ctrl-c and Call ctrl_c()
 trap CTRL_C__func INT
@@ -56,7 +61,7 @@ press_any_key__localfunc() {
 
 docker__load_header__sub() {
     echo -e "\r"
-    echo -e "${DOCKER__TITLE_BG_LIGHTBLUE}                                DOCKER${DOCKER__TITLE_BG_LIGHTBLUE}                                ${DOCKER__NOCOLOR}"
+    echo -e "${DOCKER__TITLE_BG_ORANGE}                                 ${DOCKER__TITLE}${DOCKER__TITLE_BG_ORANGE}                                ${DOCKER__NOCOLOR}"
 }
 
 docker__init_variables__sub() {
