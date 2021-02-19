@@ -34,10 +34,17 @@ docker__load_header__sub() {
 
 docker__environmental_variables__sub() {
     #Define paths
-    dockerfile_filename="dockerfile_auto"
     docker__current_dir=`dirname "$0"`
     docker__parent_dir=${docker__current_dir%/*}    #gets one directory up
-    docker__docker_images_dir=${docker__parent_dir}/docker/images
+    docker__first_dir=${docker__parent_dir%/*}    #gets one directory up
+    docker__images_dir=${docker__first_dir}/docker/images
+}
+
+docker__create_dirs__sub() {
+    #Create directory if not present
+    if [[ ! -d ${docker__images_dir} ]]; then
+        mkdir -p ${docker__images_dir}
+    fi
 }
 
 docker__save_handler__sub() {
@@ -67,14 +74,14 @@ docker__save_handler__sub() {
                         mytag_isFound=`docker image ls | grep -w "${myrepository}" | grep -w "${mytag}"`    #check if 'myrepository' AND 'mytag' is found in 'docker image ls'
                         if [[ ! -z ${mytag_isFound} ]]; then    #match was found
                             #Compose image full-path
-                            docker__image_fpath="${docker__docker_images_dir}/${myrepository}_${mytag}.tar.gz"
-
-                            echo -e "\r"
+                            docker__image_fpath="${docker__images_dir}/${myrepository}_${mytag}.tar.gz"
                             
                             while true
                             do
-                                echo -e "Provide ${DOCKER__FILES_FG_ORANGE}Image-file full-path${DOCKER__NOCOLOR}?"
-                                read -e -p "Input: " -i "${docker__image_fpath}" myoutput_fpath
+                                echo -e "Provide Image-file full-path?"
+                                echo -e "${DOCKER__FILES_FG_ORANGE}"    #echo used to start a color for 'read'
+                                read -e -p $'\t' -i "${docker__image_fpath}" myoutput_fpath
+                                echo -e "${DOCKER__NOCOLOR}"    #echo used to reset color
 
                                 if [[ ! -z ${myoutput_fpath} ]]; then
                                     
@@ -99,7 +106,24 @@ docker__save_handler__sub() {
 
                                                 exit
                                             elif  [[ ${myanswer} == "n" ]]; then
-                                                echo -e "\r"
+                                                tput cuu1	#move UP with 1 line
+                                                tput el		#clear until the END of line
+                                                tput cuu1	#move UP with 1 line
+                                                tput el		#clear until the END of line
+                                                tput cuu1	#move UP with 1 line
+                                                tput el		#clear until the END of line
+                                                tput cuu1	#move UP with 1 line
+                                                tput el		#clear until the END of line
+                                                tput cuu1	#move UP with 1 line
+                                                tput el		#clear until the END of line
+                                                tput cuu1	#move UP with 1 line
+                                                tput el		#clear until the END of line
+                                                tput cuu1	#move UP with 1 line
+                                                tput el		#clear until the END of line
+                                                tput cuu1	#move UP with 1 line
+                                                tput el		#clear until the END of line
+                                                tput cuu1	#move UP with 1 line
+                                                tput el		#clear until the END of line
 
                                                 break
                                             else    #Empty String
@@ -113,6 +137,10 @@ docker__save_handler__sub() {
 
                                         sleep 2
 
+                                        tput cuu1	#move UP with 1 line
+                                        tput el		#clear until the END of line
+                                        tput cuu1	#move UP with 1 line
+                                        tput el		#clear until the END of line
                                         tput cuu1	#move UP with 1 line
                                         tput el		#clear until the END of line
                                         tput cuu1	#move UP with 1 line
@@ -171,6 +199,8 @@ main_sub() {
     docker__load_header__sub
 
     docker__environmental_variables__sub
+
+    docker__create_dirs__sub
 
     docker__save_handler__sub
 

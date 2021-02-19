@@ -64,16 +64,6 @@ docker__load_header__sub() {
     echo -e "${DOCKER__TITLE_BG_ORANGE}                                 ${DOCKER__TITLE}${DOCKER__TITLE_BG_ORANGE}                                ${DOCKER__NOCOLOR}"
 }
 
-docker__environmental_variables__sub() {
-    #Define paths
-    docker__docker_mainmenu_sh_filename="docker_mainmenu.sh"
-
-    docker__current_dir=`dirname "$0"`
-    docker__parent_dir=${docker__current_dir%/*}    #gets one directory up
-
-    docker__docker_mainmenu_sh_fpath=${docker__parent_dir}/${docker__docker_mainmenu_sh_filename}
-}
-
 docker__create_image_of_specified_container__sub() {
     #Get number of containers
     local numof_containers=`docker container ls | head -n -1 | wc -l`

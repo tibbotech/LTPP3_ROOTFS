@@ -86,7 +86,7 @@ docker__input_containerid__sub() {
         echo -e "${DOCKER__REMARK_BG_ORANGE}Remarks:${DOCKER__NOCOLOR}" 
         echo -e "- Multiple image-ids can be removed"
         echo -e "- Comma-separator will be auto-appended (e.g. 3e2226b5fb4c,78ae00114c5a)"
-        echo -e "- On an Empty Field, press ENTER to stop input"
+		echo -e "- [On an Empty Field] press ENTER to stop input"
         echo -e "${DOCKER__CONTAINER_BG_BRIGHTPRUPLE}Remove the following ${DOCKER__OUTSIDE_FG_WHITE}CONTAINER-ID${DOCKER__NOCOLOR}:${DOCKER__CONTAINER_BG_BRIGHTPRUPLE}${DOCKER__OUTSIDE_FG_WHITE}${docker__mycontainerid}${DOCKER__NOCOLOR}"
         read -p "Paste your input (here): " docker__mycontainerid_input
 
