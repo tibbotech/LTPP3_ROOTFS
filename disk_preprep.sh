@@ -48,6 +48,8 @@ firmware_foldername="firmware"
 
 clkspq628c_filename="clk-sp-q628.c"
 
+brcm_patchram_plus_filename="brcm_patchram_plus"
+
 make_menuconfig_filename="armhf_kernel.config"
 make_menuconfig_default_filename=".config"
 
@@ -108,6 +110,7 @@ home_lttp3rootfs_kernel_dir=${home_lttp3rootfs_dir}/kernel
 home_lttp3rootfs_kernel_makeconfig_dir=${home_lttp3rootfs_kernel_dir}/makeconfig
 home_lttp3rootfs_kernel_drivers_clk_dir=${home_lttp3rootfs_kernel_dir}/drivers/clk
 home_lttp3rootfs_kernel_dts_dir=${home_lttp3rootfs_kernel_dir}/dts
+home_lttp3rootfs_usr_bin_dir=${home_lttp3rootfs_dir}/usr/bin
 SP7xxx_dir=${home_dir}/SP7021
 SP7xxx_linux_kernel_dir=${SP7xxx_dir}/linux/kernel
 SP7xxx_linux_kernel_drivers_clk=${SP7xxx_linux_kernel_dir}/drivers/clk
@@ -145,6 +148,9 @@ dst_firmware_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}/${firmware_fold
 
 src_clkspq628c_fpath=${home_lttp3rootfs_kernel_drivers_clk_dir}/${clkspq628c_filename}
 dst_clkspq628c_fpath=${SP7xxx_linux_kernel_drivers_clk}/${clkspq628c_filename}
+
+src_brcm_patchram_plus_fpath=${home_lttp3rootfs_usr_bin_dir}/${brcm_patchram_plus_filename}
+dst_brcm_patchram_plus_fpath=${SP7xxx_linux_rootfs_initramfs_disk_usr_bin_dir}/${brcm_patchram_plus_filename}
 
 src_make_menuconfig_fpath=${home_lttp3rootfs_kernel_makeconfig_dir}/${make_menuconfig_filename}
 dst_make_menuconfig_fpath=${SP7xxx_linux_kernel_dir}/${make_menuconfig_default_filename}
@@ -733,7 +739,6 @@ echo -e ">>>Change permission to <-rw-r--r--> for folder: ${firmware_foldername}
 
 
 #---FILE: clk-sp-q628.c
-#---REMARK: 'build-essential' has to be installed!!!
 press_any_key__func
 echo -e "\r"
 echo -e ">Copying: ${clkspq628c_filename}"
@@ -748,6 +753,23 @@ echo -e ">>>Change ownership to <root> for file: ${clkspq628c_filename}"
 echo -e "\r"
 echo -e ">>>Change permission to <-rwxr-xr-x> for file: ${clkspq628c_filename}"
 	chmod 755 ${dst_clkspq628c_fpath}
+
+
+#---FILE: brcm_patchram_plus
+press_any_key__func
+echo -e "\r"
+echo -e ">Copying: ${brcm_patchram_plus_filename}"
+echo -e ">from: ${home_lttp3rootfs_usr_bin_dir}"
+echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_usr_bin_dir}"
+	cp ${src_brcm_patchram_plus_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_usr_bin_dir}
+
+echo -e "\r"
+echo -e ">>>Change ownership to <root> for file: ${brcm_patchram_plus_filename}"
+	chown root:root ${dst_brcm_patchram_plus_fpath}
+
+echo -e "\r"
+echo -e ">>>Change permission to <-rwxr-xr-x> for file: ${brcm_patchram_plus_filename}"
+	chmod 755 ${dst_brcm_patchram_plus_fpath}
 
 
 #---KERNEL: MAKE MENUCONFIG

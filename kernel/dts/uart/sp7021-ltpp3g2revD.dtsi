@@ -99,7 +99,7 @@
 &uart3 {
  pinctrl-names = "default";
  pinctrl-0 = <&pins_uart3>;
- status = "okay";
+ status = "disabled";
  // this: enable, pins_uart3
 };
 &uart4 {
@@ -178,10 +178,10 @@
 // this:
  pins_uart1: pins_uart1 {
     sppctl,pins = <
-      //SPPCTL_IOPAD(8,SPPCTL_PCTL_G_PMUX,MUXF_UA1_TX,0)
-      //SPPCTL_IOPAD(9,SPPCTL_PCTL_G_PMUX,MUXF_UA1_RX,0)
-      //SPPCTL_IOPAD(10,SPPCTL_PCTL_G_PMUX,MUXF_UA1_RTS,0)
-      //SPPCTL_IOPAD(11,SPPCTL_PCTL_G_PMUX,MUXF_UA1_CTS,0)
+      SPPCTL_IOPAD(8,SPPCTL_PCTL_G_PMUX,MUXF_UA1_TX,0)
+      SPPCTL_IOPAD(9,SPPCTL_PCTL_G_PMUX,MUXF_UA1_RX,0)
+      SPPCTL_IOPAD(10,SPPCTL_PCTL_G_PMUX,MUXF_UA1_RTS,0)
+      SPPCTL_IOPAD(11,SPPCTL_PCTL_G_PMUX,MUXF_UA1_CTS,0)
     >;
  };
 // this/
