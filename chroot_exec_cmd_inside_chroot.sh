@@ -302,7 +302,6 @@ echo -e "\r"
 	apt-get -y install less
 	apt-get -y install mtools
 	apt-get -y install bsdmainutils
-	apt-get -y install build-essential
 
 echo -e "\r"
 echo "---Installing <curl>---"

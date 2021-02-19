@@ -45,14 +45,13 @@ docker__add_comment_push__sub() {
     local commit_description=""
     local ts_current=""
 
-
     echo -e "----------------------------------------------------------------------"
     echo -e "${DOCKER__GENERAL_FG_YELLOW}Pushing${DOCKER__NOCOLOR} To ${DOCKER__INSIDE_FG_LIGHTGREY}GIT${DOCKER__NOCOLOR}"
     echo -e "----------------------------------------------------------------------"
     
     if [[ -f ${docker__enkrypted_text__fpath} ]] && [[ -f ${docker__krypt_key__fpath} ]] ; then
         username="imcase"
-        password=`sudo sh -c "openssl rsautl -inkey ${docker__krypt_key__fpath} -decrypt < ${docker__enkrypted_text__fpath}"`
+        password=`openssl rsautl -inkey ${docker__krypt_key__fpath} -decrypt < ${docker__enkrypted_text__fpath}`
     else
         echo -e "\r"
 
@@ -86,7 +85,7 @@ docker__add_comment_push__sub() {
     fi
 
     #---Add items to commit
-    sudo sh -c "git add ."
+    git add .
 
     #---Timespan
     ts_current=$(date +%Y%m%d_%H%M%S)
@@ -99,10 +98,10 @@ docker__add_comment_push__sub() {
         commit_description="docker_committed_on_${ts_current}"
     fi
 
-    sudo sh -c "git commit -m '${commit_description}'"
+    git commit -m '${commit_description}'
 
     #Push
-    sudo sh -c "git push https://${username}:${password}@github.com/tibbotech/LTPP3_ROOTFS"
+    git push https://${username}:${password}@github.com/tibbotech/LTPP3_ROOTFS
 }
 
 main_sub() {

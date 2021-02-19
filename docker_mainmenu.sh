@@ -17,6 +17,7 @@ DOCKER__INSIDE_BG_WHITE=$'\e[30;48;5;15m'
 DOCKER__OUTSIDE_BG_LIGHTGREY=$'\e[30;48;5;246m'
 
 #---Define constants
+DOCKER__DOT="."
 DOCKER__FIVESPACES="     "
 DOCKER__READ_FG_EXITING_NOW="Exiting Docker Main-menu..."
 
@@ -38,7 +39,7 @@ docker__git_pull_filename="git_pull.sh"
 
 docker__your_LTPP3_ROOTFS_dir=`dirname "$0"`
 #docker__repo_LTPP3_ROOTFS_dir=/repo/LTPP3_ROOTFS
-docker__repo_LTPP3_ROOTFS_development_tools_dir=/repo/LTPP3_ROOTFS/development_tools
+docker__repo_LTPP3_ROOTFS_development_tools_dir=${docker__your_LTPP3_ROOTFS_dir}/development_tools
 
 docker__run_multiple_dockfiles_fpath=${docker__your_LTPP3_ROOTFS_dir}/${docker__run_multiple_dockfiles_filename}
 docker__create_image_from_existing_repository_fpath=${docker__repo_LTPP3_ROOTFS_development_tools_dir}/${docker__create_image_from_existing_repository_filename}
@@ -112,6 +113,27 @@ press_any_key__localfunc() {
 		tcounter=$((tcounter+1))
 	done
 	echo -e "\r"
+}
+
+docker__cmd_exec() {
+    #Input args
+    cmd=${1}
+
+    #Define local variable
+    currUser=$(whoami)
+
+    #Exec command
+    if [[ ${currUser} != "root" ]]; then
+        sudo sh -c "${cmd}"
+    else
+        ${cmd}
+    fi
+}
+
+docker__get_this_directory__sub() {
+    if [[ ${docker__your_LTPP3_ROOTFS_dir} == ${DOCKER__DOT} ]]; then
+        docker__your_LTPP3_ROOTFS_dir=$(pwd)
+    fi
 }
 
 docker__load_header__sub() {
@@ -201,7 +223,7 @@ docker__mainmenu__sub() {
                 ;;
             
             p)  
-                ${docker__git_push_fpath}
+                docker__cmd_exec "${docker__git_push_fpath}"
                 ;;
 
             g)  
@@ -218,6 +240,8 @@ docker__mainmenu__sub() {
 
 main_sub() {
     docker__load_header__sub
+
+    docker__get_this_directory__sub
 
     docker__init_variables__sub
 
