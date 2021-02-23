@@ -119,10 +119,12 @@ docker__environmental_variables__sub() {
     docker__git_push_filename="git_push.sh"
     docker__git_pull_filename="git_pull.sh"
 
-    docker__current_dir=`dirname "$0"`
+    docker__current_script_fpath=$(realpath $0)
+    docker__current_dir=$(dirname ${docker__current_script_fpath})
     if [[ ${docker__current_dir} == ${DOCKER__DOT} ]]; then
         docker__current_dir=$(pwd)
     fi
+
     docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}/development_tools
 
     docker__run_multiple_dockfiles_fpath=${docker__current_dir}/${docker__run_multiple_dockfiles_filename}

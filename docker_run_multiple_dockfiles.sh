@@ -105,7 +105,8 @@ docker__get_this_running_script_dir__sub() {
     #Define local variables
     local script_basename=`basename $0`
 
-    docker__current_dir=`dirname "$0"`
+    docker__current_script_fpath=$(realpath $0)
+    docker__current_dir=$(dirname ${docker__current_script_fpath})
     docker___my_LTPP3_ROOTFS_docker_dir=${docker__current_dir}/docker
     docker__your_repodir_LTPP3_ROOTFS_docker_list_dir=${docker___my_LTPP3_ROOTFS_docker_dir}/list
     docker__your_repodir_LTPP3_ROOTFS_docker_dockerfiles_dir=${docker___my_LTPP3_ROOTFS_docker_dir}/dockerfiles

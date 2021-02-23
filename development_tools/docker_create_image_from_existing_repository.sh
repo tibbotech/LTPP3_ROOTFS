@@ -81,7 +81,8 @@ docker__load_header__sub() {
 docker__environmental_variables__sub() {
     #Define paths
     docker__dockerfile_filename="dockerfile_auto"
-    docker__current_dir=`dirname "$0"`
+    docker__current_script_fpath=$(realpath $0)
+    docker__current_dir=$(dirname ${docker__current_script_fpath})
     docker__parent_dir=${docker__current_dir%/*}    #gets one directory up
     docker__first_dir=${docker__parent_dir%/*}    #gets one directory up
     dockerfile_dir=${docker__first_dir}/docker/dockerfiles
