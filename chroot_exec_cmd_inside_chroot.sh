@@ -294,10 +294,11 @@ echo -e "\r"
 
 press_any_key__localfunc
 echo -e "\r"
-echo "---Installing <vim, nano, lrzsz, wget, mtools, less, bsdmainutils>---"
+echo "---Installing <dialog, vim, nano, lrzsz, wget, mtools, less, bsdmainutils>---"
 echo -e "\r"
+	apt-get -y install dialog
 	apt-get -y install vim
- 	sudo apt-get install nano
+ 	apt-get -y install nano
 	apt-get -y install lrzsz
 	apt-get -y install wget
 	apt-get -y install less
