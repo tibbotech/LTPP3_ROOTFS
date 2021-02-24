@@ -388,15 +388,11 @@ echo -e "\r"
 	apt-get -y install locales
 
 
-# echo ">>>Fixing ERROR: regarding locales"
-# echo -e "\r"
-# 	locale-gen en_US.UTF-8
-# 	export LANGUAGE = en_US.UTF-8
-# 	export LANG = en_US.UTF-8
-# 	export LC_ALL = en_US.UTF-8
-# 	locale-gen en_US.UTF-8
-# 	echo -e "/n/n159/n3" | dpkg-reconfigure locales
-
+echo ">>>Fixing ERROR: regarding locales (this might take a while...)"
+echo -e "\r"
+	echo "en_US.UTF-8" | sudo tee -a /etc/locale.gen
+	sudo locale-gen en_US.UTF-8
+	sudo dpkg-reconfigure --frontend noninteractive locales
 
 press_any_key__localfunc
 echo -e "\r"
