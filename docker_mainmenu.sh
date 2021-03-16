@@ -105,6 +105,7 @@ docker__environmental_variables__sub() {
     docker__create_image_from_existing_repository_filename="docker_create_image_from_existing_repository.sh"
     docker__create_image_from_container_filename="docker_create_image_from_container.sh"
     docker__run_container_from_a_repository_filename="docker_run_container_from_a_repository.sh"
+    docker__run_exited_container_filename="docker_run_exited_container.sh"
     docker__remove_image_filename="docker_remove_image.sh"
     docker__remove_container_filename="docker_remove_container.sh"
     docker__cp_fromto_container_filename="docker_cp_fromto_container.sh"
@@ -131,6 +132,7 @@ docker__environmental_variables__sub() {
     docker__create_image_from_existing_repository_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__create_image_from_existing_repository_filename}
     docker__create_image_from_container_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__create_image_from_container_filename}
     docker__run_container_from_a_repository_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__run_container_from_a_repository_filename}
+    docker__run_exited_container_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__run_exited_container_filename}
     docker__remove_image_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__remove_image_filename}
     docker__remove_container_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__remove_container_filename}
     docker__cp_fromto_container_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__cp_fromto_container_filename}
@@ -164,11 +166,15 @@ docker__mainmenu__sub() {
         echo -e "${DOCKER__FIVESPACES}1. Create ${DOCKER__GENERAL_FG_YELLOW}multiple${DOCKER__NOCOLOR} ${DOCKER__IMAGEID_FG_BORDEAUX}images${DOCKER__NOCOLOR} using ${DOCKER__TITLE_FG_LIGHTBLUE}docker-files${DOCKER__NOCOLOR}"
         echo -e "${DOCKER__FIVESPACES}2. Create an ${DOCKER__IMAGEID_FG_BORDEAUX}image${DOCKER__NOCOLOR} from a ${DOCKER__REPOSITORY_FG_PURPLE}repository${DOCKER__NOCOLOR}"
         echo -e "${DOCKER__FIVESPACES}3. Create an ${DOCKER__IMAGEID_FG_BORDEAUX}image${DOCKER__NOCOLOR} from a ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
-        echo -e "${DOCKER__FIVESPACES}4. Run ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR} from a ${DOCKER__REPOSITORY_FG_PURPLE}repository${DOCKER__NOCOLOR} "
-        echo -e "${DOCKER__FIVESPACES}5. Remove ${DOCKER__IMAGEID_FG_BORDEAUX}image(s)${DOCKER__NOCOLOR}"
-        echo -e "${DOCKER__FIVESPACES}6. Remove ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}container(s)${DOCKER__NOCOLOR}"
-        echo -e "${DOCKER__FIVESPACES}7. Copy a ${DOCKER__FILES_FG_ORANGE}file${DOCKER__NOCOLOR} from/to a ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
-        echo -e "${DOCKER__FIVESPACES}8. Run ${DOCKER__CHROOT_FG_GREEN}CHROOT${DOCKER__NOCOLOR} from *WITHIN* a ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
+        echo -e "${DOCKER__FIVESPACES}4. Run ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR} from a ${DOCKER__REPOSITORY_FG_PURPLE}repository${DOCKER__NOCOLOR}"
+        echo -e "${DOCKER__FIVESPACES}5. Run an *EXITED* ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
+        echo -e "${DOCKER__FIVESPACES}6. Remove ${DOCKER__IMAGEID_FG_BORDEAUX}image(s)${DOCKER__NOCOLOR}"
+        echo -e "${DOCKER__FIVESPACES}7. Remove ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}container(s)${DOCKER__NOCOLOR}"
+        echo -e "${DOCKER__FIVESPACES}8. Copy a ${DOCKER__FILES_FG_ORANGE}file${DOCKER__NOCOLOR} from/to a ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
+        echo -e "${DOCKER__FIVESPACES}9. Run ${DOCKER__CHROOT_FG_GREEN}CHROOT${DOCKER__NOCOLOR} from *WITHIN* a ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
+        echo -e "----------------------------------------------------------------------"
+        echo -e "${DOCKER__FIVESPACES}r. Docker ${DOCKER__REPOSITORY_FG_PURPLE}repository${DOCKER__NOCOLOR} List"
+        echo -e "${DOCKER__FIVESPACES}c. Docker ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR} List"
         echo -e "----------------------------------------------------------------------"
         echo -e "${DOCKER__FIVESPACES}s. SSH"
         echo -e "----------------------------------------------------------------------"
@@ -190,7 +196,7 @@ docker__mainmenu__sub() {
 
             #Only continue if a valid option is selected
             if [[ ! -z ${docker__mychoice} ]]; then
-                if [[ ${docker__mychoice} =~ [1-8,s,e,i,p,g,q] ]]; then
+                if [[ ${docker__mychoice} =~ [1-9,r,c,s,e,i,p,g,q] ]]; then
                     break
                 else
                     tput cuu1	#move UP with 1 line
@@ -222,19 +228,31 @@ docker__mainmenu__sub() {
                 ;;
 
             5)
-                docker__cmd_exec "${docker__remove_image_fpath}"
+                docker__cmd_exec "${docker__run_exited_container_fpath}"
                 ;;
 
             6)
-                docker__cmd_exec "${docker__remove_container_fpath}"
+                docker__cmd_exec "${docker__remove_image_fpath}"
                 ;;
 
             7)
-                docker__cmd_exec "${docker__cp_fromto_container_fpath}"
+                docker__cmd_exec "${docker__remove_container_fpath}"
                 ;;
 
             8)
+                docker__cmd_exec "${docker__cp_fromto_container_fpath}"
+                ;;
+
+            9)
                 docker__cmd_exec "${docker__run_chroot_fpath}"
+                ;;
+
+            c)
+                docker__list_container__sub
+                ;;
+
+            r)
+                docker__list_repository__sub
                 ;;
 
             s)
@@ -262,6 +280,20 @@ docker__mainmenu__sub() {
                 ;;
         esac
     done
+}
+
+docker__list_repository__sub() {
+    docker__load_header__sub
+    echo -e ""
+        docker image ls
+    echo -e ""
+}
+
+docker__list_container__sub() {
+    docker__load_header__sub
+    echo -e ""
+        docker ps -a
+    echo -e ""
 }
 
 

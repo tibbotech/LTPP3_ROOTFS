@@ -117,12 +117,12 @@ docker__input_containerid__sub() {
 
 docker_remove_specified_containers__sub() {
     #Get number of containers
-    local numof_containers=`docker container ls | head -n -1 | wc -l`
+    local numof_containers=`docker ps -a | head -n -1 | wc -l`
 
     echo -e "----------------------------------------------------------------------"
     echo -e "\t${DOCKER__GENERAL_FG_YELLOW}Remove${DOCKER__NOCOLOR} ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}CONTAINER(s)${DOCKER__NOCOLOR}"
     echo -e "----------------------------------------------------------------------"
-        docker container ls
+        docker ps -a
 
         if [[ ${numof_containers} -eq 0 ]]; then
             echo -e "\r"
@@ -160,7 +160,7 @@ docker_remove_specified_containers__sub() {
                     if [[ ${docker__myanswer} == "y" ]] || [[ ${docker__myanswer} == "Y" ]]; then
                         for docker__mycontainerid_item in "${docker__mycontainerid_arr[@]}"
                         do 
-                            docker__mycontainerid_isFound=`docker container ls | awk '{print $1}' | grep -w ${docker__mycontainerid_item}`
+                            docker__mycontainerid_isFound=`docker ps -a | awk '{print $1}' | grep -w ${docker__mycontainerid_item}`
                             if [[ ! -z ${docker__mycontainerid_isFound} ]]; then
                                 docker container rm -f ${docker__mycontainerid_item} > /dev/null
                                 echo -e "\r"
@@ -181,7 +181,7 @@ docker_remove_specified_containers__sub() {
                         echo -e "\r"
                         echo -e "\r"
                         echo -e "----------------------------------------------------------------------"
-                            docker container ls
+                            docker ps -a
                         echo -e "----------------------------------------------------------------------"
                         echo -e "\r"
 

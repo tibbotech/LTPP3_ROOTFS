@@ -136,14 +136,14 @@ docker__choose_copy_direction__sub() {
 
 docker__choose_containerid__sub() {
     #Get number of containers
-    local numof_containers=`docker container ls | head -n -1 | wc -l`
+    local numof_containers=`docker ps -a | head -n -1 | wc -l`
 
     #---Show Docker Image List
     echo -e "\r"
     echo -e "----------------------------------------------------------------------"
     echo -e "\t${DOCKER__GENERAL_FG_YELLOW}Create${DOCKER__NOCOLOR} Docker ${DOCKER__IMAGEID_FG_BORDEAUX}IMAGE${DOCKER__NOCOLOR} from ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}CONTAINER${DOCKER__NOCOLOR}"
     echo -e "----------------------------------------------------------------------"
-        docker container ls
+        docker ps -a
 
         if [[ ${numof_containers} -eq 0 ]]; then
             echo -e "\r"
@@ -166,7 +166,7 @@ docker__choose_containerid__sub() {
 		docker__mycontainerid=`cell__remove_whitespaces__func "${docker__mycontainerid}"`
 
 		if [[ ! -z ${docker__mycontainerid} ]]; then
-			docker__mycontainerid_isFound=`docker container ls | awk '{print $1}' | grep -w ${docker__mycontainerid}`
+			docker__mycontainerid_isFound=`docker ps -a | awk '{print $1}' | grep -w ${docker__mycontainerid}`
 			
 			if [[ ! -z ${docker__mycontainerid_isFound} ]]; then
 				break         

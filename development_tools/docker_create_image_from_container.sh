@@ -66,13 +66,13 @@ docker__load_header__sub() {
 
 docker__create_image_of_specified_container__sub() {
     #Get number of containers
-    local numof_containers=`docker container ls | head -n -1 | wc -l`
+    local numof_containers=`docker ps -a | head -n -1 | wc -l`
 
     #---Show Docker Image List
     echo -e "----------------------------------------------------------------------"
     echo -e "\t${DOCKER__GENERAL_FG_YELLOW}Create${DOCKER__NOCOLOR} Docker ${DOCKER__IMAGEID_FG_BORDEAUX}IMAGE${DOCKER__NOCOLOR} from ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}CONTAINER${DOCKER__NOCOLOR}"
     echo -e "----------------------------------------------------------------------"
-        docker container ls
+        docker ps -a
 
         if [[ ${numof_containers} -eq 0 ]]; then
             echo -e "\r"
@@ -94,8 +94,8 @@ docker__create_image_of_specified_container__sub() {
         read -p "Choose a ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}CONTAINER-ID${DOCKER__NOCOLOR} (e.g. dfc5e2f3f7ee): " mycontainerid
         if [[ ! -z ${mycontainerid} ]]; then    #input is NOT an EMPTY STRING
 
-            #Check if 'mycontainerid' is found in ' docker container ls'
-            mycontainerid_isFound=`docker container ls | awk '{print $1}' | grep -w ${mycontainerid}`
+            #Check if 'mycontainerid' is found in ' docker ps -a'
+            mycontainerid_isFound=`docker ps -a | awk '{print $1}' | grep -w ${mycontainerid}`
             if [[ ! -z ${mycontainerid_isFound} ]]; then    #match was found
                 #Get number of images
                 local numof_images=$((docker_image_ls_lines-1))
