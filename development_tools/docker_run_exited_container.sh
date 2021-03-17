@@ -73,7 +73,7 @@ docker__init_variables__sub() {
 
 docker_run_specified_exited_container__sub() {
     #Get number of containers
-    local numof_containers=`docker container ps -a | head -n -1 | wc -l`
+    local numof_containers=`docker ps -a | head -n -1 | wc -l`
 
     echo -e "----------------------------------------------------------------------"
     echo -e "\t${DOCKER__GENERAL_FG_YELLOW}RUN${DOCKER__NOCOLOR} EXITED ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}CONTAINER${DOCKER__NOCOLOR}"
@@ -100,7 +100,7 @@ docker_run_specified_exited_container__sub() {
         read -p "Choose a ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}CONTAINER-ID${DOCKER__NOCOLOR} (e.g. dfc5e2f3f7ee): " docker__mycontainerid
 
         if [[ ! -z ${docker__mycontainerid} ]]; then
-            docker__mycontainerid_isFound=`docker container ps -a | awk '{print $1}' | grep -w ${docker__mycontainerid}`          
+            docker__mycontainerid_isFound=`docker ps -a | awk '{print $1}' | grep -w ${docker__mycontainerid}`          
 
             if [[ ! -z ${docker__mycontainerid_isFound} ]]; then    #match was found
                 docker start ${docker__mycontainerid}

@@ -161,7 +161,7 @@ docker__mainmenu__sub() {
     while true
     do
         echo -e "----------------------------------------------------------------------"
-        echo -e "${DOCKER__TITLE_FG_LIGHTBLUE}DOCKER MAIN-MENU${DOCKER__NOCOLOR}"
+        echo -e "${DOCKER__TITLE_FG_LIGHTBLUE}DOCKER MAIN-MENU${DOCKER__NOCOLOR}\t\t\t\tv21.03.17-0.0.1"
         echo -e "----------------------------------------------------------------------"
         echo -e "${DOCKER__FIVESPACES}1. Create ${DOCKER__GENERAL_FG_YELLOW}multiple${DOCKER__NOCOLOR} ${DOCKER__IMAGEID_FG_BORDEAUX}images${DOCKER__NOCOLOR} using ${DOCKER__TITLE_FG_LIGHTBLUE}docker-files${DOCKER__NOCOLOR}"
         echo -e "${DOCKER__FIVESPACES}2. Create an ${DOCKER__IMAGEID_FG_BORDEAUX}image${DOCKER__NOCOLOR} from a ${DOCKER__REPOSITORY_FG_PURPLE}repository${DOCKER__NOCOLOR}"
@@ -283,17 +283,62 @@ docker__mainmenu__sub() {
 }
 
 docker__list_repository__sub() {
+    #Load header
     docker__load_header__sub
-    echo -e ""
-        docker image ls
-    echo -e ""
+
+    #Get number of containers
+    local numof_containers=`docker image ls | head -n -1 | wc -l`
+
+    echo -e "----------------------------------------------------------------------"
+    echo -e "\t${DOCKER__REPOSITORY_FG_PURPLE}REPOSITORY'S${DOCKER__NOCOLOR} ${DOCKER__GENERAL_FG_YELLOW}LIST${DOCKER__NOCOLOR} "
+    echo -e "----------------------------------------------------------------------"
+    
+    #Get Docker Image's List
+    docker image ls
+
+    if [[ ${numof_containers} -eq 0 ]]; then
+        echo -e "\r"
+        echo -e "\t\t=:${DOCKER__ERROR_FG_LIGHTRED}NO IMAGES FOUND${DOCKER__NOCOLOR}:="
+        echo -e "----------------------------------------------------------------------"
+        echo -e "\r"
+
+        press_any_key__localfunc
+
+        exit
+    else
+        echo -e "\r"
+        echo -e "\r"
+    fi
 }
 
 docker__list_container__sub() {
+    #Load header
     docker__load_header__sub
-    echo -e ""
-        docker ps -a
-    echo -e ""
+
+    #Get number of containers
+    local numof_containers=`docker ps -a | head -n -1 | wc -l`
+
+    echo -e "----------------------------------------------------------------------"
+    echo -e "\t${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}CONTAINER'S${DOCKER__NOCOLOR} ${DOCKER__GENERAL_FG_YELLOW}LIST${DOCKER__NOCOLOR} "
+    echo -e "----------------------------------------------------------------------"
+    
+    #Get Docker Container's List
+    docker ps -a
+
+
+    if [[ ${numof_containers} -eq 0 ]]; then
+        echo -e "\r"
+        echo -e "\t\t=:${DOCKER__ERROR_FG_LIGHTRED}NO CONTAINERS FOUND${DOCKER__NOCOLOR}:="
+        echo -e "----------------------------------------------------------------------"
+        echo -e "\r"
+
+        press_any_key__localfunc
+
+        exit
+    else
+        echo -e "\r"
+        echo -e "\r"
+    fi
 }
 
 

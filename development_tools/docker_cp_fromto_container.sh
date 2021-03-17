@@ -94,7 +94,7 @@ docker__load_header__sub() {
 
 docker__choose_copy_direction__sub() {
     echo -e "----------------------------------------------------------------------"
-    echo -e "Copy ${DOCKER__FILES_FG_ORANGE}FILE${DOCKER__NOCOLOR} From/To ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}CONTAINER${DOCKER__NOCOLOR}"
+    echo -e "Copy ${DOCKER__FILES_FG_ORANGE}FILE${DOCKER__NOCOLOR}/${DOCKER__FILES_FG_ORANGE}FOLDER${DOCKER__NOCOLOR} From/To ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}CONTAINER${DOCKER__NOCOLOR}"
     echo -e "----------------------------------------------------------------------"
 	echo -e "Do you wish to Copy from:"
 	echo -e "${DOCKER__SPACE}1. ${DOCKER__INSIDE_BG_WHITE}${DOCKER__INSIDE_FG_LIGHTGREY}INSIDE${DOCKER__NOCOLOR} > ${DOCKER__OUTSIDE_BG_LIGHTGREY}${DOCKER__OUTSIDE_FG_WHITE}OUTSIDE${DOCKER__NOCOLOR} container"
@@ -215,7 +215,7 @@ docker__get_source_destination_fpath__sub() {
 		echo -e "\r"
 		while true
 		do
-			read -e -p "Input SOURCE-FILE (${DOCKER__INSIDE_BG_WHITE}${DOCKER__INSIDE_FG_LIGHTGREY}INSIDE${DOCKER__NOCOLOR}): " -i "${DOCKER__ISPBOOOT_BIN_FILENAME}" docker__mysource_filename
+			read -e -p "Input SOURCE-{FILE|FOLDER} (${DOCKER__INSIDE_BG_WHITE}${DOCKER__INSIDE_FG_LIGHTGREY}INSIDE${DOCKER__NOCOLOR}): " -i "${DOCKER__ISPBOOOT_BIN_FILENAME}" docker__mysource_filename
 
 			if [[ ! -z ${docker__mysource_filename} ]]; then
 				break
@@ -259,7 +259,7 @@ docker__get_source_destination_fpath__sub() {
 		echo -e "\r"
 		while true
 		do
-			read -e -p "Input SOURCE-FILE (${DOCKER__OUTSIDE_BG_LIGHTGREY}${DOCKER__OUTSIDE_FG_WHITE}OUTSIDE${DOCKER__NOCOLOR}): " -i "${DOCKER__ISPBOOOT_BIN_FILENAME}" docker__mysource_filename
+			read -e -p "Input SOURCE-{FILE|FOLDER} (${DOCKER__OUTSIDE_BG_LIGHTGREY}${DOCKER__OUTSIDE_FG_WHITE}OUTSIDE${DOCKER__NOCOLOR}): " -i "${DOCKER__ISPBOOOT_BIN_FILENAME}" docker__mysource_filename
 
 			if [[ ! -z ${docker__mysource_filename} ]]; then
 				break
