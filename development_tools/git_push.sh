@@ -103,7 +103,7 @@ docker__add_comment_push__sub() {
         commit_description="docker_committed_on_${ts_current}"
     fi
 
-    git commit -m '${commit_description}'
+    git commit -m "${commit_description}"
 
 
     #Push
