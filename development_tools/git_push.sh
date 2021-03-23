@@ -105,6 +105,7 @@ docker__add_comment_push__sub() {
 
     git commit -m '${commit_description}'
 
+
     #Push
     git push https://${username}:${password}@github.com/tibbotech/LTPP3_ROOTFS
 }

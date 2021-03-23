@@ -116,6 +116,7 @@ echo -e "\r"
 git submodule update --init --recursive
 git submodule update --remote --merge
 git submodule foreach --recursive git checkout master
+git checkout 03645855a9a533cda7c4324072ef51d1fcfb8f7f
 
 echo -e "\r"
 echo ">Navigating to ${sunplus_dir}"
