@@ -1,10 +1,10 @@
-#---Continue from REPOSITORY:TAG=ltps_rootfs:latest
-FROM ltps_rootfs:latest 
+#---Continue from REPOSITORY:TAG=ltps_rootfs_preferences:latest
+FROM ltps_rootfs_preferences:latest 
 
 #---LABEL about the custom image
 LABEL maintainer="hien@tibbo.com"
 LABEL version="0.1"
-LABEL description="Continue from image 'ltps_rootfs:latest', and run 'build_BOOOT_BIN.sh'"
+LABEL description="Continue from image 'ltps_rootfs_preferences:latest', and run 'build_BOOOT_BIN.sh'"
 LABEL repository:tag="ltps_rootfs_ispboootbin:latest"
 
 #---Disable Prompt During Packages Installation
