@@ -120,7 +120,7 @@ docker__environmental_variables__sub() {
     docker__git_push_filename="git_push.sh"
     docker__git_pull_filename="git_pull.sh"
 
-    docker__current_script_fpath=$(realpath $0)
+    docker__current_script_fpath="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
     docker__current_dir=$(dirname ${docker__current_script_fpath})
     if [[ ${docker__current_dir} == ${DOCKER__DOT} ]]; then
         docker__current_dir=$(pwd)

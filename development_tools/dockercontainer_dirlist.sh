@@ -1,7 +1,7 @@
 #!/bin/bash
 #---Input args
 containerID=${1}
-container_dir_input=${2}
+container_dirInput=${2}
 listView_numOfRows_input=${3}
 listView_numOfCols_input=${4}      #0: auto-set-column, 1: 1-column, 2: 2-columns, 3: 3-columns (MAX)
 keyWord_input=${5}
@@ -18,7 +18,7 @@ FG_DEEPORANGE=$'\e[30;38;5;208m'
 
 
 #---Constants
-LISTVIEW_NUMOFCOLS_INPUT_MAX=3
+LISTVIEW_NUMOFCOLS_INPUT_MAX=10
 TERMINAL_NUMOFCOLS_MAX=70
 ONEHUNDRED_PERCENT=100
 
@@ -93,12 +93,12 @@ dirContent_main__sub()
         terminal_numOfCols=${TERMINAL_NUMOFCOLS_MAX}
     fi
 
-    local stdError=`${docker_exec_cmd} "ls -l ${container_dir_input} 2>&1 > /dev/null"`
-    if [[ -z "${stdError}" ]]; then
+    local stdError=`${docker_exec_cmd} "ls -l ${container_dirInput} 2>&1 > /dev/null"`
+    if [[ -z "${stdError}" ]] || [[ ${container_dirInput} == "${SLASH}" ]]; then
         #Get Number of Files
-        dirContent_numOfItems_max_raw=`${docker_exec_cmd} "ls ${container_dir_input} | grep '${keyWord_input}' | wc -l"`
+        dirContent_numOfItems_max_raw=`${docker_exec_cmd} "ls ${container_dirInput} | grep '^${keyWord_input}' | wc -l"`
 
-        #Remove carriage return '\r'
+        #***IMPORTANT: Remove carriage return '\r'
         #   'dirContent_numOfItems_max_raw' contains a carriage returns '\r'...
         #...due to the execution of '/bin/bash' in the command 'docker exec it'.
         #   To remove the carriage returns the 'listView_numOfRows_accurate_wHeader_raw' is PIPED thru 'tr -d $'\r'
@@ -118,12 +118,12 @@ dirContent_main__sub()
         #   But in order to get an accurate 'object_maxLen' the ACTUAL number-of rows is needed (which we don't know yet)
         listView_numOfRows_init=$((LISTVIEW_NUMOFCOLS_INPUT_MAX*listView_numOfRows_input))
 
-        #Get contents of the specified directory 'container_dir_input'
+        #Get contents of the specified directory 'container_dirInput'
         #EXPLANATION:
-        #   ls ${container_dir_input}: get the contents of the specified 'container_dir_input'
+        #   ls ${container_dirInput}: get the contents of the specified 'container_dirInput'
         #   grep "${keyWord_input}": show only the result matching the specified 'keyWord_input'
         #   head -n ${listView_numOfRows_input}: get the top-N specified by 'listView_numOfRows_input'   
-        docker_dirContent_list_string=`${docker_exec_cmd} "ls ${container_dir_input} | grep '${keyWord_input}' | head -n ${listView_numOfRows_init}"`
+        docker_dirContent_list_string=`${docker_exec_cmd} "ls ${container_dirInput} | grep '^${keyWord_input}' | head -n ${listView_numOfRows_init}"`
 
         #Convert String to Array
         docker_dirContent_list_array=(`echo ${docker_dirContent_list_string}`)
@@ -141,8 +141,18 @@ dirContent_main__sub()
             fi
         done
 
-        #Get printf-column-with-percentage
+        #Calculate the number of columns which will be used to place the data in
         listView_numOfCols_auto=$((terminal_numOfCols/object_maxLen))
+
+        #Check if the calculated 'listView_numOfCols_auto' has exceeded the maximum allowed 'LISTVIEW_NUMOFCOLS_INPUT_MAX'
+        #REMARK:
+        #   The calculated 'listView_numOfCols_auto' would exceed 'LISTVIEW_NUMOFCOLS_INPUT_MAX', when...
+        #   the 'object_maxLen' is very small (e.g., 1-5).
+        #   A SMALL 'object_maxLen' means a LARGE 'listView_numOfCols_auto' value
+        if [[ ${listView_numOfCols_auto} -gt ${LISTVIEW_NUMOFCOLS_INPUT_MAX} ]]; then
+            listView_numOfCols_auto=${LISTVIEW_NUMOFCOLS_INPUT_MAX} #set value to the maximum allowed 'LISTVIEW_NUMOFCOLS_INPUT_MAX' value
+        fi
+
 
         #Get the "guessed" number-of-rows
         #REMARK:
@@ -192,9 +202,14 @@ dirContent_get_and_show_list__func()
     local lv_numOfCols=${1} #input is whether 'listView_numOfCols_auto' or 'listView_numOfCols_input'
 
     #Calculate a more accurate value
-    listView_numOfRows_accurate_wHeader_raw=`${docker_exec_cmd} "ls ${container_dir_input} | grep '${keyWord_input}' | pr -${lv_numOfCols} | sed '/^$/d' | head -n ${listView_numOfRows__init_wHeader} | wc -l"`
+    #   grep "^${keyWord_input}": show only the result matching string starting with the specified 'keyWord_input'
+    #   pr -${lv_numOfCols}: place the results in the specified number of columns 'lv_numOfCols'
+    #   sed '/^$/d': remove BLANK lines
+    #   head -n ${listView_numOfRows_accurate_wHeader}: get the top-N specified by 'listView_numOfRows_accurate_wHeader' (starts from the top)
+    #   wc -l" get the number of rows
+    listView_numOfRows_accurate_wHeader_raw=`${docker_exec_cmd} "ls ${container_dirInput} | grep '^${keyWord_input}' | pr -${lv_numOfCols} | sed '/^$/d' | head -n ${listView_numOfRows__init_wHeader} | wc -l"`
 
-    #Remove carriage return '\r'
+    #***IMPORTANT: Remove carriage return '\r'
     #REMARK:
     #   'listView_numOfRows_accurate_wHeader_raw' contains a carriage returns '\r'...
     #...due to the execution of '/bin/bash' in the command 'docker exec it'.
@@ -202,13 +217,18 @@ dirContent_get_and_show_list__func()
     listView_numOfRows_accurate_wHeader=`echo "${listView_numOfRows_accurate_wHeader_raw}" | tr -d $'\r'`
 
     #Calculate 'listView_numOfRows_accurate' which is the ACTUAL number of rows to be shown in the list-view
-    listView_numOfRows_accurate=$(($listView_numOfRows_accurate_wHeader-1))
+    listView_numOfRows_accurate=$(($listView_numOfRows_accurate_wHeader-1)) #without header
 
     #Calculate the number of objects to-be-shown
     dirContent_numOfItems_shown=$((listView_numOfCols_auto*listView_numOfRows_accurate))
 
-    #Get directory contents specified by 'container_dir_input' and keyword 'keyWord_input'
-    dirContent_list_string=`${docker_exec_cmd} "ls ${container_dir_input} | grep '${keyWord_input}' | pr -${lv_numOfCols} | sed '/^$/d' | head -n ${listView_numOfRows_accurate_wHeader} | tail -n ${listView_numOfRows_accurate}"`
+    #Get directory contents specified by 'container_dirInput' and keyword 'keyWord_input'
+    #   grep "^${keyWord_input}": show only the result matching string starting with the specified 'keyWord_input'
+    #   pr -${lv_numOfCols}: place the results in the specified number of columns 'lv_numOfCols'
+    #   sed '/^$/d': remove BLANK lines
+    #   head -n ${listView_numOfRows_accurate_wHeader}: get the top-N specified by 'listView_numOfRows_accurate_wHeader' (starts from the top)
+    #   tail -n ${listView_numOfRows_accurate}`: get the to bottom-N specified by 'listView_numOfRows_accurate' (starts from the bottom)
+    dirContent_list_string=`${docker_exec_cmd} "ls ${container_dirInput} | grep '^${keyWord_input}' | pr -${lv_numOfCols} | sed '/^$/d' | head -n ${listView_numOfRows_accurate_wHeader} | tail -n ${listView_numOfRows_accurate}"`
 
     #Show & Write to file
     #REMARK:

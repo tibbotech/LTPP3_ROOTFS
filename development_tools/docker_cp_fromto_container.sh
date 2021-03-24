@@ -17,7 +17,9 @@ DOCKER__TITLE_BG_ORANGE=$'\e[30;48;5;215m'
 #---Define constants
 DOCKER__TITLE="TIBBO"
 
-DOCKER__ASTERISK="\*"
+DOCKER__ASTERISK_CHAR="\*"
+DOCKER__SLASH_CHAR="/"
+
 DOCKER__CASE_SOURCE_DIR="SOURCE DIR"
 DOCKER__CASE_SOURCE_FOBJECT="SOURCE FILENAME"
 DOCKER__CASE_DEST_DIR="DEST DIR"
@@ -212,17 +214,21 @@ docker__load_header__sub() {
 docker__environmental_variables__sub() {
 	#---Define PATHS
 	docker__ispbooot_bin_filename="ISPBOOOT.BIN"
-	docker__container_dirlist_filename="docker_container_dirlist.sh"
-	docker__host_dirlist_filename="docker_host_dirlist.sh"
+	docker__dockercontainer_dirlist_filename="dockercontainer_dirlist.sh"
+	docker__localhost_dirlist_filename="localhost_dirlist.sh"
 	
 	# docker__current_dir=`pwd`
-	docker__current_script_fpath=$(realpath $0)
+	docker__current_script_fpath="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
     docker__current_dir=$(dirname ${docker__current_script_fpath})	#/repo/LTPP3_ROOTFS/development_tools
 	docker__parent_dir=${docker__current_dir%/*}    #gets one directory up (/repo/LTPP3_ROOTFS)
+    if [[ -z ${docker__parent_dir} ]]; then
+        docker__parent_dir="${DOCKER__SLASH_CHAR}"
+    fi
+
 	docker__root_sp7xxx_out_dir=/root/SP7021/out
 
-	docker__container_dirlist_fpath=${docker__current_dir}/${docker__container_dirlist_filename}
-	docker__host_dirlist_fpath=${docker__current_dir}/${docker__host_dirlist_filename}
+	docker__dockercontainer_dirlist_fpath=${docker__current_dir}/${docker__dockercontainer_dirlist_filename}
+	docker__localhost_dirlist_fpath=${docker__current_dir}/${docker__localhost_dirlist_filename}
 
 	docker__bin_bash_dir=/bin/bash
 
@@ -417,7 +423,7 @@ docker__get_source_destination_fpath__sub() {
 		echo -e "--------------------------------------------------------------------"
 		echo "Overview:"
 		echo -e "--------------------------------------------------------------------"
-		if [[ ${docker__accept_mySource_fObject} == ${DOCKER__ASTERISK} ]]; then
+		if [[ ${docker__accept_mySource_fObject} == ${DOCKER__ASTERISK_CHAR} ]]; then
 			echo "${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}Source Full-path${DOCKER__NOCOLOR}: ${docker__accept_mySource_fPath}/*"
 			echo "${DOCKER__HOST_FG_GREEN85}Destination Full-path${DOCKER__NOCOLOR}: ${docker__accept_myDest_fPath}"
 		else
@@ -459,7 +465,7 @@ docker__get_source_destination_fpath__sub() {
 		echo -e "--------------------------------------------------------------------"
 		echo "Overview:"
 		echo -e "--------------------------------------------------------------------"
-		if [[ ${docker__accept_mySource_fObject} == ${DOCKER__ASTERISK} ]]; then
+		if [[ ${docker__accept_mySource_fObject} == ${DOCKER__ASTERISK_CHAR} ]]; then
 			echo "${DOCKER__HOST_FG_GREEN85}Source Full-path${DOCKER__NOCOLOR}: ${docker__accept_mySource_fPath}/*"
 			echo "${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}Destination Full-path${DOCKER__NOCOLOR}: ${docker__accept_myDest_fPath}"
 		else
@@ -574,7 +580,7 @@ docker__container_get_source_fobject__func()
 		fi
 
 		if [[ ! -z ${docker__mySource_fObject} ]]; then
-			if [[ ${docker__mySource_fObject} == ${DOCKER__ASTERISK} ]]; then
+			if [[ ${docker__mySource_fObject} == ${DOCKER__ASTERISK_CHAR} ]]; then
 				docker__accept_mySource_fObject=${docker__mySource_fObject}
 
 				docker__case_option=${DOCKER__CASE_DEST_DIR}
@@ -764,7 +770,7 @@ docker__host_get_source_fobject__func()
 		fi
 
 		if [[ ! -z ${docker__mySource_fObject} ]]; then
-			if [[ ${docker__mySource_fObject} == ${DOCKER__ASTERISK} ]]; then
+			if [[ ${docker__mySource_fObject} == ${DOCKER__ASTERISK_CHAR} ]]; then
 				docker__accept_mySource_fObject=${docker__mySource_fObject}
 
 				docker__case_option=${DOCKER__CASE_DEST_DIR}
@@ -856,18 +862,18 @@ docker__show_dirContent_handler__func()
 {
 	#Input args
 	local myContainerId=${1}
-	local dir_input=${2}
+	local dirInput=${2}
 
 	#Get Parent directory
-	local myParent_dir=${dir_input%/*}
+	local myParent_dir=${dirInput%/*}
 
 	#Get file-/folder-object
-	local myObject=`echo ${dir_input} | rev | cut -d"/" -f1 | rev`
+	local myObject=`echo ${dirInput} | rev | cut -d"/" -f1 | rev`
 
 	#Get directory content of 'myParent_dir'
 	if [[ -z ${myContainerId} ]]; then
 		if [[ -d ${myParent_dir} ]]; then	#directory exists
-			${docker__host_dirlist_fpath} "${myParent_dir}" "${DOCKER__LISTVIEW_NUMOFROWS}" "${DOCKER__LISTVIEW_NUMOFCOLS}" "${myObject}"
+			${docker__localhost_dirlist_fpath} "${myParent_dir}" "${DOCKER__LISTVIEW_NUMOFROWS}" "${DOCKER__LISTVIEW_NUMOFCOLS}" "${myObject}"
 		fi
 	else
 		#Define docker exec command which inclues '/bin/bash -c'
@@ -875,7 +881,7 @@ docker__show_dirContent_handler__func()
 		
 		local stdError=`${docker_exec_cmd} "ls -l ${myParent_dir} 2>&1 > /dev/null"`
 		if [[ -z "${stdError}" ]]; then	#no error, thus directory exists
-			${docker__container_dirlist_fpath} "${myContainerId}" "${myParent_dir}" "${DOCKER__LISTVIEW_NUMOFROWS}" "${DOCKER__LISTVIEW_NUMOFCOLS}" "${myObject}"
+			${docker__dockercontainer_dirlist_fpath} "${myContainerId}" "${myParent_dir}" "${DOCKER__LISTVIEW_NUMOFROWS}" "${DOCKER__LISTVIEW_NUMOFCOLS}" "${myObject}"
 		fi
 	fi
 }
@@ -916,7 +922,7 @@ function docker__container_file_or_dir_exists__func()
 
 docker__compose_source_dest_fpath__sub()
 {
-	if [[ ${docker__accept_mySource_fObject} == ${DOCKER__ASTERISK} ]]; then
+	if [[ ${docker__accept_mySource_fObject} == ${DOCKER__ASTERISK_CHAR} ]]; then
 		docker__accept_mySource_fPath=${docker__accept_mySource_dir}
 		docker__accept_myDest_fPath=${docker__accept_myDest_dir}
 	else
@@ -984,7 +990,7 @@ docker__copy_src_to_dst_handler__func()
 	local docker_exec_cmd="docker exec -it ${docker__myContainerId} ${docker__bin_bash_dir} -c"
 
 	if [[ ${docker__mycopychoice} -eq 1 ]]; then
-		if [[ ${docker__mySource_fObject} = ${DOCKER__ASTERISK} ]]; then	#an asterisk was inputted for file-/folder-name
+		if [[ ${docker__mySource_fObject} = ${DOCKER__ASTERISK_CHAR} ]]; then	#an asterisk was inputted for file-/folder-name
 			#Get directory contents specified by 'docker__accept_mySource_dir'
 			dirContent_list_string=`${docker_exec_cmd} "ls -1 ${docker__accept_mySource_dir}"`	
 
@@ -1017,7 +1023,7 @@ docker__copy_src_to_dst_handler__func()
 			docker cp ${docker__myContainerId}:${docker__accept_mySource_fPath} ${docker__accept_myDest_fPath}
 		fi
 	else
-		if [[ ${docker__mySource_fObject} = ${DOCKER__ASTERISK} ]]; then	#an asterisk was inputted for file-/folder-name
+		if [[ ${docker__mySource_fObject} = ${DOCKER__ASTERISK_CHAR} ]]; then	#an asterisk was inputted for file-/folder-name
 			#Get directory contents specified by 'docker__accept_mySource_dir'
 			dirContent_list_string=`ls -1 ${docker__accept_mySource_dir}`	
 

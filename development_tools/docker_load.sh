@@ -10,6 +10,9 @@ DOCKER__TITLE_BG_ORANGE=$'\e[30;48;5;215m'
 
 #---Define constants
 DOCKER__TITLE="TIBBO"
+
+DOCKER__SLASH_CHAR="/"
+
 DOCKER__FIVE_SPACES="     "
 
 
@@ -35,9 +38,13 @@ docker__load_header__sub() {
 
 docker__environmental_variables__sub() {
     #Define paths
-    docker__current_script_fpath=$(realpath $0)
+    docker__current_script_fpath="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
     docker__current_dir=$(dirname ${docker__current_script_fpath})
     docker__parent_dir=${docker__current_dir%/*}    #gets one directory up
+    if [[ -z ${docker__parent_dir} ]]; then
+        docker__parent_dir="${DOCKER__SLASH_CHAR}"
+    fi
+
     docker__first_dir=${docker__parent_dir%/*}    #gets one directory up
     docker__images_dir=${docker__first_dir}/docker/images
     docker__image_fpath=""

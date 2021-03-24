@@ -74,12 +74,11 @@ docker__cmd_exec() {
 }
 
 docker__environmental_variables__sub() {
-    docker__current_script_fpath=$(realpath $0)
+    docker__current_script_fpath="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
     docker__current_dir=$(dirname ${docker__current_script_fpath})
     if [[ ${docker__current_dir} == ${DOCKER__DOT} ]]; then
         docker__current_dir=$(pwd)
     fi
-
 }
 
 docker__load_header__sub() {
