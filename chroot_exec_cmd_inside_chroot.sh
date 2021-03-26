@@ -305,6 +305,8 @@ echo -e "\r"
 	apt-get -y install mtools
 	apt-get -y install bsdmainutils
 	apt-get -y install git
+	apt-get -y install expect
+
 
 echo -e "\r"
 echo "---Installing <curl>---"
