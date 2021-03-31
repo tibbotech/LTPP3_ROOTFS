@@ -143,6 +143,14 @@ echo -e "\r"
 echo ">>>Add <root> to group <gpio>"
 	usermod -a -G gpio root	
 
+echo -e "\r"
+echo ">>>Add Tibbo PPA Key"
+	curl -s --compressed "https://tibbotech.github.io/ltpp3g2_ppa/ppa/KEY.gpg" | sudo apt-key add -
+
+echo -e "\r"
+echo ">>>Add Tibbo PPA to sources"
+	curl -s --compressed -o /etc/apt/sources.list.d/my_list_file.list "https://tibbotech.github.io/ltpp3g2_ppa/ppa/my_list_file.list"
+
 press_any_key__localfunc
 echo -e "\r"
 echo "---Updates & Upgrades--"
@@ -361,6 +369,10 @@ echo -e "\r"
 	# ufw allow 5555
 	# ufw allow 1194	
 
+echo -e "\r"
+echo "---Installing tibbo-oobe---"
+echo -e "\r"
+	apt-get -y install tibbo-oobe
 
 press_any_key__localfunc
 echo -e "\r"
