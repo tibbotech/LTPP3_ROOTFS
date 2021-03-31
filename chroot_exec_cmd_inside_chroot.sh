@@ -145,7 +145,7 @@ echo ">>>Add <root> to group <gpio>"
 
 echo -e "\r"
 echo ">>>Add Tibbo PPA Key"
-	curl -s --compressed "https://tibbotech.github.io/ltpp3g2_ppa/ppa/KEY.gpg" | sudo apt-key add -
+	curl -s --compressed "https://tibbotech.github.io/ltpp3g2_ppa/ppa/KEY.gpg" | apt-key add -
 
 echo -e "\r"
 echo ">>>Add Tibbo PPA to sources"
