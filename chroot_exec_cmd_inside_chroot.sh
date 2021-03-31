@@ -314,7 +314,7 @@ echo -e "\r"
 	apt-get -y install bsdmainutils
 	apt-get -y install git
 	apt-get -y install expect
-
+	apt-get -y install software-properties-common
 
 echo -e "\r"
 echo "---Installing <curl>---"
