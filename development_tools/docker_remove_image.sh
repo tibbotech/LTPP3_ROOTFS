@@ -14,6 +14,10 @@ DOCKER__REMARK_BG_ORANGE=$'\e[30;48;5;208m'
 #---Define constants
 DOCKER__TITLE="TIBBO"
 
+DOCKER__EMPTYSTRING=""
+DOCKER__REMOVE_ALL="REMOVE-ALL"
+
+
 
 #---Trap ctrl-c and Call ctrl_c()
 trap CTRL_C__func INT
@@ -77,19 +81,31 @@ docker__init_variables__sub() {
 docker__input_imageid__sub() {
     #RESET VARIABLE (IMPORTANT)
     if [[ ${docker__myanswer} != "b" ]]; then
-        docker__myimageid=""
+        docker__myimageid=${DOCKER__EMPTYSTRING}
+    else
+        if [[ ${docker__myimageid} == ${DOCKER__REMOVE_ALL} ]]; then
+            docker__myimageid=${DOCKER__EMPTYSTRING}
+        fi
     fi
 
 	while true
 	do
 		echo -e "${DOCKER__REMARK_BG_ORANGE}Remarks:${DOCKER__NOCOLOR}" 
-		echo -e "- Multiple image-ids can be removed"
+        echo -e "- Remove ALL image-IDs by typing: ${DOCKER__REMOVE_ALL}"
+		echo -e "- Multiple image-IDs can be removed"
 		echo -e "- Comma-separator will be auto-appended (e.g. 0f7478cf7cab,5f1b8726ca97)"
 		echo -e "- [On an Empty Field] press ENTER to stop input"
-		echo -e "${DOCKER__IMAGEID_BG_BORDEAUX}Remove the following ${DOCKER__OUTSIDE_FG_WHITE}IMAGE-ID(s)${DOCKER__NOCOLOR}:${DOCKER__IMAGEID_BG_BORDEAUX}${DOCKER__OUTSIDE_FG_WHITE}${docker__myimageid}${DOCKER__NOCOLOR}"
+		echo -e "${DOCKER__IMAGEID_BG_BORDEAUX}Remove the following ${DOCKER__OUTSIDE_FG_WHITE}image-IDs${DOCKER__NOCOLOR}:${DOCKER__IMAGEID_BG_BORDEAUX}${DOCKER__OUTSIDE_FG_WHITE}${docker__myimageid}${DOCKER__NOCOLOR}"
 		read -p "Paste your input (here): " docker__myimageid_input
 
 		if [[ -z ${docker__myimageid_input} ]]; then
+			tput cuu1
+			tput el
+
+			break
+        elif [[ ${docker__myimageid_input} == ${DOCKER__REMOVE_ALL} ]]; then
+            docker__myimageid="${docker__myimageid_input}"
+
 			break
 		else
 			if [[ -z ${docker__myimageid} ]]; then
@@ -98,6 +114,8 @@ docker__input_imageid__sub() {
 				docker__myimageid="${docker__myimageid},${docker__myimageid_input}"
 			fi
 
+			tput cuu1
+			tput el
 			tput cuu1
 			tput el
 			tput cuu1
@@ -157,34 +175,55 @@ docker__remove_specified_images__sub() {
 
             while true
             do
-                read -p "Do you wish to continue (y/n/q/b)? " docker__myanswer
+                read -p "***Do you REALLY wish to continue (y/n/q/b)? " docker__myanswer
                 if [[ ! -z ${docker__myanswer} ]]; then          
                     if [[ ${docker__myanswer} == "y" ]] || [[ ${docker__myanswer} == "Y" ]]; then
-                        for docker__myimageid_item in "${docker__myimageid_arr[@]}"
-                        do 
-                            docker__myimageid_isFound=`docker image ls | awk '{print $3}' | grep -w ${docker__myimageid_item}`
-                            if [[ ! -z ${docker__myimageid_isFound} ]]; then
-                                docker image rmi -f ${docker__myimageid_item} > /dev/null
-                                echo -e "\r"
-                                echo -e "Removed IMAGE-ID: ${DOCKER__IMAGEID_FG_BORDEAUX}${docker__myimageid_item}${DOCKER__NOCOLOR}"
-                                echo -e "\r"
-                                echo -e "Removing ALL unlinked images"
-                                echo -e "y\n" | docker image prune
-                                echo -e "Removing ALL stopped containers"
-                                echo -e "y\n" | docker container prune
-                            else
-                                echo -e "\r"
-                                echo -e "***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Invalid IMAGE-ID: ${DOCKER__IMAGEID_FG_BORDEAUX}${docker__myimageid_item}${DOCKER__NOCOLOR}"
-                            fi
-                        done
+                        if [[ ${docker__myimageid} == ${DOCKER__REMOVE_ALL} ]]; then
+                            docker rmi $(docker images -q)                       
+                        else
+                            for docker__myimageid_item in "${docker__myimageid_arr[@]}"
+                            do 
+                                docker__myimageid_isFound=`docker image ls | awk '{print $3}' | grep -w ${docker__myimageid_item}`
+                                if [[ ! -z ${docker__myimageid_isFound} ]]; then
+                                    docker image rmi -f ${docker__myimageid_item} > /dev/null
+                                    echo -e "\r"
+                                    echo -e "Removed IMAGE-ID: ${DOCKER__IMAGEID_FG_BORDEAUX}${docker__myimageid_item}${DOCKER__NOCOLOR}"
+                                    echo -e "\r"
+                                    echo -e "Removing ALL unlinked images"
+                                    echo -e "y\n" | docker image prune
+                                    echo -e "Removing ALL stopped containers"
+                                    echo -e "y\n" | docker container prune
+                                else
+                                    echo -e "\r"
+                                    echo -e "***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Invalid IMAGE-ID: ${DOCKER__IMAGEID_FG_BORDEAUX}${docker__myimageid_item}${DOCKER__NOCOLOR}"
+                                fi
+                            done
+                        fi
 
-                        echo -e "\r"
-                        echo -e "----------------------------------------------------------------------"
-                            docker image ls
-                        echo -e "----------------------------------------------------------------------"
-                        echo -e "\r"
+                        #Get number of containers
+                        local numof_containers=`docker image ls | head -n -1 | wc -l`
 
-                        break
+                        echo -e "----------------------------------------------------------------------"
+                        echo -e "\t${DOCKER__REPOSITORY_FG_PURPLE}REPOSITORY'S${DOCKER__NOCOLOR} ${DOCKER__GENERAL_FG_YELLOW}LIST${DOCKER__NOCOLOR} "
+                        echo -e "----------------------------------------------------------------------"
+                        
+                        #Get Docker Image's List
+                        docker image ls
+
+                        if [[ ${numof_containers} -eq 0 ]]; then
+                            echo -e "\r"
+                            echo -e "\t\t=:${DOCKER__ERROR_FG_LIGHTRED}NO IMAGES FOUND${DOCKER__NOCOLOR}:="
+                            echo -e "----------------------------------------------------------------------"
+                            echo -e "\r"
+
+                            press_any_key__localfunc
+                            return
+                        else
+                            echo -e "\r"
+                            echo -e "\r"
+
+                            break
+                        fi
                     elif [[ ${docker__myanswer} == "n" ]]; then
                         tput cuu1
                         tput el
@@ -204,7 +243,7 @@ docker__remove_specified_images__sub() {
                         tput el
 
                         break
-                    elif [[ ${docker__myanswer} == "q" ]] || [[ ${docker__myanswer} == "Q" ]]; then
+                    elif [[ ${docker__myanswer} == "q" ]]; then
                         echo -e "\r"
                         echo -e "Exiting now..."
                         echo -e "\r"
