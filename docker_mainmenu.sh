@@ -168,8 +168,8 @@ docker__mainmenu__sub() {
         echo -e "${DOCKER__FIVESPACES}3. Create an ${DOCKER__IMAGEID_FG_BORDEAUX}image${DOCKER__NOCOLOR} from a ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
         echo -e "${DOCKER__FIVESPACES}4. Run ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR} from a ${DOCKER__REPOSITORY_FG_PURPLE}repository${DOCKER__NOCOLOR}"
         echo -e "${DOCKER__FIVESPACES}5. Run an *EXITED* ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
-        echo -e "${DOCKER__FIVESPACES}6. Remove ${DOCKER__IMAGEID_FG_BORDEAUX}image(s)${DOCKER__NOCOLOR}"
-        echo -e "${DOCKER__FIVESPACES}7. Remove ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}container(s)${DOCKER__NOCOLOR}"
+        echo -e "${DOCKER__FIVESPACES}6. Remove ${DOCKER__REPOSITORY_FG_PURPLE}repository${DOCKER__NOCOLOR} (${DOCKER__IMAGEID_FG_BORDEAUX}image${DOCKER__NOCOLOR})"
+        echo -e "${DOCKER__FIVESPACES}7. Remove ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
         echo -e "${DOCKER__FIVESPACES}8. Copy a ${DOCKER__FILES_FG_ORANGE}file${DOCKER__NOCOLOR} from/to a ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
         echo -e "${DOCKER__FIVESPACES}9. Run ${DOCKER__CHROOT_FG_GREEN}CHROOT${DOCKER__NOCOLOR} from *WITHIN* a ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
         echo -e "----------------------------------------------------------------------"
@@ -303,8 +303,6 @@ docker__list_repository__sub() {
         echo -e "\r"
 
         press_any_key__localfunc
-
-        exit
     else
         echo -e "\r"
         echo -e "\r"
@@ -333,8 +331,6 @@ docker__list_container__sub() {
         echo -e "\r"
 
         press_any_key__localfunc
-
-        exit
     else
         echo -e "\r"
         echo -e "\r"
