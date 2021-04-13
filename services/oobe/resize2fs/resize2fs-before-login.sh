@@ -1,32 +1,52 @@
 #!/bin/bash
+#---version:21.03.23-0.0.1
 #---Input args
 ACTION=${1}
 
 
-#---Constants
-cENABLE="enable"
-cDISABLE="disable"
+
+#---COLORS CONSTANTS
+NOCOLOR=$'\e[0m'
+FG_LIGHTRED=$'\e[1;31m'
+FG_ORANGE=$'\e[30;38;5;209m'
+FG_LIGHTGREY=$'\e[30;38;5;246m'
+FG_LIGHTGREEN=$'\e[30;38;5;71m'
+FG_SOFLIGHTRED=$'\e[30;38;5;131m'
+
+#---BOOLEAN CONSTANTS
+ENABLE="enable"
+DISABLE="disable"
 
 
-#---Local Functions
+
+#---ENVIRONMENT VARIABLES
+scripts_dir=${scripts_dir}
+resize2fs_exec_filename="resize2fs_exec.sh"
+resize2fs_exec_fpath=${scripts_dir}/${resize2fs_exec_filename}
+
+target_resize_dir=/dev/mmcblk0p8
+
+
+
+#---SUBROUTINES
 usage_sub() 
 {
 	echo -e "\r"
-    echo "Usage: $0 {enable}"
+    echo -e ":-->${FG_LIGHTRED}USAGE${NOCOLOR}: $0 {${FG_LIGHTGREEN}${ENABLE}${NOCOLOR}|${FG_SOFLIGHTRED}${DISABLE}${NOCOLOR}}"
 	echo -e "\r"
 	
-    exit 1
+    exit 99
 }
 
 do_enable_sub() {
-	if [[ -f "/scripts/resize2fs_exec.sh" ]]; then
+	if [[ -f "${resize2fs_exec_fpath}" ]]; then
 		echo -e "\r"
-		echo ">Rezising </dev/mmcblk0p8>"
-			/scripts/resize2fs_exec.sh
+			${resize2fs_exec_fpath}
+		echo -e ":-->${FG_ORANGE}STATUS${NOCOLOR}: RESIZED '${FG_LIGHTGREY}${target_resize_dir}${NOCOLOR}'"
 
 		echo -e "\r"
-		echo ">Removing </scripts/resize2fs_exec.sh>"
-			rm /scripts/resize2fs_exec.sh
+			rm ${resize2fs_exec_fpath}
+		echo -e ":-->${FG_ORANGE}STATUS${NOCOLOR}: REMOVED '${FG_LIGHTGREY}${resize2fs_exec_fpath}${NOCOLOR}'"
 	fi
 }
 
@@ -34,7 +54,7 @@ do_enable_sub() {
 if [[ $# -ne 1 ]]; then	#input args is not equal to 2 
     usage_sub
 else
-	if [[ ${1} != ${cENABLE} ]]; then
+	if [[ ${1} != ${ENABLE} ]]; then
 		usage_sub
 	fi
 fi
@@ -42,7 +62,7 @@ fi
 
 #---Select case
 case "${ACTION}" in
-    ${cENABLE})
+    ${ENABLE})
         do_enable_sub
         ;;
     *)

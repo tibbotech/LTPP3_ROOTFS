@@ -1,4 +1,6 @@
 #!/bin/bash
+#---version:21.03.23-0.0.1
+
 #--------------------------------------------------------------------
 # This script should be copied into /usr/local/bin
 # Dependencies:
@@ -9,7 +11,8 @@
 #--------------------------------------------------------------------
 # REMARK: this script is written based on 'usb-mount.sh'
 #--------------------------------------------------------------------
-#---Define variables
+
+#---ENVIRONMENT VARIABLES
 etc_dir=/etc
 dev_dir=/dev
 usr_dir=/usr
@@ -22,28 +25,39 @@ usr_local_bin_dir=${usr_dir}/local/bin
 regex_pattern="mmcblk*p*"
 
 
-#---Input arg
+
+#---INPUT ARGS
 DEVPART=${1}
 DEVFULLPATH="${dev_dir}/${DEVPART}"
 
 
-#---Local functions
+
+#---COLORS CONSTANTS
+NOCOLOR=$'\e[0m'
+FG_LIGHTRED=$'\e[1;31m'
+FG_ORANGE=$'\e[30;38;5;209m'
+FG_LIGHTGREY=$'\e[30;38;5;246m'
+FG_LIGHTGREEN=$'\e[30;38;5;71m'
+
+
+
+#---SUBROUTINES/FUNCTIONS
 usage_sub() 
 {
 	echo -e "\r"
-    echo "Usage: $0 <dev_id> (e.g. mmcblk1p1)"
+    echo -e ":-->${FG_LIGHTRED}USAGE${NOCOLOR}: $0 <dev_id> (e.g. mmcblk1p1)"
 	echo -e "\r"
 	
-    exit 1
+    exit 99
 }
 
 function get_MEDIAFULLPATH__func() {
 	#---------------------------------------------------------------#
-	# 	Check if this ${mediafullpath} (e.g. /media/HIEN_E) can be	 	#
+	# 	Check if this ${mediafullpath} (e.g. /media/HIEN_E) can be	#
 	# found in /etc/mtab.											#
-	# 	if ${mediafullpath} does exist, then check whether				#
-	# ${mtab_devfullpath} matches with ${devfullpath}						#
-	# 	If NO match, then it means that the mounted devfullpath 		#
+	# 	if ${mediafullpath} does exist, then check whether			#
+	# ${mtab_devfullpath} matches with ${devfullpath}				#
+	# 	If NO match, then it means that the mounted devfullpath 	#
 	# (e.g. /dev/sda1) is not ACTIVE, and thus can be UNmounted		#
 	#	and Removed													#
 	#---------------------------------------------------------------#
@@ -153,22 +167,18 @@ do_Mount_sub()
 
 	echo -e "\r"
 	echo -e "\r"
-	echo -e "*********************************************************"
-	echo -e "* Mounted MMC:\t\t${DEVFULLPATH}"
-	echo -e "* To mount-point:\t${MEDIAFULLPATH}"
-	echo -e "* Permission:\t\t${MEDIAFULLPATH_permission}"
-	echo -e "*********************************************************"
+	echo -e "${FG_ORANGE}INFO${NOCOLOR}: ${FG_LIGHTGREEN}MOUNTED${NOCOLOR} MMC: ${FG_LIGHTGREY}${DEVFULLPATH}${NOCOLOR}"
+	echo -e "${FG_ORANGE}INFO${NOCOLOR}: MOUNT-POINT: ${FG_LIGHTGREY}${MEDIAFULLPATH}${NOCOLOR}"
+	echo -e "${FG_ORANGE}INFO${NOCOLOR}: PERMISSION: ${FG_LIGHTGREY}${MEDIAFULLPATH_permission}${NOCOLOR}"
 	echo -e "\r"
 	echo -e "\r"
 }
 
 #---Show message
-echo -e "\r"
-echo -e "\r"
-echo -e "*********************************************************"
-echo -e "* $(date +%Y/%m/%d-%H:%M:%S): Detected MMC <${DEVPART}>"
-echo -e "*********************************************************"
-echo -e "\r"
+# echo -e "\r"
+# echo -e "\r"
+# echo -e "${FG_ORANGE}INFO${NOCOLOR}: DETECTED MMC: ${FG_LIGHTGREY}${DEVPART}${NOCOLOR}"
+# echo -e "\r"
 
 
 #---Check input args

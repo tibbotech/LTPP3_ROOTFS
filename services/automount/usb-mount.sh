@@ -1,4 +1,6 @@
 #!/bin/bash
+#---version:21.03.23-0.0.1
+
 #--------------------------------------------------------------------
 # This script should be copied into /usr/local/bin
 # Dependencies:
@@ -8,7 +10,8 @@
 # This script is called from our systemd unit file to 
 # mount or unmount a USB drive.
 #--------------------------------------------------------------------
-#---Define variables
+
+#---ENVIRONMENT VARIABLES
 cADD="add"
 cREMOVE="remove"
 etc_dir=/etc
@@ -21,13 +24,25 @@ usr_bin_dir=${usr_dir}/bin
 usr_local_bin_dir=${usr_dir}/local/bin
 
 
-#---Input args
+
+#---INPUT ARGS
 ACTION=$1
 DEVPART=$2
 DEVFULLPATH="${dev_dir}/${DEVPART}"
 
 
-#---Local functions
+
+#---COLORS CONSTANTS
+NOCOLOR=$'\e[0m'
+FG_LIGHTRED=$'\e[1;31m'
+FG_ORANGE=$'\e[30;38;5;209m'
+FG_LIGHTGREY=$'\e[30;38;5;246m'
+FG_LIGHTGREEN=$'\e[30;38;5;71m'
+FG_SOFLIGHTRED=$'\e[30;38;5;131m'
+
+
+
+#---SUBROUTINES/FUNCTIONS
 usage_sub() 
 {
 	echo -e "\r"
@@ -35,6 +50,14 @@ usage_sub()
 	echo -e "\r"
 	
     exit 1
+}
+usage_sub() 
+{
+	echo -e "\r"
+    echo -e ":-->${FG_LIGHTRED}USAGE${NOCOLOR}: $0 {add|remove} <dev_id> (e.g. add sdb1, remove sda1)"
+	echo -e "\r"
+	
+    exit 99
 }
 
 function get_MEDIAFULLPATH__func() {
@@ -150,11 +173,9 @@ do_Mount_sub()
 
 	echo -e "\r"
 	echo -e "\r"
-	echo -e "*********************************************************"
-	echo -e "* Mounted USB-dev:\t${DEVFULLPATH}"
-	echo -e "* To mount-point:\t${MEDIAFULLPATH}"
-	echo -e "* Permission:\t${MEDIAFULLPATH_permission}"
-	echo -e "*********************************************************"
+	echo -e "${FG_ORANGE}INFO${NOCOLOR}: ${FG_LIGHTGREEN}MOUNTED${NOCOLOR} USB: ${FG_LIGHTGREY}${DEVFULLPATH}${NOCOLOR}"
+	echo -e "${FG_ORANGE}INFO${NOCOLOR}: MOUNT-POINT: ${FG_LIGHTGREY}${MEDIAFULLPATH}${NOCOLOR}"
+	echo -e "${FG_ORANGE}INFO${NOCOLOR}: PERMISSION: ${FG_LIGHTGREY}${MEDIAFULLPATH_permission}${NOCOLOR}"
 	echo -e "\r"
 	echo -e "\r"
 }
@@ -174,13 +195,10 @@ do_UNmount_sub()
 
 	echo -e "\r"	
 	echo -e "\r"
-	echo -e "*********************************************************"
-	echo -e "* Unmounted USB-dev:\t${DEVFULLPATH}"
-	echo -e "* From mount-point:\t${mtab_MEDIAFULLPATH}"
-	echo -e "*********************************************************"
+	echo -e "${FG_ORANGE}INFO${NOCOLOR}: ${FG_SOFLIGHTRED}UNMOUNTED${NOCOLOR} USB: ${FG_LIGHTGREY}${DEVFULLPATH}${NOCOLOR}"
+	echo -e "${FG_ORANGE}INFO${NOCOLOR}: MOUNT-POINT: ${FG_LIGHTGREY}${mtab_MEDIAFULLPATH}${NOCOLOR}"
 	echo -e "\r"
 	echo -e "\r"
-
 
 	#Remove unused mointpoints
 	remove_unused_mountpoints__sub

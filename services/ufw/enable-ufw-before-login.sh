@@ -1,58 +1,69 @@
 #!/bin/bash
+#---version:21.03.23-0.0.1
 #---Input args
 ACTION=${1}
 
 
-#---Constants
-cENABLE="enable"
-cDISABLE="disable"
+
+#---COLORS CONSTANTS
+NOCOLOR=$'\e[0m'
+FG_LIGHTRED=$'\e[1;31m'
+FG_ORANGE=$'\e[30;38;5;209m'
+FG_LIGHTGREY=$'\e[30;38;5;246m'
+FG_LIGHTGREEN=$'\e[30;38;5;71m'
+FG_SOFLIGHTRED=$'\e[30;38;5;131m'
+
+#---BOOLEAN CONSTANTS
+ENABLE="enable"
+DISABLE="disable"
 
 
-#---Local Functions
-usage_sub() 
+
+#---SUBROUTINES
+usage__sub() 
 {
 	echo -e "\r"
-    echo "Usage: $0 {enable|disable}"
+    echo -e ":-->${FG_LIGHTRED}USAGE${NOCOLOR}: $0 {${FG_LIGHTGREEN}${ENABLE}${NOCOLOR}|${FG_SOFLIGHTRED}${DISABLE}${NOCOLOR}}"
 	echo -e "\r"
 	
-    exit 1
+    exit 99
 }
 
-do_enable_sub() {
+do_enable__sub() {
 	if [[ ! -z `ufw status | grep "inactive"` ]]; then
 		echo -e "\r"
-		echo "Enabling UFW"
-			ufw enable
+			ufw ${ENABLE}
+		echo -e ":-->${FG_ORANGE}STATUS${NOCOLOR}: ${FG_LIGHTGREEN}ENABLED${NOCOLOR} ${FG_LIGHTGREY}ufw${NOCOLOR}"
 	fi
 }
 
-do_disable_sub() {
+do_disable__sub() {
 	if [[ -z `ufw status | grep "inactive"` ]]; then
 		echo -e "\r"
-		echo "Disabling UFW"
-			ufw disable
+			ufw ${DISABLE}
+		echo -e ":-->${FG_ORANGE}STATUS${NOCOLOR}: ${FG_SOFLIGHTRED}DISABLED${NOCOLOR} ${FG_LIGHTGREY}ufw${NOCOLOR}"
 	fi
 }
 
-#---Check input args
+#---CHECK INPUT ARGS
 if [[ $# -ne 1 ]]; then	#input args is not equal to 2 
-    usage_sub
+    usage__sub
 else
-	if [[ ${1} != ${cENABLE} ]] && [[ ${1} != ${cDISABLE} ]]; then
-		usage_sub
+	if [[ ${1} != ${ENABLE} ]] && [[ ${1} != ${DISABLE} ]]; then
+		usage__sub
 	fi
 fi
 
 
-#---Select case
+#---SELECT CASE
 case "${ACTION}" in
-    ${cENABLE})
-        do_enable_sub
+    ${ENABLE})
+        do_enable__sub
         ;;
-    ${cDISABLE})
-        do_disable_sub
+    ${DISABLE})
+        do_disable__sub
         ;;
     *)
-        usage_sub
+        usage__sub
         ;;
 esac

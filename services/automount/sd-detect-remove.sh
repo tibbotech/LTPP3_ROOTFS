@@ -1,4 +1,6 @@
 #!/bin/bash
+#---version:21.03.23-0.0.1
+
 #--------------------------------------------------------------------
 # This script should be copied into /usr/local/bin
 # Dependencies:
@@ -9,7 +11,8 @@
 #--------------------------------------------------------------------
 # REMARK: this script is written based on 'usb-mount.sh'
 #--------------------------------------------------------------------
-#---Define variables
+
+#---ENVIRONMENT VARIABLES
 etc_dir=/etc
 dev_dir=/dev
 usr_dir=/usr
@@ -22,19 +25,30 @@ usr_local_bin_dir=${usr_dir}/local/bin
 regex_pattern="mmcblk*p*"
 
 
-#---Input arg
+#---INPUT ARGS
 DEVPART=${1}
 DEVFULLPATH="${dev_dir}/${DEVPART}"
 
 
-#---Local functions
+
+#---COLORS CONSTANTS
+NOCOLOR=$'\e[0m'
+FG_LIGHTRED=$'\e[1;31m'
+FG_ORANGE=$'\e[30;38;5;209m'
+FG_LIGHTGREY=$'\e[30;38;5;246m'
+FG_LIGHTGREEN=$'\e[30;38;5;71m'
+FG_SOFLIGHTRED=$'\e[30;38;5;131m'
+
+
+
+#---SUBROUTINES/FUNCTIONS
 usage_sub() 
 {
 	echo -e "\r"
-    echo "Usage: $0 <dev_id> (e.g. mmcblk1p1)"
+    echo -e ":-->${FG_LIGHTRED}USAGE${NOCOLOR}: $0 <dev_id> (e.g. mmcblk1p1)"
 	echo -e "\r"
 	
-    exit 1
+    exit 99
 }
 
 function get_MEDIAFULLPATH__func() {
@@ -139,10 +153,8 @@ do_UNmount_sub()
 
 	echo -e "\r"	
 	echo -e "\r"
-	echo -e "*********************************************************"
-	echo -e "* Unmounted MMC:\t${DEVFULLPATH}"
-	echo -e "* From mount-point:\t${mtab_MEDIAFULLPATH}"
-	echo -e "*********************************************************"
+	echo -e "${FG_ORANGE}INFO${NOCOLOR}: ${FG_SOFLIGHTRED}UNMOUNTED${NOCOLOR} MMC: ${FG_LIGHTGREY}${DEVFULLPATH}${NOCOLOR}"
+	echo -e "${FG_ORANGE}INFO${NOCOLOR}: MOUNT-POINT: ${FG_LIGHTGREY}${mtab_MEDIAFULLPATH}${NOCOLOR}"
 	echo -e "\r"
 	echo -e "\r"
 
@@ -152,12 +164,10 @@ do_UNmount_sub()
 }
 
 #---Show message
-echo -e "\r"
-echo -e "\r"
-echo -e "*********************************************************"
-echo -e "*** $(date +%Y/%m/%d-%H:%M:%S): Ejected MMC <${DEVPART}>"
-echo -e "*********************************************************"
-echo -e "\r"
+# echo -e "\r"
+# echo -e "\r"
+# echo -e "${FG_ORANGE}INFO${NOCOLOR}: EJECTED MMC: ${FG_LIGHTGREY}${DEVPART}${NOCOLOR}"
+# echo -e "\r"
 
 
 #---Check input args
