@@ -263,23 +263,23 @@ echo "---Installing <openssh-server>---"
 echo -e "\r"
 	apt-get -y install openssh-server
 
-echo -e "\r"
-if [[ -f ${sshd_fpath} ]]; then
-	echo ">>>configuring <openssh-server>"
-	echo ">>>>>set to allow root login"
-		search_str="#PermitRootLogin"
-		old_str="#PermitRootLogin prohibit-password"
-		new_str="PermitRootLogin yes"
-		replace_string_with_another_string__localfunc "${search_str}" "${old_str}" "${new_str}" "${sshd_fpath}"
+# echo -e "\r"
+# if [[ -f ${sshd_fpath} ]]; then
+# 	echo ">>>configuring <openssh-server>"
+# 	echo ">>>>>set to allow root login"
+# 		search_str="#PermitRootLogin"
+# 		old_str="#PermitRootLogin prohibit-password"
+# 		new_str="PermitRootLogin yes"
+# 		replace_string_with_another_string__localfunc "${search_str}" "${old_str}" "${new_str}" "${sshd_fpath}"
 
-	echo -e "\r"
-	echo ">>>configuring <openssh-server>"
-		systemctl restart ssh
-else
-	echo ">>>File NOT found: ${sshd_fpath}"
-	echo ">>>>>Unable to configure <openssh-server>"
-fi
-echo -e "\r"
+# 	echo -e "\r"
+# 	echo ">>>configuring <openssh-server>"
+# 		systemctl restart ssh
+# else
+# 	echo ">>>File NOT found: ${sshd_fpath}"
+# 	echo ">>>>>Unable to configure <openssh-server>"
+# fi
+# echo -e "\r"
 
 
 press_any_key__localfunc
