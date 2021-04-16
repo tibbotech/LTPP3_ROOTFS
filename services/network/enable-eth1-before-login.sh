@@ -32,7 +32,11 @@ do_enable_sub() {
 				echo "1" > ${mode_fpath}
 				
 				netplan apply
-			echo -e ":-->${FG_ORANGE}STATUS${NOCOLOR}: ${FG_LIGHTGREEN}ENABLED${NOCOLOR} ${FG_LIGHTGREY}DAISY-CHAIN${NOCOLOR} MODE"
+			echo -e ":-->${FG_ORANGE}STATUS${NOCOLOR}:  ${FG_LIGHTGREY}DAISY-CHAIN${NOCOLOR} MODE IS ${FG_SOFLIGHTRED}OFF${NOCOLOR}"
+
+			echo -e "\r"
+				ifconfig eth1 up
+			echo -e ":-->${FG_ORANGE}STATUS${NOCOLOR}: ${FG_LIGHTGREEN}ENABLED${NOCOLOR} ${FG_LIGHTGREY}eth1${NOCOLOR}" 
 		fi
 	fi
 }
@@ -45,7 +49,9 @@ do_disable_sub() {
 		
 		echo -e "\r"
 			echo "0" > ${mode_fpath}
-		echo -e ":-->${FG_ORANGE}STATUS${NOCOLOR}: ${FG_SOFLIGHTRED}DISABLED${NOCOLOR} ${FG_LIGHTGREY}DAISY-CHAIN${NOCOLOR} MODE"
+
+			netplan apply
+		echo -e ":-->${FG_ORANGE}STATUS${NOCOLOR}: ${FG_LIGHTGREY}DAISY-CHAIN${NOCOLOR} MODE IS ${FG_LIGHTGREEN}ON${NOCOLOR}"
 	fi
 }
 
