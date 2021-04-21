@@ -1,3 +1,8 @@
+#Change ownership and permission of /sys/class/gpio
 SUBSYSTEM=="gpio*", PROGRAM="/bin/sh -c 'find -L /sys/class/gpio/ -maxdepth 2 -exec chown root:gpio {} \; -exec chmod 770 {} \; || true'"
 
+#Change ownership and permission of /sys/class/gpio
 SUBSYSTEM=="gpio*", PROGRAM="/bin/sh -c 'find -L /var/backups/gpio/ -maxdepth 2 -exec chown -R root:gpio {} \; -exec chmod 770 {} \; || true'"
+
+#Change ownership and permission of /dev/gpiochip*
+SUBSYSTEM=="gpio", KERNEL=="gpiochip[0-4]", GROUP="gpiod", MODE="0660"

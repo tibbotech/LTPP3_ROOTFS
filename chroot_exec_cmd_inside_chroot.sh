@@ -143,13 +143,24 @@ echo ">>>Create group <gpio>"
 	groupadd gpio
 
 echo -e "\r"
-echo ">>>Add <${username}> to group <gpio>"
+echo ">>>>>Add <${username}> to group <gpio>"
 	usermod -a -G gpio ubuntu
 
 echo -e "\r"
-echo ">>>Add <root> to group <gpio>"
+echo ">>>>>Add <root> to group <gpio>"
 	usermod -a -G gpio root	
 
+echo -e "\r"
+echo ">>>Create group <gpiod>"
+	groupadd gpiod
+
+echo -e "\r"
+echo ">>>>>Add <${username}> to group <gpiod>"
+	usermod -a -G gpiod ubuntu
+
+echo -e "\r"
+echo ">>>>>Add <root> to group <gpiod>"
+	usermod -a -G gpiod root	
 
 press_any_key__localfunc
 echo -e "\r"
@@ -310,6 +321,8 @@ echo -e "\r"
 	apt-get -y install software-properties-common
 	apt-get -y install build-essential
 	apt-get -y install gdbserver
+	apt-get -y install libgpiod-dev
+	apt-get -y install gpiod
 
 
 echo -e "\r"
@@ -322,21 +335,22 @@ echo "---Installing <gnupg>---"
 echo -e "\r"
 	apt-get -y install gnupg
 
+echo "---Configure <PPA>---"
 echo -e "\r"
-echo ">>>Add Tibbo PPA Key"
+echo ">Add Tibbo-PPA-Key"
 	curl -s --compressed "https://tibbotech.github.io/ltpp3g2_ppa/ppa/KEY.gpg" | apt-key add -
 
 echo -e "\r"
-echo ">>>Add Tibbo PPA to sources"
+echo ">Add Tibbo-PPA to 'sources.list'"
 	curl -s --compressed -o /etc/apt/sources.list.d/my_list_file.list "https://tibbotech.github.io/ltpp3g2_ppa/ppa/my_list_file.list"
 
 echo -e "\r"
-echo "---Update Tibbo PPA--"
+echo ">Installing update"
 echo -e "\r"
 	apt-get -y update
 
 echo -e "\r"
-echo "---Installing tibbo-oobe---"
+echo "---Installing <tibbo-oobe>---"
 echo -e "\r"
 	apt-get -y install tibbo-oobe
 
