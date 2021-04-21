@@ -1,6 +1,8 @@
 #!/bin/bash
 #---Define colors
 DOCKER__NOCOLOR=$'\e[0m'
+DOCKER__FG_LIGHTRED=$'\e[1;31m'
+DOCKER__FG_SOFTLIGHTBLUE=$'\e[30;38;5;80m'
 DOCKER__GENERAL_FG_YELLOW=$'\e[1;33m'
 DOCKER__INSIDE_FG_LIGHTGREY=$'\e[30;38;5;246m'
 DOCKER__GIT_FG_WHITE=$'\e[30;38;5;243m'
@@ -51,9 +53,9 @@ docker__add_comment_push__sub() {
     local ts_current=""
 
     echo -e "----------------------------------------------------------------------"
-    echo -e "${DOCKER__GENERAL_FG_YELLOW}Pushing${DOCKER__NOCOLOR} To ${DOCKER__INSIDE_FG_LIGHTGREY}GIT${DOCKER__NOCOLOR}"
+    echo -e "${DOCKER__GENERAL_FG_YELLOW}Git${DOCKER__NOCOLOR} ${DOCKER__FG_SOFTLIGHTBLUE}PUSH${DOCKER__NOCOLOR}"
     echo -e "----------------------------------------------------------------------"
-    
+
     if [[ -f ${docker__enkrypted_text__fpath} ]] && [[ -f ${docker__krypt_key__fpath} ]] ; then
         username="imcase"
         password=`openssl rsautl -inkey ${docker__krypt_key__fpath} -decrypt < ${docker__enkrypted_text__fpath}`

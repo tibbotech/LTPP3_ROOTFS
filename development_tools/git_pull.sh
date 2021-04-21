@@ -1,6 +1,7 @@
 #!/bin/bash
 #---Define colors
 DOCKER__NOCOLOR=$'\e[0m'
+DOCKER__FG_ORANGE=$'\e[30;38;5;209m'
 DOCKER__GENERAL_FG_YELLOW=$'\e[1;33m'
 DOCKER__TITLE_FG_LIGHTBLUE=$'\e[30;38;5;45m'
 DOCKER__INSIDE_FG_LIGHTGREY=$'\e[30;38;5;246m'
@@ -22,7 +23,7 @@ docker__load_header__sub() {
 
 docker__git_pull__sub() {
     echo -e "----------------------------------------------------------------------"
-    echo -e "${DOCKER__GENERAL_FG_YELLOW}Pulling${DOCKER__NOCOLOR} From ${DOCKER__INSIDE_FG_LIGHTGREY}GIT${DOCKER__NOCOLOR}"
+    echo -e "${DOCKER__GENERAL_FG_YELLOW}Git${DOCKER__NOCOLOR} ${DOCKER__FG_ORANGE}PULL${DOCKER__NOCOLOR}"
     echo -e "----------------------------------------------------------------------"
 
         git pull
