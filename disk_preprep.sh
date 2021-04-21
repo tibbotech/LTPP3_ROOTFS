@@ -71,14 +71,14 @@ sd_detect_remove_sh_filename="sd-detect-remove.sh"
 gpio_gpio_set_group_rules_filename="gpio-set_group.rules"
 
 sunplus_foldername="SP7021"
-one_time_exec_sh_filename="one-time-exec.sh"
 profile_filename="profile"
 chroot_exec_cmd_inside_chroot_filename="chroot_exec_cmd_inside_chroot.sh"
 # daisychain_mode_filename="mode"
 enable_eth1_before_login_service_filename="enable-eth1-before-login.service"
 enable_eth1_before_login_sh_filename="enable-eth1-before-login.sh"
-one_time_exec_before_login_service_filename="one-time-exec-before-login.service"
+one_time_exec_sh_filename="one-time-exec.sh"
 one_time_exec_before_login_sh_filename="one-time-exec-before-login.sh"
+one_time_exec_before_login_service_filename="one-time-exec-before-login.service"
 enable_ufw_before_login_service_filename="enable-ufw-before-login.service"
 enable_ufw_before_login_sh_filename="enable-ufw-before-login.sh"
 
@@ -182,20 +182,20 @@ dst_sd_detect_add_sh_fpath=${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_di
 src_sd_detect_remove_sh_fpath=${home_lttp3rootfs_services_automount_dir}/${sd_detect_remove_sh_filename}
 dst_sd_detect_remove_sh_fpath=${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}/${sd_detect_remove_sh_filename}
 
-src_one_time_exec_sh_fpath=${home_lttp3rootfs_services_oobe_oneshot_dir}/${one_time_exec_sh_filename}
-dst_one_time_exec_sh_fpath=${SP7xxx_linux_rootfs_initramfs_disk_scripts_dir}/${one_time_exec_sh_filename}
-
 src_enable_eth1_before_login_service_fpath=${home_lttp3rootfs_services_network_dir}/${enable_eth1_before_login_service_filename}
 dst_enable_eth1_before_login_service_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}/${enable_eth1_before_login_service_filename}
 
 src_enable_eth1_before_login_sh_fpath=${home_lttp3rootfs_services_network_dir}/${enable_eth1_before_login_sh_filename}
 dst_enable_eth1_before_login_sh_fpath=${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}/${enable_eth1_before_login_sh_filename}
 
-src_one_time_exec_before_login_service_fpath=${home_lttp3rootfs_services_oobe_oneshot_dir}/${one_time_exec_before_login_service_filename}
-dst_one_time_exec_before_login_service_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}/${one_time_exec_before_login_service_filename}
+src_one_time_exec_sh_fpath=${home_lttp3rootfs_services_oobe_oneshot_dir}/${one_time_exec_sh_filename}
+dst_one_time_exec_sh_fpath=${SP7xxx_linux_rootfs_initramfs_disk_scripts_dir}/${one_time_exec_sh_filename}
 
 src_one_time_exec_before_login_sh_fpath=${home_lttp3rootfs_services_oobe_oneshot_dir}/${one_time_exec_before_login_sh_filename}
 dst_one_time_exec_before_login_sh_fpath=${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}/${one_time_exec_before_login_sh_filename}
+
+src_one_time_exec_before_login_service_fpath=${home_lttp3rootfs_services_oobe_oneshot_dir}/${one_time_exec_before_login_service_filename}
+dst_one_time_exec_before_login_service_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}/${one_time_exec_before_login_service_filename}
 
 src_enable_ufw_before_login_service_fpath=${home_lttp3rootfs_services_ufw_dir}/${enable_ufw_before_login_service_filename}
 dst_enable_ufw_before_login_service_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}/${enable_ufw_before_login_service_filename}
