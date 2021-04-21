@@ -442,6 +442,7 @@ echo -e "\r"
 echo -e "\r"
 echo "---Update Environment Variables---"
 	PATH=$PATH:${arm_linux_gnueabihf_fpath}	#update 'PATH'
+	export PATH	#export variable
 	sed -i "/PATH/d" /etc/environment	#remove line containing pattern 'PATH'
 	echo -e "PATH=\"${PATH}\"" >>  ${environment_fpath}	#add new line
 
