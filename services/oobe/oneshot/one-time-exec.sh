@@ -50,7 +50,7 @@ ssh-keygen -t rsa -f ${home_ubuntu_ssh_id_rsa_fpath} -q -P ""
 echo -e ":-->${FG_ORANGE}STATUS${NOCOLOR}: GENERATED SSH-KEY for ${FG_LIGHTGREY}ubuntu${NOCOLOR}"
 
 #For user 'root': create folder '.ssh'
-if [[ ! -d ${home_ubuntu_ssh_dir} ]]; then
+if [[ ! -d ${root_ssh_dir} ]]; then
     mkdir ${root_ssh_dir}
     echo -e ":-->${FG_ORANGE}STATUS${NOCOLOR}: CREATED DIRECTORY ${FG_LIGHTGREY}${root_ssh_dir}${NOCOLOR}"
 fi
