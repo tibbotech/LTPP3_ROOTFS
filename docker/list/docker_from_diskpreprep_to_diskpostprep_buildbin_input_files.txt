@@ -1,5 +1,0 @@
-#List of Docker files to-be-executed
-dockerfile_diskpreprep
-dockerfile_chroot
-dockerfile_diskpostprep_uart
-dockerfile_diskpostprep_uart_buildbin

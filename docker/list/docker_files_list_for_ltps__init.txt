@@ -1,2 +1,2 @@
 #List of Docker files to-be-executed
-dockerfile_diskpreprep
+dockerfile_ltps_init

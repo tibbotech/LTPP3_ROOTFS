@@ -21,8 +21,8 @@ DISABLE="disable"
 
 #---ENVIRONMENT VARIABLES
 scripts_dir=${scripts_dir}
-resize2fs_exec_filename="resize2fs_exec.sh"
-resize2fs_exec_fpath=${scripts_dir}/${resize2fs_exec_filename}
+one_time_exec_filename="one-time-exec.sh"
+one_time_exec_fpath=${scripts_dir}/${one_time_exec_filename}
 
 target_resize_dir=/dev/mmcblk0p8
 
@@ -39,14 +39,15 @@ usage_sub()
 }
 
 do_enable_sub() {
-	if [[ -f "${resize2fs_exec_fpath}" ]]; then
+	if [[ -f "${one_time_exec_fpath}" ]]; then
 		echo -e "\r"
-			${resize2fs_exec_fpath}
-		echo -e ":-->${FG_ORANGE}STATUS${NOCOLOR}: RESIZED '${FG_LIGHTGREY}${target_resize_dir}${NOCOLOR}'"
+		echo -e ":-->${FG_ORANGE}START${NOCOLOR}: EXECUTING '${FG_LIGHTGREY}${one_time_exec_fpath}${NOCOLOR}'"
+			${one_time_exec_fpath}
+		echo -e ":-->${FG_ORANGE}COMPLETED${NOCOLOR}: EXECUTING '${FG_LIGHTGREY}${one_time_exec_fpath}${NOCOLOR}'"
 
 		echo -e "\r"
-			rm ${resize2fs_exec_fpath}
-		echo -e ":-->${FG_ORANGE}STATUS${NOCOLOR}: REMOVED '${FG_LIGHTGREY}${resize2fs_exec_fpath}${NOCOLOR}'"
+			rm ${one_time_exec_fpath}
+		echo -e ":-->${FG_ORANGE}STATUS${NOCOLOR}: REMOVED '${FG_LIGHTGREY}${one_time_exec_fpath}${NOCOLOR}'"
 	fi
 }
 

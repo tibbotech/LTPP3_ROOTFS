@@ -14,44 +14,55 @@ ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get -y update
 RUN apt-get -y upgrade
 
-#---Install required apps
-RUN apt -y install	bison			    \
-                    build-essential	    \
-                    flex			    \ 
-                    git			        \
-                    libncurses5-dev     \
-                    libssl-dev		    \
-                    openssl			    \ 
-                    qemu			    \ 
-                    qemu-user-static    \ 
-                    sshfs			    \
-                    u-boot-tools	    \
-                    wget                \
-                    bc                  \
-                    nano                \
-                    vim                 \
-                    curl
-
-#---Install important apps
-RUN apt-get -y install systemd          \
-                    apt-utils		    \
-                    dbus			    \ 
+#---Install mandatory apps
+RUN apt -y install	bison			        \
+                    flex			        \ 
+                    git			            \
+                    libncurses5-dev         \
+                    libssl-dev		        \
+                    openssl			        \ 
+                    qemu			        \ 
+                    qemu-user-static        \ 
+                    sshfs			        \
+                    u-boot-tools	        \
+                    wget                    \
+                    bc                      \
+                    nano                    \
+                    vim                     \
+                    curl                    \
+                    apt-utils		        \
+                    dbus			        \ 
                     networkd-dispatcher 
 
 #---Fixing ERROR regarding dpkg
 RUN apt-get -y reinstall gconf2 && dpkg-reconfigure gconf2 && dpkg --configure -a && apt-get -y install -f
 
+#---Installing device & module related apps:
+RUN apt-get -y install udev			        \
+                    kmod
 
-#---Installing additional apps:
-RUN apt-get -y install net-tools        \
-                    iputils-ping        \ 
-                    iproute2            \
-                    iproute2-doc        \ 
-                    netplan.io          \ 
-                    udev			    \
-                    kmod                \
+#---Installing network-related apps:
+RUN apt-get -y install net-tools            \
+                    iputils-ping            \ 
+                    iproute2                \
+                    iproute2-doc            \ 
+                    netplan.io              \ 
                     openssh-server	    
-                    
+
+#---Installing development-related apps:
+RUN apt-get -y install cmake                \
+                    doxygen                 \ 
+                    graphviz                \
+                    g++-arm-linux-gnueabihf \ 
+                    build-essential	        \
+                    gdb-multiarch           \
+                    cppcheck                \
+                    python3-pip
+
+#---Installing development-related apps with pip3:
+RUN pip3 install flawfinder
+RUN pip3 install lizard
+RUN pip3 install cpplint
 
 #---Configure SSH
 RUN mkdir /var/run/sshd

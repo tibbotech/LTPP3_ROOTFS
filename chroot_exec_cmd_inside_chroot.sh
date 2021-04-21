@@ -82,6 +82,7 @@ lib_dir=/lib
 usr_dir=/usr
 sbin_init_dir=/sbin/init
 usr_bin_dir=${usr_dir}/bin
+usr_lib_dir=${usr_dir}/lib
 etc_systemd_system_dir=${etc_dir}/systemd/system
 etc_systemd_system_multi_user_target_wants_dir=${etc_systemd_system_dir}/multi-user.target.wants
 
@@ -99,13 +100,19 @@ enable_eth1_before_login_service_filename="enable-eth1-before-login.service"
 enable_eth1_before_login_service_fpath=${etc_systemd_system_dir}/${enable_eth1_before_login_service_filename}
 enable_eth1_before_login_service_symlink_fpath=${etc_systemd_system_multi_user_target_wants_dir}/${enable_eth1_before_login_service_filename}
 
-resize2fs_before_login_service_filename="resize2fs-before-login.service"
-resize2fs_before_login_service_fpath=${etc_systemd_system_dir}/${resize2fs_before_login_service_filename}
-resize2fs_before_login_service_symlink_fpath=${etc_systemd_system_multi_user_target_wants_dir}/${resize2fs_before_login_service_filename}
+one_time_exec_before_login_service_filename="one-time-exec-before-login.service"
+one_time_exec_before_login_service_fpath=${etc_systemd_system_dir}/${one_time_exec_before_login_service_filename}
+one_time_exec_before_login_service_symlink_fpath=${etc_systemd_system_multi_user_target_wants_dir}/${one_time_exec_before_login_service_filename}
 
 enable_ufw_before_login_service_filename="enable-ufw-before-login.service"
 enable_ufw_before_login_service_fpath=${etc_systemd_system_dir}/${enable_ufw_before_login_service_filename}
 enable_ufw_before_login_service_symlink_fpath=${etc_systemd_system_multi_user_target_wants_dir}/${enable_ufw_before_login_service_filename}
+
+environment_fpath=${etc_dir}/environment
+arm_linux_gnueabihf_filename="arm-linux-gnueabihf"
+arm_linux_gnueabihf_fpath=${usr_lib_dir}/${arm_linux_gnueabihf_filename}
+
+
 
 #---Define useraccount variables
 root_pwd="root"
@@ -155,16 +162,9 @@ echo -e "\r"
 
 press_any_key__localfunc
 echo -e "\r"
-echo "---MANDATORY: installing <apt-utils>---"
+echo "---Install Mandatory Apps"
 echo -e "\r"
-apt-get -y install apt-utils
-echo -e "\r"
-
-
-press_any_key__localfunc
-echo -e "\r"
-echo "---MANDATORY: installing <sudo>---"
-echo -e "\r"
+	apt-get -y install apt-utils
 	apt-get -y install sudo
 
 # echo -e "\r"
@@ -282,15 +282,15 @@ echo -e "\r"
 # echo -e "\r"
 
 
-press_any_key__localfunc
-echo -e "\r"
-echo "---Creating /home/ubuntu/.ssh---"
-	mkdir /home/ubuntu/.ssh
+# press_any_key__localfunc
+# echo -e "\r"
+# echo "---Creating /home/ubuntu/.ssh---"
+# 	mkdir /home/ubuntu/.ssh
 
-echo -e "\r"
-echo "---Generating ssh-key---"
-echo -e "\r"
-	ssh-keygen -t rsa -f /home/ubuntu/.ssh/id_rsa -q -P ""
+# echo -e "\r"
+# echo "---Generating ssh-key---"
+# echo -e "\r"
+# 	ssh-keygen -t rsa -f /home/ubuntu/.ssh/id_rsa -q -P ""
 
 
 press_any_key__localfunc
@@ -308,6 +308,9 @@ echo -e "\r"
 	apt-get -y install git
 	apt-get -y install expect
 	apt-get -y install software-properties-common
+	apt-get -y install build-essential
+	apt-get -y install gdbserver
+
 
 echo -e "\r"
 echo "---Installing <curl>---"
@@ -410,16 +413,24 @@ echo -e "\r"
 
 press_any_key__localfunc
 echo -e "\r"
-echo ">Installing Locales"
+echo "---Installing Locales---"
 echo -e "\r"
 	apt-get -y install locales
 
 
 echo ">>>Fixing ERROR: regarding locales (this might take a while...)"
 echo -e "\r"
-	echo "en_US.UTF-8" | sudo tee -a /etc/locale.gen
-	sudo locale-gen en_US.UTF-8
-	sudo dpkg-reconfigure --frontend noninteractive locales
+	echo "en_US.UTF-8" | tee -a /etc/locale.gen
+	locale-gen en_US.UTF-8
+	dpkg-reconfigure --frontend noninteractive locales
+
+
+echo -e "\r"
+echo "---Update Environment Variables---"
+	PATH=$PATH:${arm_linux_gnueabihf_fpath}	#update 'PATH'
+	sed -i "/PATH/d" /etc/environment	#remove line containing pattern 'PATH'
+	echo -e "PATH=\"${PATH}\"" >>  ${environment_fpath}	#add new line
+
 
 press_any_key__localfunc
 echo -e "\r"
@@ -444,8 +455,8 @@ echo -e "\r"
 echo ">Create symlink for <${enable_eth1_before_login_service_filename}>"
 	ln -s ${enable_eth1_before_login_service_fpath} ${enable_eth1_before_login_service_symlink_fpath}
 echo -e "\r"
-echo ">Create symlink for <${resize2fs_before_login_service_filename}>"
-	ln -s ${resize2fs_before_login_service_fpath} ${resize2fs_before_login_service_symlink_fpath}
+echo ">Create symlink for <${one_time_exec_before_login_service_filename}>"
+	ln -s ${one_time_exec_before_login_service_fpath} ${one_time_exec_before_login_service_symlink_fpath}
 echo -e "\r"
 echo ">Create symlink for <${enable_ufw_before_login_service_filename}>"
 	ln -s ${enable_ufw_before_login_service_fpath} ${enable_ufw_before_login_service_symlink_fpath}

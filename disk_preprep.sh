@@ -71,14 +71,14 @@ sd_detect_remove_sh_filename="sd-detect-remove.sh"
 gpio_gpio_set_group_rules_filename="gpio-set_group.rules"
 
 sunplus_foldername="SP7021"
-resize2fs_exec_filename="resize2fs_exec.sh"
+one_time_exec_sh_filename="one-time-exec.sh"
 profile_filename="profile"
 chroot_exec_cmd_inside_chroot_filename="chroot_exec_cmd_inside_chroot.sh"
 # daisychain_mode_filename="mode"
 enable_eth1_before_login_service_filename="enable-eth1-before-login.service"
 enable_eth1_before_login_sh_filename="enable-eth1-before-login.sh"
-resize2fs_before_login_service_filename="resize2fs-before-login.service"
-resize2fs_before_login_sh_filename="resize2fs-before-login.sh"
+one_time_exec_before_login_service_filename="one-time-exec-before-login.service"
+one_time_exec_before_login_sh_filename="one-time-exec-before-login.sh"
 enable_ufw_before_login_service_filename="enable-ufw-before-login.service"
 enable_ufw_before_login_sh_filename="enable-ufw-before-login.sh"
 
@@ -102,7 +102,7 @@ home_lttp3rootfs_dir=${home_dir}/LTPP3_ROOTFS
 home_lttp3rootfs_rootfs_initramfs_dir=${home_lttp3rootfs_dir}/rootfs/initramfs
 home_lttp3rootfs_rootfs_initramfs_disk_etc_dir=${home_lttp3rootfs_rootfs_initramfs_dir}/disk/etc
 home_lttp3rootfs_services_automount_dir=${home_lttp3rootfs_dir}/services/automount
-home_lttp3rootfs_services_oobe_resize2fs_dir=${home_lttp3rootfs_dir}/services/oobe/resize2fs
+home_lttp3rootfs_services_oobe_oneshot_dir=${home_lttp3rootfs_dir}/services/oobe/oneshot
 home_lttp3rootfs_services_network_dir=${home_lttp3rootfs_dir}/services/network
 home_lttp3rootfs_services_ufw_dir=${home_lttp3rootfs_dir}/services/ufw
 home_lttp3rootfs_services_permissions_dir=${home_lttp3rootfs_dir}/services/permissions
@@ -182,8 +182,8 @@ dst_sd_detect_add_sh_fpath=${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_di
 src_sd_detect_remove_sh_fpath=${home_lttp3rootfs_services_automount_dir}/${sd_detect_remove_sh_filename}
 dst_sd_detect_remove_sh_fpath=${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}/${sd_detect_remove_sh_filename}
 
-src_resize2fs_exec_fpath=${home_lttp3rootfs_services_oobe_resize2fs_dir}/${resize2fs_exec_filename}
-dst_resize2fs_exec_fpath=${SP7xxx_linux_rootfs_initramfs_disk_scripts_dir}/${resize2fs_exec_filename}
+src_one_time_exec_sh_fpath=${home_lttp3rootfs_services_oobe_oneshot_dir}/${one_time_exec_sh_filename}
+dst_one_time_exec_sh_fpath=${SP7xxx_linux_rootfs_initramfs_disk_scripts_dir}/${one_time_exec_sh_filename}
 
 src_enable_eth1_before_login_service_fpath=${home_lttp3rootfs_services_network_dir}/${enable_eth1_before_login_service_filename}
 dst_enable_eth1_before_login_service_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}/${enable_eth1_before_login_service_filename}
@@ -191,11 +191,11 @@ dst_enable_eth1_before_login_service_fpath=${SP7xxx_linux_rootfs_initramfs_disk_
 src_enable_eth1_before_login_sh_fpath=${home_lttp3rootfs_services_network_dir}/${enable_eth1_before_login_sh_filename}
 dst_enable_eth1_before_login_sh_fpath=${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}/${enable_eth1_before_login_sh_filename}
 
-src_resize2fs_before_login_service_fpath=${home_lttp3rootfs_services_oobe_resize2fs_dir}/${resize2fs_before_login_service_filename}
-dst_resize2fs_before_login_service_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}/${resize2fs_before_login_service_filename}
+src_one_time_exec_before_login_service_fpath=${home_lttp3rootfs_services_oobe_oneshot_dir}/${one_time_exec_before_login_service_filename}
+dst_one_time_exec_before_login_service_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}/${one_time_exec_before_login_service_filename}
 
-src_resize2fs_before_login_sh_fpath=${home_lttp3rootfs_services_oobe_resize2fs_dir}/${resize2fs_before_login_sh_filename}
-dst_resize2fs_before_login_sh_fpath=${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}/${resize2fs_before_login_sh_filename}
+src_one_time_exec_before_login_sh_fpath=${home_lttp3rootfs_services_oobe_oneshot_dir}/${one_time_exec_before_login_sh_filename}
+dst_one_time_exec_before_login_sh_fpath=${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}/${one_time_exec_before_login_sh_filename}
 
 src_enable_ufw_before_login_service_fpath=${home_lttp3rootfs_services_ufw_dir}/${enable_ufw_before_login_service_filename}
 dst_enable_ufw_before_login_service_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}/${enable_ufw_before_login_service_filename}
@@ -619,46 +619,46 @@ echo -e ">>>Change permission to <-rwxr-xr-x> for file: ${enable_eth1_before_log
 
 
 echo -e "\r"
-echo -e ">Copying: ${resize2fs_exec_filename}"
-echo -e ">from: ${home_lttp3rootfs_services_oobe_resize2fs_dir}"
+echo -e ">Copying: ${one_time_exec_sh_filename}"
+echo -e ">from: ${home_lttp3rootfs_services_oobe_oneshot_dir}"
 echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_scripts_dir}"
-	cp ${src_resize2fs_exec_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_scripts_dir}
+	cp ${src_one_time_exec_sh_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_scripts_dir}
 
 echo -e "\r"
-echo -e ">>>Change ownership to <root> for file: ${resize2fs_exec_filename}"
-	chown root:root ${dst_resize2fs_exec_fpath}
+echo -e ">>>Change ownership to <root> for file: ${one_time_exec_sh_filename}"
+	chown root:root ${dst_one_time_exec_sh_fpath}
 
 echo -e "\r"
-echo -e ">>>Change permission to <-rwxr-xr-x> for file: ${resize2fs_exec_filename}"
-	chmod 755 ${dst_resize2fs_exec_fpath}
+echo -e ">>>Change permission to <-rwxr-xr-x> for file: ${one_time_exec_sh_filename}"
+	chmod 755 ${dst_one_time_exec_sh_fpath}
 
 echo -e "\r"
-echo -e ">Copying: ${resize2fs_before_login_service_filename}>"
-echo -e ">from: ${home_lttp3rootfs_services_oobe_resize2fs_dir}"
+echo -e ">Copying: ${one_time_exec_before_login_service_filename}>"
+echo -e ">from: ${home_lttp3rootfs_services_oobe_oneshot_dir}"
 echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}"
-	cp ${src_resize2fs_before_login_service_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}
+	cp ${src_one_time_exec_before_login_service_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}
 
 echo -e "\r"
-echo -e ">>>Change ownership to <root> for file: ${resize2fs_before_login_service_filename}"
-	chown root:root ${dst_resize2fs_before_login_service_fpath}
+echo -e ">>>Change ownership to <root> for file: ${one_time_exec_before_login_service_filename}"
+	chown root:root ${dst_one_time_exec_before_login_service_fpath}
 
 echo -e "\r"
-echo -e ">>>Change permission to <-rw-r--r--> for file: ${resize2fs_before_login_service_filename}"
-	chmod 644 ${dst_resize2fs_before_login_service_fpath}
+echo -e ">>>Change permission to <-rw-r--r--> for file: ${one_time_exec_before_login_service_filename}"
+	chmod 644 ${dst_one_time_exec_before_login_service_fpath}
 
 echo -e "\r"
-echo -e ">Copying: ${resize2fs_before_login_sh_filename}>"
-echo -e ">from: ${home_lttp3rootfs_services_oobe_resize2fs_dir}"
+echo -e ">Copying: ${one_time_exec_before_login_sh_filename}>"
+echo -e ">from: ${home_lttp3rootfs_services_oobe_oneshot_dir}"
 echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}"
-	cp ${src_resize2fs_before_login_sh_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}
+	cp ${src_one_time_exec_before_login_sh_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}
 
 echo -e "\r"
-echo -e ">>>Change ownership to <root> for file: ${resize2fs_before_login_sh_filename}"
-	chown root:root ${dst_resize2fs_before_login_sh_fpath}
+echo -e ">>>Change ownership to <root> for file: ${one_time_exec_before_login_sh_filename}"
+	chown root:root ${dst_one_time_exec_before_login_sh_fpath}
 
 echo -e "\r"
-echo -e ">>>Change permission to <-rwxr-xr-x> for file: ${resize2fs_before_login_sh_filename}"
-	chmod 755 ${dst_resize2fs_before_login_sh_fpath}
+echo -e ">>>Change permission to <-rwxr-xr-x> for file: ${one_time_exec_before_login_sh_filename}"
+	chmod 755 ${dst_one_time_exec_before_login_sh_fpath}
 
 echo -e "\r"
 echo -e ">Copying: ${enable_ufw_before_login_service_filename}>"
