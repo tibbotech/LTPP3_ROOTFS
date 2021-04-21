@@ -20,7 +20,7 @@ DISABLE="disable"
 
 
 #---ENVIRONMENT VARIABLES
-scripts_dir=${scripts_dir}
+scripts_dir=/scripts
 one_time_exec_filename="one-time-exec.sh"
 one_time_exec_fpath=${scripts_dir}/${one_time_exec_filename}
 
