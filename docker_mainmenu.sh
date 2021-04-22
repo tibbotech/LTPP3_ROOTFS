@@ -4,6 +4,8 @@ DOCKER__NOCOLOR=$'\e[0m'
 DOCKER__ERROR_FG_LIGHTRED=$'\e[1;31m'
 DOCKER__GENERAL_FG_YELLOW=$'\e[1;33m'
 DOCKER__TITLE_FG_LIGHTBLUE=$'\e[30;38;5;45m'
+DOCKER__FG_DARKBLUE=$'\e[30;38;5;33m'
+DOCKER__FG_SOFTDARKBLUE=$'\e[30;38;5;38m'
 DOCKER__CHROOT_FG_GREEN=$'\e[30;38;5;82m'
 DOCKER__REPOSITORY_FG_PURPLE=$'\e[30;38;5;93m'
 DOCKER__CONTAINER_FG_BRIGHTPRUPLE=$'\e[30;38;5;141m'
@@ -101,7 +103,8 @@ docker__cmd_exec() {
 
 docker__environmental_variables__sub() {
     #---Define PATHS
-    docker__run_multiple_dockfiles_filename="docker_run_multiple_dockfiles.sh"
+    docker__create_an_image_from_dockerfile_filename="docker_create_an_image_from_dockerfile.sh"
+    docker__create_images_from_dockerlist_filename="docker_create_images_from_dockerlist.sh"
     docker__create_image_from_existing_repository_filename="docker_create_image_from_existing_repository.sh"
     docker__create_image_from_container_filename="docker_create_image_from_container.sh"
     docker__run_container_from_a_repository_filename="docker_run_container_from_a_repository.sh"
@@ -128,7 +131,8 @@ docker__environmental_variables__sub() {
 
     docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}/development_tools
 
-    docker__run_multiple_dockfiles_fpath=${docker__current_dir}/${docker__run_multiple_dockfiles_filename}
+    docker__create_an_image_from_dockerfile_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__create_an_image_from_dockerfile_filename}
+    docker__create_images_from_dockerlist_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__create_images_from_dockerlist_filename}
     docker__create_image_from_existing_repository_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__create_image_from_existing_repository_filename}
     docker__create_image_from_container_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__create_image_from_container_filename}
     docker__run_container_from_a_repository_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__run_container_from_a_repository_filename}
@@ -163,7 +167,7 @@ docker__mainmenu__sub() {
         echo -e "----------------------------------------------------------------------"
         echo -e "${DOCKER__TITLE_FG_LIGHTBLUE}DOCKER MAIN-MENU${DOCKER__NOCOLOR}\t\t\t\tv21.03.17-0.0.1"
         echo -e "----------------------------------------------------------------------"
-        echo -e "${DOCKER__FIVESPACES}1. Create ${DOCKER__GENERAL_FG_YELLOW}multiple${DOCKER__NOCOLOR} ${DOCKER__IMAGEID_FG_BORDEAUX}images${DOCKER__NOCOLOR} using ${DOCKER__TITLE_FG_LIGHTBLUE}docker-files${DOCKER__NOCOLOR}"
+        echo -e "${DOCKER__FIVESPACES}1. Create ${DOCKER__IMAGEID_FG_BORDEAUX}images${DOCKER__NOCOLOR} using a ${DOCKER__FG_DARKBLUE}docker-file${DOCKER__NOCOLOR}/${DOCKER__TITLE_FG_LIGHTBLUE}docker-list${DOCKER__NOCOLOR}"
         echo -e "${DOCKER__FIVESPACES}2. Create an ${DOCKER__IMAGEID_FG_BORDEAUX}image${DOCKER__NOCOLOR} from a ${DOCKER__REPOSITORY_FG_PURPLE}repository${DOCKER__NOCOLOR}"
         echo -e "${DOCKER__FIVESPACES}3. Create an ${DOCKER__IMAGEID_FG_BORDEAUX}image${DOCKER__NOCOLOR} from a ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
         echo -e "${DOCKER__FIVESPACES}4. Run ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR} from a ${DOCKER__REPOSITORY_FG_PURPLE}repository${DOCKER__NOCOLOR}"
@@ -212,7 +216,7 @@ docker__mainmenu__sub() {
         #Goto the selected option
         case ${docker__mychoice} in
             1)
-                docker__cmd_exec "${docker__run_multiple_dockfiles_fpath}"
+                docker__create_images_menu__sub
                 ;;
 
             2)
@@ -273,6 +277,106 @@ docker__mainmenu__sub() {
 
             g)  
                 docker__cmd_exec "${docker__git_pull_fpath}"
+                ;;
+
+            q)
+                exit
+                ;;
+        esac
+    done
+}
+
+docker__create_images_menu__sub() {
+    while true
+    do
+        echo -e "----------------------------------------------------------------------"
+        echo -e "${DOCKER__TITLE_FG_LIGHTBLUE}DOCKER CREATE IMAGE(S)${DOCKER__NOCOLOR}"
+        echo -e "----------------------------------------------------------------------"
+        echo -e "${DOCKER__FIVESPACES}1. Create an ${DOCKER__IMAGEID_FG_BORDEAUX}image${DOCKER__NOCOLOR} using a ${DOCKER__FG_DARKBLUE}docker-file${DOCKER__NOCOLOR}"
+        echo -e "${DOCKER__FIVESPACES}2. Create ${DOCKER__IMAGEID_FG_BORDEAUX}images${DOCKER__NOCOLOR} using a ${DOCKER__TITLE_FG_LIGHTBLUE}docker-list${DOCKER__NOCOLOR}"
+        echo -e "----------------------------------------------------------------------"
+        echo -e "${DOCKER__FIVESPACES}r. Docker ${DOCKER__REPOSITORY_FG_PURPLE}repository${DOCKER__NOCOLOR} List"
+        echo -e "${DOCKER__FIVESPACES}c. Docker ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR} List"
+        echo -e "----------------------------------------------------------------------"
+        echo -e "${DOCKER__FIVESPACES}s. SSH"
+        echo -e "----------------------------------------------------------------------"
+        echo -e "${DOCKER__FIVESPACES}i. Load from File"
+        echo -e "${DOCKER__FIVESPACES}e. Save to File"
+        echo -e "----------------------------------------------------------------------"
+        echo -e "${DOCKER__FIVESPACES}p. Git ${DOCKER__OUTSIDE_BG_LIGHTGREY}${DOCKER__OUTSIDE_FG_WHITE}Push${DOCKER__NOCOLOR}"
+        echo -e "${DOCKER__FIVESPACES}g. Git ${DOCKER__INSIDE_BG_WHITE}${DOCKER__INSIDE_FG_LIGHTGREY}Pull${DOCKER__NOCOLOR}"
+        echo -e "----------------------------------------------------------------------"
+        echo -e "${DOCKER__FIVESPACES}h. Home"
+        echo -e "${DOCKER__FIVESPACES}q. Quit"
+        echo -e "----------------------------------------------------------------------"
+        echo -e "\r"	
+
+        while true
+        do
+            #Select an option
+            read -N 1 -e -p "Please choose an option: " docker__mychoice
+            echo -e "\r"
+
+            #Only continue if a valid option is selected
+            if [[ ! -z ${docker__mychoice} ]]; then
+                if [[ ${docker__mychoice} =~ [1-2,r,c,s,e,i,p,g,h,q] ]]; then
+                    break
+                else
+                    tput cuu1	#move UP with 1 line
+                    tput cuu1	#move UP with 1 line
+                    tput el		#clear until the END of line
+                fi
+            else
+                tput cuu1	#move UP with 1 line
+                tput el		#clear until the END of line
+            fi
+        done
+            
+        #Goto the selected option
+        case ${docker__mychoice} in
+            1)
+                echo -e "\r"
+                echo -e "***STILL IN PROGRESS***"
+                echo -e "***PLEASE DO NOT USE THIS OPTION YET***"
+                echo -e "\r"
+
+                docker__cmd_exec "${docker__create_an_image_from_dockerfile_fpath}"
+                ;;
+
+            2)
+                docker__cmd_exec "${docker__create_images_from_dockerlist_fpath}"
+                ;;
+
+            c)
+                docker__list_container__sub
+                ;;
+
+            r)
+                docker__list_repository__sub
+                ;;
+
+            s)
+                docker__cmd_exec "${docker__ssh_to_host_fpath}"
+                ;;
+
+            e)
+                docker__cmd_exec "${docker__save_fpath}"
+                ;;
+
+            i)
+                docker__cmd_exec "${docker__load_fpath}"
+                ;;
+
+            p)  
+                docker__cmd_exec "${docker__git_push_fpath}"
+                ;;
+
+            g)  
+                docker__cmd_exec "${docker__git_pull_fpath}"
+                ;;
+
+            h)
+                docker__mainmenu__sub
                 ;;
 
             q)

@@ -1,5 +1,5 @@
 #!/bin/bash
-#---Define colors
+#---COLOR CONSTANTS
 DOCKER__NOCOLOR=$'\e[0m'
 DOCKER__ERROR_FG_LIGHTRED=$'\e[1;31m'
 DOCKER__SUCCESS_FG_LIGHTGREEN=$'\e[1;32m'
@@ -12,25 +12,30 @@ DOCKER__FILES_FG_ORANGE=$'\e[30;38;5;215m'
 DOCKER__DIRS_FG_VERYLIGHTORANGE=$'\e[30;38;5;223m'
 DOCKER__TITLE_BG_LIGHTBLUE=$'\e[30;48;5;45m'
 
-#---Define constants
+
+
+#---CONSTANTS
 DOCKER__TITLE="TIBBO"
 DOCKER__YES="y"
 DOCKER__FIVE_SPACES="     "
 DOCKER__LATEST="latest"
 DOCKER__EXITING_NOW="Exiting now..."
+DOCKER__NINE=9
 
 
-#---Define PATHS
-docker__LICENSE_filename="LICENSE"
-docker__README_md_filename="README.md"
-docker__LTPP3_ROOTFS_foldername="LTPP3_ROOTFS"
 
-docker__dockerfile_list_fpath=""
+#---PATHS
+docker__dockerList_fpath=""
+docker__dockerList_filename=""
+
 
 
 #---Trap ctrl-c and Call ctrl_c()
 trap CTRL_C__sub INT
 
+
+
+#---FUNCTIONS
 function CTRL_C__sub() {
     echo -e "\r"
     echo -e "\r"
@@ -41,7 +46,6 @@ function CTRL_C__sub() {
     exit
 }
 
-#---Local functions & subroutines
 press_any_key__localfunc() {
 	#Define constants
 	local cTIMEOUT_ANYKEY=10
@@ -72,6 +76,9 @@ press_any_key__localfunc() {
 	echo -e "\r"
 }
 
+
+
+#---SUBROUTINES
 docker__load_header__sub() {
     echo -e "\r"
     echo -e "${DOCKER__TITLE_BG_ORANGE}                                 ${DOCKER__TITLE}${DOCKER__TITLE_BG_ORANGE}                                ${DOCKER__NOCOLOR}"
@@ -101,49 +108,41 @@ docker__mandatory_apps_check__sub() {
     fi
 }
 
-docker__get_this_running_script_dir__sub() {
-    #Define local variables
-    local script_basename=`basename $0`
-
-    docker__current_script_fpath=$(realpath $0)
+docker__load_environment_variables__sub() {
+    docker__current_script_fpath="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
     docker__current_dir=$(dirname ${docker__current_script_fpath})
-    docker___my_LTPP3_ROOTFS_docker_dir=${docker__current_dir}/docker
-    docker__your_repodir_LTPP3_ROOTFS_docker_list_dir=${docker___my_LTPP3_ROOTFS_docker_dir}/list
-    docker__your_repodir_LTPP3_ROOTFS_docker_dockerfiles_dir=${docker___my_LTPP3_ROOTFS_docker_dir}/dockerfiles
-
-    docker__your_repodir_LTPP3_ROOTFS_LICENSE_fpath=${docker__current_dir}/${docker__LICENSE_filename}
-    docker__your_repodir_LTPP3_ROOTFS_README_md_fpath=${docker__current_dir}/${docker__README_md_filename}
-
-    if [[ ! -f ${docker__your_repodir_LTPP3_ROOTFS_LICENSE_fpath} ]] && [[ ! -f ${docker__your_repodir_LTPP3_ROOTFS_README_md_fpath} ]]; then
-        echo -e "***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: not running script '${DOCKER__FILES_FG_ORANGE}${script_basename}${DOCKER__NOCOLOR}' from location ${DOCKER__DIRS_FG_VERYLIGHTORANGE}./..../${docker__LTPP3_ROOTFS_foldername}${DOCKER__NOCOLOR}"
-        echo -e "\r"
-        echo -e "${DOCKER__EXITING_NOW}"
-        echo -e "\r"
-        echo -e "\r"
-
-        exit
+    docker__parent_dir=${docker__current_dir%/*}    #gets one directory up
+    if [[ -z ${docker__parent_dir} ]]; then
+        docker__parent_dir="${DOCKER__SLASH_CHAR}"
     fi
+    #Define local variables
+    docker_current_script_filename=`basename $0`
 
+    docker__my_LTPP3_ROOTFS_docker_dir=${docker__parent_dir}/docker
+    docker__my_LTPP3_ROOTFS_docker_list_dir=${docker__my_LTPP3_ROOTFS_docker_dir}/list
+    docker__my_LTPP3_ROOTFS_docker_dockerfiles_dir=${docker__my_LTPP3_ROOTFS_docker_dir}/dockerfiles
 }
 
-docker__show_dockerfile_list_files__sub() {
+docker__show_dockerList_files__sub() {
     #Clear terminal screen
     # tput clear
 
     #Define variables
-    local arr_line=""
-    local dockerfile_list_filename=""
+    local listOf_dockerListFpaths_string=""
+    local listOf_dockerListFpaths_arr=()
+    local listOf_dockerListFpaths_arrItem=""
+    local extract_filename=""
+    local readInput_msg="Choose a file (ctrl+c: quit): "
 
     #Get all files at the specified location
-    local dockerfile_list_fpath_string=`find ${docker__your_repodir_LTPP3_ROOTFS_docker_list_dir} -maxdepth 1 -type f | sort`
-    local arr_line=""
+    listOf_dockerListFpaths_string=`find ${docker__my_LTPP3_ROOTFS_docker_list_dir} -maxdepth 1 -type f | sort`
 
     #Check if '' is an EMPTY STRING
-    if [[ -z ${dockerfile_list_fpath_string} ]]; then
+    if [[ -z ${listOf_dockerListFpaths_string} ]]; then
         echo -e "\r"
         echo -e "----------------------------------------------------------------------"
         echo -e "***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: no files found in directory:"
-        echo -e "${DOCKER__FIVE_SPACES}${docker__your_repodir_LTPP3_ROOTFS_docker_list_dir}"
+        echo -e "${DOCKER__FIVE_SPACES}${docker__my_LTPP3_ROOTFS_docker_list_dir}"
         echo -e "\r"
         echo -e "Please put all ${DOCKER__GENERAL_FG_YELLOW}dockerfile-list${DOCKER__NOCOLOR} files in this directory"
 
@@ -155,28 +154,28 @@ docker__show_dockerfile_list_files__sub() {
 
 
     #Convert string to array (with space delimiter)
-    local dockerfile_list_fpath_arr=(${dockerfile_list_fpath_string})
+    listOf_dockerListFpaths_arr=(${listOf_dockerListFpaths_string})
 
     #Start loop
     while true
     do
         #Initial sequence number
-        local seqnum=1
+        local seqnum=0
 
         #Show all 'dockerfile-list' files
         echo -e "----------------------------------------------------------------------"
         echo -e "\t${DOCKER__GENERAL_FG_YELLOW}Create${DOCKER__NOCOLOR} multiple ${DOCKER__IMAGEID_FG_BORDEAUX}IMAGES${DOCKER__NOCOLOR} with ${DOCKER__TITLE_FG_LIGHTBLUE}DOCKER-FILES${DOCKER__NOCOLOR}"
         echo -e "----------------------------------------------------------------------"
-        for arr_line in "${dockerfile_list_fpath_arr[@]}"
+        for listOf_dockerListFpaths_arrItem in "${listOf_dockerListFpaths_arr[@]}"
         do
-            #Get filename only
-            dockerfile_list_filename=`basename ${arr_line}`  
-        
-            #Show filename
-            echo -e "${DOCKER__FIVE_SPACES}${seqnum}. ${dockerfile_list_filename}"
-
             #increment sequence-number
             seqnum=$((seqnum+1))
+
+            #Get filename only
+            extract_filename=`basename ${listOf_dockerListFpaths_arrItem}`  
+        
+            #Show filename
+            echo -e "${DOCKER__FIVE_SPACES}${seqnum}. ${extract_filename}"
         done
         echo -e "----------------------------------------------------------------------"
 
@@ -184,7 +183,11 @@ docker__show_dockerfile_list_files__sub() {
         while true
         do
             #Show read-input
-            read -p "Choose a file (ctrl+c: quit): " mychoice
+            if [[ ${seqnum} -le ${DOCKER__NINE} ]]; then    #seqnum <= 9
+                read -N1 -p "Choose a file (ctrl+c: quit): " mychoice
+            else    #seqnum > 9
+                read -p "Choose a file (ctrl+c: quit): " mychoice
+            fi
 
             #Check if 'mychoice' is a numeric value
             if [[ ${mychoice} =~ [1-9,0] ]]; then
@@ -207,21 +210,21 @@ docker__show_dockerfile_list_files__sub() {
         #Since arrays start with index=0, deduct 'mychoice' value by '1'
         index=$((mychoice-1))
 
-        #Extract the chosen file from array and assign to the GLOBAL variable 'docker__dockerfile_list_fpath'
-        docker__dockerfile_list_fpath=${dockerfile_list_fpath_arr[index]}
+        #Extract the chosen file from array and assign to the GLOBAL variable 'docker__dockerList_fpath'
+        docker__dockerList_fpath=${listOf_dockerListFpaths_arr[index]}
 
-        local dockerfile_list_filename=`basename ${docker__dockerfile_list_fpath}`
+        docker__dockerList_filename=`basename ${docker__dockerList_fpath}`
 
         #Show chosen file contents
         echo -e "\r"
         echo -e "----------------------------------------------------------------------"
-        echo -e "Contents of File ${DOCKER__FILES_FG_ORANGE}${dockerfile_list_filename}${DOCKER__NOCOLOR}"
+        echo -e "Contents of File ${DOCKER__FILES_FG_ORANGE}${extract_filename}${DOCKER__NOCOLOR}"
         echo -e "----------------------------------------------------------------------"
         while read file_line
         do
             echo -e "${DOCKER__FIVE_SPACES}${file_line}"
 
-        done < ${docker__dockerfile_list_fpath}
+        done < ${docker__dockerList_fpath}
         echo -e "----------------------------------------------------------------------"
 
         #Read-input handler
@@ -249,28 +252,34 @@ docker__show_dockerfile_list_files__sub() {
     done   
 }
 
-docker__checkif_cmd_exec_was_successful__sub() {
-    exit_code=$?
+docker__create_image_handler__sub() {
+    #---Read contents of the file
+    #Each line of the file represents a 'dockerfile' containing the instructions to-be-executed
     
-    if [[ ${exit_code} -eq 0 ]]; then
-        echo -e "\r"
-        echo -e "script was executed ${DOCKER__SUCCESS_FG_LIGHTGREEN}successfully${DOCKER__NOCOLOR}..."
-        echo -e "\r"
+    #Define variables
+    local linenum=1
+    local dockerfile_fpath=""
 
-    else
-        echo -e "\r"
-        echo -e "***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: script was stopped due to an error occurred..."
-        echo -e "\r"
-        echo -e "Please resolve the issue..."
-        echo -e "\r"
-        echo -e "${DOCKER__EXITING_NOW}"
-        echo -e "\r"
-        echo -e "\r"
+    while IFS='' read file_line
+    do
+        if [[ ${linenum} -gt 1 ]]; then #skip the header
+            #Get the fullpath
+            dockerfile_fpath=${docker__my_LTPP3_ROOTFS_docker_dockerfiles_dir}/${file_line}
 
-        exit
-    fi
+            #Check if file exists
+            if [[ -f ${dockerfile_fpath} ]]; then
+                docker__create_image__func ${dockerfile_fpath}
+            else
+                echo -e "\r"
+                echo -e "***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: non-existing file: ${dockerfile_fpath}"
+                echo -e "\r"       
+            fi
+        fi
+
+        linenum=$((linenum+1))  #increment index by 1
+    done < ${docker__dockerList_fpath}
 }
-docker__run_dockercmd_with_error_check__sub() {
+function docker__create_image__func() {
     #Input args
     local dockerfile_fpath=${1}
 
@@ -294,56 +303,52 @@ docker__run_dockercmd_with_error_check__sub() {
     echo -e "\r"
 
     sudo sh -c "${dockercmd}" #execute cmd
-
-    docker__checkif_cmd_exec_was_successful__sub   #check if cmd ran successfully
+    docker__validate_exitCode__func   #check if cmd ran successfully
 
     echo -e "\r"
         sudo sh -c "docker image ls"    #show Docker IMAGE list
     echo -e "\r"
     echo -e "\r"
 }
-
-docker__handle_chosen_dockerfile_list__sub() {
-    #---Read contents of the file
-    #Each line of the file represents a 'dockerfile' containing the instructions to-be-executed
+function docker__validate_exitCode__func() {
+    exit_code=$?
     
-    #Define variables
-    local linenum=1
-    local dockerfile_fpath=""
+    if [[ ${exit_code} -eq 0 ]]; then
+        echo -e "\r"
+        echo -e "script was executed ${DOCKER__SUCCESS_FG_LIGHTGREEN}successfully${DOCKER__NOCOLOR}..."
+        echo -e "\r"
 
-    while IFS='' read file_line
-    do
-        if [[ ${linenum} -gt 1 ]]; then #skip the header
-            #Get the fullpath
-            dockerfile_fpath=${docker__your_repodir_LTPP3_ROOTFS_docker_dockerfiles_dir}/${file_line}
+    else
+        echo -e "\r"
+        echo -e "***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: script was stopped due to an error occurred..."
+        echo -e "\r"
+        echo -e "Please resolve the issue..."
+        echo -e "\r"
+        echo -e "${DOCKER__EXITING_NOW}"
+        echo -e "\r"
+        echo -e "\r"
 
-            #Check if file exists
-            if [[ -f ${dockerfile_fpath} ]]; then
-                docker__run_dockercmd_with_error_check__sub ${dockerfile_fpath}
-            else
-                echo -e "\r"
-                echo -e "***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: non-existing file: ${dockerfile_fpath}"
-                echo -e "\r"       
-            fi
-        fi
-
-        linenum=$((linenum+1))  #increment index by 1
-    done < ${docker__dockerfile_list_fpath}
+        exit
+    fi
 }
 
 
+
+
+#---MAIN SUBROUTINE
 main_sub() {
     docker__load_header__sub
 
-    docker__get_this_running_script_dir__sub
+    docker__load_environment_variables__sub
 
     docker__mandatory_apps_check__sub
 
-    docker__show_dockerfile_list_files__sub
+    docker__show_dockerList_files__sub
 
-    docker__handle_chosen_dockerfile_list__sub
+    docker__create_image_handler__sub
 }
 
 
-#Execute main subroutine
+
+#---EXECUTE
 main_sub

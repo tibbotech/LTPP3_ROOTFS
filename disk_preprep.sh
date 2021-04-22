@@ -81,6 +81,8 @@ one_time_exec_before_login_sh_filename="one-time-exec-before-login.sh"
 one_time_exec_before_login_service_filename="one-time-exec-before-login.service"
 enable_ufw_before_login_service_filename="enable-ufw-before-login.service"
 enable_ufw_before_login_sh_filename="enable-ufw-before-login.sh"
+automount_mqueue_before_login_service_filename="automount-mqueue-before-login.service"
+automount_mqueue_before_login_sh_filename="automount-mqueue-before-login.sh"
 
 hostname_filename="hostname"
 hosts_filename="hosts"
@@ -102,6 +104,7 @@ home_lttp3rootfs_dir=${home_dir}/LTPP3_ROOTFS
 home_lttp3rootfs_rootfs_initramfs_dir=${home_lttp3rootfs_dir}/rootfs/initramfs
 home_lttp3rootfs_rootfs_initramfs_disk_etc_dir=${home_lttp3rootfs_rootfs_initramfs_dir}/disk/etc
 home_lttp3rootfs_services_automount_dir=${home_lttp3rootfs_dir}/services/automount
+home_lttp3rootfs_services_dev_dir=${home_lttp3rootfs_dir}/services/dev
 home_lttp3rootfs_services_oobe_oneshot_dir=${home_lttp3rootfs_dir}/services/oobe/oneshot
 home_lttp3rootfs_services_network_dir=${home_lttp3rootfs_dir}/services/network
 home_lttp3rootfs_services_ufw_dir=${home_lttp3rootfs_dir}/services/ufw
@@ -202,6 +205,13 @@ dst_enable_ufw_before_login_service_fpath=${SP7xxx_linux_rootfs_initramfs_disk_e
 
 src_enable_ufw_before_login_sh_fpath=${home_lttp3rootfs_services_ufw_dir}/${enable_ufw_before_login_sh_filename}
 dst_enable_ufw_before_login_sh_fpath=${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}/${enable_ufw_before_login_sh_filename}
+
+src_automount_mqueue_before_login_service_fpath=${home_lttp3rootfs_services_dev_dir}/${automount_mqueue_before_login_service_filename}
+dst_automount_mqueue_before_login_service_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}/${automount_mqueue_before_login_service_filename}
+
+src_automount_mqueue_before_login_sh_fpath=${home_lttp3rootfs_services_dev_dir}/${automount_mqueue_before_login_sh_filename}
+dst_automount_mqueue_before_login_sh_fpath=${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}/${automount_mqueue_before_login_sh_filename}
+
 
 src_hostname_fpath=${home_lttp3rootfs_rootfs_initramfs_disk_etc_dir}/${hostname_filename} 
 dst_hostname_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}/${hostname_filename} 
@@ -687,6 +697,37 @@ echo -e ">>>Change ownership to <root> for file: ${enable_ufw_before_login_sh_fi
 echo -e "\r"
 echo -e ">>>Change permission to <-rwxr-xr-x> for file: ${enable_ufw_before_login_sh_filename}"
 	chmod 755 ${dst_enable_ufw_before_login_sh_fpath}
+
+
+
+echo -e "\r"
+echo -e ">Copying: ${automount_mqueue_before_login_service_filename}>"
+echo -e ">from: ${home_lttp3rootfs_services_dev_dir}"
+echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}"
+	cp ${src_automount_mqueue_before_login_service_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}
+
+echo -e "\r"
+echo -e ">>>Change ownership to <root> for file: ${automount_mqueue_before_login_service_filename}"
+	chown root:root ${dst_automount_mqueue_before_login_service_fpath}
+
+echo -e "\r"
+echo -e ">>>Change permission to <-rw-r--r--> for file: ${automount_mqueue_before_login_service_filename}"
+	chmod 644 ${dst_automount_mqueue_before_login_service_fpath}
+
+echo -e "\r"
+echo -e ">Copying: ${automount_mqueue_before_login_sh_filename}"
+echo -e ">from: ${home_lttp3rootfs_services_dev_dir}"
+echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}"
+	cp ${src_automount_mqueue_before_login_sh_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}
+
+echo -e "\r"
+echo -e ">>>Change ownership to <root> for file: ${automount_mqueue_before_login_sh_filename}"
+	chown root:root ${dst_automount_mqueue_before_login_sh_fpath}
+
+echo -e "\r"
+echo -e ">>>Change permission to <-rwxr-xr-x> for file: ${automount_mqueue_before_login_sh_filename}"
+	chmod 755 ${dst_automount_mqueue_before_login_sh_fpath}
+
 
 
 #---HOSTNAME/HOSTS
