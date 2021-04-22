@@ -217,7 +217,9 @@ echo ">chmod a=rx,u+ws ${sudo_fpath}"
 echo -e "\r"
 echo ">>>adding user <${username}> to sudoers---"
 echo -e "\r"
-	echo "${username} ALL=(ALL) NOPASSWD:ALL" | tee ${etc_dir}/sudoers.d/${username}
+		echo "" | tee -a ${etc_dir}/sudoers
+        echo "### MY SUDOERS ###" | tee -a ${etc_dir}/sudoers
+		echo "${username} ALL=(ALL:ALL) ALL" | tee -a ${etc_dir}/sudoers
 echo -e "\r"
 
 press_any_key__localfunc
