@@ -123,100 +123,60 @@ docker__show_dockerList_files__sub() {
     #Convert string to array (with space delimiter)
     listOf_dockerFileFpaths_arr=(${listOf_dockerFileFpaths_string})
 
-    #Start loop
+
+    #Initial sequence number
+    local seqnum=0
+
+    #Show all 'dockerfile' files
+    echo -e "----------------------------------------------------------------------"
+    echo -e "\t${DOCKER__GENERAL_FG_YELLOW}Create${DOCKER__NOCOLOR} multiple ${DOCKER__IMAGEID_FG_BORDEAUX}IMAGES${DOCKER__NOCOLOR} with ${DOCKER__TITLE_FG_LIGHTBLUE}DOCKER-FILES${DOCKER__NOCOLOR}"
+    echo -e "----------------------------------------------------------------------"
+    for listOf_dockerFileFpaths_arrItem in "${listOf_dockerFileFpaths_arr[@]}"
+    do
+        #increment sequence-number
+        seqnum=$((seqnum+1))
+
+        #Get filename only
+        extract_filename=`basename ${listOf_dockerFileFpaths_arrItem}`  
+    
+        #Show filename
+        echo -e "${DOCKER__FIVE_SPACES}${seqnum}. ${extract_filename}"
+    done
+    echo -e "----------------------------------------------------------------------"
+
+    #Read-input handler
     while true
     do
-        #Initial sequence number
-        local seqnum=0
+        #Show read-input
+        if [[ ${seqnum} -le ${DOCKER__NINE} ]]; then    #seqnum <= 9
+            read -N1 -p "Choose a file (ctrl+c: quit): " mychoice
+        else    #seqnum > 9
+            read -p "Choose a file (ctrl+c: quit): " mychoice
+        fi
 
-        #Show all 'dockerfile-list' files
-        echo -e "----------------------------------------------------------------------"
-        echo -e "\t${DOCKER__GENERAL_FG_YELLOW}Create${DOCKER__NOCOLOR} multiple ${DOCKER__IMAGEID_FG_BORDEAUX}IMAGES${DOCKER__NOCOLOR} with ${DOCKER__TITLE_FG_LIGHTBLUE}DOCKER-FILES${DOCKER__NOCOLOR}"
-        echo -e "----------------------------------------------------------------------"
-        for listOf_dockerFileFpaths_arrItem in "${listOf_dockerFileFpaths_arr[@]}"
-        do
-            #increment sequence-number
-            seqnum=$((seqnum+1))
+        #Check if 'mychoice' is a numeric value
+        if [[ ${mychoice} =~ [1-9,0] ]]; then
+            #check if 'mychoice' is one of the numbers shown in the overview...
+            #... AND 'mychoice' is NOT '0'
+            if [[ ${mychoice} -lt ${seqnum} ]] && [[ ${mychoice} -ne 0 ]]; then
+                echo -e "\r"    #print an empty line
 
-            #Get filename only
-            extract_filename=`basename ${listOf_dockerFileFpaths_arrItem}`  
-        
-            #Show filename
-            echo -e "${DOCKER__FIVE_SPACES}${seqnum}. ${extract_filename}"
-        done
-        echo -e "----------------------------------------------------------------------"
-
-        #Read-input handler
-        while true
-        do
-            #Show read-input
-            if [[ ${seqnum} -le ${DOCKER__NINE} ]]; then    #seqnum <= 9
-                read -N1 -p "Choose a file (ctrl+c: quit): " mychoice
-            else    #seqnum > 9
-                read -p "Choose a file (ctrl+c: quit): " mychoice
-            fi
-
-            #Check if 'mychoice' is a numeric value
-            if [[ ${mychoice} =~ [1-9,0] ]]; then
-                #check if 'mychoice' is one of the numbers shown in the overview...
-                #... AND 'mychoice' is NOT '0'
-                if [[ ${mychoice} -lt ${seqnum} ]] && [[ ${mychoice} -ne 0 ]]; then
-                    echo -e "\r"    #print an empty line
-
-                    break   #exit loop
-                else
-                    tput cuu1   #move-UP one line
-                    tput el #clean until end of line
-                fi
+                break   #exit loop
             else
                 tput cuu1   #move-UP one line
-                tput el #clean until end of line    
+                tput el #clean until end of line
             fi
-        done
+        else
+            tput cuu1   #move-UP one line
+            tput el #clean until end of line    
+        fi
+    done
 
-        #Since arrays start with index=0, deduct 'mychoice' value by '1'
-        index=$((mychoice-1))
+    #Since arrays start with index=0, deduct 'mychoice' value by '1'
+    index=$((mychoice-1))
 
-        #Extract the chosen file from array and assign to the GLOBAL variable 'docker__dockerFile_fpath'
-        docker__dockerFile_fpath=${listOf_dockerFileFpaths_arr[index]}
-
-        docker__dockerFile_filename=`basename ${docker__dockerFile_fpath}`
-
-        #Show chosen file contents
-        echo -e "\r"
-        echo -e "----------------------------------------------------------------------"
-        echo -e "Contents of File ${DOCKER__FILES_FG_ORANGE}${extract_filename}${DOCKER__NOCOLOR}"
-        echo -e "----------------------------------------------------------------------"
-        while read file_line
-        do
-            echo -e "${DOCKER__FIVE_SPACES}${file_line}"
-
-        done < ${docker__dockerFile_fpath}
-        echo -e "----------------------------------------------------------------------"
-
-        #Read-input handler
-        while true
-        do
-            #Show read-input
-            read -N1 -p "Do you wish to continue (y/n): " mychoice
-
-            #Check if 'mychoice' is a numeric value
-            if [[ ${mychoice} =~ [y,n] ]]; then
-                #print 2 empty lines
-                echo -e "\r"
-                echo -e "\r"
-
-                if [[ ${mychoice} == ${DOCKER__YES} ]]; then
-                    return  #exit function
-                else
-                    break   #exit THIS loop
-                fi
-            else
-                tput cuu1   #move-UP one line
-                tput el #clean until end of line    
-            fi
-        done
-    done   
+    #Extract the chosen file from array and assign to the GLOBAL variable 'docker__dockerFile_fpath'
+    docker__dockerFile_fpath=${listOf_dockerFileFpaths_arr[index]}
 }
 
 docker__create_image_handler__sub() {

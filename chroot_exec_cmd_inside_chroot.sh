@@ -108,10 +108,6 @@ enable_ufw_before_login_service_filename="enable-ufw-before-login.service"
 enable_ufw_before_login_service_fpath=${etc_systemd_system_dir}/${enable_ufw_before_login_service_filename}
 enable_ufw_before_login_service_symlink_fpath=${etc_systemd_system_multi_user_target_wants_dir}/${enable_ufw_before_login_service_filename}
 
-automount_mqueue_before_login_service_filename="automount-mqueue-before-login.service"
-automount_mqueue_before_login_service_fpath=${etc_systemd_system_dir}/${automount_mqueue_before_login_service_filename}
-automount_mqueue_before_login_service_symlink_fpath=${etc_systemd_system_multi_user_target_wants_dir}/${automount_mqueue_before_login_service_filename}
-
 environment_fpath=${etc_dir}/environment
 arm_linux_gnueabihf_filename="arm-linux-gnueabihf"
 arm_linux_gnueabihf_fpath=${usr_lib_dir}/${arm_linux_gnueabihf_filename}
@@ -479,9 +475,6 @@ echo ">Create symlink for <${one_time_exec_before_login_service_filename}>"
 echo -e "\r"
 echo ">Create symlink for <${enable_ufw_before_login_service_filename}>"
 	ln -s ${enable_ufw_before_login_service_fpath} ${enable_ufw_before_login_service_symlink_fpath}
-echo -e "\r"
-echo ">Create symlink for <${automount_mqueue_before_login_service_filename}>"
-	ln -s ${automount_mqueue_before_login_service_fpath} ${automount_mqueue_before_login_service_symlink_fpath}
 echo -e "\r"
 
 

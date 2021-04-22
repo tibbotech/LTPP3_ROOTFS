@@ -9,10 +9,18 @@ FG_SOFLIGHTRED=$'\e[30;38;5;131m'
 
 
 
+#---CONSTANTS
+MOUNTPOINT_NONE="none"
+
+
+
 #---VARIABLES
 dev_dir=/dev
 mmcblk0p8_device="mmcblk0p8"
 dev_mmcblk0p8_dir=${dev_dir}/${mmcblk0p8_device}
+
+mqueue_fs="mqueue"
+dev_mqueue_dir=${dev_dir}/${mqueue_fs}
 
 usr_sbin_dir=/usr/sbin
 resize2fs_fpath=${usr_sbin_dir}/resize2fs
@@ -66,3 +74,23 @@ fi
 
 ssh-keygen -t rsa -f ${root_ssh_id_rsa_fpath} -q -P ""
 echo -e ":-->${FG_ORANGE}STATUS${NOCOLOR}: GENERATED SSH-KEY for ${FG_LIGHTGREY}root${NOCOLOR}"
+
+
+
+#---POSIX MESSAGE QUEUE
+if [[ ! -d ${dev_mqueue_dir} ]]; then
+    mkdir ${dev_mqueue_dir}
+
+    echo -e ":-->${FG_ORANGE}STATUS${NOCOLOR}: CREATED DIRECTORY ${FG_LIGHTGREY}${dev_mqueue_dir}${NOCOLOR}"
+fi
+
+currMountPoint=`mount | grep ${dev_mqueue_dir} | awk '{print $1}'`
+if [[ ! -z ${currMountPoint} ]]; then
+    if [[ ${currMountPoint} != ${MOUNTPOINT_NONE} ]]; then #/dev/mqueue is already mounted
+        umount ${currMountPoint}    #unmount /dev/mqueue
+        echo -e ":-->${FG_ORANGE}STATUS${NOCOLOR}: REMOVED MOUNT DIRECTORY ${FG_LIGHTGREY}${dev_mqueue_dir}${NOCOLOR}"
+    fi
+fi
+
+mount -t ${mqueue_fs} ${MOUNTPOINT_NONE} ${dev_mqueue_dir}
+echo -e ":-->${FG_ORANGE}STATUS${NOCOLOR}: MOUNTED ${FG_LIGHTGREY}${dev_mqueue_dir}${NOCOLOR}"
