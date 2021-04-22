@@ -12,7 +12,6 @@ DOCKER__TITLE_BG_LIGHTBLUE=$'\e[30;48;5;45m'
 DOCKER__TITLE="TIBBO"
 DOCKER__TITLE_BG_ORANGE=$'\e[30;48;5;215m'
 DOCKER__SSH_LOCALPORT=10022
-DOCKER__SSH_PORT=22
 
 
 #---Trap ctrl-c and Call ctrl_c()
@@ -179,7 +178,10 @@ docker__ssh_handler__sub() {
     done
 
     #EXECUTE
-    ssh root@${myhost} -p ${myport}
+    #REMARK: 
+    #   -o AddKeysToAgent=yes: this switch is used to bypass the error message:
+    #   'The authenticity of host '[172.17.0.1]:10022 ([172.17.0.1]:10022)' can't be established...etc'
+    ssh -o AddKeysToAgent=yes root@${myhost} -p ${myport}
 }
 
 main_sub() {
