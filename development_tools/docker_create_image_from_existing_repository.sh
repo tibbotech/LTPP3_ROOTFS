@@ -1,9 +1,5 @@
 #!/bin/bash
-#Define constants
-DOCKER__EMPTYSTRING=""
-DOCKER__READ_FG_EXITING_NOW="Exiting now..."
-
-#---Define colors
+#---COLOR CONSTANTS
 DOCKER__NOCOLOR=$'\e[0;0m'
 DOCKER__GENERAL_FG_YELLOW=$'\e[1;33m'
 DOCKER__ERROR_FG_LIGHTRED=$'\e[1;31m'
@@ -17,40 +13,47 @@ DOCKER__TITLE_BG_ORANGE=$'\e[30;48;5;215m'
 DOCKER__TITLE_BG_LIGHTBLUE='\e[30;48;5;45m'
 DOCKER__DIRS_BG_VERYLIGHTORANGE=$'\e[30;48;5;223m'
 
-#---Define constants
+
+
+#---CONSTANTS
 DOCKER__TITLE="TIBBO"
+
+DOCKER__EMPTYSTRING=""
+DOCKER__FIVE_SPACES="     "
 
 DOCKER__SLASH_CHAR="/"
 
+DOCKER__YES="y"
+DOCKER__NO="n"
+DOCKER__QUIT="q"
+DOCKER__BACK="b"
+
+DOCKER__B_BACK="${DOCKER__FIVE_SPACES}b. Back"
+DOCKER__Q_QUIT="${DOCKER__FIVE_SPACES}q. Quit (Ctrl+C)"
 
 
-#---Define variables
+#---PRINT CONSTANTS
+DOCKER__READ_FG_EXITING_NOW="Exiting now..."
+
+
+
+#---VARIABLES
 docker__myrepository=""
 docker__myrepository_new=""
 docker__myrepository_tag=""
 docker__myrepository_isFound=""
 docker__myrepository_new_isFound=""
-docker__mytag_isFound=""
-docker__myanswer=""
+docker__mytag_isFound=""1
 
 
 
 #---Trap ctrl-c and Call ctrl_c()
-trap CTRL_C__func INT
-
-function CTRL_C__func() {
-    echo -e "\r"
-    echo -e "\r"
-    echo -e ${DOCKER__READ_FG_EXITING_NOW}
-    echo -e "\r"
-    echo -e "\r"
-
-    exit
-}
+trap CTRL_C__sub INT
 
 
-#---Local functions & subroutines
-press_any_key__localfunc() {
+
+#---FUNCTIONS
+press_any_key__func() {
 	#Define constants
 	local cTIMEOUT_ANYKEY=10
 
@@ -78,6 +81,22 @@ press_any_key__localfunc() {
 		tcounter=$((tcounter+1))
 	done
 	echo -e "\r"
+}
+
+
+
+#---SUBROUTINES
+CTRL_C__sub() {
+    exit__func
+}
+function exit__func() {
+    echo -e "\r"
+    echo -e "\r"
+    echo -e ${DOCKER__READ_FG_EXITING_NOW}
+    echo -e "\r"
+    echo -e "\r"
+
+    exit
 }
 
 docker__load_header__sub() {
@@ -158,18 +177,23 @@ docker__build_image_from_specified_repository__sub() {
     echo -e "----------------------------------------------------------------------"
     echo -e "\t${DOCKER__GENERAL_FG_YELLOW}Create${DOCKER__NOCOLOR} Docker ${DOCKER__IMAGEID_FG_BORDEAUX}IMAGE${DOCKER__NOCOLOR} from existing ${DOCKER__REPOSITORY_FG_PURPLE}REPOSITORY${DOCKER__NOCOLOR}"
     echo -e "----------------------------------------------------------------------"
-        docker image ls
 
     if [[ ${numof_images} -eq 0 ]]; then
         echo -e "\r"
         echo -e "\t\t=:${DOCKER__ERROR_FG_LIGHTRED}NO IMAGES FOUND${DOCKER__NOCOLOR}:="
         echo -e "----------------------------------------------------------------------"
+        echo -e "${DOCKER__Q_QUIT}"
+        echo -e "----------------------------------------------------------------------"
         echo -e "\r"
         
-        press_any_key__localfunc
+        press_any_key__func
 
-        exit
+        exit__func
     else
+            docker image ls
+
+        echo -e "----------------------------------------------------------------------"
+        echo -e "${DOCKER__Q_QUIT}"
         echo -e "----------------------------------------------------------------------"
     fi    
 
@@ -183,17 +207,21 @@ docker__build_image_from_specified_repository__sub() {
         read -p "Choose a ${DOCKER__REPOSITORY_FG_PURPLE}REPOSITORY${DOCKER__NOCOLOR} from list (e.g. ubuntu_buildbin): " docker__myrepository
         if [[ ! -z ${docker__myrepository} ]]; then    #input is NOT an EMPTY STRING
 
+            #Check if 'q' was pressed
+            if [[ ${docker__myrepository} == ${DOCKER__QUIT} ]]; then
+                exit__func
+            fi
+
             #Check if 'docker__myrepository' is found in ' docker container ls'
             docker__myrepository_isFound=`docker image ls | awk '{print $1}' | grep -w ${docker__myrepository}`
             if [[ ! -z ${docker__myrepository_isFound} ]]; then    #match was found
-
                 while true
                 do
                     #Find tag belonging to 'docker__myrepository' (Exact Match)
                     docker__myrepository_tag=$(docker image ls | grep -w "${docker__myrepository}" | awk '{print $2}')
 
                     #Provide a TAG for this new image
-                    read -e -p "Provide the ${DOCKER__TAG_FG_LIGHTPINK}TAG${DOCKER__NOCOLOR} (e.g. latest) matching with REPOSITORY ${DOCKER__REPOSITORY_FG_PURPLE}${docker__myrepository}${DOCKER__NOCOLOR}: " -i ${docker__myrepository_tag} mytag
+                    read -e -p "Provide this ${DOCKER__REPOSITORY_FG_PURPLE}REPOSITORY${DOCKER__NOCOLOR}'s ${DOCKER__TAG_FG_LIGHTPINK}TAG${DOCKER__NOCOLOR} (e.g. latest): " -i ${docker__myrepository_tag} mytag
                     if [[ ! -z ${mytag} ]]; then   #input is NOT an Empty String        
 
                         docker__mytag_isFound=`docker image ls | grep -w "${docker__myrepository}" | grep -w "${mytag}"`    #check if 'docker__myrepository' AND 'mytag' is found in 'docker image ls'
@@ -214,7 +242,7 @@ docker__build_image_from_specified_repository__sub() {
                                             #Provide a location where you want to create a *NEW DOCKERFILE*
                                             echo -e "Provide ${DOCKER__DIRS_BG_VERYLIGHTORANGE}DOCKER-FILE LOCATION${DOCKER__NOCOLOR} (${dockerfile_dir}): "
                                             echo -e "${DOCKER__DIRS_FG_VERYLIGHTORANGE}"    #echo used to start a color for 'read'
-                                            read -e -p $'\t' -i "${dockerfile_dir}" docker__mydockerfile_location
+                                            read -e -p "" -i "${dockerfile_dir}" docker__mydockerfile_location
                                             echo -e "${DOCKER__NOCOLOR}"    #echo used to reset color
 
                                             if [[ -d ${docker__mydockerfile_location} ]]; then   #input was NOT an Empty String
@@ -222,7 +250,6 @@ docker__build_image_from_specified_repository__sub() {
                                                 #OUTPUT: docker__dockerfile_fpath
                                                 create_dockerfile__sub "${docker__dockerfile_filename}" ${docker__myrepository_new} "${docker__mydockerfile_location}"
 
-                                                echo -e "\r"
                                                 echo -e "--------------------------------------------------------------------"
                                                 echo -e "Summary"
                                                 echo -e "--------------------------------------------------------------------"
@@ -234,9 +261,9 @@ docker__build_image_from_specified_repository__sub() {
                                                 #Confirm if user wants to continue
                                                 while true
                                                 do
-                                                    read -p "Do you wish to continue (y/n/q)? " docker__myanswer
-                                                    if [[ ${docker__myanswer} == "y" ]]; then
-                                                        docker build --tag ${docker__myrepository_new}:${mytag} - < ${docker__dockerfile_fpath}
+                                                    read -N1 -r -s -e -p "Do you wish to continue (y/n/r(edo))? " docker__myanswer
+                                                    if [[ ${docker__myanswer} == ${DOCKER__YES} ]]; then
+                                                        # docker build --tag ${docker__myrepository_new}:${mytag} - < ${docker__dockerfile_fpath}
                                                         
                                                         echo -e "\r"
                                                         echo -e "\r"
@@ -245,29 +272,23 @@ docker__build_image_from_specified_repository__sub() {
                                                         echo -e "----------------------------------------------------------------------"
                                                         echo -e "\r"
 
-                                                        exit
-                                                    elif [[ ${docker__myanswer} == "n" ]]; then
-                                                        tput cuu1
-                                                        tput el
+                                                        exit__func
 
+                                                    elif [[ ${docker__myanswer} == ${DOCKER__NO} ]]; then
+                                                        exit__func
+
+                                                    elif [[ ${docker__myanswer} == ${DOCKER__BACK} ]]; then
                                                         break
-                                                    elif [[ ${docker__myanswer} == "q" ]]; then
-                                                        echo -e "\r"
-                                                        echo -e ${DOCKER__READ_FG_EXITING_NOW}
-                                                        echo -e "\r"
-                                                        echo -e "\r"
-
-                                                        exit
                                                     else
                                                         tput cuu1	#move UP with 1 line
-                                                        tput el		#clear until the END of line                                                    
+                                                        tput el		#clear until the END of line                                                                                          
                                                     fi
                                                 done
                                             else    #input was an Empty String
                                                 echo -e "\r"
                                                 echo -e "***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: unknown directory: ${docker__mydockerfile_location}!!!"
 
-                                                press_any_key__localfunc
+                                                press_any_key__func
 
                                                 tput cuu1	#move UP with 1 line
                                                 tput el		#clear until the END of line 
@@ -296,7 +317,7 @@ docker__build_image_from_specified_repository__sub() {
                                         echo -e "\r"
                                         echo -e "***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: REPOSITORY ${DOCKER__REPOSITORY_FG_PURPLE}${docker__myrepository_new}${DOCKER__NOCOLOR} already exist!!!"
 
-                                        press_any_key__localfunc
+                                        press_any_key__func
 
                                         tput cuu1	#move UP with 1 line
                                         tput el		#clear until the END of line
@@ -323,7 +344,7 @@ docker__build_image_from_specified_repository__sub() {
                             echo -e "\r"
                             echo -e "***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: ${DOCKER__TAG_FG_LIGHTPINK}TAG${DOCKER__NOCOLOR} and ${DOCKER__REPOSITORY_FG_PURPLE}REPOSITORY${DOCKER__NOCOLOR} do NOT match!!!"
 
-                            press_any_key__localfunc
+                            press_any_key__func
 
                             tput cuu1	#move UP with 1 line
                             tput el		#clear until the END of line
@@ -355,7 +376,7 @@ docker__build_image_from_specified_repository__sub() {
                 echo -e "\r"
                 echo -e "***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: ${DOCKER__REPOSITORY_FG_PURPLE}${docker__myrepository}${DOCKER__NOCOLOR} not found!!!"
 
-                press_any_key__localfunc
+                press_any_key__func
 
                 tput cuu1	#move UP with 1 line
                 tput el		#clear until the END of line  
@@ -376,6 +397,8 @@ docker__build_image_from_specified_repository__sub() {
 }
 
 
+
+#---MAIN SUBROUTINE
 main_sub() {
     docker__load_header__sub
 
@@ -387,6 +410,7 @@ main_sub() {
 }
 
 
-#Execute main subroutine
+
+#---EXECUTE
 main_sub
 

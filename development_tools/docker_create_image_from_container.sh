@@ -16,9 +16,9 @@ DOCKER__TITLE="TIBBO"
 
 
 #---Trap ctrl-c and Call ctrl_c()
-trap CTRL_C_func INT
+trap CTRL_C__func INT
 
-function CTRL_C_func() {
+function CTRL_C__func() {
     echo -e "\r"
     echo -e "\r"
     echo -e "Exiting now..."
@@ -72,20 +72,25 @@ docker__create_image_of_specified_container__sub() {
     echo -e "----------------------------------------------------------------------"
     echo -e "\t${DOCKER__GENERAL_FG_YELLOW}Create${DOCKER__NOCOLOR} Docker ${DOCKER__IMAGEID_FG_BORDEAUX}IMAGE${DOCKER__NOCOLOR} from ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}CONTAINER${DOCKER__NOCOLOR}"
     echo -e "----------------------------------------------------------------------"
-        docker ps -a
 
-        if [[ ${numof_containers} -eq 0 ]]; then
-            echo -e "\r"
-            echo -e "\t\t=:${DOCKER__ERROR_FG_LIGHTRED}NO CONTAINERS FOUND${DOCKER__NOCOLOR}:="
-            echo -e "----------------------------------------------------------------------"
-            echo -e "\r"
+    if [[ ${numof_containers} -eq 0 ]]; then
+        echo -e "\r"
+        echo -e "\t\t=:${DOCKER__ERROR_FG_LIGHTRED}NO CONTAINERS FOUND${DOCKER__NOCOLOR}:="
+        echo -e "----------------------------------------------------------------------"
+        echo -e "${DOCKER__CTRL_C_QUIT}"
+        echo -e "----------------------------------------------------------------------"
 
-            press_any_key__localfunc
+        press_any_key__localfunc
 
-            exit
-        else
-            echo -e "----------------------------------------------------------------------"
-        fi
+        CTRL_C__func
+    else
+        echo -e "----------------------------------------------------------------------"
+            docker ps -a
+        echo -e "----------------------------------------------------------------------"
+        echo -e "${DOCKER__CTRL_C_QUIT}"
+        echo -e "----------------------------------------------------------------------"
+    fi
+
     echo -e "\r"
 
     while true

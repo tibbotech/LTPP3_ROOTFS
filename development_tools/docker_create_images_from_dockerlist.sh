@@ -16,11 +16,26 @@ DOCKER__TITLE_BG_LIGHTBLUE=$'\e[30;48;5;45m'
 
 #---CONSTANTS
 DOCKER__TITLE="TIBBO"
-DOCKER__YES="y"
+
 DOCKER__FIVE_SPACES="     "
+DOCKER__NINE=9
+
 DOCKER__LATEST="latest"
 DOCKER__EXITING_NOW="Exiting now..."
-DOCKER__NINE=9
+
+DOCKER__YES="y"
+DOCKER__NO="n"
+DOCKER__QUIT="q"
+DOCKER__BACK="b"
+
+DOCKER__A_ABORT="${DOCKER__FIVE_SPACES}b. Back"
+DOCKER__Q_QUIT="${DOCKER__FIVE_SPACES}q. Quit (Ctrl+C)"
+
+
+
+
+#---PRINT CONSTANTS
+DOCKER__READ_FG_EXITING_NOW="Exiting now..."
 
 
 
@@ -36,17 +51,7 @@ trap CTRL_C__sub INT
 
 
 #---FUNCTIONS
-function CTRL_C__sub() {
-    echo -e "\r"
-    echo -e "\r"
-    echo -e "${DOCKER__EXITING_NOW}"
-    echo -e "\r"
-    echo -e "\r"
-
-    exit
-}
-
-press_any_key__localfunc() {
+press_any_key__func() {
 	#Define constants
 	local cTIMEOUT_ANYKEY=10
 
@@ -65,7 +70,7 @@ press_any_key__localfunc() {
 
 		if [[ ! -z "${keypressed}" ]]; then
 			if [[ "${keypressed}" == "a" ]] || [[ "${keypressed}" == "A" ]]; then
-				exit
+				exit__func
 			else
 				break
 			fi
@@ -79,6 +84,21 @@ press_any_key__localfunc() {
 
 
 #---SUBROUTINES
+CTRL_C__sub() {
+    exit__func
+}
+function exit__func() {
+    echo -e "\r"
+    echo -e "\r"
+    echo -e ${DOCKER__READ_FG_EXITING_NOW}
+    echo -e "\r"
+    echo -e "\r"
+
+    exit
+}
+
+
+
 docker__load_header__sub() {
     echo -e "\r"
     echo -e "${DOCKER__TITLE_BG_ORANGE}                                 ${DOCKER__TITLE}${DOCKER__TITLE_BG_ORANGE}                                ${DOCKER__NOCOLOR}"
@@ -104,7 +124,7 @@ docker__mandatory_apps_check__sub() {
         echo -e "${DOCKER__FIVE_SPACES}PLEASE INSTALL the missing software."
         echo -e "\r"
         
-        press_any_key__localfunc
+        press_any_key__func
     fi
 }
 
@@ -132,7 +152,7 @@ docker__show_dockerList_files__sub() {
     local listOf_dockerListFpaths_arr=()
     local listOf_dockerListFpaths_arrItem=""
     local extract_filename=""
-    local readInput_msg="Choose a file (ctrl+c: quit): "
+    local readInput_msg="Choose a file: "
 
     #Get all files at the specified location
     listOf_dockerListFpaths_string=`find ${docker__my_LTPP3_ROOTFS_docker_list_dir} -maxdepth 1 -type f | LC_ALL=C sort`
@@ -149,7 +169,7 @@ docker__show_dockerList_files__sub() {
         echo -e "\r"
         echo -e "\r"
 
-        exit
+        exit__func
     fi
 
 
@@ -178,25 +198,29 @@ docker__show_dockerList_files__sub() {
             echo -e "${DOCKER__FIVE_SPACES}${seqnum}. ${extract_filename}"
         done
         echo -e "----------------------------------------------------------------------"
+        echo -e "${DOCKER__Q_QUIT}"
+        echo -e "----------------------------------------------------------------------"
 
         #Read-input handler
         while true
         do
             #Show read-input
             if [[ ${seqnum} -le ${DOCKER__NINE} ]]; then    #seqnum <= 9
-                read -N1 -p "Choose a file (ctrl+c: quit): " mychoice
+                read -N1 -p "${readInput_msg}" mychoice
             else    #seqnum > 9
-                read -p "Choose a file (ctrl+c: quit): " mychoice
+                read -p "${readInput_msg}" mychoice
             fi
 
             #Check if 'mychoice' is a numeric value
-            if [[ ${mychoice} =~ [1-9,0] ]]; then
+            if [[ ${mychoice} =~ [1-9,0,q] ]]; then
                 #check if 'mychoice' is one of the numbers shown in the overview...
                 #... AND 'mychoice' is NOT '0'
                 if [[ ${mychoice} -lt ${seqnum} ]] && [[ ${mychoice} -ne 0 ]]; then
                     echo -e "\r"    #print an empty line
 
                     break   #exit loop
+                elif [[ ${mychoice} == ${DOCKER__QUIT} ]]; then
+                    exit__func
                 else
                     tput cuu1   #move-UP one line
                     tput el #clean until end of line
@@ -212,19 +236,21 @@ docker__show_dockerList_files__sub() {
 
         #Extract the chosen file from array and assign to the GLOBAL variable 'docker__dockerList_fpath'
         docker__dockerList_fpath=${listOf_dockerListFpaths_arr[index]}
-echo $docker__dockerList_fpath
         docker__dockerList_filename=`basename ${docker__dockerList_fpath}`
 
         #Show chosen file contents
         echo -e "\r"
         echo -e "----------------------------------------------------------------------"
-        echo -e "Contents of File ${DOCKER__FILES_FG_ORANGE}${extract_filename}${DOCKER__NOCOLOR}"
+        echo -e "Contents of File ${DOCKER__FILES_FG_ORANGE}${docker__dockerList_filename}${DOCKER__NOCOLOR}"
         echo -e "----------------------------------------------------------------------"
         while read file_line
         do
             echo -e "${DOCKER__FIVE_SPACES}${file_line}"
 
         done < ${docker__dockerList_fpath}
+        echo -e "----------------------------------------------------------------------"
+        echo -e "${DOCKER__A_ABORT}"
+        echo -e "${DOCKER__Q_QUIT}"
         echo -e "----------------------------------------------------------------------"
 
         #Read-input handler
@@ -234,13 +260,17 @@ echo $docker__dockerList_fpath
             read -N1 -p "Do you wish to continue (y/n): " mychoice
 
             #Check if 'mychoice' is a numeric value
-            if [[ ${mychoice} =~ [y,n] ]]; then
+            if [[ ${mychoice} =~ [y,n,b,q] ]]; then
                 #print 2 empty lines
                 echo -e "\r"
                 echo -e "\r"
 
                 if [[ ${mychoice} == ${DOCKER__YES} ]]; then
                     return  #exit function
+                elif [[ ${mychoice} == ${DOCKER__NO} ]] || [[ ${mychoice} == ${DOCKER__QUIT} ]]; then
+                    CTRL_C__sub #same as Ctrl+C
+                elif [[ ${mychoice} == ${DOCKER__BACK} ]]; then
+                    break
                 else
                     break   #exit THIS loop
                 fi
@@ -331,7 +361,6 @@ function docker__validate_exitCode__func() {
         exit
     fi
 }
-
 
 
 

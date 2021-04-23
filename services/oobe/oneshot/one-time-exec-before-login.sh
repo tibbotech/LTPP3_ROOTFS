@@ -42,11 +42,11 @@ do_enable_sub() {
 	if [[ -f "${one_time_exec_fpath}" ]]; then
 		echo -e "\r"
 		echo -e ":-->${FG_ORANGE}START${NOCOLOR}: EXECUTING '${FG_LIGHTGREY}${one_time_exec_fpath}${NOCOLOR}'"
-			${one_time_exec_fpath}
+			sudo sh -c "${one_time_exec_fpath}"
 		echo -e ":-->${FG_ORANGE}COMPLETED${NOCOLOR}: EXECUTING '${FG_LIGHTGREY}${one_time_exec_fpath}${NOCOLOR}'"
 
 		echo -e "\r"
-			rm ${one_time_exec_fpath}
+			sudo sh -c "rm ${one_time_exec_fpath}"
 		echo -e ":-->${FG_ORANGE}STATUS${NOCOLOR}: REMOVED '${FG_LIGHTGREY}${one_time_exec_fpath}${NOCOLOR}'"
 	fi
 }

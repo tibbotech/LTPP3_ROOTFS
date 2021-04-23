@@ -37,7 +37,7 @@ root_ssh_id_rsa_fpath=${root_ssh_dir}/id_rsa
 
 
 #---RESIZE
-sudo ${resize2fs_fpath} ${dev_mmcblk0p8_dir}
+${resize2fs_fpath} ${dev_mmcblk0p8_dir}
 echo -e ":-->${FG_ORANGE}STATUS${NOCOLOR}: RESIZED ${FG_LIGHTGREY}${dev_mmcblk0p8_dir}${NOCOLOR}"
 
 
