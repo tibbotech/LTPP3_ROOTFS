@@ -188,7 +188,7 @@ docker__mainmenu__sub() {
         echo -e "${DOCKER__FIVESPACES}p. Git ${DOCKER__OUTSIDE_BG_LIGHTGREY}${DOCKER__OUTSIDE_FG_WHITE}Push${DOCKER__NOCOLOR}"
         echo -e "${DOCKER__FIVESPACES}g. Git ${DOCKER__INSIDE_BG_WHITE}${DOCKER__INSIDE_FG_LIGHTGREY}Pull${DOCKER__NOCOLOR}"
         echo -e "----------------------------------------------------------------------"
-        echo -e "${DOCKER__FIVESPACES}q. Quit"
+        echo -e "${DOCKER__FIVESPACES}q. Quit (Ctrl+C)"
         echo -e "----------------------------------------------------------------------"
         echo -e "\r"	
 
@@ -307,7 +307,7 @@ docker__create_images_menu__sub() {
         echo -e "${DOCKER__FIVESPACES}g. Git ${DOCKER__INSIDE_BG_WHITE}${DOCKER__INSIDE_FG_LIGHTGREY}Pull${DOCKER__NOCOLOR}"
         echo -e "----------------------------------------------------------------------"
         echo -e "${DOCKER__FIVESPACES}h. Home"
-        echo -e "${DOCKER__FIVESPACES}q. Quit"
+        echo -e "${DOCKER__FIVESPACES}q. Quit (Ctrl+C)"
         echo -e "----------------------------------------------------------------------"
         echo -e "\r"	
 

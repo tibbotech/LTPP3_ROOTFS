@@ -9,7 +9,6 @@
 		bootargs = "console=ttyS0,115200 root=/dev/ram rw loglevel=8 earlyprintk";
 		stdout-path = "serial0:115200n8";
 	};
-
 	memory {
 		reg = <0x00000000 0x20000000>; /* 512MB */
 	};
@@ -20,22 +19,57 @@
 &sp_spinor0 {  status = "disabled";  };
 
 &spi_controller0 {
-	pinctrl-names = "default";
+pinctrl-names = "default";
 	pinctrl-0 = <&spim0_pins>;
 	#address-cells = <1>;
 	#size-cells = <0>;
 	spi@0{    
 		compatible = "rohm,dh2228fv";	
-    spi-cpha;
 		reg = <0x0>;
 		spi-max-frequency = <50000000>;		
 		status = "okay";
 	};
 };
 
-&spi_controller1 {  status = "disabled";  };
-&spi_controller2 {  status = "disabled";  };
-&spi_controller3 {  status = "disabled";  };
+&spi_controller1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&spim1_pins>;
+	#address-cells = <1>;
+	#size-cells = <0>;
+	spi@0{    
+		compatible = "rohm,dh2228fv";	
+		reg = <0x0>;
+		spi-max-frequency = <50000000>;
+		status = "okay";
+	};
+};
+
+&spi_controller2 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&spim2_pins>;
+	#address-cells = <1>;
+	#size-cells = <0>;
+	spi@0{    
+		compatible = "rohm,dh2228fv";	
+		reg = <0x0>;
+		spi-max-frequency = <50000000>;		
+		status = "okay";
+	};
+};
+
+&spi_controller3 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&spim3_pins>;
+	#address-cells = <1>;
+	#size-cells = <0>;
+	spi@0{    
+		compatible = "rohm,dh2228fv";	
+		reg = <0x0>;
+		spi-max-frequency = <50000000>;		
+		status = "okay";
+	};
+};
+
 
 &sdio {
  pinctrl-names = "default";
@@ -90,18 +124,21 @@
  status = "okay";
  // this: enable, pins_uart1
 };
+
 &uart2 {
  pinctrl-names = "default";
  pinctrl-0 = <&pins_uart2>;
- status = "disabled";
+ status = "okay";
  // this: enable, pins_uart2
 };
+
 &uart3 {
  pinctrl-names = "default";
  pinctrl-0 = <&pins_uart3>;
- status = "disabled";
+ status = "okay";
  // this: enable, pins_uart3
 };
+
 &uart4 {
  pinctrl-names = "default";
  /* pinctrl-0 = <&pins_uart4>; */
@@ -110,10 +147,53 @@
  // this: enable (bt) | enable (uart4), pins_uart4
 };
 
-&i2cm0 {  status = "disabled";  };
-&i2cm1 {  status = "disabled";  };
-&i2cm2 {  status = "disabled";  };
-&i2cm3 {  status = "disabled";  };
+&i2cm0 {
+	clock-frequency = <400000>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&i2cm0_pins>;
+	status = "okay";
+};
+
+&i2cm1 {
+	clock-frequency = <400000>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&i2cm1_pins>;
+	status = "okay";
+};
+
+&i2cm2 {
+	clock-frequency = <400000>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&i2cm2_pins>;
+	status = "okay";
+};
+
+&i2cm3 {
+	clock-frequency = <400000>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&i2cm3_pins>;
+	status = "okay";
+};
+
+&sp_display {
+	ui_width = <1280>;
+	ui_height = <720>;
+	ui_format = <0x8>;
+		/* 0x2 = 8bpp (ARGB)
+		 * 0x4 = YUY2
+		 * 0x8 = RGB565
+		 * 0x9 = ARGB1555
+		 * 0xa = RGBA4444
+		 * 0xb = ARGB4444
+		 * 0xd = RGBA8888
+		  0xe = ARGB8888 */
+};
+
+&pwm {
+	pinctrl-names = "default";
+	pinctrl-0 = <&buzzer0_pins>;
+	status = "okay";
+};
 
 &pctl {
  /*** all non-device binded that you want to set mode ***/
@@ -175,46 +255,54 @@
       SPPCTL_IOPAD(5,SPPCTL_PCTL_G_GPIO,0,0)
     >;
  };
-// this:
+
+ i2cm0_pins: i2cm0_pins {
+    sppctl,pins = <>;};
+
+ i2cm1_pins: i2cm1_pins {
+    sppctl,pins = <>;
+ };
+
+ i2cm2_pins: i2cm2_pins {
+    sppctl,pins = <>;
+ }; 
+
+ i2cm3_pins: i2cm3_pins {
+    sppctl,pins = <>;
+ }; 
+
+ spim0_pins: spim0_pins {
+    sppctl,pins = <>;
+ };
+
+ spim1_pins: spim1_pins {
+    sppctl,pins = <>;
+ };
+
+ spim2_pins: spim2_pins {
+    sppctl,pins = <>;
+ };
+
+ spim3_pins: spim3_pins {
+    sppctl,pins = <>;
+ };
+
  pins_uart1: pins_uart1 {
-    sppctl,pins = <
-      //SPPCTL_IOPAD(8,SPPCTL_PCTL_G_PMUX,MUXF_UA1_TX,0)
-      //SPPCTL_IOPAD(9,SPPCTL_PCTL_G_PMUX,MUXF_UA1_RX,0)
-      //SPPCTL_IOPAD(10,SPPCTL_PCTL_G_PMUX,MUXF_UA1_RTS,0)
-      //SPPCTL_IOPAD(11,SPPCTL_PCTL_G_PMUX,MUXF_UA1_CTS,0)
-    >;
+    sppctl,pins = <>;
  };
-// this/
-// this:
+
  pins_uart2: pins_uart2 {
-    sppctl,pins = <
-      SPPCTL_IOPAD(12,SPPCTL_PCTL_G_PMUX,MUXF_UA2_TX,0)
-      SPPCTL_IOPAD(13,SPPCTL_PCTL_G_PMUX,MUXF_UA2_RX,0)
-      SPPCTL_IOPAD(14,SPPCTL_PCTL_G_PMUX,MUXF_UA2_RTS,0)
-      SPPCTL_IOPAD(15,SPPCTL_PCTL_G_PMUX,MUXF_UA2_CTS,0)
-    >;
+    sppctl,pins = <>;
  };
-// this/
-// this:
+
  pins_uart3: pins_uart3 {
-    sppctl,pins = <
-      SPPCTL_IOPAD(16,SPPCTL_PCTL_G_PMUX,MUXF_UA3_TX,0)
-      SPPCTL_IOPAD(17,SPPCTL_PCTL_G_PMUX,MUXF_UA3_RX,0)
-      SPPCTL_IOPAD(18,SPPCTL_PCTL_G_PMUX,MUXF_UA3_RTS,0)
-      SPPCTL_IOPAD(19,SPPCTL_PCTL_G_PMUX,MUXF_UA3_CTS,0)
-    >;
+    sppctl,pins = <>;
  };
-// this/
-// this:
+
  pins_uart4: pins_uart4 {
-    sppctl,pins = <
-      SPPCTL_IOPAD(20,SPPCTL_PCTL_G_PMUX,MUXF_UA4_TX,0)
-      SPPCTL_IOPAD(21,SPPCTL_PCTL_G_PMUX,MUXF_UA4_RX,0)
-      SPPCTL_IOPAD(22,SPPCTL_PCTL_G_PMUX,MUXF_UA4_RTS,0)
-      SPPCTL_IOPAD(23,SPPCTL_PCTL_G_PMUX,MUXF_UA4_CTS,0)
-    >;
+    sppctl,pins = <>;
  };
-// this/
+
  pins_btuart: pins_btuart {
     sppctl,pins = <
       SPPCTL_IOPAD(40,SPPCTL_PCTL_G_PMUX,MUXF_UA4_RX,0)
@@ -226,14 +314,6 @@
  pins_bt_reset: pins_bt_reset {
     sppctl,pins = <
       SPPCTL_IOPAD(82,SPPCTL_PCTL_G_GPIO,0,0)
-    >;
- };
- spim0_pins: spim0_pins {
-    sppctl,pins = <	      
-	SPPCTL_IOPAD(8,SPPCTL_PCTL_G_PMUX,MUXF_SPIM0_EN,0)
-	SPPCTL_IOPAD(9,SPPCTL_PCTL_G_PMUX,MUXF_SPIM0_CLK,0)	      
-	SPPCTL_IOPAD(10,SPPCTL_PCTL_G_PMUX,MUXF_SPIM0_DO,0)	      
-	SPPCTL_IOPAD(11,SPPCTL_PCTL_G_PMUX,MUXF_SPIM0_DI,0)      	      
     >;
  };
  buzzer0_pins: user_buzzer0_pins {
@@ -306,61 +386,9 @@
 / {
 	soc@B {
 		tpsid {
-        	    compatible = "tpsid";
+        	compatible = "tpsid";
 		    nvmem-cell-names = "mac_addr0";
 		    nvmem-cells = <&mac_addr0>;
-		};
-		leds {
-		    pinctrl-names = "default", "sleep";
-		    pinctrl-0 = <&leds_s0_def>;
-		    pinctrl-1 = <&leds_s0_slp>;
-		    compatible = "gpio-leds";
-		    led@1 {
-			label = "SR";
-			gpios = <&pctl 6 GPIO_ACTIVE_HIGH>;
-			linux,default-trigger = "heartbeat";
-			default-state = "off";
-		    };
-		    led@2 {
-			label = "SG";
-			gpios = <&pctl 7 GPIO_ACTIVE_HIGH>;
-			linux,default-trigger = "mmc0";
-			default-state = "off";
-		    };
-		};
-		tpsleds: tpsleds {
-		    compatible = "tpsleds";
-		    pinctrl-names = "default";
-		    pinctrl-0 = <&tpsleds_pins>;
-		    status = "okay";
-		    init-val = <0x0>;
-		    gpios = <&pctl 5 GPIO_ACTIVE_HIGH
-			     &pctl 4 GPIO_ACTIVE_HIGH
-		    >;
-		};
-		buzzer0 {
-		    compatible = "pwm-beeper";
-		    pinctrl-names = "default";
-		    pinctrl-0 = <&buzzer0_pins>;
-		    pwms = <&pwm 0 1000000 0>;
-		};
-		i2c_tps: i2c-tps { /* eeprom */
-		    compatible = "i2c-gpio";
-		    i2c-gpio,scl-open-drain;
-		    i2c-gpio,sda-open-drain;
-		    i2c-gpio,delay-us = <1>;/* ~100 kHz */
-		    #address-cells = <1>;
-		    #size-cells = <0>;
-		    pinctrl-names = "default";
-		    pinctrl-0 = <&pins_i2ctps>;
-		    gpios = <&pctl 2 GPIO_ACTIVE_HIGH     /* SDA */
-			     &pctl 1 GPIO_ACTIVE_HIGH     /* SCL */
-                    >;
-		    eeprom: eeprom@50 {
-			compatible = "at,24c16";
-			reg = <0x50>;
-			pagesize = <16>;
-		    };
 		};
 	};
 };
