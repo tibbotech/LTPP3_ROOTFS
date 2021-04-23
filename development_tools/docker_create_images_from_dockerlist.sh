@@ -135,7 +135,7 @@ docker__show_dockerList_files__sub() {
     local readInput_msg="Choose a file (ctrl+c: quit): "
 
     #Get all files at the specified location
-    listOf_dockerListFpaths_string=`ls -1 ${docker__my_LTPP3_ROOTFS_docker_list_dir} | LC_ALL=C sort`
+    listOf_dockerListFpaths_string=`find ${docker__my_LTPP3_ROOTFS_docker_list_dir} -maxdepth 1 -type f | LC_ALL=C sort`
 
     #Check if '' is an EMPTY STRING
     if [[ -z ${listOf_dockerListFpaths_string} ]]; then
@@ -212,7 +212,7 @@ docker__show_dockerList_files__sub() {
 
         #Extract the chosen file from array and assign to the GLOBAL variable 'docker__dockerList_fpath'
         docker__dockerList_fpath=${listOf_dockerListFpaths_arr[index]}
-
+echo $docker__dockerList_fpath
         docker__dockerList_filename=`basename ${docker__dockerList_fpath}`
 
         #Show chosen file contents
