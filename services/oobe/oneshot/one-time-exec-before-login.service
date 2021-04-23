@@ -12,14 +12,9 @@ Description=resize2fs /dev/mmcblk0p8
 
 [Service]
 Type=oneshot
-#In order to run 'one-time-exec-before-login.sh' as 'root',
-#   'User' has to be defined. In this case it's 'ubuntu'. 
-User=ubuntu
-RemainAfterExit=true
-#In order to run 'one-time-exec-before-login.sh' as 'root',
-#   the to-be-executed script has to be place within
-#   /usr/bin/sudo /bin/bash -lc '<script.sh>'
-ExecStart=/usr/bin/sudo /bin/bash -lc '/usr/local/bin/one-time-exec-before-login.sh enable'
+#User MUST BE SET TO 'root'
+User=root
+ExecStart=/usr/local/bin/one-time-exec-before-login.sh enable
 StandardInput=journal+console
 StandardOutput=journal+console
 

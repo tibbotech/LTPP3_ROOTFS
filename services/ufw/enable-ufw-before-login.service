@@ -12,15 +12,11 @@ Description=Enable UFW
 
 [Service]
 Type=oneshot
-#In order to run 'enable-ufw-before-login.sh' as 'root',
-#   'User' has to be defined. In this case it's 'ubuntu'. 
-User=ubuntu
+#User MUST BE SET TO 'root'
+User=root
 RemainAfterExit=true
-#In order to run 'enable-ufw-before-login.sh' as 'root',
-#   the to-be-executed script has to be place within
-#   /usr/bin/sudo /bin/bash -lc '<script.sh>'
-ExecStart=/usr/bin/sudo /bin/bash -lc '/usr/local/bin/enable-ufw-before-login.sh enable'
-ExecStop=/usr/bin/sudo /bin/bash -lc '/usr/local/bin/enable-ufw-before-login.sh disable'
+ExecStart=/usr/local/bin/enable-ufw-before-login.sh enable
+ExecStop=/usr/local/bin/enable-ufw-before-login.sh disable
 StandardInput=journal+console
 StandardOutput=journal+console
 

@@ -218,7 +218,7 @@ echo -e "\r"
 echo ">>>adding user <${username}> to sudoers---"
 echo -e "\r"
 		echo "" | tee -a ${etc_dir}/sudoers
-        echo "### MY SUDOERS ###" | tee -a ${etc_dir}/sudoers
+        echo "#---:MY ADDED SUDOERS:---" | tee -a ${etc_dir}/sudoers
 		echo "${username} ALL=(ALL:ALL) ALL" | tee -a ${etc_dir}/sudoers
 echo -e "\r"
 
