@@ -162,6 +162,10 @@ echo -e "\r"
 echo ">>>>>Add <root> to group <gpiod>"
 	usermod -a -G gpiod root	
 
+echo -e "\r"
+echo ">>>Add <${username}> to group <dialout>"
+	usermod -a -G dialout ubuntu
+
 press_any_key__localfunc
 echo -e "\r"
 echo "---Updates & Upgrades--"
