@@ -25,7 +25,7 @@ DOCKER__DOT="."
 DOCKER__FIVESPACES="     "
 DOCKER__READ_FG_EXITING_NOW="Exiting Docker Main-menu..."
 
-DOCKER__Q_QUIT="${DOCKER__FIVE_SPACES}q. Quit (Ctrl+C)"
+DOCKER__Q_QUIT="Quit (Ctrl+C)"
 
 
 
@@ -191,7 +191,7 @@ docker__mainmenu__sub() {
         echo -e "${DOCKER__FIVESPACES}p. Git ${DOCKER__OUTSIDE_BG_LIGHTGREY}${DOCKER__OUTSIDE_FG_WHITE}Push${DOCKER__NOCOLOR}"
         echo -e "${DOCKER__FIVESPACES}g. Git ${DOCKER__INSIDE_BG_WHITE}${DOCKER__INSIDE_FG_LIGHTGREY}Pull${DOCKER__NOCOLOR}"
         echo -e "----------------------------------------------------------------------"
-        echo -e "${DOCKER__FIVESPACES}${DOCKER__Q_QUIT}"
+        echo -e "${DOCKER__FIVESPACES}q. ${DOCKER__Q_QUIT}"
         echo -e "----------------------------------------------------------------------"
         echo -e "\r"	
 
@@ -295,7 +295,7 @@ docker__create_images_menu__sub() {
         echo -e "----------------------------------------------------------------------"
         echo -e "${DOCKER__TITLE_FG_LIGHTBLUE}DOCKER SUB-MENU: CREATE IMAGE(S)${DOCKER__NOCOLOR}"
         echo -e "----------------------------------------------------------------------"
-        echo -e "${DOCKER__FIVESPACES}1. Create an ${DOCKER__IMAGEID_FG_BORDEAUX}image${DOCKER__NOCOLOR} using a ${DOCKER__FG_DARKBLUE}docker-file${DOCKER__NOCOLOR}"
+        echo -e "${DOCKER__FIVESPACES}1. Create an ${DOCKER__IMAGEID_FG_BORDEAUX}image${DOCKER__NOCOLOR} using a ${DOCKER__FG_DARKBLUE}docker-file${DOCKER__NOCOLOR} (Not Completed)"
         echo -e "${DOCKER__FIVESPACES}2. Create ${DOCKER__IMAGEID_FG_BORDEAUX}images${DOCKER__NOCOLOR} using a ${DOCKER__TITLE_FG_LIGHTBLUE}docker-list${DOCKER__NOCOLOR}"
         echo -e "----------------------------------------------------------------------"
         echo -e "${DOCKER__FIVESPACES}r. Docker ${DOCKER__REPOSITORY_FG_PURPLE}repository${DOCKER__NOCOLOR} List"
@@ -310,7 +310,7 @@ docker__create_images_menu__sub() {
         echo -e "${DOCKER__FIVESPACES}g. Git ${DOCKER__INSIDE_BG_WHITE}${DOCKER__INSIDE_FG_LIGHTGREY}Pull${DOCKER__NOCOLOR}"
         echo -e "----------------------------------------------------------------------"
         echo -e "${DOCKER__FIVESPACES}h. Home"
-        echo -e "${DOCKER__FIVESPACES}q. Quit (Ctrl+C)"
+        echo -e "${DOCKER__FIVESPACES}q. ${DOCKER__Q_QUIT}"
         echo -e "----------------------------------------------------------------------"
         echo -e "\r"	
 
@@ -343,7 +343,7 @@ docker__create_images_menu__sub() {
                 echo -e "***PLEASE DO NOT USE THIS OPTION YET***"
                 echo -e "\r"
 
-                docker__cmd_exec "${docker__create_an_image_from_dockerfile_fpath}"
+                # docker__cmd_exec "${docker__create_an_image_from_dockerfile_fpath}"
                 ;;
 
             2)
