@@ -26,11 +26,11 @@ DOCKER__SLASH_CHAR="/"
 DOCKER__YES="y"
 DOCKER__NO="n"
 DOCKER__QUIT="q"
-DOCKER__BACK="b"
+DOCKER__REDO="r"
 
-DOCKER__B_BACK="${DOCKER__FIVE_SPACES}b. Back"
+DOCKER__R_REDO="${DOCKER__FIVE_SPACES}r. Redo"
 DOCKER__Q_QUIT="${DOCKER__FIVE_SPACES}q. Quit (Ctrl+C)"
-
+DOCKER__CTRL_C_QUIT="${DOCKER__FIVE_SPACES}Quit (Ctrl+C)"
 
 #---PRINT CONSTANTS
 DOCKER__READ_FG_EXITING_NOW="Exiting now..."
@@ -182,7 +182,7 @@ docker__build_image_from_specified_repository__sub() {
         echo -e "\r"
         echo -e "\t\t=:${DOCKER__ERROR_FG_LIGHTRED}NO IMAGES FOUND${DOCKER__NOCOLOR}:="
         echo -e "----------------------------------------------------------------------"
-        echo -e "${DOCKER__Q_QUIT}"
+        echo -e "${DOCKER__CTRL_C_QUIT}"
         echo -e "----------------------------------------------------------------------"
         echo -e "\r"
         
@@ -193,7 +193,7 @@ docker__build_image_from_specified_repository__sub() {
             docker image ls
 
         echo -e "----------------------------------------------------------------------"
-        echo -e "${DOCKER__Q_QUIT}"
+        echo -e "${DOCKER__CTRL_C_QUIT}"
         echo -e "----------------------------------------------------------------------"
     fi    
 
@@ -206,11 +206,6 @@ docker__build_image_from_specified_repository__sub() {
         #Provide a CONTAINER-ID from which you want to create an Image
         read -p "Choose a ${DOCKER__REPOSITORY_FG_PURPLE}REPOSITORY${DOCKER__NOCOLOR} from list (e.g. ubuntu_buildbin): " docker__myrepository
         if [[ ! -z ${docker__myrepository} ]]; then    #input is NOT an EMPTY STRING
-
-            #Check if 'q' was pressed
-            if [[ ${docker__myrepository} == ${DOCKER__QUIT} ]]; then
-                exit__func
-            fi
 
             #Check if 'docker__myrepository' is found in ' docker container ls'
             docker__myrepository_isFound=`docker image ls | awk '{print $1}' | grep -w ${docker__myrepository}`
@@ -240,7 +235,7 @@ docker__build_image_from_specified_repository__sub() {
                                         while true
                                         do
                                             #Provide a location where you want to create a *NEW DOCKERFILE*
-                                            echo -e "Provide ${DOCKER__DIRS_BG_VERYLIGHTORANGE}DOCKER-FILE LOCATION${DOCKER__NOCOLOR} (${dockerfile_dir}): "
+                                            echo -e "Provide ${DOCKER__DIRS_FG_VERYLIGHTORANGE}DOCKER-FILE LOCATION${DOCKER__NOCOLOR} (${dockerfile_dir}): "
                                             echo -e "${DOCKER__DIRS_FG_VERYLIGHTORANGE}"    #echo used to start a color for 'read'
                                             read -e -p "" -i "${dockerfile_dir}" docker__mydockerfile_location
                                             echo -e "${DOCKER__NOCOLOR}"    #echo used to reset color
@@ -255,15 +250,18 @@ docker__build_image_from_specified_repository__sub() {
                                                 echo -e "--------------------------------------------------------------------"
                                                 echo -e "EXISTING ${DOCKER__REPOSITORY_FG_PURPLE}REPOSITORY${DOCKER__NOCOLOR}:${DOCKER__TAG_FG_LIGHTPINK}TAG${DOCKER__NOCOLOR}:\t${docker__myrepository}:${mytag}"                                        
                                                 echo -e "NEW ${DOCKER__NEW_REPOSITORY_FG_BRIGHTLIGHTPURPLE}REPOSITORY${DOCKER__NOCOLOR}:${DOCKER__TAG_FG_LIGHTPINK}TAG${DOCKER__NOCOLOR}:\t\t${docker__myrepository_new}:${mytag}"
-                                                echo -e "${DOCKER__DIRS_BG_VERYLIGHTORANGE}DOCKER-FILE LOCATION${DOCKER__NOCOLOR}:\t\t${docker__dockerfile_fpath}"
-                                                echo -e ""
+                                                echo -e "${DOCKER__DIRS_FG_VERYLIGHTORANGE}DOCKER-FILE LOCATION${DOCKER__NOCOLOR}:\t\t${docker__dockerfile_fpath}"
+                                                echo -e "----------------------------------------------------------------------"
+                                                echo -e "${DOCKER__Q_QUIT}"
+                                                echo -e "${DOCKER__R_REDO}"
+                                                echo -e "----------------------------------------------------------------------"
 
                                                 #Confirm if user wants to continue
                                                 while true
                                                 do
-                                                    read -N1 -r -s -e -p "Do you wish to continue (y/n/r(edo))? " docker__myanswer
+                                                    read -N1 -r -s -e -p "Do you wish to continue (y/n)? " docker__myanswer
                                                     if [[ ${docker__myanswer} == ${DOCKER__YES} ]]; then
-                                                        # docker build --tag ${docker__myrepository_new}:${mytag} - < ${docker__dockerfile_fpath}
+                                                        docker build --tag ${docker__myrepository_new}:${mytag} - < ${docker__dockerfile_fpath}
                                                         
                                                         echo -e "\r"
                                                         echo -e "\r"
@@ -272,13 +270,14 @@ docker__build_image_from_specified_repository__sub() {
                                                         echo -e "----------------------------------------------------------------------"
                                                         echo -e "\r"
 
-                                                        exit__func
+                                                        exit
 
                                                     elif [[ ${docker__myanswer} == ${DOCKER__NO} ]]; then
                                                         exit__func
-
-                                                    elif [[ ${docker__myanswer} == ${DOCKER__BACK} ]]; then
+                                                    elif [[ ${docker__myanswer} == ${DOCKER__REDO} ]]; then
                                                         break
+                                                    elif [[ ${docker__myanswer} == ${DOCKER__QUIT} ]]; then
+                                                        exit__func
                                                     else
                                                         tput cuu1	#move UP with 1 line
                                                         tput el		#clear until the END of line                                                                                          
@@ -309,7 +308,7 @@ docker__build_image_from_specified_repository__sub() {
                                             fi
 
                                             #Answer 'n' was given in the LAST while-loop
-                                            if [[ ${docker__myanswer} == "n" ]]; then
+                                            if [[ ${docker__myanswer} == ${DOCKER__REDO} ]]; then
                                                 break
                                             fi
                                         done
@@ -336,7 +335,7 @@ docker__build_image_from_specified_repository__sub() {
                                 fi
 
                                 #Answer 'n' was given in the LAST while-loop
-                                if [[ ${docker__myanswer} == "n" ]]; then
+                                if [[ ${docker__myanswer} == ${DOCKER__REDO} ]]; then
                                     break
                                 fi
                             done
@@ -363,10 +362,15 @@ docker__build_image_from_specified_repository__sub() {
                     fi
 
                     #Answer 'n' was given in the LAST while-loop
-                    if [[ ${docker__myanswer} == "n" ]]; then
+                    if [[ ${docker__myanswer} == ${DOCKER__REDO} ]]; then
+                        echo -e "\r"
                         echo -e "\r"
                         echo -e "----------------------------------------------------------------------"
+                        echo -e "\t${DOCKER__GENERAL_FG_YELLOW}Create${DOCKER__NOCOLOR} Docker ${DOCKER__IMAGEID_FG_BORDEAUX}IMAGE${DOCKER__NOCOLOR} from existing ${DOCKER__REPOSITORY_FG_PURPLE}REPOSITORY${DOCKER__NOCOLOR}"
+                        echo -e "----------------------------------------------------------------------"
                             docker image ls
+                        echo -e "----------------------------------------------------------------------"
+                        echo -e "${DOCKER__CTRL_C_QUIT}"
                         echo -e "----------------------------------------------------------------------"
                         
                         break
