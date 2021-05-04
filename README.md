@@ -77,6 +77,8 @@ After the script completes successfully, the images containing the different ste
 
 You will now be back at the main menu of the interactive script.
 
+![Docker Main Menu](./doc/docker_menu_01.png)
+
 Select option #4 (type `4`). This will take you to a submenu, as illustrated below.
 
 ![Docker Sub-Menu](./doc/docker_menu_04.png)
