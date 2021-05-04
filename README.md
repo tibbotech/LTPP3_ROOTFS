@@ -3,6 +3,8 @@
 ## Introduction
 This repository contains scripts and other tools used to create customized version of Tibbo's [Ubuntu-based distribution](https://tibbo.com/store/tps/ltpp3g2/ubuntu.html).
 
+If you just want to download the latest version of our distribution in binary form to flash your device, [click here (direct download)](https://tibbo.com/downloads/open/ubuntu/ISPBOOOT.BIN).
+
 ## System Requirements 
 * At least 35GB of hard drive space (50GB recommended)
 * A clean installation of Ubuntu Server 20.04
