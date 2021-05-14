@@ -295,7 +295,7 @@ docker__create_images_menu__sub() {
         echo -e "----------------------------------------------------------------------"
         echo -e "${DOCKER__TITLE_FG_LIGHTBLUE}DOCKER SUB-MENU: CREATE IMAGE(S)${DOCKER__NOCOLOR}"
         echo -e "----------------------------------------------------------------------"
-        echo -e "${DOCKER__FIVESPACES}1. Create an ${DOCKER__IMAGEID_FG_BORDEAUX}image${DOCKER__NOCOLOR} using a ${DOCKER__FG_DARKBLUE}docker-file${DOCKER__NOCOLOR} (Not Completed)"
+        echo -e "${DOCKER__FIVESPACES}1. Create an ${DOCKER__IMAGEID_FG_BORDEAUX}image${DOCKER__NOCOLOR} using a ${DOCKER__FG_DARKBLUE}docker-file${DOCKER__NOCOLOR}"
         echo -e "${DOCKER__FIVESPACES}2. Create ${DOCKER__IMAGEID_FG_BORDEAUX}images${DOCKER__NOCOLOR} using a ${DOCKER__TITLE_FG_LIGHTBLUE}docker-list${DOCKER__NOCOLOR}"
         echo -e "----------------------------------------------------------------------"
         echo -e "${DOCKER__FIVESPACES}r. Docker ${DOCKER__REPOSITORY_FG_PURPLE}repository${DOCKER__NOCOLOR} List"
@@ -338,12 +338,7 @@ docker__create_images_menu__sub() {
         #Goto the selected option
         case ${docker__mychoice} in
             1)
-                echo -e "\r"
-                echo -e "***STILL IN PROGRESS***"
-                echo -e "***PLEASE DO NOT USE THIS OPTION YET***"
-                echo -e "\r"
-
-                # docker__cmd_exec "${docker__create_an_image_from_dockerfile_fpath}"
+                docker__cmd_exec "${docker__create_an_image_from_dockerfile_fpath}"
                 ;;
 
             2)

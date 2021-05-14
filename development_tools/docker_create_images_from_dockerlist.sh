@@ -198,6 +198,8 @@ docker__show_dockerList_files__sub() {
             echo -e "${DOCKER__FIVE_SPACES}${seqnum}. ${extract_filename}"
         done
         echo -e "----------------------------------------------------------------------"
+        echo -e "${DOCKER__FIVE_SPACES}${DOCKER__DIRS_FG_VERYLIGHTORANGE}Location${DOCKER__NOCOLOR}: ${docker__my_LTPP3_ROOTFS_docker_list_dir}"
+        echo -e "----------------------------------------------------------------------"
         echo -e "${DOCKER__Q_QUIT}"
         echo -e "----------------------------------------------------------------------"
 
@@ -248,6 +250,8 @@ docker__show_dockerList_files__sub() {
             echo -e "${DOCKER__FIVE_SPACES}${file_line}"
 
         done < ${docker__dockerList_fpath}
+        echo -e "----------------------------------------------------------------------"
+        echo -e "${DOCKER__FIVE_SPACES}${DOCKER__DIRS_FG_VERYLIGHTORANGE}Location${DOCKER__NOCOLOR}: ${docker__my_LTPP3_ROOTFS_docker_dockerfiles_dir}"
         echo -e "----------------------------------------------------------------------"
         echo -e "${DOCKER__A_ABORT}"
         echo -e "${DOCKER__Q_QUIT}"
@@ -319,7 +323,7 @@ function docker__create_image__func() {
     #Get REPOSITORY:TAG from dockerfile
     local dockerfile_repository_tag=`egrep -w "${GREP_PATTERN}" ${dockerfile_fpath} | cut -d"\"" -f2`
 
-    #Check if '' is an EMPTY STRING
+    #Check if 'dockerfile_repository_tag' is an EMPTY STRING
     if [[ -z ${dockerfile_repository_tag} ]]; then
         dockerfile_repository_tag="${dockerfile}:${DOCKER__LATEST}"
     fi

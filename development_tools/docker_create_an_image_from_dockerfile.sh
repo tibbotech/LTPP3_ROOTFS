@@ -103,7 +103,7 @@ docker__show_dockerList_files__sub() {
 
     #Get all files at the specified location
     listOf_dockerFileFpaths_string=`find ${docker__my_LTPP3_ROOTFS_docker_dockerfiles_dir} -maxdepth 1 -type f | sort`
-
+    
     #Check if '' is an EMPTY STRING
     if [[ -z ${listOf_dockerFileFpaths_string} ]]; then
         echo -e "\r"
@@ -143,6 +143,8 @@ docker__show_dockerList_files__sub() {
         echo -e "${DOCKER__FIVE_SPACES}${seqnum}. ${extract_filename}"
     done
     echo -e "----------------------------------------------------------------------"
+    echo -e "${DOCKER__FIVE_SPACES}${DOCKER__DIRS_FG_VERYLIGHTORANGE}Location${DOCKER__NOCOLOR}: ${docker__my_LTPP3_ROOTFS_docker_dockerfiles_dir}"
+    echo -e "----------------------------------------------------------------------"
 
     #Read-input handler
     while true
@@ -158,13 +160,15 @@ docker__show_dockerList_files__sub() {
         if [[ ${mychoice} =~ [1-9,0] ]]; then
             #check if 'mychoice' is one of the numbers shown in the overview...
             #... AND 'mychoice' is NOT '0'
-            if [[ ${mychoice} -lt ${seqnum} ]] && [[ ${mychoice} -ne 0 ]]; then
+            if [[ ${mychoice} -le ${seqnum} ]] && [[ ${mychoice} -ne 0 ]]; then
                 echo -e "\r"    #print an empty line
 
                 break   #exit loop
             else
+                tput cud1   #move-DOWN one line
+                tput el1 #clean until end of line
                 tput cuu1   #move-UP one line
-                tput el #clean until end of line
+                tput el #clean until end of line    
             fi
         else
             tput cuu1   #move-UP one line
@@ -180,31 +184,13 @@ docker__show_dockerList_files__sub() {
 }
 
 docker__create_image_handler__sub() {
-    #---Read contents of the file
-    #Each line of the file represents a 'dockerfile' containing the instructions to-be-executed
-    
-    #Define variables
-    local linenum=1
-    local dockerfile_fpath=""
-
-    while IFS='' read file_line
-    do
-        if [[ ${linenum} -gt 1 ]]; then #skip the header
-            #Get the fullpath
-            dockerfile_fpath=${docker__my_LTPP3_ROOTFS_docker_dockerfiles_dir}/${file_line}
-
-            #Check if file exists
-            if [[ -f ${dockerfile_fpath} ]]; then
-                docker__create_image__func ${dockerfile_fpath}
-            else
-                echo -e "\r"
-                echo -e "***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: non-existing file: ${dockerfile_fpath}"
-                echo -e "\r"       
-            fi
-        fi
-
-        linenum=$((linenum+1))  #increment index by 1
-    done < ${docker__dockerFile_fpath}
+    if [[ -f ${docker__dockerFile_fpath} ]]; then
+        docker__create_image__func ${docker__dockerFile_fpath}
+    else
+        echo -e "\r"
+        echo -e "***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: non-existing file: ${docker__dockerFile_fpath}"
+        echo -e "\r"       
+    fi
 }
 function docker__create_image__func() {
     #Input args
@@ -216,7 +202,7 @@ function docker__create_image__func() {
     #Get REPOSITORY:TAG from dockerfile
     local dockerfile_repository_tag=`egrep -w "${GREP_PATTERN}" ${dockerfile_fpath} | cut -d"\"" -f2`
 
-    #Check if '' is an EMPTY STRING
+    #Check if 'dockerfile_repository_tag' is an EMPTY STRING
     if [[ -z ${dockerfile_repository_tag} ]]; then
         dockerfile_repository_tag="${dockerfile}:${DOCKER__LATEST}"
     fi
@@ -268,7 +254,7 @@ main_sub() {
 
     docker__show_dockerList_files__sub
 
-    # docker__create_image_handler__sub
+    docker__create_image_handler__sub
 }
 
 
