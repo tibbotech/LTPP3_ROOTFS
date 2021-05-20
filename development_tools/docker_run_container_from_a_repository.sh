@@ -1,5 +1,5 @@
 #!/bin/bash
-#---Define colors
+#---COLOR CONSTANTS
 DOCKER__NOCOLOR=$'\e[0m'
 DOCKER__ERROR_FG_LIGHTRED=$'\e[1;31m'
 DOCKER__SUCCESS_FG_LIGHTGREEN=$'\e[1;32m'
@@ -14,26 +14,46 @@ DOCKER__TAG_FG_LIGHTPINK=$'\e[30;38;5;218m'
 DOCKER__TITLE_BG_ORANGE=$'\e[30;48;5;215m'
 DOCKER__TITLE_BG_LIGHTBLUE=$'\e[30;48;5;45m'
 
-#---Define constants
+#---CONSTANTS
 DOCKER__TITLE="TIBBO"
+
 DOCKER__SSH_LOCALPORT=10022
 DOCKER__SSH_PORT=22
+
+#---CHARACTER CHONSTANTS
+DOCKER__DASH="-"
+DOCKER__EMPTYSTRING=""
+
+
+#---NUMERIC CONSTANTS
+DOCKER__TABLEWIDTH=70
+
+DOCKER__NUMOFLINES_1=1
+DOCKER__NUMOFLINES_2=2
+DOCKER__NUMOFLINES_3=3
+DOCKER__NUMOFLINES_4=4
+DOCKER__NUMOFLINES_5=5
+DOCKER__NUMOFLINES_6=6
+
+
 
 #---Trap ctrl-c and Call ctrl_c()
 trap CTRL_C_func INT
 
+
+
+#---FUNCTIONS
 function CTRL_C_func() {
     echo -e "\r"
     echo -e "\r"
-    echo -e "Exiting now..."
-    echo -e "\r"
-    echo -e "\r"
+    # echo -e "Exiting now..."
+    # echo -e "\r"
+    # echo -e "\r"
     
     exit
 }
 
-#---Local functions & subroutines
-press_any_key__localfunc() {
+function press_any_key__func() {
 	#Define constants
 	local cTIMEOUT_ANYKEY=10
 
@@ -63,22 +83,20 @@ press_any_key__localfunc() {
 	echo -e "\r"
 }
 
-docker__load_header__sub() {
-    echo -e "\r"
-    echo -e "${DOCKER__TITLE_BG_ORANGE}                                 ${DOCKER__TITLE}${DOCKER__TITLE_BG_ORANGE}                                ${DOCKER__NOCOLOR}"
-}
 
-cmd_was_executed_successfully__func() {
+
+#---FUNCTIONS
+function cmd_was_executed_successfully__func() {
     RESULT=$?
     if [ $RESULT -ne 0 ]; then
         echo failed
     fi
 }
 
-get_available_localport__func() {
+function get_available_localport__func() {
     local ssh_localport=${DOCKER__SSH_LOCALPORT}    #initial value
-    local pattern=""
-    local localport_isUnique=""
+    local pattern=${DOCKER__EMPTYSTRING}
+    local localport_isUnique=${DOCKER__EMPTYSTRING}
 
     while true
     do
@@ -97,15 +115,19 @@ get_available_localport__func() {
     done
 }
 
-get_assigned_ipv4_addresses__func() {
-    #Define variabes
-    local iproute_line=""
+function get_assigned_ipv4_addresses__func() {
+    #Define local constants
+    local ERRMSG_NO_IP_ADDRESS_FOUND="***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: no ip-address found"
+
+    #Define local variabes
+    local iproute_line=${DOCKER__EMPTYSTRING}
     local dev_colno=0
     local src_colno=0
-    local nic_name=""
-    local ipv4addr=""
-    local nic_belongs_toDocker=""
-    local ipv4addr_isPresent=""
+    local nic_name=${DOCKER__EMPTYSTRING}
+    local ipv4addr=${DOCKER__EMPTYSTRING}
+    local ipv4addr_isPresent=${DOCKER__EMPTYSTRING}
+    local nic_belongs_toDocker=${DOCKER__EMPTYSTRING}
+    local numOf_iproute_results=0
     local i=0
 
     #Get Network-adapter vs. IP-address
@@ -146,81 +168,152 @@ get_assigned_ipv4_addresses__func() {
         eval "docker__ipv4_addr_summarize_arr=(${docker__ipv4_addr_summarize_str})"
     else
         echo -e "\r"
-        echo -e "***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: no ip-address found"    
+        echo -e "${ERRMSG_NO_IP_ADDRESS_FOUND}"    
         echo -e "\r"
         echo -e "\r"
     fi
 }
 
+function show_centered_string__func()
+{
+    #Input args
+    local str_input=${1}
+    local maxStrLen_input=${2}
+
+    #Define one-space constant
+    local ONESPACE=" "
+
+    #Get string 'without visiable' color characters
+    local strInput_wo_colorChars=`echo "${str_input}" | sed "s,\x1B\[[0-9;]*m,,g"`
+
+    #Get string length
+    local strInput_wo_colorChars_len=${#strInput_wo_colorChars}
+
+    #Calculated the number of spaces to-be-added
+    local numOf_spaces=$(( (maxStrLen_input-strInput_wo_colorChars_len)/2 ))
+
+    #Create a string containing only EMPTY SPACES
+    local emptySpaces_string=`duplicate_char__func "${ONESPACE}" "${numOf_spaces}" `
+
+    #Print text including Leading Empty Spaces
+    echo -e "${emptySpaces_string}${str_input}"
+}
+
+function duplicate_char__func()
+{
+    #Input args
+    local char_input=${1}
+    local numOf_times=${2}
+
+    #Duplicate 'char_input'
+    local char_duplicated=`printf '%*s' "${numOf_times}" | tr ' ' "${char_input}"`
+
+    #Print text including Leading Empty Spaces
+    echo -e "${char_duplicated}"
+}
+
+function moveUp_and_cleanLines__func() {
+    #Input args
+    local numOf_lines_toBeCleared=${1}
+
+    #Clear lines
+    local numOf_lines_cleared=1
+    while [[ ${numOf_lines_cleared} -le ${numOf_lines_toBeCleared} ]]
+    do
+        tput cuu1	#move UP with 1 line
+        tput el		#clear until the END of line
+
+        numOf_lines_cleared=$((numOf_lines_cleared+1))  #increment by 1
+    done
+}
+
+
+
+#---SUBROUTINES
+docker__load_header__sub() {
+    echo -e "\r"
+    echo -e "${DOCKER__TITLE_BG_ORANGE}                                 ${DOCKER__TITLE}${DOCKER__TITLE_BG_ORANGE}                                ${DOCKER__NOCOLOR}"
+}
+
 docker__init_variables__sub() {
-    docker__ipv4addr1=""
-    docker__ipv4_addr_summarize_str=""
+    docker__ipv4addr1=${DOCKER__EMPTYSTRING}
+    docker__ipv4_addr_summarize_str=${DOCKER__EMPTYSTRING}
     docker__ipv4_addr_summarize_arr=()
     docker__ssh_localport=${DOCKER__SSH_LOCALPORT}
 }
 
 docker__run_specified_repository_as_container__sub() {
+    #Define local constants
+    local MENUTITLE="Run ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}CONTAINER${DOCKER__NOCOLOR} from specfied ${DOCKER__REPOSITORY_FG_PURPLE}REPOSITORY${DOCKER__NOCOLOR}"
+    local SUBMENUTITLE="Updated ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}CONTAINER${DOCKER__NOCOLOR}-list"
+
+    #Define local variables
+    local exitCode=0
+    local containerName=${DOCKER__EMPTYSTRING}
+    local myRepository=${DOCKER__EMPTYSTRING}
+    local myRepository_isFound=${DOCKER__EMPTYSTRING}
+    local myTags_detected=${DOCKER__EMPTYSTRING}
+    local myTags_firstTag_detected
+    local myTag=${DOCKER__EMPTYSTRING}
+    local myTag_isFound=${DOCKER__EMPTYSTRING}
+    local myRespository_colon_tag=${DOCKER__EMPTYSTRING}
+    local myRespository_colon_tag_isFound=${DOCKER__EMPTYSTRING}
+
+    local errMsg=${DOCKER__EMPTYSTRING}
+
+    #Show menu-title
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    show_centered_string__func "${MENUTITLE}" "${DOCKER__TABLEWIDTH}"
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+
     #Get number of images
     local numof_images=`docker image ls | head -n -1 | wc -l`
+    if [[ ${numof_images} -eq 0 ]]; then
+        #Update error-message
+        errMsg="=:${DOCKER__ERROR_FG_LIGHTRED}NO IMAGES FOUND${DOCKER__NOCOLOR}:="
 
-    #1. Show docker image list
-    #2. Ask for the REPOSITORY to run
-    echo -e "----------------------------------------------------------------------"
-    echo -e "\tRun ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}CONTAINER${DOCKER__NOCOLOR} from specfied ${DOCKER__REPOSITORY_FG_PURPLE}REPOSITORY${DOCKER__NOCOLOR}"
-    echo -e "----------------------------------------------------------------------"
+        echo -e "\r"
+        show_centered_string__func "${errMsg}" "${DOCKER__TABLEWIDTH}"
+        echo -e "\r"
+        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+
+        press_any_key__func
+
+        exit
+    else
         docker image ls
-
-        if [[ ${numof_images} -eq 0 ]]; then
-            echo -e "\r"
-            echo -e "\t\t=:${DOCKER__ERROR_FG_LIGHTRED}NO IMAGES FOUND${DOCKER__NOCOLOR}:="
-            echo -e "----------------------------------------------------------------------"
-            echo -e "\r"
-
-            press_any_key__localfunc
-
-            exit
-        else
-            echo -e "----------------------------------------------------------------------"
-        fi    
-    echo -e "\r"
-
-    local exitcode
-    local myrepository=""
-    local myrepository_isFound=""
-    local mytag=""
-    local mytag_isFound=""
-    # local myrepository_tag=""
-    local myrespository_colon_tag=""
-    local myrespository_colon_tag_isFound=""
-    local container_name=""
+        echo -e "\r"
+        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    fi    
 
     while true
     do
         #Request for REPOSITORY input
-        read -p "Provide ${DOCKER__REPOSITORY_FG_PURPLE}REPOSITORY${DOCKER__NOCOLOR} (e.g. ubuntu_sunplus): " myrepository
-        if [[ ! -z ${myrepository} ]]; then #input was NOT an EMPTY STRING
+        read -p "Provide ${DOCKER__REPOSITORY_FG_PURPLE}REPOSITORY${DOCKER__NOCOLOR} (e.g. ubuntu_sunplus): " myRepository
+        if [[ ! -z ${myRepository} ]]; then #input was NOT an EMPTY STRING
 
-            myrepository_isFound=`docker image ls | awk '{print $1}' | grep -w "${myrepository}"` #check if 'myrepository' is found in 'docker image ls'
-            if [[ ! -z ${myrepository_isFound} ]]; then #match was found
+            myRepository_isFound=`docker image ls | awk '{print $1}' | grep -w "${myRepository}"` #check if 'myRepository' is found in 'docker image ls'
+            if [[ ! -z ${myRepository_isFound} ]]; then #match was found
                 while true
                 do
-                    #Find tag belonging to 'myrepository' (Exact Match)
-                    mytag=$(docker image ls | grep -w "${myrepository}" | awk '{print $2}')
+                    #Find tag belonging to 'myRepository' (Exact Match)
+                    myTags_detected=$(docker image ls | grep -w "${myRepository}" | awk '{print $2}')
+                    myTags_firstTag_detected=`echo -e ${myTags_detected} | cut -d" " -f1`
 
                     #Request for TAG input
-                    read -e -p "Provide ${DOCKER__TAG_FG_LIGHTPINK}TAG${DOCKER__NOCOLOR} (e.g. latest): " -i ${mytag} mytag
-                    if [[ ! -z ${mytag} ]]; then    #input was NOT an EMPTY STRING
+                    read -e -p "Provide ${DOCKER__TAG_FG_LIGHTPINK}TAG${DOCKER__NOCOLOR} (e.g. latest): " -i ${myTags_firstTag_detected} myTag
+                    if [[ ! -z ${myTag} ]]; then    #input was NOT an EMPTY STRING
 
-                        mytag_isFound=`docker image ls | grep -w "${myrepository}" | grep -w "${mytag}"`    #check if 'myrepository' AND 'mytag' is found in 'docker image ls'
-                        if [[ ! -z ${mytag_isFound} ]]; then    #match was found
+                        myTag_isFound=`docker image ls | grep -w "${myRepository}" | grep -w "${myTag}"`    #check if 'myRepository' AND 'myTag' is found in 'docker image ls'
+                        if [[ ! -z ${myTag_isFound} ]]; then    #match was found
                             
-                            #Combine 'myrepository' and 'mytag', but separated by a colon ':'
-                            myrespository_colon_tag="${myrepository}:${mytag}"
+                            #Combine 'myRepository' and 'myTag', but separated by a colon ':'
+                            myRespository_colon_tag="${myRepository}:${myTag}"
 
-                            myrespository_colon_tag_isFound=`docker container ls | grep -w "${myrespository_colon_tag}"`    #check if 'myrespository_colon_tag' is found in 'docker container ls'
-                            if [[ -z ${myrespository_colon_tag_isFound} ]]; then    #match was NOT found, thus 'mytag_isFound' is an EMPTY STRING
+                            myRespository_colon_tag_isFound=`docker container ls | grep -w "${myRespository_colon_tag}"`    #check if 'myRespository_colon_tag' is found in 'docker container ls'
+                            if [[ -z ${myRespository_colon_tag_isFound} ]]; then    #match was NOT found, thus 'myTag_isFound' is an EMPTY STRING
                                 #Define Container Name
-                                container_name="containerOf__${myrepository}_${mytag}"
+                                containerName="containerOf__${myRepository}_${myTag}"
                                 
                                 #Get an unused value for the 'docker__ssh_localport'
                                 #Note: 
@@ -230,31 +323,43 @@ docker__run_specified_repository_as_container__sub() {
 
                                 #Run Docker Container
                                 echo -e "\r"
-                                docker run -d -p ${docker__ssh_localport}:${DOCKER__SSH_PORT} --name ${container_name} ${myrespository_colon_tag} > /dev/null
+                                docker run -d -p ${docker__ssh_localport}:${DOCKER__SSH_PORT} --name ${containerName} ${myRespository_colon_tag} > /dev/null
 
-                                #Check if exitcode=0
-                                exitcode=$? #get exitcode
-                                if [[ ${exitcode} -eq 0 ]]; then    #exitcode=0, which means that command was executed successfully
+                                #Check if exitCode=0
+                                exitCode=$? #get exitCode
+                                if [[ ${exitCode} -eq 0 ]]; then    #exitCode=0, which means that command was executed successfully
                                     #Show DOCKER CONTAINERS
+                                    #Show Container's list
                                     echo -e "\r"
-                                    echo -e "----------------------------------------------------------------------"
-                                        docker container ls
-                                    echo -e "----------------------------------------------------------------------"
+
+                                    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+                                    show_centered_string__func "${SUBMENUTITLE}" "${DOCKER__TABLEWIDTH}"
+                                    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}" 
+                                    
+                                    docker ps -a
+
+                                    echo -e "\r"
+                                    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+
                                     echo -e "\r"
                                     echo -e "Summary:"
-                                    echo -e "\tChosen REPOSITORY:\t\t\t${DOCKER__REPOSITORY_FG_PURPLE}${myrepository}${DOCKER__NOCOLOR}"
-                                    echo -e "\tCreated CONTAINER-ID:\t\t\t${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}${container_name}${DOCKER__NOCOLOR}"
+                                    echo -e "\tChosen REPOSITORY:\t\t\t${DOCKER__REPOSITORY_FG_PURPLE}${myRepository}${DOCKER__NOCOLOR}"
+                                    echo -e "\tCreated CONTAINER-ID:\t\t\t${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}${containerName}${DOCKER__NOCOLOR}"
                                     echo -e "\tTCP-port to-used-for SSH:\t\t${DOCKER__PORTS_FG_LIGHTBLUE}${docker__ssh_localport}${DOCKER__NOCOLOR}"
-                                        get_assigned_ipv4_addresses__func
+                                   
+                                    get_assigned_ipv4_addresses__func
+                                   
                                     echo -e "\tAvailable ip-address(es) for SSH:"
-                                        for ipv4 in "${docker__ipv4_addr_summarize_arr[@]}"; do 
-                                            echo -e "\t\t\t\t\t\t${DOCKER__IP_FG_LIGHTCYAN}${ipv4}${DOCKER__NOCOLOR}"
-                                        done
+                                   
+                                    for ipv4 in "${docker__ipv4_addr_summarize_arr[@]}"; do 
+                                        echo -e "\t\t\t\t\t\t${DOCKER__IP_FG_LIGHTCYAN}${ipv4}${DOCKER__NOCOLOR}"
+                                    done
+                                   
                                     echo -e "\r"
 
 
                                     #Show EXAMPLE OF HOW TO SSH FROM a REMOTE PC
-                                        docker__ipv4addr1=$(cut -d" " -f1 <<< ${docker__ipv4_addr_summarize_str})
+                                    docker__ipv4addr1=$(cut -d" " -f1 <<< ${docker__ipv4_addr_summarize_str})
                                     echo -e "\r"
                                     echo -e "How to SSH from a remote PC?"
                                     echo -e "\tDefault login/pass: ${DOCKER__GENERAL_FG_YELLOW}root/root${DOCKER__NOCOLOR}"
@@ -269,68 +374,51 @@ docker__run_specified_repository_as_container__sub() {
                                 fi
                             else
                                 #Get running Container-ID
-                                containerid=`docker container ls | grep -w "${myrepository}:${mytag}" | awk '{print $1}'`
+                                containerid=`docker container ls | grep -w "${myRepository}:${myTag}" | awk '{print $1}'`
 
+                                #Update error-message
+                                errMsg="***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Chosen ${DOCKER__REPOSITORY_FG_PURPLE}REPOSITORY${DOCKER__NOCOLOR}:${DOCKER__TAG_FG_LIGHTPINK}TAG${DOCKER__NOCOLOR} already running as CONTAINER-ID: ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}${containerid}${DOCKER__NOCOLOR}"
+
+                                #Show error-message
                                 echo -e "\r"
-                                echo -e "***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: ${DOCKER__REPOSITORY_FG_PURPLE}${myrepository}${DOCKER__NOCOLOR}:${DOCKER__TAG_FG_LIGHTPINK}${mytag}${DOCKER__NOCOLOR} already running under CONTAINER-ID ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}${containerid}${DOCKER__NOCOLOR}"
+                                echo -e "${errMsg}"
 
-                                press_any_key__localfunc
+                                press_any_key__func
 
-                                tput cuu1	#move UP with 1 line
-                                tput el		#clear until the END of line
-                                tput cuu1	#move UP with 1 line
-                                tput el		#clear until the END of line
-                                tput cuu1	#move UP with 1 line
-                                tput el		#clear until the END of line
-                                tput cuu1	#move UP with 1 line
-                                tput el		#clear until the END of line
-                                tput cuu1	#move UP with 1 line
-                                tput el		#clear until the END of line
-                                tput cuu1	#move UP with 1 line
-                                tput el		#clear until the END of line        
+                                moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_6}"
 
                                 break
                             fi
                         else
+                            #Update error-message
+                            errMsg="***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Un-matched pair ${DOCKER__REPOSITORY_FG_PURPLE}REPOSITORY${DOCKER__NOCOLOR} <-> ${DOCKER__TAG_FG_LIGHTPINK}TAG${DOCKER__NOCOLOR}"
+
+                            #Show error-message
                             echo -e "\r"
-                            echo -e "***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: TAG ${DOCKER__TAG_FG_LIGHTPINK}${mytag}${DOCKER__NOCOLOR} does NOT belong to REPOSITORY ${DOCKER__REPOSITORY_FG_PURPLE}${myrepository}${DOCKER__NOCOLOR}"
+                            echo -e "${errMsg}"
 
-                            press_any_key__localfunc
+                            press_any_key__func
 
-                            tput cuu1	#move UP with 1 line
-                            tput el		#clear until the END of line
-                            tput cuu1	#move UP with 1 line
-                            tput el		#clear until the END of line
-                            tput cuu1	#move UP with 1 line
-                            tput el		#clear until the END of line
-                            tput cuu1	#move UP with 1 line
-                            tput el		#clear until the END of line
-                            tput cuu1	#move UP with 1 line
-                            tput el		#clear until the END of line               
+                            moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_5}"              
                         fi
                     else
-                        tput cuu1	#move UP with 1 line
-                        tput el		#clear until the END of line
+                        moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"   
                     fi
                 done
             else
+                #Update error-message
+                errMsg="***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: non-existing repository ${DOCKER__REPOSITORY_FG_PURPLE}${myRepository}${DOCKER__NOCOLOR}"
+
+                #Show error-message
                 echo -e "\r"
-                echo -e "***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: non-existing repository ${DOCKER__REPOSITORY_FG_PURPLE}${myrepository}${DOCKER__NOCOLOR}"
+                echo -e "${errMsg}"
 
-                press_any_key__localfunc
+                press_any_key__func
 
-                tput cuu1	#move UP with 1 line
-                tput el		#clear until the END of line
-                tput cuu1	#move UP with 1 line
-                tput el		#clear until the END of line
-                tput cuu1	#move UP with 1 line
-                tput el		#clear until the END of line
-                tput cuu1	#move UP with 1 line
-                tput el		#clear until the END of line
+                moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_5}"
             fi 
         else
-            tput cuu1	#move UP with 1 line
-            tput el		#clear until the END of line
+            moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
         fi
     done
 }

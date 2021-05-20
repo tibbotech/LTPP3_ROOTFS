@@ -18,32 +18,40 @@ DOCKER__DIRS_BG_VERYLIGHTORANGE=$'\e[30;48;5;223m'
 #---CONSTANTS
 DOCKER__TITLE="TIBBO"
 
-DOCKER__EMPTYSTRING=""
-DOCKER__FIVE_SPACES="     "
+DOCKER__EXITING_NOW="Exiting now..."
 
+#---CHAR CONSTANTS
+DOCKER__DASH="-"
+DOCKER__EMPTYSTRING=""
+DOCKER__ENTER=$'\x0a'
 DOCKER__SLASH_CHAR="/"
 
+DOCKER__ONESPACE=" "
+DOCKER__TWOSPACES=${DOCKER__ONESPACE}${DOCKER__ONESPACE}
+DOCKER__FOURSPACES=${DOCKER__TWOSPACES}${DOCKER__TWOSPACES}
+
+#---NUMERIC CONSTANTS
+DOCKER__NINE=9
+DOCKER__TABLEWIDTH=70
+
+DOCKER__NUMOFLINES_1=1
+DOCKER__NUMOFLINES_2=2
+DOCKER__NUMOFLINES_3=3
+DOCKER__NUMOFLINES_4=4
+DOCKER__NUMOFLINES_5=5
+
+
+#---READ-INPUT CONSTANTS
 DOCKER__YES="y"
 DOCKER__NO="n"
 DOCKER__QUIT="q"
 DOCKER__REDO="r"
 
-DOCKER__R_REDO="${DOCKER__FIVE_SPACES}r. Redo"
-DOCKER__Q_QUIT="${DOCKER__FIVE_SPACES}q. Quit (Ctrl+C)"
-DOCKER__CTRL_C_QUIT="${DOCKER__FIVE_SPACES}Quit (Ctrl+C)"
 
-#---PRINT CONSTANTS
-DOCKER__READ_FG_EXITING_NOW="Exiting now..."
-
-
-
-#---VARIABLES
-docker__myrepository=""
-docker__myrepository_new=""
-docker__myrepository_tag=""
-docker__myrepository_isFound=""
-docker__myrepository_new_isFound=""
-docker__mytag_isFound=""1
+#---MENU CONSTANTS
+DOCKER__R_REDO="${DOCKER__FOURSPACES}r. Redo"
+DOCKER__Q_QUIT="${DOCKER__FOURSPACES}q. Quit (Ctrl+C)"
+DOCKER__CTRL_C_QUIT="${DOCKER__FOURSPACES}Quit (Ctrl+C)"
 
 
 
@@ -53,12 +61,12 @@ trap CTRL_C__sub INT
 
 
 #---FUNCTIONS
-press_any_key__func() {
+function press_any_key__func() {
 	#Define constants
 	local cTIMEOUT_ANYKEY=10
 
 	#Initialize variables
-	local keypressed=""
+	local keypressed=${DOCKER__EMPTYSTRING}
 	local tcounter=0
 
 	#Show Press Any Key message with count-down
@@ -83,20 +91,74 @@ press_any_key__func() {
 	echo -e "\r"
 }
 
+function exit__func() {
+    echo -e "\r"
+    echo -e "\r"
+    # echo -e ${DOCKER__EXITING_NOW}
+    # echo -e "\r"
+    # echo -e "\r"
+
+    exit
+}
+
+function show_centered_string__func()
+{
+    #Input args
+    local str_input=${1}
+    local maxStrLen_input=${2}
+
+    #Define one-space constant
+    local ONESPACE=" "
+
+    #Get string 'without visiable' color characters
+    local strInput_wo_colorChars=`echo "${str_input}" | sed "s,\x1B\[[0-9;]*m,,g"`
+
+    #Get string length
+    local strInput_wo_colorChars_len=${#strInput_wo_colorChars}
+
+    #Calculated the number of spaces to-be-added
+    local numOf_spaces=$(( (maxStrLen_input-strInput_wo_colorChars_len)/2 ))
+
+    #Create a string containing only EMPTY SPACES
+    local emptySpaces_string=`duplicate_char__func "${ONESPACE}" "${numOf_spaces}" `
+
+    #Print text including Leading Empty Spaces
+    echo -e "${emptySpaces_string}${str_input}"
+}
+
+function duplicate_char__func()
+{
+    #Input args
+    local char_input=${1}
+    local numOf_times=${2}
+
+    #Duplicate 'char_input'
+    local char_duplicated=`printf '%*s' "${numOf_times}" | tr ' ' "${char_input}"`
+
+    #Print text including Leading Empty Spaces
+    echo -e "${char_duplicated}"
+}
+
+function moveUp_and_cleanLines__func() {
+    #Input args
+    local numOf_lines_toBeCleared=${1}
+
+    #Clear lines
+    local numOf_lines_cleared=1
+    while [[ ${numOf_lines_cleared} -le ${numOf_lines_toBeCleared} ]]
+    do
+        tput cuu1
+        tput el
+
+        numOf_lines_cleared=$((numOf_lines_cleared+1))  #increment by 1
+    done
+}
+
 
 
 #---SUBROUTINES
 CTRL_C__sub() {
     exit__func
-}
-function exit__func() {
-    echo -e "\r"
-    echo -e "\r"
-    echo -e ${DOCKER__READ_FG_EXITING_NOW}
-    echo -e "\r"
-    echo -e "\r"
-
-    exit
 }
 
 docker__load_header__sub() {
@@ -116,8 +178,19 @@ docker__environmental_variables__sub() {
 
     docker__first_dir=${docker__parent_dir%/*}    #gets one directory up
     dockerfile_dir=${docker__first_dir}/docker/dockerfiles
-    docker__dockerfile_fpath=""
-    docker__mydockerfile_location=""
+    docker__dockerfile_fpath=${DOCKER__EMPTYSTRING}
+    docker__mydockerfile_location=${DOCKER__EMPTYSTRING}
+}
+
+docker__init_variables__sub() {
+    docker__myRepository=${DOCKER__EMPTYSTRING}
+    docker__myRepository_new=${DOCKER__EMPTYSTRING}
+    docker__myRepository_tags_detected=${DOCKER__EMPTYSTRING}
+    docker__myRepository_firstTag_detected=${DOCKER__EMPTYSTRING}
+    docker__myRepository_tag=${DOCKER__EMPTYSTRING}
+    docker__myRepository_isFound=${DOCKER__EMPTYSTRING}
+    docker__myRepository_new_isFound=${DOCKER__EMPTYSTRING}
+    docker__myTag_isFound=${DOCKER__EMPTYSTRING}
 }
 
 docker__create_dirs__sub() {
@@ -142,14 +215,14 @@ create_dockerfile__sub() {
 
     #Define dockerfile content
     DOCKERFILE_CONTENT_ARR=(\
-        "#---Continue from REPOSITORY:TAG=${docker__myrepository}:${mytag}"\
-        "FROM ${docker__myrepository}:${mytag}"\
+        "#---Continue from REPOSITORY:TAG=${docker__myRepository}:${docker__myRepository_tag}"\
+        "FROM ${docker__myRepository}:${docker__myRepository_tag}"\
         ""\
         "#---LABEL about the custom image"\
         "LABEL maintainer=\"hien@tibbo.com\""\
         "LABEL version=\"0.1\""\
-        "LABEL description=\"Continue from image '${docker__myrepository}:${mytag}', and run 'build_BOOOT_BIN.sh'\""\
-        "LABEL NEW repository:tag=\"${docker__myrepository_new}:${mytag}\""\
+        "LABEL description=\"Continue from image '${docker__myRepository}:${docker__myRepository_tag}', and run 'build_BOOOT_BIN.sh'\""\
+        "LABEL NEW repository:tag=\"${docker__myRepository_new}:${docker__myRepository_tag}\""\
         ""\
         "#---Disable Prompt During Packages Installation"\
         "ARG DEBIAN_FRONTEND=noninteractive"\
@@ -170,31 +243,47 @@ create_dockerfile__sub() {
 }
 
 docker__build_image_from_specified_repository__sub() {
-    #Get number of images
-    local numof_images=`docker image ls | head -n -1 | wc -l`
+    #Define local constants
+    local MENUTITLE="${DOCKER__GENERAL_FG_YELLOW}Create${DOCKER__NOCOLOR} Docker ${DOCKER__IMAGEID_FG_BORDEAUX}IMAGE${DOCKER__NOCOLOR} from existing ${DOCKER__REPOSITORY_FG_PURPLE}REPOSITORY${DOCKER__NOCOLOR}"
+
+    #Define local message constants    
+    local ERRMSG_NO_IMAGES_FOUND="=:${DOCKER__ERROR_FG_LIGHTRED}NO IMAGES FOUND${DOCKER__NOCOLOR}:="
+    
+    local READMSG_CHOOSE_A_REPOSITORY_FROM_LIST="Choose a ${DOCKER__REPOSITORY_FG_PURPLE}REPOSITORY${DOCKER__NOCOLOR} from list (e.g. ubuntu_buildbin): "
+    local READMSG_DO_YOU_WISH_TO_CONTINUE="Do you wish to continue (y/n/r)? "
+    local READMSG_PROVIDE_ITS_CORRESPONDING_TAG="Provide its corresponding ${DOCKER__TAG_FG_LIGHTPINK}TAG${DOCKER__NOCOLOR} (e.g. latest): "
+    local READMSG_NEW_REPOSITORY_NAME="${DOCKER__GENERAL_FG_YELLOW}NEW${DOCKER__NOCOLOR} ${DOCKER__NEW_REPOSITORY_FG_BRIGHTLIGHTPURPLE}REPOSITORY${DOCKER__NOCOLOR}'s name (e.g. ubuntu_buildbin_NEW): "
+
+    #Define local message variables
+    local echoMsg="${DOCKER__DIRS_FG_VERYLIGHTORANGE}SAVE-TO${DOCKER__NOCOLOR}: ${dockerfile_dir}"
+    local errMsg=${DOCKER__EMPTYSTRING}
+
 
     #Show Docker Image List
-    echo -e "----------------------------------------------------------------------"
-    echo -e "\t${DOCKER__GENERAL_FG_YELLOW}Create${DOCKER__NOCOLOR} Docker ${DOCKER__IMAGEID_FG_BORDEAUX}IMAGE${DOCKER__NOCOLOR} from existing ${DOCKER__REPOSITORY_FG_PURPLE}REPOSITORY${DOCKER__NOCOLOR}"
-    echo -e "----------------------------------------------------------------------"
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    show_centered_string__func "${MENUTITLE}" "${DOCKER__TABLEWIDTH}"
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
 
+    #Get number of images
+    local numof_images=`docker image ls | head -n -1 | wc -l`
     if [[ ${numof_images} -eq 0 ]]; then
         echo -e "\r"
-        echo -e "\t\t=:${DOCKER__ERROR_FG_LIGHTRED}NO IMAGES FOUND${DOCKER__NOCOLOR}:="
-        echo -e "----------------------------------------------------------------------"
+        show_centered_string__func "${ERRMSG_NO_IMAGES_FOUND}" "${DOCKER__TABLEWIDTH}"
+        echo -e "\r"
+        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
         echo -e "${DOCKER__CTRL_C_QUIT}"
-        echo -e "----------------------------------------------------------------------"
+        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
         echo -e "\r"
         
         press_any_key__func
 
         exit__func
     else
-            docker image ls
+        docker image ls
 
-        echo -e "----------------------------------------------------------------------"
+        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
         echo -e "${DOCKER__CTRL_C_QUIT}"
-        echo -e "----------------------------------------------------------------------"
+        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
     fi    
 
 
@@ -204,70 +293,64 @@ docker__build_image_from_specified_repository__sub() {
     while true
     do
         #Provide a CONTAINER-ID from which you want to create an Image
-        read -p "Choose a ${DOCKER__REPOSITORY_FG_PURPLE}REPOSITORY${DOCKER__NOCOLOR} from list (e.g. ubuntu_buildbin): " docker__myrepository
-        if [[ ! -z ${docker__myrepository} ]]; then    #input is NOT an EMPTY STRING
+        read -p "${READMSG_CHOOSE_A_REPOSITORY_FROM_LIST}" docker__myRepository
+        if [[ ! -z ${docker__myRepository} ]]; then    #input is NOT an EMPTY STRING
 
-            #Check if 'docker__myrepository' is found in ' docker container ls'
-            docker__myrepository_isFound=`docker image ls | awk '{print $1}' | grep -w ${docker__myrepository}`
-            if [[ ! -z ${docker__myrepository_isFound} ]]; then    #match was found
+            #Check if 'docker__myRepository' is found in ' docker container ls'
+            docker__myRepository_isFound=`docker image ls | awk '{print $1}' | grep -w "${docker__myRepository}"`
+            if [[ ! -z ${docker__myRepository_isFound} ]]; then    #match was found
                 while true
                 do
-                    #Find tag belonging to 'docker__myrepository' (Exact Match)
-                    docker__myrepository_tag=$(docker image ls | grep -w "${docker__myrepository}" | awk '{print $2}')
-
+                    #Find tag belonging to 'docker__myRepository' (Exact Match)
+                    docker__myRepository_tags_detected=$(docker image ls | grep -w "${docker__myRepository}" | awk '{print $2}')
+                    docker__myRepository_firstTag_detected=`echo -e ${docker__myRepository_tags_detected} | cut -d" " -f1`
+                    
                     #Provide a TAG for this new image
-                    read -e -p "Provide this ${DOCKER__REPOSITORY_FG_PURPLE}REPOSITORY${DOCKER__NOCOLOR}'s ${DOCKER__TAG_FG_LIGHTPINK}TAG${DOCKER__NOCOLOR} (e.g. latest): " -i ${docker__myrepository_tag} mytag
-                    if [[ ! -z ${mytag} ]]; then   #input is NOT an Empty String        
+                    read -e -p "${READMSG_PROVIDE_ITS_CORRESPONDING_TAG}" -i ${docker__myRepository_firstTag_detected} docker__myRepository_tag
+                    if [[ ! -z ${docker__myRepository_tag} ]]; then   #input is NOT an Empty String        
 
-                        docker__mytag_isFound=`docker image ls | grep -w "${docker__myrepository}" | grep -w "${mytag}"`    #check if 'docker__myrepository' AND 'mytag' is found in 'docker image ls'
-                        if [[ ! -z ${docker__mytag_isFound} ]]; then    #match was found
+                        docker__myTag_isFound=`docker image ls | grep -w "${docker__myRepository}" | grep -w "${docker__myRepository_tag}"`    #check if 'docker__myRepository' AND 'docker__myRepository_tag' is found in 'docker image ls'
+                        if [[ ! -z ${docker__myTag_isFound} ]]; then    #match was found
 
                             while true
                             do
                                 #Provide a NEW REPOSITORY for the NEW image
-                                read -p "Provide a ${DOCKER__GENERAL_FG_YELLOW}NEW${DOCKER__NOCOLOR} ${DOCKER__NEW_REPOSITORY_FG_BRIGHTLIGHTPURPLE}REPOSITORY${DOCKER__NOCOLOR} name (e.g. ubuntu_buildbin_NEW): " docker__myrepository_new
-                                if [[ ! -z ${docker__myrepository_new} ]]; then #not an EMPTY STRING
+                                read -p "${READMSG_NEW_REPOSITORY_NAME}" docker__myRepository_new
+                                if [[ ! -z ${docker__myRepository_new} ]]; then #not an EMPTY STRING
 
-                                    #Check if 'docker__myrepository' is UNIQUE
-                                    docker__myrepository_new_isFound=`docker image ls | awk '{print $1}' | grep -w ${docker__myrepository_new}`                           
-                                    if  [[ -z ${docker__myrepository_new_isFound} ]]; then    #match was NOT found
+                                    #Check if 'docker__myRepository' is UNIQUE
+                                    docker__myRepository_new_isFound=`docker image ls | awk '{print $1}' | grep -w "${docker__myRepository_new}"`
+                                    if  [[ -z ${docker__myRepository_new_isFound} ]]; then    #match was NOT found
 
                                         while true
                                         do
                                             #Provide a location where you want to create a *NEW DOCKERFILE*
-                                            echo -e "Provide ${DOCKER__DIRS_FG_VERYLIGHTORANGE}DOCKER-FILE LOCATION${DOCKER__NOCOLOR} (${dockerfile_dir}): "
-                                            echo -e "${DOCKER__DIRS_FG_VERYLIGHTORANGE}"    #echo used to start a color for 'read'
-                                            read -e -p "" -i "${dockerfile_dir}" docker__mydockerfile_location
-                                            echo -e "${DOCKER__NOCOLOR}"    #echo used to reset color
+                                            echo -e "${echoMsg}"
 
-                                            if [[ -d ${docker__mydockerfile_location} ]]; then   #input was NOT an Empty String
-                                                #Generate a 'dockerfile' with content
-                                                #OUTPUT: docker__dockerfile_fpath
-                                                create_dockerfile__sub "${docker__dockerfile_filename}" ${docker__myrepository_new} "${docker__mydockerfile_location}"
-
-                                                echo -e "--------------------------------------------------------------------"
-                                                echo -e "Summary"
-                                                echo -e "--------------------------------------------------------------------"
-                                                echo -e "EXISTING ${DOCKER__REPOSITORY_FG_PURPLE}REPOSITORY${DOCKER__NOCOLOR}:${DOCKER__TAG_FG_LIGHTPINK}TAG${DOCKER__NOCOLOR}:\t${docker__myrepository}:${mytag}"                                        
-                                                echo -e "NEW ${DOCKER__NEW_REPOSITORY_FG_BRIGHTLIGHTPURPLE}REPOSITORY${DOCKER__NOCOLOR}:${DOCKER__TAG_FG_LIGHTPINK}TAG${DOCKER__NOCOLOR}:\t\t${docker__myrepository_new}:${mytag}"
-                                                echo -e "${DOCKER__DIRS_FG_VERYLIGHTORANGE}DOCKER-FILE LOCATION${DOCKER__NOCOLOR}:\t\t${docker__dockerfile_fpath}"
-                                                echo -e "----------------------------------------------------------------------"
-                                                echo -e "${DOCKER__Q_QUIT}"
-                                                echo -e "${DOCKER__R_REDO}"
-                                                echo -e "----------------------------------------------------------------------"
-
+                                            if [[ -d ${dockerfile_dir} ]]; then   #input was NOT an Empty String
                                                 #Confirm if user wants to continue
                                                 while true
                                                 do
-                                                    read -N1 -r -s -e -p "Do you wish to continue (y/n)? " docker__myanswer
+                                                    #Add an empty-line
+                                                    echo -e "\r"
+                                                    
+                                                    #Show read-input message
+                                                    read -N1 -p "${READMSG_DO_YOU_WISH_TO_CONTINUE}" docker__myanswer
+                                                    
+                                                    #Validate read-input answer
                                                     if [[ ${docker__myanswer} == ${DOCKER__YES} ]]; then
-                                                        docker build --tag ${docker__myrepository_new}:${mytag} - < ${docker__dockerfile_fpath}
+                                                        #Generate a 'dockerfile' with content
+                                                        #OUTPUT: docker__dockerfile_fpath
+                                                        create_dockerfile__sub "${docker__dockerfile_filename}" ${docker__myRepository_new} "${dockerfile_dir}"
+
+                                                        #Execute command
+                                                        docker build --tag ${docker__myRepository_new}:${docker__myRepository_tag} - < ${docker__dockerfile_fpath} 2>&1 > /dev/null
                                                         
                                                         echo -e "\r"
                                                         echo -e "\r"
-                                                        echo -e "----------------------------------------------------------------------"
+                                                        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
                                                             docker image ls
-                                                        echo -e "----------------------------------------------------------------------"
+                                                        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
                                                         echo -e "\r"
 
                                                         exit
@@ -277,34 +360,18 @@ docker__build_image_from_specified_repository__sub() {
                                                     elif [[ ${docker__myanswer} == ${DOCKER__REDO} ]]; then
                                                         break
                                                     elif [[ ${docker__myanswer} == ${DOCKER__QUIT} ]]; then
-                                                        exit__func
+                                                        exit__func   
                                                     else
-                                                        tput cuu1	#move UP with 1 line
-                                                        tput el		#clear until the END of line                                                                                          
+                                                        moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"                                                                                                                                    
                                                     fi
                                                 done
                                             else    #input was an Empty String
+                                                errMsg="***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: unknown directory: ${dockerfile_dir}!!!"
+
                                                 echo -e "\r"
-                                                echo -e "***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: unknown directory: ${docker__mydockerfile_location}!!!"
+                                                echo -e "${errMsg}"
 
-                                                press_any_key__func
-
-                                                tput cuu1	#move UP with 1 line
-                                                tput el		#clear until the END of line 
-                                                tput cuu1	#move UP with 1 line
-                                                tput el		#clear until the END of line 
-                                                tput cuu1	#move UP with 1 line
-                                                tput el		#clear until the END of line 
-                                                tput cuu1	#move UP with 1 line
-                                                tput el		#clear until the END of line 
-                                                tput cuu1	#move UP with 1 line
-                                                tput el		#clear until the END of line 
-                                                tput cuu1	#move UP with 1 line
-                                                tput el		#clear until the END of line
-                                                tput cuu1	#move UP with 1 line
-                                                tput el		#clear until the END of line
-                                                tput cuu1	#move UP with 1 line
-                                                tput el		#clear until the END of line 
+                                                exit__func
                                             fi
 
                                             #Answer 'n' was given in the LAST while-loop
@@ -313,25 +380,17 @@ docker__build_image_from_specified_repository__sub() {
                                             fi
                                         done
                                     else
+                                        errMsg="***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: REPOSITORY ${DOCKER__REPOSITORY_FG_PURPLE}${docker__myRepository_new}${DOCKER__NOCOLOR} already exist!!!"
+                                        
                                         echo -e "\r"
-                                        echo -e "***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: REPOSITORY ${DOCKER__REPOSITORY_FG_PURPLE}${docker__myrepository_new}${DOCKER__NOCOLOR} already exist!!!"
+                                        echo -e "${errMsg}"
 
                                         press_any_key__func
 
-                                        tput cuu1	#move UP with 1 line
-                                        tput el		#clear until the END of line
-                                        tput cuu1	#move UP with 1 line
-                                        tput el		#clear until the END of line
-                                        tput cuu1	#move UP with 1 line
-                                        tput el		#clear until the END of line
-                                        tput cuu1	#move UP with 1 line
-                                        tput el		#clear until the END of line
-                                        tput cuu1	#move UP with 1 line
-                                        tput el		#clear until the END of line 
+                                        moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_5}"
                                     fi
                                 else
-                                    tput cuu1	#move UP with 1 line
-                                    tput el		#clear until the END of line 
+                                    moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
                                 fi
 
                                 #Answer 'n' was given in the LAST while-loop
@@ -340,62 +399,47 @@ docker__build_image_from_specified_repository__sub() {
                                 fi
                             done
                         else    #input was an Empty String
+                            errMsg="***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Un-matched pair ${DOCKER__REPOSITORY_FG_PURPLE}REPOSITORY${DOCKER__NOCOLOR} <-> ${DOCKER__TAG_FG_LIGHTPINK}TAG${DOCKER__NOCOLOR}"
                             echo -e "\r"
-                            echo -e "***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: ${DOCKER__TAG_FG_LIGHTPINK}TAG${DOCKER__NOCOLOR} and ${DOCKER__REPOSITORY_FG_PURPLE}REPOSITORY${DOCKER__NOCOLOR} do NOT match!!!"
+                            echo -e "${errMsg}"
 
                             press_any_key__func
 
-                            tput cuu1	#move UP with 1 line
-                            tput el		#clear until the END of line
-                            tput cuu1	#move UP with 1 line
-                            tput el		#clear until the END of line
-                            tput cuu1	#move UP with 1 line
-                            tput el		#clear until the END of line
-                            tput cuu1	#move UP with 1 line
-                            tput el		#clear until the END of line
-                            tput cuu1	#move UP with 1 line
-                            tput el		#clear until the END of line 
+                            moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_5}"
                         fi
                     else
-                        tput cuu1	#move UP with 1 line
-                        tput el		#clear until the END of line
+                        moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
                     fi
 
                     #Answer 'n' was given in the LAST while-loop
                     if [[ ${docker__myanswer} == ${DOCKER__REDO} ]]; then
                         echo -e "\r"
                         echo -e "\r"
-                        echo -e "----------------------------------------------------------------------"
+                        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
                         echo -e "\t${DOCKER__GENERAL_FG_YELLOW}Create${DOCKER__NOCOLOR} Docker ${DOCKER__IMAGEID_FG_BORDEAUX}IMAGE${DOCKER__NOCOLOR} from existing ${DOCKER__REPOSITORY_FG_PURPLE}REPOSITORY${DOCKER__NOCOLOR}"
-                        echo -e "----------------------------------------------------------------------"
+                        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+
                             docker image ls
-                        echo -e "----------------------------------------------------------------------"
+                        
+                        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
                         echo -e "${DOCKER__CTRL_C_QUIT}"
-                        echo -e "----------------------------------------------------------------------"
+                        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
                         
                         break
                     fi
                 done
             else    #NO match was found
+                errMsg="***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: ${DOCKER__REPOSITORY_FG_PURPLE}${docker__myRepository}${DOCKER__NOCOLOR} not found!!!"
+
                 echo -e "\r"
-                echo -e "***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: ${DOCKER__REPOSITORY_FG_PURPLE}${docker__myrepository}${DOCKER__NOCOLOR} not found!!!"
+                echo -e "${errMsg}"
 
                 press_any_key__func
 
-                tput cuu1	#move UP with 1 line
-                tput el		#clear until the END of line  
-                tput cuu1	#move UP with 1 line
-                tput el		#clear until the END of line    
-                tput cuu1	#move UP with 1 line
-                tput el		#clear until the END of line
-                tput cuu1	#move UP with 1 line
-                tput el		#clear until the END of line
-                tput cuu1	#move UP with 1 line
-                tput el		#clear until the END of line                
+                moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_5}"               
             fi
         else
-            tput cuu1	#move UP with 1 line
-            tput el		#clear until the END of line
+            moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
         fi
     done
 }
@@ -407,6 +451,8 @@ main_sub() {
     docker__load_header__sub
 
     docker__environmental_variables__sub
+
+    docker__init_variables__sub
 
     docker__create_dirs__sub
 

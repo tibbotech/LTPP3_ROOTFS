@@ -1,5 +1,5 @@
 #!/bin/bash
-#---Define colors
+#---COLOR CONSTANTS
 DOCKER__NOCOLOR=$'\e[0;0m'
 DOCKER__GENERAL_FG_YELLOW=$'\e[1;33m'
 DOCKER__ERROR_FG_LIGHTRED=$'\e[1;31m'
@@ -11,35 +11,51 @@ DOCKER__TITLE_BG_LIGHTBLUE=$'\e[30;48;5;45m'
 DOCKER__REMARK_BG_ORANGE=$'\e[30;48;5;208m'
 DOCKER__CONTAINER_BG_BRIGHTPRUPLE=$'\e[30;48;5;141m'
 
-#---Define constants
+#---CONSTANTS
 DOCKER__TITLE="TIBBO"
 
-DOCKER__EMPTYSTRING=""
 DOCKER__REMOVE_ALL="REMOVE-ALL"
+
+#---CHARACTER CHONSTANTS
+DOCKER__DASH="-"
+DOCKER__EMPTYSTRING=""
+
+#---NUMERIC CONSTANTS
+DOCKER__TABLEWIDTH=70
+
+DOCKER__NUMOFLINES_1=1
+DOCKER__NUMOFLINES_2=2
+DOCKER__NUMOFLINES_3=3
+DOCKER__NUMOFLINES_4=4
+DOCKER__NUMOFLINES_5=5
+DOCKER__NUMOFLINES_6=6
+DOCKER__NUMOFLINES_7=7
+DOCKER__NUMOFLINES_8=8
 
 
 
 #---Trap ctrl-c and Call ctrl_c()
 trap CTRL_C_func INT
 
+
+
+#---FUNCTIONS
 function CTRL_C_func() {
-    echo -e "\r"
-    echo -e "\r"
-    echo -e "Exiting now..."
+    # echo -e "\r"
+    # echo -e "\r"
+    # echo -e "Exiting now..."
     echo -e "\r"
     echo -e "\r"
 
     exit
 }
 
-
-#---Local functions & subroutines
-press_any_key__localfunc() {
+function press_any_key__func() {
 	#Define constants
 	local cTIMEOUT_ANYKEY=10
 
 	#Initialize variables
-	local keypressed=""
+	local keypressed=${DOCKER__EMPTYSTRING}
 	local tcounter=0
 
 	#Show Press Any Key message with count-down
@@ -64,28 +80,226 @@ press_any_key__localfunc() {
 	echo -e "\r"
 }
 
+function show_centered_string__func()
+{
+    #Input args
+    local str_input=${1}
+    local maxStrLen_input=${2}
+
+    #Define one-space constant
+    local ONESPACE=" "
+
+    #Get string 'without visiable' color characters
+    local strInput_wo_colorChars=`echo "${str_input}" | sed "s,\x1B\[[0-9;]*m,,g"`
+
+    #Get string length
+    local strInput_wo_colorChars_len=${#strInput_wo_colorChars}
+
+    #Calculated the number of spaces to-be-added
+    local numOf_spaces=$(( (maxStrLen_input-strInput_wo_colorChars_len)/2 ))
+
+    #Create a string containing only EMPTY SPACES
+    local emptySpaces_string=`duplicate_char__func "${ONESPACE}" "${numOf_spaces}" `
+
+    #Print text including Leading Empty Spaces
+    echo -e "${emptySpaces_string}${str_input}"
+}
+
+function duplicate_char__func()
+{
+    #Input args
+    local char_input=${1}
+    local numOf_times=${2}
+
+    #Duplicate 'char_input'
+    local char_duplicated=`printf '%*s' "${numOf_times}" | tr ' ' "${char_input}"`
+
+    #Print text including Leading Empty Spaces
+    echo -e "${char_duplicated}"
+}
+
+function moveUp_and_cleanLines__func() {
+    #Input args
+    local numOf_lines_toBeCleared=${1}
+
+    #Clear lines
+    local numOf_lines_cleared=1
+    while [[ ${numOf_lines_cleared} -le ${numOf_lines_toBeCleared} ]]
+    do
+        tput cuu1	#move UP with 1 line
+        tput el		#clear until the END of line
+
+        numOf_lines_cleared=$((numOf_lines_cleared+1))  #increment by 1
+    done
+}
+
+
+
+#---SUBROUTINES
 docker__load_header__sub() {
     echo -e "\r"
     echo -e "${DOCKER__TITLE_BG_ORANGE}                                 ${DOCKER__TITLE}${DOCKER__TITLE_BG_ORANGE}                                ${DOCKER__NOCOLOR}"
 }
 
 docker__init_variables__sub() {
-    docker__mycontainerid=""
-    docker__mycontainerid_input=""
-    docker__mycontainerid_subst=""
-    docker__mycontainerid_arr=()
-    docker__mycontainerid_item=""
-    docker__mycontainerid_isFound=""
-    docker__myanswer=""
+    docker__myContainerId=${DOCKER__EMPTYSTRING}
+    docker__myContainerId_input=${DOCKER__EMPTYSTRING}
+    docker__myContainerId_subst=${DOCKER__EMPTYSTRING}
+    docker__myContainerId_arr=()
+    docker__myContainerId_item=${DOCKER__EMPTYSTRING}
+    docker__myContainerId_isFound=${DOCKER__EMPTYSTRING}
+    docker__myAnswer=${DOCKER__EMPTYSTRING}
 }
 
-docker__input_containerid__sub() {
-    #RESET VARIABLE (IMPORTANT)
-    if [[ ${docker__myanswer} != "b" ]]; then
-        docker__mycontainerid=${DOCKER__EMPTYSTRING}
+docker_remove_specified_containers__sub() {
+    #Define local constants
+    local MENUTITLE="${DOCKER__GENERAL_FG_YELLOW}Remove${DOCKER__NOCOLOR} ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}CONTAINER(s)${DOCKER__NOCOLOR}"
+    local MENUTITLE_UPDATE="Updated ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}CONTAINER${DOCKER__NOCOLOR}-list"
+    local READMSG="***Do you REALLY wish to continue (y/n/q/b)? "
+
+    #Define local variables
+    local errMsg=${DOCKER__EMPTYSTRING}
+    local numof_containers=0
+
+    #Show menu-title
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    show_centered_string__func "${MENUTITLE}" "${DOCKER__TABLEWIDTH}"
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+
+    #Get number of images
+    numof_containers=`docker ps -a | head -n -1 | wc -l`
+    if [[ ${numof_containers} -eq 0 ]]; then
+        #Update error-message
+        errMsg="=:${DOCKER__ERROR_FG_LIGHTRED}NO CONTAINERS FOUND${DOCKER__NOCOLOR}:="
+
+        #Show error-message
+        echo -e "\r"
+        show_centered_string__func "${errMsg}" "${DOCKER__TABLEWIDTH}"
+        echo -e "\r"
+        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+
+        press_any_key__func
+
+        exit
     else
-        if [[ ${docker__mycontainerid} == ${DOCKER__REMOVE_ALL} ]]; then
-            docker__mycontainerid=${DOCKER__EMPTYSTRING}
+        docker ps -a
+
+        echo -e "\r"
+        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    fi
+
+    #Start loop
+    while true
+    do
+        #Input CONTAINERID(s) which you want to REMOVE
+        #REMARK: subroutine 'docker_containerId_input__func' will output variable 'docker__myContainerId'
+        docker_containerId_input__func
+
+        if [[ ! -z ${docker__myContainerId} ]]; then
+            #Substitute COMMA with SPACE
+            docker__myContainerId_subst=`echo ${docker__myContainerId} | sed 's/,/\ /g'`
+
+            #Convert to Array
+            eval "docker__myContainerId_arr=(${docker__myContainerId_subst})"
+
+            #Go thru each array-item
+            echo -e "\r"
+            while true
+            do
+                read -p "${READMSG}" docker__myAnswer
+                if [[ ! -z ${docker__myAnswer} ]]; then          
+                    if [[ ${docker__myAnswer} == "y" ]]; then
+                        if [[ ${docker__myContainerId} == ${DOCKER__REMOVE_ALL} ]]; then
+                            docker kill $(docker ps -q) 2>&1 > /dev/null    #kill all RUNNING containers
+                            docker rm $(docker ps -a -q) 2>&1 > /dev/null   #Delete ALL STOPPED containers
+                        else
+                            for docker__myContainerId_item in "${docker__myContainerId_arr[@]}"
+                            do 
+                                docker__myContainerId_isFound=`docker ps -a | awk '{print $1}' | grep -w ${docker__myContainerId_item}`
+                                if [[ ! -z ${docker__myContainerId_isFound} ]]; then
+                                    docker container rm -f ${docker__myContainerId_item} 2>&1 > /dev/null
+
+                                    echo -e "\r"
+                                    echo -e "Removed CONTAINER-ID: ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}${docker__myContainerId_item}${DOCKER__NOCOLOR}"
+                                    echo -e "\r"
+                                    echo -e "Removing ALL unlinked images"
+                                    echo -e "y\n" | docker image prune
+                                    echo -e "Removing ALL stopped containers"
+                                    echo -e "y\n" | docker container prune           
+                                else
+                                    #Update error-message
+                                    errMsg="***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Invalid CONTAINER-ID: ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}${docker__myContainerId_item}${DOCKER__NOCOLOR}"
+                                    
+                                    #Show error-message
+                                    echo -e "\r"
+                                    echo -e "${errMsg}"
+                                fi
+
+                                echo -e "\r"
+                            done
+                        fi
+
+                        #Get number of containers
+                        numof_containers=`docker ps -a | head -n -1 | wc -l`
+
+                        echo -e "----------------------------------------------------------------------"
+                        echo -e "\t${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}CONTAINER'S${DOCKER__NOCOLOR} ${DOCKER__GENERAL_FG_YELLOW}LIST${DOCKER__NOCOLOR} "
+                        echo -e "----------------------------------------------------------------------"
+                        
+                        #Get number of images
+                        numof_containers=`docker ps -a | head -n -1 | wc -l`
+                        if [[ ${numof_containers} -eq 0 ]]; then
+                            #Update error-message
+                            errMsg="=:${DOCKER__ERROR_FG_LIGHTRED}NO CONTAINERS FOUND${DOCKER__NOCOLOR}:="
+
+                            #Show error-message
+                            echo -e "\r"
+                            show_centered_string__func "${errMsg}" "${DOCKER__TABLEWIDTH}"
+                            echo -e "\r"
+                            duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+
+                            press_any_key__func
+
+                            exit
+                        else
+                            docker ps -a
+
+                            echo -e "\r"
+                            duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+
+                            break
+                        fi
+                    elif [[ ${docker__myAnswer} == "n" ]]; then
+                        moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_8}"
+
+                        break
+                    elif [[ ${docker__myAnswer} == "q" ]]; then
+                        echo -e "\r"
+
+                        exit
+                    elif [[ ${docker__myAnswer} == "b" ]]; then
+                        moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_8}"
+
+                        break
+                    else
+                        moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+                    fi
+                else
+                    moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+                fi
+            done
+        else
+            moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_6}"
+        fi
+    done
+}
+docker_containerId_input__func() {
+    #RESET VARIABLE (IMPORTANT)
+    if [[ ${docker__myAnswer} != "b" ]]; then
+        docker__myContainerId=${DOCKER__EMPTYSTRING}
+    else
+        if [[ ${docker__myContainerId} == ${DOCKER__REMOVE_ALL} ]]; then
+            docker__myContainerId=${DOCKER__EMPTYSTRING}
         fi
     fi
 
@@ -97,200 +311,25 @@ docker__input_containerid__sub() {
         echo -e "- Multiple container-IDs can be removed"
         echo -e "- Comma-separator will be auto-appended (e.g. 3e2226b5fb4c,78ae00114c5a)"
 		echo -e "- [On an Empty Field] press ENTER to stop input"
-        echo -e "${DOCKER__CONTAINER_BG_BRIGHTPRUPLE}Remove the following ${DOCKER__OUTSIDE_FG_WHITE}container-IDs${DOCKER__NOCOLOR}:${DOCKER__CONTAINER_BG_BRIGHTPRUPLE}${DOCKER__OUTSIDE_FG_WHITE}${docker__mycontainerid}${DOCKER__NOCOLOR}"
-        read -p "Paste your input (here): " docker__mycontainerid_input
+        echo -e "${DOCKER__CONTAINER_BG_BRIGHTPRUPLE}Remove the following ${DOCKER__OUTSIDE_FG_WHITE}container-IDs${DOCKER__NOCOLOR}:${DOCKER__CONTAINER_BG_BRIGHTPRUPLE}${DOCKER__OUTSIDE_FG_WHITE}${docker__myContainerId}${DOCKER__NOCOLOR}"
+        read -p "Paste your input (here): " docker__myContainerId_input
 
-        if [[ -z ${docker__mycontainerid_input} ]]; then
-			tput cuu1
-			tput el
+        if [[ -z ${docker__myContainerId_input} ]]; then
+			moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
 			break
-        elif [[ ${docker__mycontainerid_input} == ${DOCKER__REMOVE_ALL} ]]; then
-            docker__mycontainerid="${docker__mycontainerid_input}"
+        elif [[ ${docker__myContainerId_input} == ${DOCKER__REMOVE_ALL} ]]; then
+            docker__myContainerId="${docker__myContainerId_input}"
 
 			break
         else
-            if [[ -z ${docker__mycontainerid} ]]; then
-                docker__mycontainerid="${docker__mycontainerid_input}"
+            if [[ -z ${docker__myContainerId} ]]; then
+                docker__myContainerId="${docker__myContainerId_input}"
             else
-                docker__mycontainerid="${docker__mycontainerid},${docker__mycontainerid_input}"
+                docker__myContainerId="${docker__myContainerId},${docker__myContainerId_input}"
             fi
 
-			tput cuu1
-			tput el
-			tput cuu1
-			tput el
-			tput cuu1
-			tput el
-			tput cuu1
-			tput el
-			tput cuu1
-			tput el
-			tput cuu1
-			tput el
-			tput cuu1
-			tput el
-        fi
-    done
-}
-
-docker_remove_specified_containers__sub() {
-    #Get number of containers
-    local numof_containers=`docker ps -a | head -n -1 | wc -l`
-
-    echo -e "----------------------------------------------------------------------"
-    echo -e "\t${DOCKER__GENERAL_FG_YELLOW}Remove${DOCKER__NOCOLOR} ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}CONTAINER(s)${DOCKER__NOCOLOR}"
-    echo -e "----------------------------------------------------------------------"
-        docker ps -a
-
-        if [[ ${numof_containers} -eq 0 ]]; then
-            echo -e "\r"
-            echo -e "\t\t=:${DOCKER__ERROR_FG_LIGHTRED}NO CONTAINERS FOUND${DOCKER__NOCOLOR}:="
-            echo -e "----------------------------------------------------------------------"
-            echo -e "\r"
-
-            press_any_key__localfunc
-
-            exit
-        else
-            echo -e "----------------------------------------------------------------------"
-        fi
-    echo -e "\r"
-
-    while true
-    do
-        #Input CONTAINERID(s) which you want to REMOVE
-        #REMARK: subroutine 'docker__input_containerid__sub' will output variable 'docker__mycontainerid'
-        docker__input_containerid__sub
-
-        if [[ ! -z ${docker__mycontainerid} ]]; then
-            #Substitute COMMA with SPACE
-            docker__mycontainerid_subst=`echo ${docker__mycontainerid} | sed 's/,/\ /g'`
-
-            #Convert to Array
-            eval "docker__mycontainerid_arr=(${docker__mycontainerid_subst})"
-
-            #Go thru each array-item
-            echo -e "\r"
-            while true
-            do
-                read -p "***Do you REALLY wish to continue (y/n/q/b)? " docker__myanswer
-                if [[ ! -z ${docker__myanswer} ]]; then          
-                    if [[ ${docker__myanswer} == "y" ]] || [[ ${docker__myanswer} == "Y" ]]; then
-                        if [[ ${docker__mycontainerid} == ${DOCKER__REMOVE_ALL} ]]; then
-                            docker kill $(docker ps -q) #kill all RUNNING containers
-                            docker rm $(docker ps -a -q)    #Delete ALL STOPPED containers
-                        else
-                            for docker__mycontainerid_item in "${docker__mycontainerid_arr[@]}"
-                            do 
-                                docker__mycontainerid_isFound=`docker ps -a | awk '{print $1}' | grep -w ${docker__mycontainerid_item}`
-                                if [[ ! -z ${docker__mycontainerid_isFound} ]]; then
-                                    docker container rm -f ${docker__mycontainerid_item} > /dev/null
-                                    echo -e "\r"
-                                    echo -e "Removed CONTAINER-ID: ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}${docker__mycontainerid_item}${DOCKER__NOCOLOR}"
-                                    echo -e "\r"
-                                    echo -e "Removing ALL unlinked images"
-                                    echo -e "y\n" | docker image prune
-                                    echo -e "Removing ALL stopped containers"
-                                    echo -e "y\n" | docker container prune           
-                                else
-                                    echo -e "\r"
-                                    echo -e "***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Invalid CONTAINER-ID: ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}${docker__mycontainerid_item}${DOCKER__NOCOLOR}"
-                                fi
-                            done
-                        fi
-
-                        #Get number of containers
-                        local numof_containers=`docker ps -a | head -n -1 | wc -l`
-
-                        echo -e "----------------------------------------------------------------------"
-                        echo -e "\t${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}CONTAINER'S${DOCKER__NOCOLOR} ${DOCKER__GENERAL_FG_YELLOW}LIST${DOCKER__NOCOLOR} "
-                        echo -e "----------------------------------------------------------------------"
-                        
-                        #Get Docker Container's List
-                        docker ps -a
-
-                        if [[ ${numof_containers} -eq 0 ]]; then
-                            echo -e "\r"
-                            echo -e "\t\t=:${DOCKER__ERROR_FG_LIGHTRED}NO CONTAINERS FOUND${DOCKER__NOCOLOR}:="
-                            echo -e "----------------------------------------------------------------------"
-                            echo -e "\r"
-
-                            press_any_key__localfunc
-
-                            return
-                        else
-                            echo -e "\r"
-                            echo -e "\r"
-
-                            break
-                        fi
-                    elif [[ ${docker__myanswer} == "n" ]]; then
-                        tput cuu1
-                        tput el
-                        tput cuu1
-                        tput el
-                        tput cuu1
-                        tput el
-                        tput cuu1
-                        tput el
-                        tput cuu1
-                        tput el
-                        tput cuu1
-                        tput el
-                        tput cuu1
-                        tput el
-                        tput cuu1
-                        tput el
-
-                        break
-                    elif [[ ${docker__myanswer} == "q" ]] || [[ ${docker__myanswer} == "Q" ]]; then
-                        echo -e "\r"
-                        echo -e "Exiting now..."
-                        echo -e "\r"
-                        echo -e "\r"
-
-                        exit
-                    elif [[ ${docker__myanswer} == "b" ]]; then
-                        tput cuu1
-                        tput el
-                        tput cuu1
-                        tput el
-                        tput cuu1
-                        tput el
-                        tput cuu1
-                        tput el
-                        tput cuu1
-                        tput el
-                        tput cuu1
-                        tput el
-                        tput cuu1
-                        tput el
-                        tput cuu1
-                        tput el
-
-                        break
-                    else
-                        tput cuu1
-                        tput el
-                    fi
-                else
-                    tput cuu1
-                    tput el
-                fi
-            done
-        else
-            tput cuu1	#move UP with 1 line
-            tput el		#clear until the END of line
-            tput cuu1	#move UP with 1 line
-            tput el		#clear until the END of line
-            tput cuu1	#move UP with 1 line
-            tput el		#clear until the END of line
-            tput cuu1	#move UP with 1 line
-            tput el		#clear until the END of line
-            tput cuu1	#move UP with 1 line
-            tput cuu1	#move UP with 1 line
-            tput el		#clear until the END of line
+			moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_7}"
         fi
     done
 }

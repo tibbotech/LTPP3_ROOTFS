@@ -19,47 +19,44 @@ DOCKER__TITLE_BG_LIGHTBLUE=$'\e[30;48;5;45m'
 DOCKER__INSIDE_BG_WHITE=$'\e[30;48;5;15m'
 DOCKER__OUTSIDE_BG_LIGHTGREY=$'\e[30;48;5;246m'
 
-#---Define constants
+#---CONSTANTS
 DOCKER__TITLE="TIBBO"
+
+DOCKER__MENUTITLE="${DOCKER__TITLE_FG_LIGHTBLUE}DOCKER MAIN-MENU${DOCKER__NOCOLOR}"
+DOCKER__SUBMENUTITLE="${DOCKER__TITLE_FG_LIGHTBLUE}DOCKER SUB-MENU: CREATE IMAGE(S)${DOCKER__NOCOLOR}"
+DOCKER__VERSION="v21.03.17-0.0.1"
+
+DOCKER__EXITING_NOW="Exiting Docker Main-menu..."
+DOCKER__QUIT_CTRL_C="Quit (Ctrl+C)"
+
+#---CHAR CONSTANTS
+DOCKER__DASH="-"
 DOCKER__DOT="."
-DOCKER__FIVESPACES="     "
-DOCKER__READ_FG_EXITING_NOW="Exiting Docker Main-menu..."
+DOCKER__EMPTYSTRING=""
+DOCKER__ENTER=$'\x0a'
 
-DOCKER__Q_QUIT="Quit (Ctrl+C)"
+DOCKER__ONESPACE=" "
+DOCKER__TWOSPACES=${DOCKER__ONESPACE}${DOCKER__ONESPACE}
+DOCKER__FOURSPACES=${DOCKER__TWOSPACES}${DOCKER__TWOSPACES}
+
+#---NUMERIC CONSTANTS
+DOCKER__TABLEWIDTH=70
+
+DOCKER__NUMOFLINES_1=1
+DOCKER__NUMOFLINES_2=2
+DOCKER__NUMOFLINES_3=3
+DOCKER__NUMOFLINES_4=4
+DOCKER__NUMOFLINES_5=5
+
+#---BOOLEAN CONSTANTS
+TRUE=true
+FALSE=false
 
 
 
-#---Trap ctrl-c and Call ctrl_c()
-
-# trap CTRL_C_func INT
-
-# function CTRL_C_func() {
-#     echo -e "\r"
-#     echo -e "\r"
-#     echo -e ${DOCKER__READ_FG_EXITING_NOW}
-#     echo -e "\r"
-#     echo -e "\r"
-
-#     exit
-# }
-
-
-#---Local functions & subroutines
-function GOTO__func {
-	#Input args
-    LABEL=$1
-	
-	#Define Command line
-    cmd_line=$(sed -n "/$LABEL:/{:a;n;p;ba;};" $0 | grep -v ':$')
-	
-	#Execute Command line
-    eval "${cmd_line}"
-	
-	#Exit Function
-    exit
-}
-
-press_any_key__localfunc() {
+#---FUNCTIONS
+function press_any_key__func()
+{
 	#Define constants
 	local cTIMEOUT_ANYKEY=10
 
@@ -89,7 +86,51 @@ press_any_key__localfunc() {
 	echo -e "\r"
 }
 
-docker__cmd_exec() {
+function GOTO__func
+{
+	#Input args
+    LABEL=$1
+	
+	#Define Command line
+    cmd_line=$(sed -n "/$LABEL:/{:a;n;p;ba;};" $0 | grep -v ':$')
+	
+	#Execute Command line
+    eval "${cmd_line}"
+	
+	#Exit Function
+    exit
+}
+
+function show_leadingAndTrailingStrings_separatedBySpaces__func()
+{
+    #Input args
+    local leadStr_input=${1}
+    local trailStr_input=${2}
+    local maxStrLen_input=${3}
+
+    #Define local variables
+    local ONESPACE=" "
+
+    #Get string 'without visiable' color characters
+    local leadStr_input_wo_colorChars=`echo "${leadStr_input}" | sed "s,\x1B\[[0-9;]*m,,g"`
+    local trailStr_input_wo_colorChars=`echo "${trailStr_input}" | sed "s,\x1B\[[0-9;]*m,,g"`
+
+    #Get string length
+    local leadStr_input_wo_colorChars_len=${#leadStr_input_wo_colorChars}
+    local trailStr_input_wo_colorChars_len=${#trailStr_input_wo_colorChars}
+
+    #Calculated the number of spaces to-be-added
+    local numOf_spaces=$(( maxStrLen_input-(leadStr_input_wo_colorChars_len+trailStr_input_wo_colorChars_len) ))
+
+    #Create a string containing only EMPTY SPACES
+    local emptySpaces_string=`printf '%*s' "${numOf_spaces}" | tr ' ' "${ONESPACE}"`
+
+    #Print text including Leading Empty Spaces
+    echo -e "${leadStr_input}${emptySpaces_string}${trailStr_input}"
+}
+
+function cmd_exec__func()
+{
     #Input args
     cmd=${1}
 
@@ -104,6 +145,62 @@ docker__cmd_exec() {
     fi
 }
 
+function show_centered_string__func()
+{
+    #Input args
+    local str_input=${1}
+    local maxStrLen_input=${2}
+
+    #Define one-space constant
+    local ONESPACE=" "
+
+    #Get string 'without visiable' color characters
+    local strInput_wo_colorChars=`echo "${str_input}" | sed "s,\x1B\[[0-9;]*m,,g"`
+
+    #Get string length
+    local strInput_wo_colorChars_len=${#strInput_wo_colorChars}
+
+    #Calculated the number of spaces to-be-added
+    local numOf_spaces=$(( (maxStrLen_input-strInput_wo_colorChars_len)/2 ))
+
+    #Create a string containing only EMPTY SPACES
+    local emptySpaces_string=`duplicate_char__func "${ONESPACE}" "${numOf_spaces}" `
+
+    #Print text including Leading Empty Spaces
+    echo -e "${emptySpaces_string}${str_input}"
+}
+
+function duplicate_char__func()
+{
+    #Input args
+    local char_input=${1}
+    local numOf_times=${2}
+
+    #Duplicate 'char_input'
+    local char_duplicated=`printf '%*s' "${numOf_times}" | tr ' ' "${char_input}"`
+
+    #Print text including Leading Empty Spaces
+    echo -e "${char_duplicated}"
+}
+
+function moveUp_and_cleanLines__func() {
+    #Input args
+    local numOf_lines_toBeCleared=${1}
+
+    #Clear lines
+    local numOf_lines_cleared=1
+    while [[ ${numOf_lines_cleared} -le ${numOf_lines_toBeCleared} ]]
+    do
+        tput cuu1	#move UP with 1 line
+        tput el		#clear until the END of line
+
+        numOf_lines_cleared=$((numOf_lines_cleared+1))  #increment by 1
+    done
+}
+
+
+
+#---SUBROUTINES
 docker__environmental_variables__sub() {
     #---Define PATHS
     docker__create_an_image_from_dockerfile_filename="docker_create_an_image_from_dockerfile.sh"
@@ -116,7 +213,7 @@ docker__environmental_variables__sub() {
     docker__remove_container_filename="docker_remove_container.sh"
     docker__cp_fromto_container_filename="docker_cp_fromto_container.sh"
     docker__create_dockerfile_filename="docker_create_dockerfile_filename.sh"
-    docker__ssh_to_host_filename="docker__ssh_to_host.sh"
+    docker__ssh_to_host_filename="docker_ssh_to_host.sh"
 
     docker__save_filename="docker_save.sh"
     docker__load_filename="docker_load.sh"
@@ -167,38 +264,38 @@ docker__init_variables__sub() {
 docker__mainmenu__sub() {
     while true
     do
-        echo -e "----------------------------------------------------------------------"
-        echo -e "${DOCKER__TITLE_FG_LIGHTBLUE}DOCKER MAIN-MENU${DOCKER__NOCOLOR}\t\t\t\tv21.03.17-0.0.1"
-        echo -e "----------------------------------------------------------------------"
-        echo -e "${DOCKER__FIVESPACES}1. Create ${DOCKER__IMAGEID_FG_BORDEAUX}images${DOCKER__NOCOLOR} using a ${DOCKER__FG_DARKBLUE}docker-file${DOCKER__NOCOLOR}/${DOCKER__TITLE_FG_LIGHTBLUE}docker-list${DOCKER__NOCOLOR}"
-        echo -e "${DOCKER__FIVESPACES}2. Create an ${DOCKER__IMAGEID_FG_BORDEAUX}image${DOCKER__NOCOLOR} from a ${DOCKER__REPOSITORY_FG_PURPLE}repository${DOCKER__NOCOLOR}"
-        echo -e "${DOCKER__FIVESPACES}3. Create an ${DOCKER__IMAGEID_FG_BORDEAUX}image${DOCKER__NOCOLOR} from a ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
-        echo -e "${DOCKER__FIVESPACES}4. Run ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR} from a ${DOCKER__REPOSITORY_FG_PURPLE}repository${DOCKER__NOCOLOR}"
-        echo -e "${DOCKER__FIVESPACES}5. Run an *EXITED* ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
-        echo -e "${DOCKER__FIVESPACES}6. Remove ${DOCKER__IMAGEID_FG_BORDEAUX}image-ID${DOCKER__NOCOLOR} (${DOCKER__REPOSITORY_FG_PURPLE}repository${DOCKER__NOCOLOR})"
-        echo -e "${DOCKER__FIVESPACES}7. Remove ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}container-ID${DOCKER__NOCOLOR}"
-        echo -e "${DOCKER__FIVESPACES}8. Copy a ${DOCKER__FILES_FG_ORANGE}file${DOCKER__NOCOLOR} from/to a ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
-        echo -e "${DOCKER__FIVESPACES}9. Run ${DOCKER__CHROOT_FG_GREEN}CHROOT${DOCKER__NOCOLOR} from *WITHIN* a ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
-        echo -e "----------------------------------------------------------------------"
-        echo -e "${DOCKER__FIVESPACES}r. Docker ${DOCKER__REPOSITORY_FG_PURPLE}repository${DOCKER__NOCOLOR} List"
-        echo -e "${DOCKER__FIVESPACES}c. Docker ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR} List"
-        echo -e "----------------------------------------------------------------------"
-        echo -e "${DOCKER__FIVESPACES}s. SSH"
-        echo -e "----------------------------------------------------------------------"
-        echo -e "${DOCKER__FIVESPACES}i. Load from File"
-        echo -e "${DOCKER__FIVESPACES}e. Save to File"
-        echo -e "----------------------------------------------------------------------"
-        echo -e "${DOCKER__FIVESPACES}p. Git ${DOCKER__OUTSIDE_BG_LIGHTGREY}${DOCKER__OUTSIDE_FG_WHITE}Push${DOCKER__NOCOLOR}"
-        echo -e "${DOCKER__FIVESPACES}g. Git ${DOCKER__INSIDE_BG_WHITE}${DOCKER__INSIDE_FG_LIGHTGREY}Pull${DOCKER__NOCOLOR}"
-        echo -e "----------------------------------------------------------------------"
-        echo -e "${DOCKER__FIVESPACES}q. ${DOCKER__Q_QUIT}"
-        echo -e "----------------------------------------------------------------------"
-        echo -e "\r"	
+        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+        show_leadingAndTrailingStrings_separatedBySpaces__func "${DOCKER__MENUTITLE}" "${DOCKER__VERSION}" "${DOCKER__TABLEWIDTH}"
+        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+        echo -e "${DOCKER__FOURSPACES}1. Create ${DOCKER__IMAGEID_FG_BORDEAUX}images${DOCKER__NOCOLOR} using a ${DOCKER__FG_DARKBLUE}docker-file${DOCKER__NOCOLOR}/${DOCKER__TITLE_FG_LIGHTBLUE}docker-list${DOCKER__NOCOLOR}"
+        echo -e "${DOCKER__FOURSPACES}2. Create an ${DOCKER__IMAGEID_FG_BORDEAUX}image${DOCKER__NOCOLOR} from a ${DOCKER__REPOSITORY_FG_PURPLE}repository${DOCKER__NOCOLOR}"
+        echo -e "${DOCKER__FOURSPACES}3. Create an ${DOCKER__IMAGEID_FG_BORDEAUX}image${DOCKER__NOCOLOR} from a ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
+        echo -e "${DOCKER__FOURSPACES}4. Run ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR} from a ${DOCKER__REPOSITORY_FG_PURPLE}repository${DOCKER__NOCOLOR}"
+        echo -e "${DOCKER__FOURSPACES}5. Run an *EXITED* ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
+        echo -e "${DOCKER__FOURSPACES}6. Remove ${DOCKER__IMAGEID_FG_BORDEAUX}image-ID${DOCKER__NOCOLOR} (${DOCKER__REPOSITORY_FG_PURPLE}repository${DOCKER__NOCOLOR})"
+        echo -e "${DOCKER__FOURSPACES}7. Remove ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}container-ID${DOCKER__NOCOLOR}"
+        echo -e "${DOCKER__FOURSPACES}8. Copy a ${DOCKER__FILES_FG_ORANGE}File${DOCKER__NOCOLOR} from/to a ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}"
+        echo -e "${DOCKER__FOURSPACES}9. Run ${DOCKER__CHROOT_FG_GREEN}CHROOT${DOCKER__NOCOLOR} from *WITHIN* a ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
+        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+        echo -e "${DOCKER__FOURSPACES}r. Docker ${DOCKER__REPOSITORY_FG_PURPLE}repository${DOCKER__NOCOLOR} List"
+        echo -e "${DOCKER__FOURSPACES}c. Docker ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR} List"
+        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+        echo -e "${DOCKER__FOURSPACES}s. SSH"
+        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+        echo -e "${DOCKER__FOURSPACES}i. Load from File"
+        echo -e "${DOCKER__FOURSPACES}e. Save to File"
+        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+        echo -e "${DOCKER__FOURSPACES}p. Git ${DOCKER__OUTSIDE_BG_LIGHTGREY}${DOCKER__OUTSIDE_FG_WHITE}Push${DOCKER__NOCOLOR}"
+        echo -e "${DOCKER__FOURSPACES}g. Git ${DOCKER__INSIDE_BG_WHITE}${DOCKER__INSIDE_FG_LIGHTGREY}Pull${DOCKER__NOCOLOR}"
+        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+        echo -e "${DOCKER__FOURSPACES}q. ${DOCKER__QUIT_CTRL_C}"
+        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+        # echo -e "\r"
 
         while true
         do
             #Select an option
-            read -N 1 -e -p "Please choose an option: " docker__mychoice
+            read -N1 -r -p "Please choose an option: " docker__mychoice
             echo -e "\r"
 
             #Only continue if a valid option is selected
@@ -206,13 +303,14 @@ docker__mainmenu__sub() {
                 if [[ ${docker__mychoice} =~ [1-9,r,c,s,e,i,p,g,q] ]]; then
                     break
                 else
-                    tput cuu1	#move UP with 1 line
-                    tput cuu1	#move UP with 1 line
-                    tput el		#clear until the END of line
+                    if [[ ${docker__mychoice} == ${DOCKER__ENTER} ]]; then
+                        moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
+                    else
+                        moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+                    fi
                 fi
             else
-                tput cuu1	#move UP with 1 line
-                tput el		#clear until the END of line
+                moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
             fi
         done
             
@@ -223,35 +321,35 @@ docker__mainmenu__sub() {
                 ;;
 
             2)
-                docker__cmd_exec "${docker__create_image_from_existing_repository_fpath}"
+                cmd_exec__func "${docker__create_image_from_existing_repository_fpath}"
                 ;;
 
             3)
-                docker__cmd_exec "${docker__create_image_from_container_fpath}"
+                cmd_exec__func "${docker__create_image_from_container_fpath}"
                 ;;
 
             4)
-                docker__cmd_exec "${docker__run_container_from_a_repository_fpath}"
+                cmd_exec__func "${docker__run_container_from_a_repository_fpath}"
                 ;;
 
             5)
-                docker__cmd_exec "${docker__run_exited_container_fpath}"
+                cmd_exec__func "${docker__run_exited_container_fpath}"
                 ;;
 
             6)
-                docker__cmd_exec "${docker__remove_image_fpath}"
+                cmd_exec__func "${docker__remove_image_fpath}"
                 ;;
 
             7)
-                docker__cmd_exec "${docker__remove_container_fpath}"
+                cmd_exec__func "${docker__remove_container_fpath}"
                 ;;
 
             8)
-                docker__cmd_exec "${docker__cp_fromto_container_fpath}"
+                cmd_exec__func "${docker__cp_fromto_container_fpath}"
                 ;;
 
             9)
-                docker__cmd_exec "${docker__run_chroot_fpath}"
+                cmd_exec__func "${docker__run_chroot_fpath}"
                 ;;
 
             c)
@@ -263,23 +361,23 @@ docker__mainmenu__sub() {
                 ;;
 
             s)
-                docker__cmd_exec "${docker__ssh_to_host_fpath}"
+                cmd_exec__func "${docker__ssh_to_host_fpath}"
                 ;;
 
             e)
-                docker__cmd_exec "${docker__save_fpath}"
+                cmd_exec__func "${docker__save_fpath}"
                 ;;
 
             i)
-                docker__cmd_exec "${docker__load_fpath}"
+                cmd_exec__func "${docker__load_fpath}"
                 ;;
 
             p)  
-                docker__cmd_exec "${docker__git_push_fpath}"
+                cmd_exec__func "${docker__git_push_fpath}"
                 ;;
 
             g)  
-                docker__cmd_exec "${docker__git_pull_fpath}"
+                cmd_exec__func "${docker__git_pull_fpath}"
                 ;;
 
             q)
@@ -290,34 +388,36 @@ docker__mainmenu__sub() {
 }
 
 docker__create_images_menu__sub() {
+    echo -e "\r"
+
     while true
     do
-        echo -e "----------------------------------------------------------------------"
-        echo -e "${DOCKER__TITLE_FG_LIGHTBLUE}DOCKER SUB-MENU: CREATE IMAGE(S)${DOCKER__NOCOLOR}"
-        echo -e "----------------------------------------------------------------------"
-        echo -e "${DOCKER__FIVESPACES}1. Create an ${DOCKER__IMAGEID_FG_BORDEAUX}image${DOCKER__NOCOLOR} using a ${DOCKER__FG_DARKBLUE}docker-file${DOCKER__NOCOLOR}"
-        echo -e "${DOCKER__FIVESPACES}2. Create ${DOCKER__IMAGEID_FG_BORDEAUX}images${DOCKER__NOCOLOR} using a ${DOCKER__TITLE_FG_LIGHTBLUE}docker-list${DOCKER__NOCOLOR}"
-        echo -e "----------------------------------------------------------------------"
-        echo -e "${DOCKER__FIVESPACES}r. Docker ${DOCKER__REPOSITORY_FG_PURPLE}repository${DOCKER__NOCOLOR} List"
-        echo -e "${DOCKER__FIVESPACES}c. Docker ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR} List"
-        echo -e "----------------------------------------------------------------------"
-        echo -e "${DOCKER__FIVESPACES}s. SSH"
-        echo -e "----------------------------------------------------------------------"
-        echo -e "${DOCKER__FIVESPACES}i. Load from File"
-        echo -e "${DOCKER__FIVESPACES}e. Save to File"
-        echo -e "----------------------------------------------------------------------"
-        echo -e "${DOCKER__FIVESPACES}p. Git ${DOCKER__OUTSIDE_BG_LIGHTGREY}${DOCKER__OUTSIDE_FG_WHITE}Push${DOCKER__NOCOLOR}"
-        echo -e "${DOCKER__FIVESPACES}g. Git ${DOCKER__INSIDE_BG_WHITE}${DOCKER__INSIDE_FG_LIGHTGREY}Pull${DOCKER__NOCOLOR}"
-        echo -e "----------------------------------------------------------------------"
-        echo -e "${DOCKER__FIVESPACES}h. Home"
-        echo -e "${DOCKER__FIVESPACES}q. ${DOCKER__Q_QUIT}"
-        echo -e "----------------------------------------------------------------------"
-        echo -e "\r"	
+        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+        show_leadingAndTrailingStrings_separatedBySpaces__func "${DOCKER__SUBMENUTITLE}" "${DOCKER__VERSION}" "${DOCKER__TABLEWIDTH}"
+        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+        echo -e "${DOCKER__FOURSPACES}1. Create an ${DOCKER__IMAGEID_FG_BORDEAUX}image${DOCKER__NOCOLOR} using a ${DOCKER__FG_DARKBLUE}docker-file${DOCKER__NOCOLOR}"
+        echo -e "${DOCKER__FOURSPACES}2. Create ${DOCKER__IMAGEID_FG_BORDEAUX}images${DOCKER__NOCOLOR} using a ${DOCKER__TITLE_FG_LIGHTBLUE}docker-list${DOCKER__NOCOLOR}"
+        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+        echo -e "${DOCKER__FOURSPACES}r. Docker ${DOCKER__REPOSITORY_FG_PURPLE}repository${DOCKER__NOCOLOR} List"
+        echo -e "${DOCKER__FOURSPACES}c. Docker ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR} List"
+        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+        echo -e "${DOCKER__FOURSPACES}s. SSH"
+        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+        echo -e "${DOCKER__FOURSPACES}i. Load from File"
+        echo -e "${DOCKER__FOURSPACES}e. Save to File"
+        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+        echo -e "${DOCKER__FOURSPACES}p. Git ${DOCKER__OUTSIDE_BG_LIGHTGREY}${DOCKER__OUTSIDE_FG_WHITE}Push${DOCKER__NOCOLOR}"
+        echo -e "${DOCKER__FOURSPACES}g. Git ${DOCKER__INSIDE_BG_WHITE}${DOCKER__INSIDE_FG_LIGHTGREY}Pull${DOCKER__NOCOLOR}"
+        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+        echo -e "${DOCKER__FOURSPACES}h. Home"
+        echo -e "${DOCKER__FOURSPACES}q. $DOCKER__QUIT_CTRL_C"
+        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+        # echo -e "\r"
 
         while true
         do
             #Select an option
-            read -N 1 -e -p "Please choose an option: " docker__mychoice
+            read -N1 -r -p "Please choose an option: " docker__mychoice
             echo -e "\r"
 
             #Only continue if a valid option is selected
@@ -325,24 +425,25 @@ docker__create_images_menu__sub() {
                 if [[ ${docker__mychoice} =~ [1-2,r,c,s,e,i,p,g,h,q] ]]; then
                     break
                 else
-                    tput cuu1	#move UP with 1 line
-                    tput cuu1	#move UP with 1 line
-                    tput el		#clear until the END of line
+                    if [[ ${docker__mychoice} == ${DOCKER__ENTER} ]]; then
+                        moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
+                    else
+                        moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+                    fi
                 fi
             else
-                tput cuu1	#move UP with 1 line
-                tput el		#clear until the END of line
+                moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
             fi
         done
             
         #Goto the selected option
         case ${docker__mychoice} in
             1)
-                docker__cmd_exec "${docker__create_an_image_from_dockerfile_fpath}"
+                cmd_exec__func "${docker__create_an_image_from_dockerfile_fpath}"
                 ;;
 
             2)
-                docker__cmd_exec "${docker__create_images_from_dockerlist_fpath}"
+                cmd_exec__func "${docker__create_images_from_dockerlist_fpath}"
                 ;;
 
             c)
@@ -354,31 +455,36 @@ docker__create_images_menu__sub() {
                 ;;
 
             s)
-                docker__cmd_exec "${docker__ssh_to_host_fpath}"
+                cmd_exec__func "${docker__ssh_to_host_fpath}"
                 ;;
 
             e)
-                docker__cmd_exec "${docker__save_fpath}"
+                cmd_exec__func "${docker__save_fpath}"
                 ;;
 
             i)
-                docker__cmd_exec "${docker__load_fpath}"
+                cmd_exec__func "${docker__load_fpath}"
                 ;;
 
             p)  
-                docker__cmd_exec "${docker__git_push_fpath}"
+                cmd_exec__func "${docker__git_push_fpath}"
                 ;;
 
             g)  
-                docker__cmd_exec "${docker__git_pull_fpath}"
+                cmd_exec__func "${docker__git_pull_fpath}"
                 ;;
 
             h)
+                echo -e "\r"
+
                 docker__mainmenu__sub
                 ;;
 
             q)
-                exit
+                echo -e "\r"
+                echo -e "\r"
+
+                exit 0
                 ;;
         esac
     done
@@ -388,24 +494,27 @@ docker__list_repository__sub() {
     #Load header
     docker__load_header__sub
 
+    #Define local constants
+    local MENUTITLE_REPOSITORYLIST="${DOCKER__REPOSITORY_FG_PURPLE}REPOSITORY'S${DOCKER__NOCOLOR} ${DOCKER__GENERAL_FG_YELLOW}LIST${DOCKER__NOCOLOR}"
+
+    local ERRMSG_NO_IMAGES_FOUND="=:${DOCKER__ERROR_FG_LIGHTRED}NO IMAGES FOUND${DOCKER__NOCOLOR}:="
+
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+        show_centered_string__func "${MENUTITLE_REPOSITORYLIST}" "${DOCKER__TABLEWIDTH}"
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+
     #Get number of containers
-    local numof_containers=`docker image ls | head -n -1 | wc -l`
-
-    echo -e "----------------------------------------------------------------------"
-    echo -e "\t${DOCKER__REPOSITORY_FG_PURPLE}REPOSITORY'S${DOCKER__NOCOLOR} ${DOCKER__GENERAL_FG_YELLOW}LIST${DOCKER__NOCOLOR} "
-    echo -e "----------------------------------------------------------------------"
-    
-    #Get Docker Image's List
-    docker image ls
-
-    if [[ ${numof_containers} -eq 0 ]]; then
+    local numOf_repositories=`docker image ls | head -n -1 | wc -l`
+    if [[ ${numOf_repositories} -eq 0 ]]; then
         echo -e "\r"
-        echo -e "\t\t=:${DOCKER__ERROR_FG_LIGHTRED}NO IMAGES FOUND${DOCKER__NOCOLOR}:="
-        echo -e "----------------------------------------------------------------------"
+            show_centered_string__func "${ERRMSG_NO_IMAGES_FOUND}" "${DOCKER__TABLEWIDTH}"
+        echo -e "\r"
+        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
         echo -e "\r"
 
-        press_any_key__localfunc
+        press_any_key__func
     else
+            docker image ls
         echo -e "\r"
         echo -e "\r"
     fi
@@ -415,25 +524,27 @@ docker__list_container__sub() {
     #Load header
     docker__load_header__sub
 
-    #Get number of containers
-    local numof_containers=`docker ps -a | head -n -1 | wc -l`
-
-    echo -e "----------------------------------------------------------------------"
-    echo -e "\t${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}CONTAINER'S${DOCKER__NOCOLOR} ${DOCKER__GENERAL_FG_YELLOW}LIST${DOCKER__NOCOLOR} "
-    echo -e "----------------------------------------------------------------------"
+    #Define local constants
+    local MENUTITLE_CONTAINERLIST="${DOCKER__REPOSITORY_FG_PURPLE}REPOSITORY'S${DOCKER__NOCOLOR} ${DOCKER__GENERAL_FG_YELLOW}LIST${DOCKER__NOCOLOR}"
     
-    #Get Docker Container's List
-    docker ps -a
+    local ERRMSG_NO_CONTAINERS_FOUND="=:${DOCKER__ERROR_FG_LIGHTRED}NO CONTAINERS FOUND${DOCKER__NOCOLOR}:="
 
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+        show_centered_string__func "${MENUTITLE_CONTAINERLIST}" "${DOCKER__TABLEWIDTH}"
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
 
-    if [[ ${numof_containers} -eq 0 ]]; then
+    #Get number of containers
+    local numOf_containers=`docker ps -a | head -n -1 | wc -l`
+    if [[ ${numOf_containers} -eq 0 ]]; then
         echo -e "\r"
-        echo -e "\t\t=:${DOCKER__ERROR_FG_LIGHTRED}NO CONTAINERS FOUND${DOCKER__NOCOLOR}:="
-        echo -e "----------------------------------------------------------------------"
+            show_centered_string__func "${ERRMSG_NO_CONTAINERS_FOUND}" "${DOCKER__TABLEWIDTH}"
+        echo -e "\r"
+        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
         echo -e "\r"
 
-        press_any_key__localfunc
+        press_any_key__func
     else
+            docker ps -a
         echo -e "\r"
         echo -e "\r"
     fi

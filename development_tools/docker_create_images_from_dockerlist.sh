@@ -17,31 +17,37 @@ DOCKER__TITLE_BG_LIGHTBLUE=$'\e[30;48;5;45m'
 #---CONSTANTS
 DOCKER__TITLE="TIBBO"
 
-DOCKER__FIVE_SPACES="     "
-DOCKER__NINE=9
-
 DOCKER__LATEST="latest"
 DOCKER__EXITING_NOW="Exiting now..."
 
+#---CHARACTER CHONSTANTS
+DOCKER__DASH="-"
+DOCKER__EMPTYSTRING=""
+DOCKER__ENTER=$'\x0a'
+
+DOCKER__ONESPACE=" "
+DOCKER__TWOSPACES=${DOCKER__ONESPACE}${DOCKER__ONESPACE}
+DOCKER__FOURSPACES=${DOCKER__TWOSPACES}${DOCKER__TWOSPACES}
+
+#---NUMERIC CONSTANTS
+DOCKER__NINE=9
+DOCKER__TABLEWIDTH=70
+
+DOCKER__NUMOFLINES_1=1
+DOCKER__NUMOFLINES_2=2
+DOCKER__NUMOFLINES_3=3
+DOCKER__NUMOFLINES_4=4
+DOCKER__NUMOFLINES_5=5
+
+#---READ-INPUT CONSTANTS
 DOCKER__YES="y"
 DOCKER__NO="n"
 DOCKER__QUIT="q"
 DOCKER__BACK="b"
 
-DOCKER__A_ABORT="${DOCKER__FIVE_SPACES}b. Back"
-DOCKER__Q_QUIT="${DOCKER__FIVE_SPACES}q. Quit (Ctrl+C)"
-
-
-
-
-#---PRINT CONSTANTS
-DOCKER__READ_FG_EXITING_NOW="Exiting now..."
-
-
-
-#---PATHS
-docker__dockerList_fpath=""
-docker__dockerList_filename=""
+#---MENU CONSTANTS
+DOCKER__A_ABORT="${DOCKER__FOURSPACES}b. Back"
+DOCKER__Q_QUIT="${DOCKER__FOURSPACES}q. Quit (Ctrl+C)"
 
 
 
@@ -81,23 +87,91 @@ press_any_key__func() {
 	echo -e "\r"
 }
 
+function exit__func() {
+    echo -e "\r"
+    echo -e "\r"
+
+    # echo -e ${DOCKER__EXITING_NOW}
+    # echo -e "\r"
+    # echo -e "\r"
+
+    exit
+}
+
+function show_centered_string__func()
+{
+    #Input args
+    local str_input=${1}
+    local maxStrLen_input=${2}
+
+    #Define one-space constant
+    local ONESPACE=" "
+
+    #Get string 'without visiable' color characters
+    local strInput_wo_colorChars=`echo "${str_input}" | sed "s,\x1B\[[0-9;]*m,,g"`
+
+    #Get string length
+    local strInput_wo_colorChars_len=${#strInput_wo_colorChars}
+
+    #Calculated the number of spaces to-be-added
+    local numOf_spaces=$(( (maxStrLen_input-strInput_wo_colorChars_len)/2 ))
+
+    #Create a string containing only EMPTY SPACES
+    local emptySpaces_string=`duplicate_char__func "${ONESPACE}" "${numOf_spaces}" `
+
+    #Print text including Leading Empty Spaces
+    echo -e "${emptySpaces_string}${str_input}"
+}
+
+function duplicate_char__func()
+{
+    #Input args
+    local char_input=${1}
+    local numOf_times=${2}
+
+    #Duplicate 'char_input'
+    local char_duplicated=`printf '%*s' "${numOf_times}" | tr ' ' "${char_input}"`
+
+    #Print text including Leading Empty Spaces
+    echo -e "${char_duplicated}"
+}
+
+function moveUp_and_cleanLines__func() {
+    #Input args
+    local numOf_lines_toBeCleared=${1}
+
+    #Clear lines
+    local numOf_lines_cleared=1
+    while [[ ${numOf_lines_cleared} -le ${numOf_lines_toBeCleared} ]]
+    do
+        tput cuu1	#move UP with 1 line
+        tput el		#clear until the END of line
+
+        numOf_lines_cleared=$((numOf_lines_cleared+1))  #increment by 1
+    done
+}
+
+function moveDown_and_cleanLines__func() {
+    #Input args
+    local numOf_lines_toBeCleared=${1}
+
+    #Clear lines
+    local numOf_lines_cleared=1
+    while [[ ${numOf_lines_cleared} -le ${numOf_lines_toBeCleared} ]]
+    do
+        tput cud1	#move UP with 1 line
+        tput el1	#clear until the END of line
+
+        numOf_lines_cleared=$((numOf_lines_cleared+1))  #increment by 1
+    done
+}
+
 
 
 #---SUBROUTINES
 CTRL_C__sub() {
     exit__func
 }
-function exit__func() {
-    echo -e "\r"
-    echo -e "\r"
-    echo -e ${DOCKER__READ_FG_EXITING_NOW}
-    echo -e "\r"
-    echo -e "\r"
-
-    exit
-}
-
-
 
 docker__load_header__sub() {
     echo -e "\r"
@@ -113,15 +187,15 @@ docker__mandatory_apps_check__sub() {
     local qemu_user_static_isInstalled=`dpkg -l | grep "${QEMU_USER_STATIC}"`
 
     if [[ -z ${docker_io_isInstalled} ]] || [[ -z ${qemu_user_static_isInstalled} ]]; then
-        echo -e "${DOCKER__FIVE_SPACES}The following mandatory software is/are not installed:"
+        echo -e "${DOCKER__FOURSPACES}The following mandatory software is/are not installed:"
         if [[ -z ${docker_io_isInstalled} ]]; then
-            echo -e "${DOCKER__FIVE_SPACES}- docker.io"
+            echo -e "${DOCKER__FOURSPACES}- docker.io"
         fi
         if [[ -z ${qemu_user_static_isInstalled} ]]; then
-            echo -e "${DOCKER__FIVE_SPACES}- qemu-user-static"
+            echo -e "${DOCKER__FOURSPACES}- qemu-user-static"
         fi
         echo -e "\r"
-        echo -e "${DOCKER__FIVE_SPACES}PLEASE INSTALL the missing software."
+        echo -e "${DOCKER__FOURSPACES}PLEASE INSTALL the missing software."
         echo -e "\r"
         
         press_any_key__func
@@ -143,33 +217,44 @@ docker__load_environment_variables__sub() {
     docker__my_LTPP3_ROOTFS_docker_dockerfiles_dir=${docker__my_LTPP3_ROOTFS_docker_dir}/dockerfiles
 }
 
-docker__show_dockerList_files__sub() {
-    #Clear terminal screen
-    # tput clear
+docker__init_variables__sub() {
+    docker__dockerList_fpath=""
+    docker__dockerList_filename=""
+}
 
-    #Define variables
+docker__show_dockerList_files__sub() {
+    #Define local constants
+    local MENUTITLE="${DOCKER__GENERAL_FG_YELLOW}Create${DOCKER__NOCOLOR} multiple ${DOCKER__IMAGEID_FG_BORDEAUX}IMAGES${DOCKER__NOCOLOR} using a ${DOCKER__TITLE_FG_LIGHTBLUE}docker-list${DOCKER__NOCOLOR}"
+
+    #Define local variables
+    local dockerlist_filename=""
     local listOf_dockerListFpaths_string=""
     local listOf_dockerListFpaths_arr=()
     local listOf_dockerListFpaths_arrItem=""
-    local extract_filename=""
-    local readInput_msg="Choose a file: "
+
+    #Define local message variables
+    local errMsg1="***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: No files found in directory:"
+    local errMsg2="${DOCKER__FOURSPACES}${DOCKER__DIRS_FG_VERYLIGHTORANGE}${docker__my_LTPP3_ROOTFS_docker_list_dir}${DOCKER__NOCOLOR}"
+    local errMsg3="***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Please put all ${DOCKER__GENERAL_FG_YELLOW}dockerfile-list${DOCKER__NOCOLOR} files in this directory"
+
+    local locationMsg_dockerList="${DOCKER__FOURSPACES}${DOCKER__DIRS_FG_VERYLIGHTORANGE}Location${DOCKER__NOCOLOR}: ${docker__my_LTPP3_ROOTFS_docker_list_dir}"
+    local locationMsg_dockerfiles="${DOCKER__FOURSPACES}${DOCKER__DIRS_FG_VERYLIGHTORANGE}Location${DOCKER__NOCOLOR}: ${docker__my_LTPP3_ROOTFS_docker_dockerfiles_dir}"
+
+    #Define local read-input variables
+    local readInput_msg1="Choose a file: "
+    local readInput_msg2="Do you wish to continue (y/n): "
 
     #Get all files at the specified location
     listOf_dockerListFpaths_string=`find ${docker__my_LTPP3_ROOTFS_docker_list_dir} -maxdepth 1 -type f | LC_ALL=C sort`
-
-    #Check if '' is an EMPTY STRING
     if [[ -z ${listOf_dockerListFpaths_string} ]]; then
         echo -e "\r"
-        echo -e "----------------------------------------------------------------------"
-        echo -e "***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: no files found in directory:"
-        echo -e "${DOCKER__FIVE_SPACES}${docker__my_LTPP3_ROOTFS_docker_list_dir}"
+        echo -e "${errMsg1}"
+        echo -e "${errMsg2}"
         echo -e "\r"
-        echo -e "Please put all ${DOCKER__GENERAL_FG_YELLOW}dockerfile-list${DOCKER__NOCOLOR} files in this directory"
-
-        echo -e "\r"
+        echo -e "${errMsg3}"
         echo -e "\r"
 
-        exit__func
+        exit 99
     fi
 
 
@@ -183,34 +268,37 @@ docker__show_dockerList_files__sub() {
         local seqnum=0
 
         #Show all 'dockerfile-list' files
-        echo -e "----------------------------------------------------------------------"
-        echo -e "\t${DOCKER__GENERAL_FG_YELLOW}Create${DOCKER__NOCOLOR} multiple ${DOCKER__IMAGEID_FG_BORDEAUX}IMAGES${DOCKER__NOCOLOR} with ${DOCKER__TITLE_FG_LIGHTBLUE}DOCKER-FILES${DOCKER__NOCOLOR}"
-        echo -e "----------------------------------------------------------------------"
+        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+        show_centered_string__func "${MENUTITLE}" "${DOCKER__TABLEWIDTH}"
+        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+
         for listOf_dockerListFpaths_arrItem in "${listOf_dockerListFpaths_arr[@]}"
         do
             #increment sequence-number
             seqnum=$((seqnum+1))
 
             #Get filename only
-            extract_filename=`basename ${listOf_dockerListFpaths_arrItem}`  
+            dockerlist_filename=`basename ${listOf_dockerListFpaths_arrItem}`  
         
             #Show filename
-            echo -e "${DOCKER__FIVE_SPACES}${seqnum}. ${extract_filename}"
+            echo -e "${DOCKER__FOURSPACES}${seqnum}. ${dockerlist_filename}"
         done
-        echo -e "----------------------------------------------------------------------"
-        echo -e "${DOCKER__FIVE_SPACES}${DOCKER__DIRS_FG_VERYLIGHTORANGE}Location${DOCKER__NOCOLOR}: ${docker__my_LTPP3_ROOTFS_docker_list_dir}"
-        echo -e "----------------------------------------------------------------------"
+
+        echo -e "\r"
+        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+        echo -e "${locationMsg_dockerList}"
+        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
         echo -e "${DOCKER__Q_QUIT}"
-        echo -e "----------------------------------------------------------------------"
+        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
 
         #Read-input handler
         while true
         do
             #Show read-input
             if [[ ${seqnum} -le ${DOCKER__NINE} ]]; then    #seqnum <= 9
-                read -N1 -p "${readInput_msg}" mychoice
+                read -N1 -p "${readInput_msg1}" mychoice
             else    #seqnum > 9
-                read -p "${readInput_msg}" mychoice
+                read -p "${readInput_msg1}" mychoice
             fi
 
             #Check if 'mychoice' is a numeric value
@@ -224,12 +312,16 @@ docker__show_dockerList_files__sub() {
                 elif [[ ${mychoice} == ${DOCKER__QUIT} ]]; then
                     exit__func
                 else
-                    tput cuu1   #move-UP one line
-                    tput el #clean until end of line
+                    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+                    moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
                 fi
             else
-                tput cuu1   #move-UP one line
-                tput el #clean until end of line    
+                if [[ ${mychoice} != "${DOCKER__ENTER}" ]]; then
+                    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+                    moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+                else
+                    moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"           
+                fi
             fi
         done
 
@@ -241,27 +333,32 @@ docker__show_dockerList_files__sub() {
         docker__dockerList_filename=`basename ${docker__dockerList_fpath}`
 
         #Show chosen file contents
+        local subMenuTitle="Contents of File ${DOCKER__FILES_FG_ORANGE}${docker__dockerList_filename}${DOCKER__NOCOLOR}"
+
         echo -e "\r"
-        echo -e "----------------------------------------------------------------------"
-        echo -e "Contents of File ${DOCKER__FILES_FG_ORANGE}${docker__dockerList_filename}${DOCKER__NOCOLOR}"
-        echo -e "----------------------------------------------------------------------"
+        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+        show_centered_string__func "${subMenuTitle}" "${DOCKER__TABLEWIDTH}"
+        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+
         while read file_line
         do
-            echo -e "${DOCKER__FIVE_SPACES}${file_line}"
+            echo -e "${DOCKER__FOURSPACES}${file_line}"
 
         done < ${docker__dockerList_fpath}
-        echo -e "----------------------------------------------------------------------"
-        echo -e "${DOCKER__FIVE_SPACES}${DOCKER__DIRS_FG_VERYLIGHTORANGE}Location${DOCKER__NOCOLOR}: ${docker__my_LTPP3_ROOTFS_docker_dockerfiles_dir}"
-        echo -e "----------------------------------------------------------------------"
+        
+        echo -e "\r"
+        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+        echo -e "${locationMsg_dockerfiles}"
+        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
         echo -e "${DOCKER__A_ABORT}"
         echo -e "${DOCKER__Q_QUIT}"
-        echo -e "----------------------------------------------------------------------"
+        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
 
         #Read-input handler
         while true
         do
             #Show read-input
-            read -N1 -p "Do you wish to continue (y/n): " mychoice
+            read -N1 -p "${readInput_msg2}" mychoice
 
             #Check if 'mychoice' is a numeric value
             if [[ ${mychoice} =~ [y,n,b,q] ]]; then
@@ -279,8 +376,12 @@ docker__show_dockerList_files__sub() {
                     break   #exit THIS loop
                 fi
             else
-                tput cuu1   #move-UP one line
-                tput el #clean until end of line    
+                if [[ ${mychoice} != "${DOCKER__ENTER}" ]]; then
+                    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+                    moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"    
+                else
+                    moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"              
+                fi
             fi
         done
     done   
@@ -290,7 +391,10 @@ docker__create_image_handler__sub() {
     #---Read contents of the file
     #Each line of the file represents a 'dockerfile' containing the instructions to-be-executed
     
-    #Define variables
+    #Define local constants
+    local errMsg="***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: non-existing file: ${dockerfile_fpath}"
+
+    #Define local variables
     local linenum=1
     local dockerfile_fpath=""
 
@@ -305,7 +409,7 @@ docker__create_image_handler__sub() {
                 docker__create_image__func ${dockerfile_fpath}
             else
                 echo -e "\r"
-                echo -e "***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: non-existing file: ${dockerfile_fpath}"
+                echo -e "${errMsg}"
                 echo -e "\r"       
             fi
         fi
@@ -317,8 +421,11 @@ function docker__create_image__func() {
     #Input args
     local dockerfile_fpath=${1}
 
-    #Define constants
-    GREP_PATTERN="LABEL repository:tag"
+    #Define local constants
+    local GREP_PATTERN="LABEL repository:tag"
+
+    #Define local variables
+    local statusMsg="---:${DOCKER__FILES_FG_ORANGE}STATUS${DOCKER__NOCOLOR}: Creating image..."
 
     #Get REPOSITORY:TAG from dockerfile
     local dockerfile_repository_tag=`egrep -w "${GREP_PATTERN}" ${dockerfile_fpath} | cut -d"\"" -f2`
@@ -328,39 +435,46 @@ function docker__create_image__func() {
         dockerfile_repository_tag="${dockerfile}:${DOCKER__LATEST}"
     fi
 
-    #Define Docker command
-    dockercmd="docker build --tag ${dockerfile_repository_tag} - < ${dockerfile_fpath}" #with REPOSITORY:TAG
-
     #Execute Docker command
     echo -e "\r"
-    echo -e "Running: ${DOCKER__FILES_FG_ORANGE}${dockerfile_fpath}${DOCKER__NOCOLOR}"
+    echo -e "${statusMsg}"
     echo -e "\r"
 
-    sudo sh -c "${dockercmd}" #execute cmd
-    docker__validate_exitCode__func   #check if cmd ran successfully
+    docker build --tag ${dockerfile_repository_tag} - < ${dockerfile_fpath} 2>&1 > /dev/null
 
+    #Validate executed command
+    docker__validate_exitCode__func
+
+    #Print docker image list
     echo -e "\r"
-        sudo sh -c "docker image ls"    #show Docker IMAGE list
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    show_centered_string__func "${MENUTITLE}" "${DOCKER__TABLEWIDTH}"
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    
+    docker image ls    #show Docker IMAGE list
     echo -e "\r"
     echo -e "\r"
 }
 function docker__validate_exitCode__func() {
+    #Define local message variables
+    local successMsg="---:${DOCKER__FILES_FG_ORANGE}STATUS${DOCKER__NOCOLOR}: Image was created ${DOCKER__SUCCESS_FG_LIGHTGREEN}successfully${DOCKER__NOCOLOR}..."
+    local errMsg="***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Unable to create Image"
+
+    #Get exit-code of the latest executed command
     exit_code=$?
-    
     if [[ ${exit_code} -eq 0 ]]; then
         echo -e "\r"
-        echo -e "script was executed ${DOCKER__SUCCESS_FG_LIGHTGREEN}successfully${DOCKER__NOCOLOR}..."
+        echo -e "${successMsg}"
         echo -e "\r"
 
     else
         echo -e "\r"
-        echo -e "***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: script was stopped due to an error occurred..."
+        echo -e "${errMsg}"
         echo -e "\r"
-        echo -e "Please resolve the issue..."
-        echo -e "\r"
-        echo -e "${DOCKER__EXITING_NOW}"
-        echo -e "\r"
-        echo -e "\r"
+
+        # echo -e "${DOCKER__EXITING_NOW}"
+        # echo -e "\r"
+        # echo -e "\r"
 
         exit
     fi
@@ -373,6 +487,8 @@ main_sub() {
     docker__load_header__sub
 
     docker__load_environment_variables__sub
+
+    docker__init_variables__sub
 
     docker__mandatory_apps_check__sub
 
