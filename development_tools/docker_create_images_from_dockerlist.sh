@@ -47,19 +47,18 @@ DOCKER__BACK="b"
 
 #---MENU CONSTANTS
 DOCKER__A_ABORT="${DOCKER__FOURSPACES}b. Back"
+DOCKER__CTRL_C_QUIT="${DOCKER__FOURSPACES}Quit (Ctrl+C)"
 DOCKER__Q_QUIT="${DOCKER__FOURSPACES}q. Quit (Ctrl+C)"
 
 
 
+#---FUNCTIONS
 #---Trap ctrl-c and Call ctrl_c()
 trap CTRL_C__sub INT
 
-
-
-#---FUNCTIONS
 press_any_key__func() {
 	#Define constants
-	local cTIMEOUT_ANYKEY=10
+	local ANYKEY_TIMEOUT=10
 
 	#Initialize variables
 	local keypressed=""
@@ -67,9 +66,9 @@ press_any_key__func() {
 
 	#Show Press Any Key message with count-down
 	echo -e "\r"
-	while [[ ${tcounter} -le ${cTIMEOUT_ANYKEY} ]];
+	while [[ ${tcounter} -le ${ANYKEY_TIMEOUT} ]];
 	do
-		delta_tcounter=$(( ${cTIMEOUT_ANYKEY} - ${tcounter} ))
+		delta_tcounter=$(( ${ANYKEY_TIMEOUT} - ${tcounter} ))
 
 		echo -e "\rPress (a)bort or any key to continue... (${delta_tcounter}) \c"
 		read -N 1 -t 1 -s -r keypressed
@@ -423,9 +422,13 @@ function docker__create_image__func() {
 
     #Define local constants
     local GREP_PATTERN="LABEL repository:tag"
+    local MENUTITLE_UPDATED_IMAGE_LIST="Updated ${DOCKER__IMAGEID_FG_BORDEAUX}IMAGE${DOCKER__NOCOLOR}-list"
 
-    #Define local variables
+    #Define local message variables
     local statusMsg="---:${DOCKER__FILES_FG_ORANGE}STATUS${DOCKER__NOCOLOR}: Creating image..."
+
+    #Define local command variables
+    local docker_image_ls_cmd="docker image ls"
 
     #Get REPOSITORY:TAG from dockerfile
     local dockerfile_repository_tag=`egrep -w "${GREP_PATTERN}" ${dockerfile_fpath} | cut -d"\"" -f2`
@@ -447,11 +450,9 @@ function docker__create_image__func() {
 
     #Print docker image list
     echo -e "\r"
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-    show_centered_string__func "${MENUTITLE}" "${DOCKER__TABLEWIDTH}"
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+
+    docker__show_list_with_menuTitle__func "${MENUTITLE_UPDATED_IMAGE_LIST}" "${docker_image_ls_cmd}"
     
-    docker image ls    #show Docker IMAGE list
     echo -e "\r"
     echo -e "\r"
 }
@@ -478,6 +479,25 @@ function docker__validate_exitCode__func() {
 
         exit
     fi
+}
+
+function docker__show_list_with_menuTitle__func() {
+    #Input args
+    local menuTitle=${1}
+    local dockerCmd=${2}
+
+    #Show list
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    show_centered_string__func "${menuTitle}" "${DOCKER__TABLEWIDTH}"
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    
+    ${dockerCmd}
+
+    echo -e "\r"
+
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    echo -e "${DOCKER__CTRL_C_QUIT}"
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
 }
 
 

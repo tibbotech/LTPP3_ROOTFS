@@ -43,7 +43,7 @@ DOCKER__NUMOFLINES_6=6
 DOCKER__YES="y"
 DOCKER__NO="n"
 DOCKER__QUIT="q"
-DOCKER__BACK="b"
+DOCKER__REDO="r"
 
 #---MENU CONSTANTS
 DOCKER__A_ABORT="${DOCKER__FOURSPACES}b. Back"
@@ -59,7 +59,7 @@ trap CTRL_C__sub INT
 #---FUNCTIONS
 function press_any_key__func() {
 	#Define constants
-	local cTIMEOUT_ANYKEY=10
+	local ANYKEY_TIMEOUT=10
 
 	#Initialize variables
 	local keypressed=""
@@ -67,9 +67,9 @@ function press_any_key__func() {
 
 	#Show Press Any Key message with count-down
 	echo -e "\r"
-	while [[ ${tcounter} -le ${cTIMEOUT_ANYKEY} ]];
+	while [[ ${tcounter} -le ${ANYKEY_TIMEOUT} ]];
 	do
-		delta_tcounter=$(( ${cTIMEOUT_ANYKEY} - ${tcounter} ))
+		delta_tcounter=$(( ${ANYKEY_TIMEOUT} - ${tcounter} ))
 
 		echo -e "\rPress (a)bort or any key to continue... (${delta_tcounter}) \c"
 		read -N 1 -t 1 -s -r keypressed
@@ -85,6 +85,16 @@ function press_any_key__func() {
 		tcounter=$((tcounter+1))
 	done
 	echo -e "\r"
+}
+
+function exit__func() {
+    echo -e "\r"
+    echo -e "\r"
+    # echo -e ${DOCKER__EXITING_NOW}
+    # echo -e "\r"
+    # echo -e "\r"
+
+    exit
 }
 
 function show_centered_string__func()
@@ -140,6 +150,21 @@ function moveUp_and_cleanLines__func() {
     done
 }
 
+function moveDown_and_cleanLines__func() {
+    #Input args
+    local numOf_lines_toBeCleared=${1}
+
+    #Clear lines
+    local numOf_lines_cleared=1
+    while [[ ${numOf_lines_cleared} -le ${numOf_lines_toBeCleared} ]]
+    do
+        tput cud1	#move UP with 1 line
+        tput el1	#clear until the END of line
+
+        numOf_lines_cleared=$((numOf_lines_cleared+1))  #increment by 1
+    done
+}
+
 
 
 #---SUBROUTINES
@@ -159,44 +184,38 @@ docker__load_header__sub() {
 }
 
 docker__create_image_of_specified_container__sub() {
-    #Define local constants
-    local MENUTITLE="${DOCKER__GENERAL_FG_YELLOW}Create${DOCKER__NOCOLOR} Docker ${DOCKER__IMAGEID_FG_BORDEAUX}IMAGE${DOCKER__NOCOLOR} from ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}CONTAINER${DOCKER__NOCOLOR}"
-    local SUBMENUTITLE="Current ${DOCKER__IMAGEID_FG_BORDEAUX}IMAGE${DOCKER__NOCOLOR}-list"
-    local SUBSUBMENUTITLE="Updated ${DOCKER__IMAGEID_FG_BORDEAUX}IMAGE${DOCKER__NOCOLOR}-list"
+    #Define local message constants
+    local MENUTITLE="Create an ${DOCKER__IMAGEID_FG_BORDEAUX}Image${DOCKER__NOCOLOR} from a ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}"
+    local MENUTITLE_CURRENT_IMAGE_LIST="Current ${DOCKER__IMAGEID_FG_BORDEAUX}Image${DOCKER__NOCOLOR}-list"
+    local MENUTITLE_UPDATED_IMAGE_LIST="Updated ${DOCKER__IMAGEID_FG_BORDEAUX}Image${DOCKER__NOCOLOR}-list"
+    local READMSG_CHOOSE_A_CONTAINERID="Choose a ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}Container-ID${DOCKER__NOCOLOR} (e.g. dfc5e2f3f7ee): "
+    local READMSG_DO_YOU_WISH_TO_CONTINUE="Do you wish to continue (y/n/r)? "
+    local READMSG_NEW_REPOSITORY_NAME="${DOCKER__GENERAL_FG_YELLOW}New${DOCKER__NOCOLOR} ${DOCKER__NEW_REPOSITORY_FG_BRIGHTLIGHTPURPLE}Repository${DOCKER__NOCOLOR}'s name (e.g. ubuntu_buildbin_NEW): "
+    local READMSG_NEW_REPOSITORY_TAG="Its ${DOCKER__GENERAL_FG_YELLOW}New${DOCKER__NOCOLOR} corresponding ${DOCKER__TAG_FG_LIGHTPINK}Tag${DOCKER__NOCOLOR} (e.g. test): "
 
-    local READMSG_CHOOSE_A_CONTAINERID="Choose a ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}CONTAINER-ID${DOCKER__NOCOLOR} (e.g. dfc5e2f3f7ee): "
-    local READMSG_NEW_REPOSITORY_NAME="${DOCKER__GENERAL_FG_YELLOW}NEW${DOCKER__NOCOLOR} ${DOCKER__NEW_REPOSITORY_FG_BRIGHTLIGHTPURPLE}REPOSITORY${DOCKER__NOCOLOR}'s name (e.g. ubuntu_buildbin_NEW): "
-    local READMSG_NEW_REPOSITORY_TAG="${DOCKER__GENERAL_FG_YELLOW}NEW${DOCKER__NOCOLOR} ${DOCKER__TAG_FG_LIGHTPINK}TAG${DOCKER__NOCOLOR} (e.g. test) for this ${DOCKER__GENERAL_FG_YELLOW}NEW${DOCKER__NOCOLOR} ${DOCKER__IMAGEID_FG_BORDEAUX}IMAGE${DOCKER__NOCOLOR}: "
+    local ERRMSG_NO_CONTAINERS_FOUND="=:${DOCKER__ERROR_FG_LIGHTRED}NO CONTAINERS FOUND${DOCKER__NOCOLOR}:="
+    local ERRMSG_CHOSEN_REPO_PAIR_ALREADY_EXISTS="***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: chosen ${DOCKER__NEW_REPOSITORY_FG_BRIGHTLIGHTPURPLE}Repository${DOCKER__NOCOLOR}:${DOCKER__TAG_FG_LIGHTPINK}Tag${DOCKER__NOCOLOR} pair already exist"
 
-    #Define local variables
+    #Define local message variables
     local errMsg=${EMPTYSTRING}
+
+    #Define local command variables
+    local docker_image_ls_cmd="docker image ls"
+    local docker_ps_a_cmd="docker ps -a"
  
+    #Define local variables
+    local myRepository_isFound=${DOCKER__EMPTYSTRING}
+    local myTag_isFound=${DOCKER__EMPTYSTRING}
 
-#---Show Docker Image List
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-    show_centered_string__func "${MENUTITLE}" "${DOCKER__TABLEWIDTH}"
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
 
+
+#---Show Docker Container's List
     #Get number of containers
     local numof_containers=`docker ps -a | head -n -1 | wc -l`
     if [[ ${numof_containers} -eq 0 ]]; then
-        errMsg="=:${DOCKER__ERROR_FG_LIGHTRED}NO CONTAINERS FOUND${DOCKER__NOCOLOR}:="
-
-        echo -e "\r"
-        show_centered_string__func "${errMsg}" "${DOCKER__TABLEWIDTH}"
-        echo -e "\r"
-        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-
-        press_any_key__func
-
-        CTRL_C__sub
+        docker__show_errMsg_with_menuTitle__func "${MENUTITLE}" "${ERRMSG_NO_CONTAINERS_FOUND}"
     else
-        docker ps -a
-        
-        echo -e "\r"
-        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-        echo -e "${DOCKER__CTRL_C_QUIT}"
-        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+        docker__show_list_with_menuTitle__func "${MENUTITLE}" "${docker_ps_a_cmd}"
     fi
 
     #Add empty line
@@ -204,8 +223,8 @@ docker__create_image_of_specified_container__sub() {
 
     while true
     do
-        #Provide a CONTAINER-ID from which you want to create an Image
-        read -p "${READMSG_CHOOSE_A_CONTAINERID}" mycontainerid
+        #Provide a Container-ID from which you want to create an Image
+        read -e -p "${READMSG_CHOOSE_A_CONTAINERID}" mycontainerid
         if [[ ! -z ${mycontainerid} ]]; then    #input is NOT an EMPTY STRING
 
             #Check if 'mycontainerid' is found in ' docker ps -a'
@@ -216,61 +235,69 @@ docker__create_image_of_specified_container__sub() {
 
                 #Show Docker Image List
                 echo -e "\r"
-                duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-                show_centered_string__func "${SUBMENUTITLE}" "${DOCKER__TABLEWIDTH}"
-                duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
 
                 if [[ ${numof_images} -eq 0 ]]; then
-                    errMsg="=:${DOCKER__ERROR_FG_LIGHTRED}NO CONTAINERS FOUND${DOCKER__NOCOLOR}:="
-
-                    echo -e "\r"
-                    show_centered_string__func "${errMsg}" "${DOCKER__TABLEWIDTH}"
-                    echo -e "\r"
-                    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-                    echo -e "\r"
-
-                    exit
+                    docker__show_errMsg_with_menuTitle__func "${MENUTITLE_CURRENT_IMAGE_LIST}" "${ERRMSG_NO_CONTAINERS_FOUND}"
                 else
-                        docker image ls
-                    echo -e "\r"
-                    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+                    docker__show_list_with_menuTitle__func "${MENUTITLE_CURRENT_IMAGE_LIST}" "${docker_image_ls_cmd}"
                 fi  
 
                 while true
                 do
-                    #Provide a REPOSITORY for this new image
-                    read -p "${READMSG_NEW_REPOSITORY_NAME}" myrepository_input
+                    #Provide a Repository for this new image
+                    read -e -p "${READMSG_NEW_REPOSITORY_NAME}" myrepository_input
                     if [[ ! -z ${myrepository_input} ]]; then   #input was NOT an Empty String
                         
                         while true
                         do
-                            #Provide a TAG for this new image
-                            read -p "${READMSG_NEW_REPOSITORY_TAG}" mytag_input
+                            #Provide a Tag for this new image
+                            read -e -p "${READMSG_NEW_REPOSITORY_TAG}" mytag_input
                             if [[ ! -z ${mytag_input} ]]; then   #input is NOT an Empty String
 
-                                myrepository_with_this_tag_isUnique=`docker image ls | grep -w "${myrepository_input}" | grep -w "${mytag_input}"`    #check if 'myrepository_input' AND 'mytag_input' is found in 'docker image ls'
+                                myRepository_isFound=`docker image ls | awk '{print $1}' | grep -w "${myrepository_input}"`
+                                myTag_isFound=`docker image ls | awk '{print $2}' | grep -w "${mytag_input}"`
 
-                                if [[ -z ${myrepository_with_this_tag_isUnique} ]]; then    #match was NOT found
-                                    #Create Docker Image based on chosen Container-ID                
-                                    docker commit ${mycontainerid} ${myrepository_input}:${mytag_input} 2>&1 > /dev/null
+                                if [[ -z ${myRepository_isFound} ]] || [[ -z ${myTag_isFound} ]]; then    #match was NOT found
+                                    while true
+                                    do
+                                        #Add an empty-line
+                                        echo -e "\r"
 
-                                    #Show Docker Image List
-                                    echo -e "\r"
-                                    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-                                    show_centered_string__func "${SUBSUBMENUTITLE}" "${DOCKER__TABLEWIDTH}"
-                                    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"        
-                                    
-                                    docker image ls
-                                    
-                                    echo -e "\r"
+                                        #Show read-input message
+                                        read -N1 -p "${READMSG_DO_YOU_WISH_TO_CONTINUE}" docker__myanswer
+                                        
+                                        #Validate read-input answer
+                                        if [[ ${docker__myanswer} == ${DOCKER__YES} ]]; then
+                                            #Create Docker Image based on chosen Container-ID                
+                                            docker commit ${mycontainerid} ${myrepository_input}:${mytag_input} 2>&1 > /dev/null
 
-                                    exit
+                                            #Show Docker Image List
+                                            echo -e "\r"
+
+                                            docker__show_list_with_menuTitle__func "${MENUTITLE_UPDATED_IMAGE_LIST}" "${docker_image_ls_cmd}"
+                                            
+                                            echo -e "\r"
+                                            echo -e "\r"
+
+                                            exit
+
+                                        elif [[ ${docker__myanswer} == ${DOCKER__NO} ]]; then
+                                            exit__func
+                                        elif [[ ${docker__myanswer} == ${DOCKER__REDO} ]]; then
+                                            break
+                                        elif [[ ${docker__myanswer} == ${DOCKER__QUIT} ]]; then
+                                            exit__func   
+                                        else
+                                            if [[ ${docker__myanswer} != "${DOCKER__ENTER}" ]]; then
+                                                moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+                                                moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"    
+                                            else
+                                                moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"              
+                                            fi                                                                                                                                    
+                                        fi
+                                    done
                                 else
-                                    errMsg="***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: chosen ${DOCKER__NEW_REPOSITORY_FG_BRIGHTLIGHTPURPLE}REPOSITORY${DOCKER__NOCOLOR}:${DOCKER__TAG_FG_LIGHTPINK}TAG${DOCKER__NOCOLOR} pair already exist"
-                                    echo -e "\r"
-                                    echo -e "${errMsg}"
-
-                                    press_any_key__func
+                                    docker__show_errMsg_without_menuTitle__func "${ERRMSG_CHOSEN_REPO_PAIR_ALREADY_EXISTS}"
 
                                     moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_6}"
 
@@ -279,21 +306,84 @@ docker__create_image_of_specified_container__sub() {
                             else
                                 moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
                             fi
+
+                            #Answer 'r' was given in the LAST while-loop
+                            if [[ ${docker__myanswer} == ${DOCKER__REDO} ]]; then
+                                break
+                            fi
                         done     
                     else    #input was an Empty String
                         moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
                     fi
+
+                    #Answer 'r' was given in the LAST while-loop
+                    if [[ ${docker__myanswer} == ${DOCKER__REDO} ]]; then
+                        docker__show_list_with_menuTitle__func "${MENUTITLE}" "${docker_ps_a_cmd}"
+                        
+                        break
+                    fi
                 done
             else    #NO match was found
-                echo -e "\r"
-                echo -e "${READMSG_CHOOSE_A_CONTAINERID} ${DOCKER_NOT_FOUND}"
+                errMsg="***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Container-ID '${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}${mycontainerid}${DOCKER__NOCOLOR}' Not Found"
 
-                moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_5}"               
+                docker__show_errMsg_without_menuTitle__func "${errMsg}"
+
+                moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_5}"         
             fi
         else
             moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
         fi
     done
+}
+
+function docker__show_list_with_menuTitle__func() {
+    #Input args
+    local menuTitle=${1}
+    local dockerCmd=${2}
+
+    #Show list
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    show_centered_string__func "${menuTitle}" "${DOCKER__TABLEWIDTH}"
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    
+    ${dockerCmd}
+
+    echo -e "\r"
+
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    echo -e "${DOCKER__CTRL_C_QUIT}"
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+}
+
+function docker__show_errMsg_with_menuTitle__func() {
+    #Input args
+    local menuTitle=${1}
+    local errMsg=${2}
+
+    #Show error-message
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    show_centered_string__func "${menuTitle}" "${DOCKER__TABLEWIDTH}"
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    
+    echo -e "\r"
+    show_centered_string__func "${errMsg}" "${DOCKER__TABLEWIDTH}"
+    echo -e "\r"
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    echo -e "\r"
+
+    press_any_key__func
+
+    CTRL_C__sub
+}
+
+function docker__show_errMsg_without_menuTitle__func() {
+    #Input args
+    local errMsg=${1}
+
+    echo -e "\r"
+    echo -e "${errMsg}"
+
+    press_any_key__func
 }
 
 

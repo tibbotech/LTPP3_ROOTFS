@@ -20,6 +20,12 @@ DOCKER__REMOVE_ALL="REMOVE-ALL"
 DOCKER__DASH="-"
 DOCKER__EMPTYSTRING=""
 
+DOCKER__ENTER=$'\x0a'
+
+DOCKER__ONESPACE=" "
+DOCKER__TWOSPACES=${DOCKER__ONESPACE}${DOCKER__ONESPACE}
+DOCKER__FOURSPACES=${DOCKER__TWOSPACES}${DOCKER__TWOSPACES}
+
 #---NUMERIC CONSTANTS
 DOCKER__TABLEWIDTH=70
 
@@ -32,14 +38,15 @@ DOCKER__NUMOFLINES_6=6
 DOCKER__NUMOFLINES_7=7
 DOCKER__NUMOFLINES_8=8
 
-
-
-#---Trap ctrl-c and Call ctrl_c()
-trap CTRL_C_func INT
+#---MENU CONSTANTS
+DOCKER__CTRL_C_QUIT="${DOCKER__FOURSPACES}Quit (Ctrl+C)"
 
 
 
 #---FUNCTIONS
+#---Trap ctrl-c and Call ctrl_c()
+trap CTRL_C_func INT
+
 function CTRL_C_func() {
     # echo -e "\r"
     # echo -e "\r"
@@ -52,7 +59,7 @@ function CTRL_C_func() {
 
 function press_any_key__func() {
 	#Define constants
-	local cTIMEOUT_ANYKEY=10
+	local ANYKEY_TIMEOUT=10
 
 	#Initialize variables
 	local keypressed=${DOCKER__EMPTYSTRING}
@@ -60,9 +67,9 @@ function press_any_key__func() {
 
 	#Show Press Any Key message with count-down
 	echo -e "\r"
-	while [[ ${tcounter} -le ${cTIMEOUT_ANYKEY} ]];
+	while [[ ${tcounter} -le ${ANYKEY_TIMEOUT} ]];
 	do
-		delta_tcounter=$(( ${cTIMEOUT_ANYKEY} - ${tcounter} ))
+		delta_tcounter=$(( ${ANYKEY_TIMEOUT} - ${tcounter} ))
 
 		echo -e "\rPress (a)bort or any key to continue... (${delta_tcounter}) \c"
 		read -N 1 -t 1 -s -r keypressed
@@ -133,9 +140,34 @@ function moveUp_and_cleanLines__func() {
     done
 }
 
+function moveDown_and_cleanLines__func() {
+    #Input args
+    local numOf_lines_toBeCleared=${1}
+
+    #Clear lines
+    local numOf_lines_cleared=1
+    while [[ ${numOf_lines_cleared} -le ${numOf_lines_toBeCleared} ]]
+    do
+        tput cud1	#move UP with 1 line
+        tput el1	#clear until the END of line
+
+        numOf_lines_cleared=$((numOf_lines_cleared+1))  #increment by 1
+    done
+}
+
 
 
 #---SUBROUTINES
+CTRL_C__sub() {
+    echo -e "\r"
+    echo -e "\r"
+    # echo -e "Exiting now..."
+    # echo -e "\r"
+    # echo -e "\r"
+    
+    exit
+}
+
 docker__load_header__sub() {
     echo -e "\r"
     echo -e "${DOCKER__TITLE_BG_ORANGE}                                 ${DOCKER__TITLE}${DOCKER__TITLE_BG_ORANGE}                                ${DOCKER__NOCOLOR}"
@@ -153,39 +185,28 @@ docker__init_variables__sub() {
 
 docker_remove_specified_containers__sub() {
     #Define local constants
-    local MENUTITLE="${DOCKER__GENERAL_FG_YELLOW}Remove${DOCKER__NOCOLOR} ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}CONTAINER(s)${DOCKER__NOCOLOR}"
-    local MENUTITLE_UPDATE="Updated ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}CONTAINER${DOCKER__NOCOLOR}-list"
-    local READMSG="***Do you REALLY wish to continue (y/n/q/b)? "
+    local MENUTITLE="Remove ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}"
+    local MENUTITLE_UPDATED_CONTAINER_LIST="Updated ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}-list"
+    local READMSG_DO_YOU_REALLY_WISH_TO_CONTINUE="***Do you REALLY wish to continue (y/n/q/b)? "
+
+    local ERRMSG_NO_CONTAINERS_FOUND="=:${DOCKER__ERROR_FG_LIGHTRED}NO CONTAINERS FOUND${DOCKER__NOCOLOR}:="
 
     #Define local variables
     local errMsg=${DOCKER__EMPTYSTRING}
     local numof_containers=0
 
-    #Show menu-title
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-    show_centered_string__func "${MENUTITLE}" "${DOCKER__TABLEWIDTH}"
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    #Define local command variables
+    local docker_ps_a_cmd="docker ps -a"
 
-    #Get number of images
-    numof_containers=`docker ps -a | head -n -1 | wc -l`
+
+
+#---Show Docker Container's List
+    #Get number of containers
+    local numof_containers=`docker ps -a | head -n -1 | wc -l`
     if [[ ${numof_containers} -eq 0 ]]; then
-        #Update error-message
-        errMsg="=:${DOCKER__ERROR_FG_LIGHTRED}NO CONTAINERS FOUND${DOCKER__NOCOLOR}:="
-
-        #Show error-message
-        echo -e "\r"
-        show_centered_string__func "${errMsg}" "${DOCKER__TABLEWIDTH}"
-        echo -e "\r"
-        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-
-        press_any_key__func
-
-        exit
+        docker__show_errMsg_with_menuTitle__func "${MENUTITLE}" "${ERRMSG_NO_CONTAINERS_FOUND}"
     else
-        docker ps -a
-
-        echo -e "\r"
-        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+        docker__show_list_with_menuTitle__func "${MENUTITLE}" "${docker_ps_a_cmd}"
     fi
 
     #Start loop
@@ -206,7 +227,7 @@ docker_remove_specified_containers__sub() {
             echo -e "\r"
             while true
             do
-                read -p "${READMSG}" docker__myAnswer
+                read -N1 -p "${READMSG_DO_YOU_REALLY_WISH_TO_CONTINUE}" docker__myAnswer
                 if [[ ! -z ${docker__myAnswer} ]]; then          
                     if [[ ${docker__myAnswer} == "y" ]]; then
                         if [[ ${docker__myContainerId} == ${DOCKER__REMOVE_ALL} ]]; then
@@ -220,7 +241,7 @@ docker_remove_specified_containers__sub() {
                                     docker container rm -f ${docker__myContainerId_item} 2>&1 > /dev/null
 
                                     echo -e "\r"
-                                    echo -e "Removed CONTAINER-ID: ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}${docker__myContainerId_item}${DOCKER__NOCOLOR}"
+                                    echo -e "Removed Container-ID: ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}${docker__myContainerId_item}${DOCKER__NOCOLOR}"
                                     echo -e "\r"
                                     echo -e "Removing ALL unlinked images"
                                     echo -e "y\n" | docker image prune
@@ -228,11 +249,12 @@ docker_remove_specified_containers__sub() {
                                     echo -e "y\n" | docker container prune           
                                 else
                                     #Update error-message
-                                    errMsg="***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Invalid CONTAINER-ID: ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}${docker__myContainerId_item}${DOCKER__NOCOLOR}"
+                                    errMsg="***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Invalid Container-ID: ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}${docker__myContainerId_item}${DOCKER__NOCOLOR}"
                                     
                                     #Show error-message
                                     echo -e "\r"
-                                    echo -e "${errMsg}"
+
+                                    docker__show_errMsg_without_menuTitle__func "${errMsg}"
                                 fi
 
                                 echo -e "\r"
@@ -241,35 +263,18 @@ docker_remove_specified_containers__sub() {
 
                         #Get number of containers
                         numof_containers=`docker ps -a | head -n -1 | wc -l`
-
-                        echo -e "----------------------------------------------------------------------"
-                        echo -e "\t${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}CONTAINER'S${DOCKER__NOCOLOR} ${DOCKER__GENERAL_FG_YELLOW}LIST${DOCKER__NOCOLOR} "
-                        echo -e "----------------------------------------------------------------------"
-                        
-                        #Get number of images
-                        numof_containers=`docker ps -a | head -n -1 | wc -l`
                         if [[ ${numof_containers} -eq 0 ]]; then
-                            #Update error-message
-                            errMsg="=:${DOCKER__ERROR_FG_LIGHTRED}NO CONTAINERS FOUND${DOCKER__NOCOLOR}:="
-
-                            #Show error-message
-                            echo -e "\r"
-                            show_centered_string__func "${errMsg}" "${DOCKER__TABLEWIDTH}"
-                            echo -e "\r"
-                            duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-
-                            press_any_key__func
+                            docker__show_errMsg_with_menuTitle__func "${MENUTITLE}" "${ERRMSG_NO_CONTAINERS_FOUND}"
 
                             exit
                         else
-                            docker ps -a
-
-                            echo -e "\r"
-                            duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+                            docker__show_list_with_menuTitle__func "${MENUTITLE_UPDATED_CONTAINER_LIST}" "${docker_ps_a_cmd}"
 
                             break
                         fi
                     elif [[ ${docker__myAnswer} == "n" ]]; then
+                        echo -e "\r"    #mandatory to add this empty-line
+
                         moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_8}"
 
                         break
@@ -278,11 +283,18 @@ docker_remove_specified_containers__sub() {
 
                         exit
                     elif [[ ${docker__myAnswer} == "b" ]]; then
+                        echo -e "\r"    #mandatory to add this empty-line
+
                         moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_8}"
 
                         break
                     else
-                        moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+                        if [[ ${docker__myAnswer} != "${DOCKER__ENTER}" ]]; then
+                            moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+                            moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+                        else
+                            moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+                        fi
                     fi
                 else
                     moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
@@ -310,9 +322,9 @@ docker_containerId_input__func() {
         echo -e "- Remove ALL container-IDs by typing: ${DOCKER__REMOVE_ALL}"
         echo -e "- Multiple container-IDs can be removed"
         echo -e "- Comma-separator will be auto-appended (e.g. 3e2226b5fb4c,78ae00114c5a)"
-		echo -e "- [On an Empty Field] press ENTER to stop input"
+		echo -e "- [On an Empty Field] press ENTER to confirm to-be-deleted entries"
         echo -e "${DOCKER__CONTAINER_BG_BRIGHTPRUPLE}Remove the following ${DOCKER__OUTSIDE_FG_WHITE}container-IDs${DOCKER__NOCOLOR}:${DOCKER__CONTAINER_BG_BRIGHTPRUPLE}${DOCKER__OUTSIDE_FG_WHITE}${docker__myContainerId}${DOCKER__NOCOLOR}"
-        read -p "Paste your input (here): " docker__myContainerId_input
+        read -e -p "Paste your input (here): " docker__myContainerId_input
 
         if [[ -z ${docker__myContainerId_input} ]]; then
 			moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
@@ -334,6 +346,59 @@ docker_containerId_input__func() {
     done
 }
 
+function docker__show_list_with_menuTitle__func() {
+    #Input args
+    local menuTitle=${1}
+    local dockerCmd=${2}
+
+    #Show list
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    show_centered_string__func "${menuTitle}" "${DOCKER__TABLEWIDTH}"
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    
+    ${dockerCmd}
+
+    echo -e "\r"
+
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    echo -e "${DOCKER__CTRL_C_QUIT}"
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+}
+
+function docker__show_errMsg_with_menuTitle__func() {
+    #Input args
+    local menuTitle=${1}
+    local errMsg=${2}
+
+    #Show error-message
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    show_centered_string__func "${menuTitle}" "${DOCKER__TABLEWIDTH}"
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    
+    echo -e "\r"
+    show_centered_string__func "${errMsg}" "${DOCKER__TABLEWIDTH}"
+    echo -e "\r"
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    echo -e "\r"
+
+    press_any_key__func
+
+    CTRL_C__sub
+}
+
+function docker__show_errMsg_without_menuTitle__func() {
+    #Input args
+    local errMsg=${1}
+
+    echo -e "\r"
+    echo -e "${errMsg}"
+
+    press_any_key__func
+}
+
+
+
+#---MAIN SUBROUTINE
 main_sub() {
     docker__load_header__sub
 
@@ -343,5 +408,6 @@ main_sub() {
 }
 
 
-#Execute main subroutine
+
+#---EXECUTE
 main_sub

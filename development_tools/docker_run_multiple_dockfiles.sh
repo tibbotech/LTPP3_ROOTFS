@@ -44,7 +44,7 @@ function CTRL_C__sub() {
 #---Local functions & subroutines
 press_any_key__localfunc() {
 	#Define constants
-	local cTIMEOUT_ANYKEY=10
+	local ANYKEY_TIMEOUT=10
 
 	#Initialize variables
 	local keypressed=""
@@ -52,9 +52,9 @@ press_any_key__localfunc() {
 
 	#Show Press Any Key message with count-down
 	echo -e "\r"
-	while [[ ${tcounter} -le ${cTIMEOUT_ANYKEY} ]];
+	while [[ ${tcounter} -le ${ANYKEY_TIMEOUT} ]];
 	do
-		delta_tcounter=$(( ${cTIMEOUT_ANYKEY} - ${tcounter} ))
+		delta_tcounter=$(( ${ANYKEY_TIMEOUT} - ${tcounter} ))
 
 		echo -e "\rPress (a)bort or any key to continue... (${delta_tcounter}) \c"
 		read -N 1 -t 1 -s -r keypressed

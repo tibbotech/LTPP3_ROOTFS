@@ -50,7 +50,9 @@ DOCKER__QUIT="q"
 DOCKER__BACK="b"
 
 #---MENU CONSTANTS
+DOCKER__CTRL_C_QUIT="${DOCKER__FOURSPACES}Quit (Ctrl+C)"
 DOCKER__Q_QUIT="${DOCKER__FOURSPACES}q. Quit (Ctrl+C)"
+
 
 
 #---Trap ctrl-c and Call ctrl_c()
@@ -61,7 +63,7 @@ trap CTRL_C__sub INT
 #---FUNCTIONS
 function press_any_key__func() {
 	#Define constants
-	local cTIMEOUT_ANYKEY=10
+	local ANYKEY_TIMEOUT=10
 
 	#Initialize variables
 	local keypressed=""
@@ -69,9 +71,9 @@ function press_any_key__func() {
 
 	#Show Press Any Key message with count-down
 	echo -e "\r"
-	while [[ ${tcounter} -le ${cTIMEOUT_ANYKEY} ]];
+	while [[ ${tcounter} -le ${ANYKEY_TIMEOUT} ]];
 	do
-		delta_tcounter=$(( ${cTIMEOUT_ANYKEY} - ${tcounter} ))
+		delta_tcounter=$(( ${ANYKEY_TIMEOUT} - ${tcounter} ))
 
 		echo -e "\rPress (a)bort or any key to continue... (${delta_tcounter}) \c"
 		read -N 1 -t 1 -s -r keypressed
@@ -202,7 +204,7 @@ docker__init_variables__sub() {
 
 docker__show_dockerList_files__sub() {
     #Define local constants
-    local MENUTITLE="${DOCKER__GENERAL_FG_YELLOW}Create${DOCKER__NOCOLOR} an ${DOCKER__IMAGEID_FG_BORDEAUX}IMAGE${DOCKER__NOCOLOR} using a ${DOCKER__FG_DARKBLUE}docker-file${DOCKER__NOCOLOR}"
+    local MENUTITLE="${DOCKER__GENERAL_FG_YELLOW}Create${DOCKER__NOCOLOR} an ${DOCKER__IMAGEID_FG_BORDEAUX}Image${DOCKER__NOCOLOR} using a ${DOCKER__FG_DARKBLUE}docker-file${DOCKER__NOCOLOR}"
 
     #Define local variables
     local listOf_dockerFileFpaths_string=""
@@ -219,6 +221,7 @@ docker__show_dockerList_files__sub() {
 
     #Define local read-input variables
     local readInput_msg="Choose a file: "
+
 
     #Get all files at the specified location
     listOf_dockerFileFpaths_string=`find ${docker__my_LTPP3_ROOTFS_docker_dockerfiles_dir} -maxdepth 1 -type f | sort`
@@ -305,7 +308,7 @@ docker__create_image_handler__sub() {
         docker__create_image__func ${docker__dockerFile_fpath}
     else
         echo -e "\r"
-        echo -e "***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: non-existing file: ${docker__dockerFile_fpath}"
+        echo -e "***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: File '${DOCKER__FG_DARKBLUE}${docker__dockerFile_fpath}${DOCKER__NOCOLOR}' does ${DOCKER__ERROR_FG_LIGHTRED}Not${DOCKER__NOCOLOR} exist"
         echo -e "\r"       
     fi
 }
@@ -314,11 +317,16 @@ function docker__create_image__func() {
     local dockerfile_fpath=${1}
 
     #Define local constants
-    local SUBMENUTITLE="Updated ${DOCKER__IMAGEID_FG_BORDEAUX}IMAGE${DOCKER__NOCOLOR}-list"
+    local MENUTITLE_UPDATED_CONTAINER_LIST="Updated ${DOCKER__IMAGEID_FG_BORDEAUX}Image${DOCKER__NOCOLOR}-list"
     local GREP_PATTERN="LABEL repository:tag"
 
-    #Define local variables
+    #Define local message variables
     local statusMsg="---:${DOCKER__FILES_FG_ORANGE}STATUS${DOCKER__NOCOLOR}: Creating image..."
+
+    #Define local command variables
+    local docker_ps_a_cmd="docker ps -a"
+    
+
 
     #Get REPOSITORY:TAG from dockerfile
     local dockerfile_repository_tag=`egrep -w "${GREP_PATTERN}" ${dockerfile_fpath} | cut -d"\"" -f2`
@@ -340,11 +348,8 @@ function docker__create_image__func() {
 
     #Print docker image list
     echo -e "\r"
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-    show_centered_string__func "${SUBMENUTITLE}" "${DOCKER__TABLEWIDTH}"
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-    
-    docker image ls    #show Docker IMAGE list
+
+    docker__show_list_with_menuTitle__func "${MENUTITLE_UPDATED_CONTAINER_LIST}" "${docker_ps_a_cmd}"
     
     echo -e "\r"
     echo -e "\r"
@@ -374,6 +379,24 @@ function docker__validate_exitCode__func() {
     fi
 }
 
+function docker__show_list_with_menuTitle__func() {
+    #Input args
+    local menuTitle=${1}
+    local dockerCmd=${2}
+
+    #Show list
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    show_centered_string__func "${menuTitle}" "${DOCKER__TABLEWIDTH}"
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    
+    ${dockerCmd}
+
+    echo -e "\r"
+
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    echo -e "${DOCKER__CTRL_C_QUIT}"
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+}
 
 
 

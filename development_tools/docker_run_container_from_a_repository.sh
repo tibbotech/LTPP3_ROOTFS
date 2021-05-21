@@ -24,6 +24,9 @@ DOCKER__SSH_PORT=22
 DOCKER__DASH="-"
 DOCKER__EMPTYSTRING=""
 
+DOCKER__ONESPACE=" "
+DOCKER__TWOSPACES=${DOCKER__ONESPACE}${DOCKER__ONESPACE}
+DOCKER__FOURSPACES=${DOCKER__TWOSPACES}${DOCKER__TWOSPACES}
 
 #---NUMERIC CONSTANTS
 DOCKER__TABLEWIDTH=70
@@ -34,6 +37,9 @@ DOCKER__NUMOFLINES_3=3
 DOCKER__NUMOFLINES_4=4
 DOCKER__NUMOFLINES_5=5
 DOCKER__NUMOFLINES_6=6
+
+#---MENU CONSTANTS
+DOCKER__CTRL_C_QUIT="${DOCKER__FOURSPACES}Quit (Ctrl+C)"
 
 
 
@@ -55,7 +61,7 @@ function CTRL_C_func() {
 
 function press_any_key__func() {
 	#Define constants
-	local cTIMEOUT_ANYKEY=10
+	local ANYKEY_TIMEOUT=10
 
 	#Initialize variables
 	local keypressed=""
@@ -63,9 +69,9 @@ function press_any_key__func() {
 
 	#Show Press Any Key message with count-down
 	echo -e "\r"
-	while [[ ${tcounter} -le ${cTIMEOUT_ANYKEY} ]];
+	while [[ ${tcounter} -le ${ANYKEY_TIMEOUT} ]];
 	do
-		delta_tcounter=$(( ${cTIMEOUT_ANYKEY} - ${tcounter} ))
+		delta_tcounter=$(( ${ANYKEY_TIMEOUT} - ${tcounter} ))
 
 		echo -e "\rPress (a)bort or any key to continue... (${delta_tcounter}) \c"
 		read -N 1 -t 1 -s -r keypressed
@@ -244,8 +250,11 @@ docker__init_variables__sub() {
 
 docker__run_specified_repository_as_container__sub() {
     #Define local constants
-    local MENUTITLE="Run ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}CONTAINER${DOCKER__NOCOLOR} from specfied ${DOCKER__REPOSITORY_FG_PURPLE}REPOSITORY${DOCKER__NOCOLOR}"
-    local SUBMENUTITLE="Updated ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}CONTAINER${DOCKER__NOCOLOR}-list"
+    local MENUTITLE="Run ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR} from specfied ${DOCKER__REPOSITORY_FG_PURPLE}Repository${DOCKER__NOCOLOR}"
+    local MENUTITLE_UPDATED_CONTAINER_LIST="Updated ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}-list"
+
+    #Define local message constants
+    local ERRMSG_NO_IMAGES_FOUND="=:${DOCKER__ERROR_FG_LIGHTRED}NO IMAGES FOUND${DOCKER__NOCOLOR}:="
 
     #Define local variables
     local exitCode=0
@@ -259,37 +268,25 @@ docker__run_specified_repository_as_container__sub() {
     local myRespository_colon_tag=${DOCKER__EMPTYSTRING}
     local myRespository_colon_tag_isFound=${DOCKER__EMPTYSTRING}
 
-    local errMsg=${DOCKER__EMPTYSTRING}
+    #Define local variables
+    local docker_image_ls_cmd="docker image ls"
+    local docker_ps_a_cmd="docker ps -a"
+    local errMsg=${EMPTYSTRING}
 
-    #Show menu-title
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-    show_centered_string__func "${MENUTITLE}" "${DOCKER__TABLEWIDTH}"
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
 
+    #Show Docker Image List
     #Get number of images
     local numof_images=`docker image ls | head -n -1 | wc -l`
     if [[ ${numof_images} -eq 0 ]]; then
-        #Update error-message
-        errMsg="=:${DOCKER__ERROR_FG_LIGHTRED}NO IMAGES FOUND${DOCKER__NOCOLOR}:="
-
-        echo -e "\r"
-        show_centered_string__func "${errMsg}" "${DOCKER__TABLEWIDTH}"
-        echo -e "\r"
-        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-
-        press_any_key__func
-
-        exit
+        docker__show_errMsg_with_menuTitle__func "${MENUTITLE}" "${ERRMSG_NO_IMAGES_FOUND}"
     else
-        docker image ls
-        echo -e "\r"
-        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-    fi    
+        docker__show_list_with_menuTitle__func "${MENUTITLE}" "${docker_image_ls_cmd}"
+    fi 
 
     while true
     do
-        #Request for REPOSITORY input
-        read -p "Provide ${DOCKER__REPOSITORY_FG_PURPLE}REPOSITORY${DOCKER__NOCOLOR} (e.g. ubuntu_sunplus): " myRepository
+        #Request for Repository input
+        read -e -p "Provide ${DOCKER__REPOSITORY_FG_PURPLE}Repository${DOCKER__NOCOLOR} (e.g. ubuntu_sunplus): " myRepository
         if [[ ! -z ${myRepository} ]]; then #input was NOT an EMPTY STRING
 
             myRepository_isFound=`docker image ls | awk '{print $1}' | grep -w "${myRepository}"` #check if 'myRepository' is found in 'docker image ls'
@@ -332,19 +329,13 @@ docker__run_specified_repository_as_container__sub() {
                                     #Show Container's list
                                     echo -e "\r"
 
-                                    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-                                    show_centered_string__func "${SUBMENUTITLE}" "${DOCKER__TABLEWIDTH}"
-                                    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}" 
-                                    
-                                    docker ps -a
+                                    docker__show_list_with_menuTitle__func "${MENUTITLE_UPDATED_CONTAINER_LIST}" "${docker_ps_a_cmd}"
 
                                     echo -e "\r"
-                                    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-
                                     echo -e "\r"
                                     echo -e "Summary:"
-                                    echo -e "\tChosen REPOSITORY:\t\t\t${DOCKER__REPOSITORY_FG_PURPLE}${myRepository}${DOCKER__NOCOLOR}"
-                                    echo -e "\tCreated CONTAINER-ID:\t\t\t${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}${containerName}${DOCKER__NOCOLOR}"
+                                    echo -e "\tChosen Repository:\t\t\t${DOCKER__REPOSITORY_FG_PURPLE}${myRepository}${DOCKER__NOCOLOR}"
+                                    echo -e "\tCreated Container-ID:\t\t\t${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}${containerName}${DOCKER__NOCOLOR}"
                                     echo -e "\tTCP-port to-used-for SSH:\t\t${DOCKER__PORTS_FG_LIGHTBLUE}${docker__ssh_localport}${DOCKER__NOCOLOR}"
                                    
                                     get_assigned_ipv4_addresses__func
@@ -377,13 +368,10 @@ docker__run_specified_repository_as_container__sub() {
                                 containerid=`docker container ls | grep -w "${myRepository}:${myTag}" | awk '{print $1}'`
 
                                 #Update error-message
-                                errMsg="***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Chosen ${DOCKER__REPOSITORY_FG_PURPLE}REPOSITORY${DOCKER__NOCOLOR}:${DOCKER__TAG_FG_LIGHTPINK}TAG${DOCKER__NOCOLOR} already running as CONTAINER-ID: ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}${containerid}${DOCKER__NOCOLOR}"
+                                errMsg="***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: ${DOCKER__REPOSITORY_FG_PURPLE}Repository${DOCKER__NOCOLOR}:${DOCKER__TAG_FG_LIGHTPINK}TAG${DOCKER__NOCOLOR} pair already running under Container-ID: ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}${containerid}${DOCKER__NOCOLOR}"
 
                                 #Show error-message
-                                echo -e "\r"
-                                echo -e "${errMsg}"
-
-                                press_any_key__func
+                                docker__show_errMsg_without_menuTitle__func "${errMsg}"
 
                                 moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_6}"
 
@@ -391,13 +379,10 @@ docker__run_specified_repository_as_container__sub() {
                             fi
                         else
                             #Update error-message
-                            errMsg="***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Un-matched pair ${DOCKER__REPOSITORY_FG_PURPLE}REPOSITORY${DOCKER__NOCOLOR} <-> ${DOCKER__TAG_FG_LIGHTPINK}TAG${DOCKER__NOCOLOR}"
+                            errMsg="***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Un-matched pair ${DOCKER__REPOSITORY_FG_PURPLE}Repository${DOCKER__NOCOLOR} <-> ${DOCKER__TAG_FG_LIGHTPINK}TAG${DOCKER__NOCOLOR}"
 
                             #Show error-message
-                            echo -e "\r"
-                            echo -e "${errMsg}"
-
-                            press_any_key__func
+                            docker__show_errMsg_without_menuTitle__func "${errMsg}"
 
                             moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_5}"              
                         fi
@@ -407,13 +392,10 @@ docker__run_specified_repository_as_container__sub() {
                 done
             else
                 #Update error-message
-                errMsg="***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: non-existing repository ${DOCKER__REPOSITORY_FG_PURPLE}${myRepository}${DOCKER__NOCOLOR}"
+                errMsg="***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Repository '${DOCKER__REPOSITORY_FG_PURPLE}${myRepository}${DOCKER__NOCOLOR}' does ${DOCKER__ERROR_FG_LIGHTRED}Not${DOCKER__NOCOLOR} exist"
 
                 #Show error-message
-                echo -e "\r"
-                echo -e "${errMsg}"
-
-                press_any_key__func
+                docker__show_errMsg_without_menuTitle__func "${errMsg}"
 
                 moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_5}"
             fi 
@@ -423,6 +405,59 @@ docker__run_specified_repository_as_container__sub() {
     done
 }
 
+function docker__show_list_with_menuTitle__func() {
+    #Input args
+    local menuTitle=${1}
+    local dockerCmd=${2}
+
+    #Show list
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    show_centered_string__func "${menuTitle}" "${DOCKER__TABLEWIDTH}"
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    
+    ${dockerCmd}
+
+    echo -e "\r"
+
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    echo -e "${DOCKER__CTRL_C_QUIT}"
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+}
+
+function docker__show_errMsg_with_menuTitle__func() {
+    #Input args
+    local menuTitle=${1}
+    local errMsg=${2}
+
+    #Show error-message
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    show_centered_string__func "${menuTitle}" "${DOCKER__TABLEWIDTH}"
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    
+    echo -e "\r"
+    show_centered_string__func "${errMsg}" "${DOCKER__TABLEWIDTH}"
+    echo -e "\r"
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    echo -e "\r"
+
+    press_any_key__func
+
+    CTRL_C__sub
+}
+
+function docker__show_errMsg_without_menuTitle__func() {
+    #Input args
+    local errMsg=${1}
+
+    echo -e "\r"
+    echo -e "${errMsg}"
+
+    press_any_key__func
+}
+
+
+
+#---MAIN SUBROUTINE
 main_sub() {
     docker__load_header__sub
 
@@ -432,5 +467,6 @@ main_sub() {
 }
 
 
-#Execute main subroutine
+
+#---EXECUTE
 main_sub

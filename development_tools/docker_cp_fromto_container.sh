@@ -61,15 +61,19 @@ DOCKER__READINPUT_C_OPTION="${DOCKER__GENERAL_FG_YELLOW};c${DOCKER__NOCOLOR}lear
 DOCKER__READINPUT_B_C_OPTIONS="(${DOCKER__READINPUT_B_OPTION}/${DOCKER__READINPUT_C_OPTION})"
 DOCKER__READINPUT_H_B_C_OPTIONS="(${DOCKER__READINPUT_H_OPTION}/${DOCKER__READINPUT_B_OPTION}/${DOCKER__READINPUT_C_OPTION})"
 
-DOCKER__READINPUT_CONTAINERID="${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}CONTAINER${DOCKER__NOCOLOR}:-:ID ${DOCKER__READINPUT_B_C_OPTIONS}: "
+DOCKER__READINPUT_CONTAINERID="${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}:-:ID ${DOCKER__READINPUT_B_C_OPTIONS}: "
 
-DOCKER__READINPUT_CONTAINER_SOURCE_DIR="${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}CONTAINER${DOCKER__NOCOLOR}:-:SOURCE-DIR ${DOCKER__READINPUT_H_B_C_OPTIONS}: "
-DOCKER__READINPUT_CONTAINER_SOURCE_FOBJECT="${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}CONTAINER${DOCKER__NOCOLOR}:-:{FILE|FOLDER} ${DOCKER__READINPUT_H_B_C_OPTIONS}: "
+DOCKER__READINPUT_CONTAINER_SOURCE_DIR="${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}:-:SOURCE-DIR ${DOCKER__READINPUT_H_B_C_OPTIONS}: "
+DOCKER__READINPUT_CONTAINER_SOURCE_FOBJECT="${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}:-:{FILE|FOLDER} ${DOCKER__READINPUT_H_B_C_OPTIONS}: "
 DOCKER__READINPUT_HOST_DEST_DIR="${DOCKER__HOST_FG_GREEN85}HOST${DOCKER__NOCOLOR}:-:DEST-DIR ${DOCKER__READINPUT_H_B_C_OPTIONS}: "
 
 DOCKER__READINPUT_HOST_SOURCE_DIR="${DOCKER__HOST_FG_GREEN85}HOST${DOCKER__NOCOLOR}:-:SOURCE-DIR ${DOCKER__READINPUT_H_B_C_OPTIONS}: "
 DOCKER__READINPUT_HOST_SOURCE_FOBJECT="${DOCKER__HOST_FG_GREEN85}HOST${DOCKER__NOCOLOR}:-:{FILE|FOLDER} ${DOCKER__READINPUT_H_B_C_OPTIONS}: "
-DOCKER__READINPUT_CONTAINER_DEST_DIR="${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}CONTAINER${DOCKER__NOCOLOR}:-:DEST-DIR ${DOCKER__READINPUT_H_B_C_OPTIONS}: "
+DOCKER__READINPUT_CONTAINER_DEST_DIR="${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}:-:DEST-DIR ${DOCKER__READINPUT_H_B_C_OPTIONS}: "
+
+#---MENU CONSTANTS
+DOCKER__A_ABORT="${DOCKER__FOURSPACES}b. Back"
+DOCKER__CTRL_C_QUIT="${DOCKER__FOURSPACES}Quit (Ctrl+C)"
 
 
 
@@ -128,7 +132,7 @@ function GOTO__func {
 
 function press_any_key__func() {
 	#Define constants
-	local cTIMEOUT_ANYKEY=10
+	local ANYKEY_TIMEOUT=10
 
 	#Initialize variables
 	local keypressed=${DOCKER__EMPTYSTRING}
@@ -136,9 +140,9 @@ function press_any_key__func() {
 
 	#Show Press Any Key message with count-down
 	echo -e "\r"
-	while [[ ${tcounter} -le ${cTIMEOUT_ANYKEY} ]];
+	while [[ ${tcounter} -le ${ANYKEY_TIMEOUT} ]];
 	do
-		delta_tcounter=$(( ${cTIMEOUT_ANYKEY} - ${tcounter} ))
+		delta_tcounter=$(( ${ANYKEY_TIMEOUT} - ${tcounter} ))
 
 		echo -e "\rPress (a)bort or any key to continue... (${delta_tcounter}) \c"
 		read -N 1 -t 1 -s -r keypressed
@@ -270,6 +274,16 @@ function moveDown_and_cleanLines__func() {
 
 
 #---SUBROUTINES
+CTRL_C__sub() {
+    echo -e "\r"
+    echo -e "\r"
+    # echo -e "Exiting now..."
+    # echo -e "\r"
+    # echo -e "\r"
+    
+    exit
+}
+
 docker__init_variables__sub() {
 	#Initialize variables
 	docker__get_initial_myContainerId_dfltVal_isAlreadyDone=${TRUE}
@@ -373,7 +387,7 @@ docker__environmental_variables__sub() {
 
 docker__choose_copy_direction__sub() {
 	#Define local constants
-	local MENUTITLE="Copy ${DOCKER__FILES_FG_ORANGE}FILE${DOCKER__NOCOLOR}/${DOCKER__DIRS_FG_VERYLIGHTORANGE}FOLDER${DOCKER__NOCOLOR} From/To ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}CONTAINER${DOCKER__NOCOLOR}"
+	local MENUTITLE="Copy a ${DOCKER__FILES_FG_ORANGE}File${DOCKER__NOCOLOR} {From|To} a ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}"
 
 	#Define local variables
 	local readMsg="Your Choice: "
@@ -385,8 +399,8 @@ docker__choose_copy_direction__sub() {
 
 	#Show menu-items
 	echo -e "Choose copy direction:"
-	echo -e "${DOCKER__FOURSPACES}1. ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}CONTAINER${DOCKER__NOCOLOR} > ${DOCKER__HOST_FG_GREEN85}HOST${DOCKER__NOCOLOR}"
-	echo -e "${DOCKER__FOURSPACES}2. ${DOCKER__HOST_FG_GREEN85}HOST${DOCKER__NOCOLOR} > ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}CONTAINER${DOCKER__NOCOLOR}"
+	echo -e "${DOCKER__FOURSPACES}1. ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR} > ${DOCKER__HOST_FG_GREEN85}HOST${DOCKER__NOCOLOR}"
+	echo -e "${DOCKER__FOURSPACES}2. ${DOCKER__HOST_FG_GREEN85}HOST${DOCKER__NOCOLOR} > ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}"
 	echo -e "\r"
 
 	#Start loop
@@ -428,40 +442,26 @@ docker__choose_copy_direction__sub() {
 }
 
 docker__choose_containerid__sub() {
-	#Define local constants
-	local MENUTITLE="Show ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}CONTAINER${DOCKER__NOCOLOR}-list"
+	#Define local message constants
+	local MENUTITLE_CURRENT_REPOSITORY_LIST="Current ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}-list"
+
+    local ERRMSG_NO_CONTAINERS_FOUND="=:${DOCKER__ERROR_FG_LIGHTRED}NO CONTAINERS FOUND${DOCKER__NOCOLOR}:="
+
+    #Define local command variables
+    local docker_ps_a_cmd="docker ps -a"
 
 	#Define local variables
 	local myContainerId_chosen=${DOCKER__EMPTYSTRING}
 
-	#Initial setting
-	# docker__lastTwoChar=${DOCKER__EMPTYSTRING}
 
-    #Show menu-title
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-    show_centered_string__func "${MENUTITLE}" "${DOCKER__TABLEWIDTH}"
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
 
-    #Get number of images
-    numof_containers=`docker ps -a | head -n -1 | wc -l`
+#---Show Docker Container's List
+    #Get number of containers
+    local numof_containers=`docker ps -a | head -n -1 | wc -l`
     if [[ ${numof_containers} -eq 0 ]]; then
-        #Update error-message
-        errMsg="=:${DOCKER__ERROR_FG_LIGHTRED}NO CONTAINERS FOUND${DOCKER__NOCOLOR}:="
-
-        #Show error-message
-        echo -e "\r"
-        show_centered_string__func "${errMsg}" "${DOCKER__TABLEWIDTH}"
-        echo -e "\r"
-        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-
-        press_any_key__func
-
-        exit
+        docker__show_errMsg_with_menuTitle__func "${MENUTITLE_CURRENT_REPOSITORY_LIST}" "${ERRMSG_NO_CONTAINERS_FOUND}"
     else
-        docker ps -a
-
-        echo -e "\r"
-        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+        docker__show_list_with_menuTitle__func "${MENUTITLE_CURRENT_REPOSITORY_LIST}" "${docker_ps_a_cmd}"
     fi
 
 	#Initialize variable
@@ -521,14 +521,10 @@ docker__choose_containerid__sub() {
 				break         
 			else
 				#Update error-message
-				errMsg="***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Invalid CONTAINER-ID: '${DOCKER__LIGHTRED}${docker__myContainerId_accept}${DOCKER__NOCOLOR}'"
+				errMsg="***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Invalid Container-ID: '${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}${docker__myContainerId_accept}${DOCKER__NOCOLOR}'"
 				
 				#Show error-message
-				echo -e "\r"
-				echo -e "${errMsg}"
-
-				#Wait for a max. of 10 seconds
-				press_any_key__func
+				docker__show_errMsg_without_menuTitle__func "${errMsg}"
 
 				#Move-up and Clean lines
 				moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_5}"
@@ -544,6 +540,55 @@ docker__choose_containerid__sub() {
 	#Goto Next-Phase
 	GOTO__func PHASE_GET_SRC_DST_FPATH
 }
+function docker__show_list_with_menuTitle__func() {
+    #Input args
+    local menuTitle=${1}
+    local dockerCmd=${2}
+
+    #Show list
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    show_centered_string__func "${menuTitle}" "${DOCKER__TABLEWIDTH}"
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    
+    ${dockerCmd}
+
+    echo -e "\r"
+
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    echo -e "${DOCKER__CTRL_C_QUIT}"
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+}
+
+function docker__show_errMsg_with_menuTitle__func() {
+    #Input args
+    local menuTitle=${1}
+    local errMsg=${2}
+
+    #Show error-message
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    show_centered_string__func "${menuTitle}" "${DOCKER__TABLEWIDTH}"
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    
+    echo -e "\r"
+    show_centered_string__func "${errMsg}" "${DOCKER__TABLEWIDTH}"
+    echo -e "\r"
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    echo -e "\r"
+
+    press_any_key__func
+
+    CTRL_C__sub
+}
+
+function docker__show_errMsg_without_menuTitle__func() {
+    #Input args
+    local errMsg=${1}
+
+    echo -e "\r"
+    echo -e "${errMsg}"
+
+    press_any_key__func
+}
 
 docker__get_source_destination_fpath__sub() {
 	#Define local variables
@@ -552,17 +597,17 @@ docker__get_source_destination_fpath__sub() {
 
 	#Initial phase
 	docker__case_option=${DOCKER__CASE_SOURCE_DIR}
-	if [[ ${docker__mycopychoice} -eq 1 ]]; then	#CONTAINER -to- HOST (docker__mycopychoice = 1)
+	if [[ ${docker__mycopychoice} -eq 1 ]]; then	#Container -to- HOST (docker__mycopychoice = 1)
 		while true
 		do
 			case ${docker__case_option} in
 				${DOCKER__CASE_SOURCE_DIR})
-					#---SOURCE: Provide the Location of the file which you want to copy (located  at the CONTAINER!)
+					#---SOURCE: Provide the Location of the file which you want to copy (located  at the Container!)
 					docker__container_get_source_dir__func
 					;;
 
 				${DOCKER__CASE_SOURCE_FOBJECT})
-					#---SOURCE: Provide the file/folder which you want to copy (located at the CONTAINER!)
+					#---SOURCE: Provide the file/folder which you want to copy (located at the Container!)
 					docker__container_get_source_fobject__func
 					;;
 
@@ -581,7 +626,7 @@ docker__get_source_destination_fpath__sub() {
 		#Compose Source and Destination Fullpath
 		docker__compose_source_dest_fpath__sub
 
-	else	#HOST -to- CONTAINER (docker__mycopychoice = 2)
+	else	#HOST -to- Container (docker__mycopychoice = 2)
 		while true
 		do
 			case ${docker__case_option} in
@@ -591,12 +636,12 @@ docker__get_source_destination_fpath__sub() {
 					;;
 
 				${DOCKER__CASE_SOURCE_FOBJECT})			
-					#---SOURCE: Provide the file/folder which you want to copy (located  at the CONTAINER!)
+					#---SOURCE: Provide the file/folder which you want to copy (located  at the Container!)
 					docker__host_get_source_fobject__func
 					;;
 
 				${DOCKER__CASE_DEST_DIR})
-					#---DESTINATION: Provide the Location of the file which you want to copy (located  at the CONTAINER!)
+					#---DESTINATION: Provide the Location of the file which you want to copy (located  at the Container!)
 					docker__container_get_dest_dir__func
 					;;
 
@@ -1054,7 +1099,7 @@ function docker__show_dirContent_handler__func()
 	#Get directory content of 'dirInput'
 	if [[ -z ${myContainerID} ]]; then	#LOCAL machine (aka HOST)
 		${docker__localhost_dirlist_fpath} "${dirInput}" "${DOCKER__LISTVIEW_NUMOFROWS}" "${DOCKER__LISTVIEW_NUMOFCOLS}" "${keyWord}"
-	else	#REMOTE machine (aka CONTAINER)
+	else	#REMOTE machine (aka Container)
 		${docker__dockercontainer_dirlist_fpath} "${myContainerID}" "${dirInput}" "${DOCKER__LISTVIEW_NUMOFROWS}" "${DOCKER__LISTVIEW_NUMOFCOLS}" "${keyWord}"
 	fi
 }

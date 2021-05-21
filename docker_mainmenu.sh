@@ -271,16 +271,16 @@ docker__mainmenu__sub() {
         echo -e "${DOCKER__FOURSPACES}2. Create an ${DOCKER__IMAGEID_FG_BORDEAUX}image${DOCKER__NOCOLOR} from a ${DOCKER__REPOSITORY_FG_PURPLE}repository${DOCKER__NOCOLOR}"
         echo -e "${DOCKER__FOURSPACES}3. Create an ${DOCKER__IMAGEID_FG_BORDEAUX}image${DOCKER__NOCOLOR} from a ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
         echo -e "${DOCKER__FOURSPACES}4. Run ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR} from a ${DOCKER__REPOSITORY_FG_PURPLE}repository${DOCKER__NOCOLOR}"
-        echo -e "${DOCKER__FOURSPACES}5. Run an *EXITED* ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
-        echo -e "${DOCKER__FOURSPACES}6. Remove ${DOCKER__IMAGEID_FG_BORDEAUX}image-ID${DOCKER__NOCOLOR} (${DOCKER__REPOSITORY_FG_PURPLE}repository${DOCKER__NOCOLOR})"
-        echo -e "${DOCKER__FOURSPACES}7. Remove ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}container-ID${DOCKER__NOCOLOR}"
-        echo -e "${DOCKER__FOURSPACES}8. Copy a ${DOCKER__FILES_FG_ORANGE}File${DOCKER__NOCOLOR} from/to a ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}"
-        echo -e "${DOCKER__FOURSPACES}9. Run ${DOCKER__CHROOT_FG_GREEN}CHROOT${DOCKER__NOCOLOR} from *WITHIN* a ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
+        echo -e "${DOCKER__FOURSPACES}5. Run an *exited* ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
+        echo -e "${DOCKER__FOURSPACES}6. Remove ${DOCKER__IMAGEID_FG_BORDEAUX}image${DOCKER__NOCOLOR}/${DOCKER__REPOSITORY_FG_PURPLE}repository${DOCKER__NOCOLOR}"
+        echo -e "${DOCKER__FOURSPACES}7. Remove ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
+        echo -e "${DOCKER__FOURSPACES}8. Copy a ${DOCKER__FILES_FG_ORANGE}file${DOCKER__NOCOLOR} from/to a ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
+        echo -e "${DOCKER__FOURSPACES}9. Run ${DOCKER__CHROOT_FG_GREEN}chroot${DOCKER__NOCOLOR} from *within* a ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-        echo -e "${DOCKER__FOURSPACES}r. Docker ${DOCKER__REPOSITORY_FG_PURPLE}repository${DOCKER__NOCOLOR} List"
-        echo -e "${DOCKER__FOURSPACES}c. Docker ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR} List"
+        echo -e "${DOCKER__FOURSPACES}r. ${DOCKER__REPOSITORY_FG_PURPLE}repository${DOCKER__NOCOLOR}-list"
+        echo -e "${DOCKER__FOURSPACES}c. ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}-list"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-        echo -e "${DOCKER__FOURSPACES}s. SSH"
+        echo -e "${DOCKER__FOURSPACES}s. ${DOCKER__GENERAL_FG_YELLOW}SSH${DOCKER__NOCOLOR} to a ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
         echo -e "${DOCKER__FOURSPACES}i. Load from File"
         echo -e "${DOCKER__FOURSPACES}e. Save to File"
@@ -398,10 +398,10 @@ docker__create_images_menu__sub() {
         echo -e "${DOCKER__FOURSPACES}1. Create an ${DOCKER__IMAGEID_FG_BORDEAUX}image${DOCKER__NOCOLOR} using a ${DOCKER__FG_DARKBLUE}docker-file${DOCKER__NOCOLOR}"
         echo -e "${DOCKER__FOURSPACES}2. Create ${DOCKER__IMAGEID_FG_BORDEAUX}images${DOCKER__NOCOLOR} using a ${DOCKER__TITLE_FG_LIGHTBLUE}docker-list${DOCKER__NOCOLOR}"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-        echo -e "${DOCKER__FOURSPACES}r. Docker ${DOCKER__REPOSITORY_FG_PURPLE}repository${DOCKER__NOCOLOR} List"
-        echo -e "${DOCKER__FOURSPACES}c. Docker ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR} List"
+        echo -e "${DOCKER__FOURSPACES}r. ${DOCKER__REPOSITORY_FG_PURPLE}repository${DOCKER__NOCOLOR}-list"
+        echo -e "${DOCKER__FOURSPACES}c. ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}-list"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-        echo -e "${DOCKER__FOURSPACES}s. SSH"
+        echo -e "${DOCKER__FOURSPACES}s. ${DOCKER__GENERAL_FG_YELLOW}SSH${DOCKER__NOCOLOR} to a ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
         echo -e "${DOCKER__FOURSPACES}i. Load from File"
         echo -e "${DOCKER__FOURSPACES}e. Save to File"
@@ -495,7 +495,7 @@ docker__list_repository__sub() {
     docker__load_header__sub
 
     #Define local constants
-    local MENUTITLE_REPOSITORYLIST="${DOCKER__REPOSITORY_FG_PURPLE}REPOSITORY'S${DOCKER__NOCOLOR} ${DOCKER__GENERAL_FG_YELLOW}LIST${DOCKER__NOCOLOR}"
+    local MENUTITLE_REPOSITORYLIST="${DOCKER__REPOSITORY_FG_PURPLE}Repository${DOCKER__NOCOLOR}-list"
 
     local ERRMSG_NO_IMAGES_FOUND="=:${DOCKER__ERROR_FG_LIGHTRED}NO IMAGES FOUND${DOCKER__NOCOLOR}:="
 
@@ -525,7 +525,7 @@ docker__list_container__sub() {
     docker__load_header__sub
 
     #Define local constants
-    local MENUTITLE_CONTAINERLIST="${DOCKER__REPOSITORY_FG_PURPLE}REPOSITORY'S${DOCKER__NOCOLOR} ${DOCKER__GENERAL_FG_YELLOW}LIST${DOCKER__NOCOLOR}"
+    local MENUTITLE_CONTAINERLIST="${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}-list"
     
     local ERRMSG_NO_CONTAINERS_FOUND="=:${DOCKER__ERROR_FG_LIGHTRED}NO CONTAINERS FOUND${DOCKER__NOCOLOR}:="
 
