@@ -91,23 +91,24 @@ docker__git_pull__sub() {
     show_centered_string__func "${MENUTITLE}" "${DOCKER__TABLEWIDTH}"
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
 
+    #Execute command
+    git pull
 
-    # git pull
-
+    #Check exit-code
     exitCode=$?
-    exitCode=0
     if [[ ${exitCode} -eq 0 ]]; then
         echo -e "\r"
         echo -e "---:${DOCKER__FILES_FG_ORANGE}STATUS${DOCKER__NOCOLOR}: git pull (${DOCKER__CHROOT_FG_GREEN}done${DOCKER__NOCOLOR})"
+        echo -e "\r"
+
+        exit 0
     else
         echo -e "\r"
         echo -e "***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: git pull (${DOCKER__FG_LIGHTRED}failed${DOCKER__NOCOLOR})"
-
-        exit
+        echo -e "\r"
+        
+        exit 99
     fi
-
-    echo -e "\r"
-    echo -e "\r"
 }
 
 

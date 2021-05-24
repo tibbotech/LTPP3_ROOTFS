@@ -124,9 +124,11 @@ docker__add_comment_push__sub() {
     show_centered_string__func "${MENUTITLE}" "${DOCKER__TABLEWIDTH}"
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
 
-    #---Git Add  
+#---Git Add
+    #Execute command
     git add .
 
+    #Check exit-code
     exitCode=$?
     if [[ ${exitCode} -eq 0 ]]; then
         echo -e "\r"
@@ -134,14 +136,13 @@ docker__add_comment_push__sub() {
     else
         echo -e "\r"
         echo -e "***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: git add. (${DOCKER__FG_LIGHTRED}failed${DOCKER__NOCOLOR})"
-       
-        echo -e "\r"
         echo -e "\r"
 
-        exit
+        exit 99
     fi
 
-    #---Git Commit
+#---Git Commit
+    #Provide a commit description
     echo -e "\r"
     while true
     do
@@ -156,37 +157,40 @@ docker__add_comment_push__sub() {
         fi
     done
 
+    #Execute command
     git commit -m "${commit_description}"
 
+    #Check exit-code
     exitCode=$?
     if [[ ${exitCode} -eq 0 ]]; then
         echo -e "\r"
-        echo -e "---:${DOCKER__FILES_FG_ORANGE}STATUS${DOCKER__NOCOLOR}: git commit (${DOCKER__CHROOT_FG_GREEN}done${DOCKER__NOCOLOR})"
+        echo -e "---:${DOCKER__FILES_FG_ORANGE}STATUS${DOCKER__NOCOLOR}: git commit -m <your description> (${DOCKER__CHROOT_FG_GREEN}done${DOCKER__NOCOLOR})"
     else
         echo -e "\r"
-        echo -e "***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: git commit (${DOCKER__FG_LIGHTRED}failed${DOCKER__NOCOLOR})"
-       
-        echo -e "\r"
+        echo -e "***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}:  git commit -m <your description> (${DOCKER__FG_LIGHTRED}failed${DOCKER__NOCOLOR})"
         echo -e "\r"
 
-        exit
+        exit 99
     fi
 
 
-    #Git Push
+#---Git Push
+    #Execute command
     git push
 
+    #Check exit-code
     exitCode=$?
     if [[ ${exitCode} -eq 0 ]]; then
         echo -e "---:${DOCKER__FILES_FG_ORANGE}STATUS${DOCKER__NOCOLOR}: git push (${DOCKER__CHROOT_FG_GREEN}done${DOCKER__NOCOLOR})"
+        echo -e "\r"
+
+        exit 0
     else
         echo -e "***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: git push (${DOCKER__FG_LIGHTRED}failed${DOCKER__NOCOLOR})"
-       
-        exit
-    fi
+        echo -e "\r"
 
-    echo -e "\r"
-    echo -e "\r"
+        exit 99
+    fi
 }
 
 function moveUp_and_cleanLines__func() {
