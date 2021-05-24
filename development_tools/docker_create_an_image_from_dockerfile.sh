@@ -257,7 +257,9 @@ docker__show_dockerList_files__sub() {
         echo -e "${DOCKER__FOURSPACES}${seqnum}. ${extract_filename}"
     done
 
-    echo -e ""
+    echo -e "\r"
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    echo -e "${locationMsg_dockerfiles}"
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
     echo -e "${DOCKER__Q_QUIT}"
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
@@ -273,7 +275,7 @@ docker__show_dockerList_files__sub() {
         fi
 
         #Check if 'mychoice' is a numeric value
-        if [[ ${mychoice} =~ [1-9,0,q] ]]; then
+        if [[ ${mychoice} =~ [1-90q] ]]; then
             #check if 'mychoice' is one of the numbers shown in the overview...
             #... AND 'mychoice' is NOT '0'
             if [[ ${mychoice} == ${DOCKER__QUIT} ]]; then

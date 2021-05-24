@@ -386,10 +386,10 @@ docker__environmental_variables__sub() {
 }
 
 docker__choose_copy_direction__sub() {
-	#Define local constants
+	#Define local message constants
 	local MENUTITLE="Copy a ${DOCKER__FILES_FG_ORANGE}File${DOCKER__NOCOLOR} {From|To} a ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}"
 
-	#Define local variables
+	#Define local read variables
 	local readMsg="Your Choice: "
 
     #Show menu-title

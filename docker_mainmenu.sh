@@ -275,15 +275,15 @@ docker__mainmenu__sub() {
         echo -e "${DOCKER__FOURSPACES}6. Remove ${DOCKER__IMAGEID_FG_BORDEAUX}image${DOCKER__NOCOLOR}/${DOCKER__REPOSITORY_FG_PURPLE}repository${DOCKER__NOCOLOR}"
         echo -e "${DOCKER__FOURSPACES}7. Remove ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
         echo -e "${DOCKER__FOURSPACES}8. Copy a ${DOCKER__FILES_FG_ORANGE}file${DOCKER__NOCOLOR} from/to a ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
-        echo -e "${DOCKER__FOURSPACES}9. Run ${DOCKER__CHROOT_FG_GREEN}chroot${DOCKER__NOCOLOR} from *within* a ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
+        echo -e "${DOCKER__FOURSPACES}9. ${DOCKER__CHROOT_FG_GREEN}Chroot${DOCKER__NOCOLOR} (from in/outside a container)"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-        echo -e "${DOCKER__FOURSPACES}r. ${DOCKER__REPOSITORY_FG_PURPLE}repository${DOCKER__NOCOLOR}-list"
-        echo -e "${DOCKER__FOURSPACES}c. ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}-list"
+        echo -e "${DOCKER__FOURSPACES}r. ${DOCKER__REPOSITORY_FG_PURPLE}Repository${DOCKER__NOCOLOR}-list"
+        echo -e "${DOCKER__FOURSPACES}c. ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}-list"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
         echo -e "${DOCKER__FOURSPACES}s. ${DOCKER__GENERAL_FG_YELLOW}SSH${DOCKER__NOCOLOR} to a ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-        echo -e "${DOCKER__FOURSPACES}i. Load from File"
-        echo -e "${DOCKER__FOURSPACES}e. Save to File"
+        echo -e "${DOCKER__FOURSPACES}i. Import an ${DOCKER__IMAGEID_FG_BORDEAUX}image${DOCKER__NOCOLOR} file"
+        echo -e "${DOCKER__FOURSPACES}e. Export an ${DOCKER__IMAGEID_FG_BORDEAUX}image${DOCKER__NOCOLOR} file"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
         echo -e "${DOCKER__FOURSPACES}p. Git ${DOCKER__OUTSIDE_BG_LIGHTGREY}${DOCKER__OUTSIDE_FG_WHITE}Push${DOCKER__NOCOLOR}"
         echo -e "${DOCKER__FOURSPACES}g. Git ${DOCKER__INSIDE_BG_WHITE}${DOCKER__INSIDE_FG_LIGHTGREY}Pull${DOCKER__NOCOLOR}"
@@ -300,7 +300,7 @@ docker__mainmenu__sub() {
 
             #Only continue if a valid option is selected
             if [[ ! -z ${docker__mychoice} ]]; then
-                if [[ ${docker__mychoice} =~ [1-9,r,c,s,e,i,p,g,q] ]]; then
+                if [[ ${docker__mychoice} =~ [1-9rcseipgq] ]]; then
                     break
                 else
                     if [[ ${docker__mychoice} == ${DOCKER__ENTER} ]]; then
@@ -364,12 +364,12 @@ docker__mainmenu__sub() {
                 cmd_exec__func "${docker__ssh_to_host_fpath}"
                 ;;
 
-            e)
-                cmd_exec__func "${docker__save_fpath}"
-                ;;
-
             i)
                 cmd_exec__func "${docker__load_fpath}"
+                ;;
+
+            e)
+                cmd_exec__func "${docker__save_fpath}"
                 ;;
 
             p)  
@@ -398,8 +398,8 @@ docker__create_images_menu__sub() {
         echo -e "${DOCKER__FOURSPACES}1. Create an ${DOCKER__IMAGEID_FG_BORDEAUX}image${DOCKER__NOCOLOR} using a ${DOCKER__FG_DARKBLUE}docker-file${DOCKER__NOCOLOR}"
         echo -e "${DOCKER__FOURSPACES}2. Create ${DOCKER__IMAGEID_FG_BORDEAUX}images${DOCKER__NOCOLOR} using a ${DOCKER__TITLE_FG_LIGHTBLUE}docker-list${DOCKER__NOCOLOR}"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-        echo -e "${DOCKER__FOURSPACES}r. ${DOCKER__REPOSITORY_FG_PURPLE}repository${DOCKER__NOCOLOR}-list"
-        echo -e "${DOCKER__FOURSPACES}c. ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}-list"
+        echo -e "${DOCKER__FOURSPACES}r. ${DOCKER__REPOSITORY_FG_PURPLE}Repository${DOCKER__NOCOLOR}-list"
+        echo -e "${DOCKER__FOURSPACES}c. ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}-list"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
         echo -e "${DOCKER__FOURSPACES}s. ${DOCKER__GENERAL_FG_YELLOW}SSH${DOCKER__NOCOLOR} to a ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
@@ -422,7 +422,7 @@ docker__create_images_menu__sub() {
 
             #Only continue if a valid option is selected
             if [[ ! -z ${docker__mychoice} ]]; then
-                if [[ ${docker__mychoice} =~ [1-2,r,c,s,e,i,p,g,h,q] ]]; then
+                if [[ ${docker__mychoice} =~ [1-2rcseipghq] ]]; then
                     break
                 else
                     if [[ ${docker__mychoice} == ${DOCKER__ENTER} ]]; then

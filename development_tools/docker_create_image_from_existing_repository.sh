@@ -265,16 +265,18 @@ create_dockerfile__sub() {
 }
 
 docker__build_image_from_specified_repository__sub() {
-    #Define local message constants
+    #Define local constants
     local MENUTITLE="Create an ${DOCKER__IMAGEID_FG_BORDEAUX}Image${DOCKER__NOCOLOR} from a ${DOCKER__REPOSITORY_FG_PURPLE}Repository${DOCKER__NOCOLOR}"
     local MENUTITLE_UPDATED_IMAGE_LIST="Updated ${DOCKER__IMAGEID_FG_BORDEAUX}Image${DOCKER__NOCOLOR}-list"
     
+    #Define local message constants
+    local ERRMSG_NO_IMAGES_FOUND="=:${DOCKER__ERROR_FG_LIGHTRED}NO IMAGES FOUND${DOCKER__NOCOLOR}:="
+
+    #Define local read-input constants
     local READMSG_CHOOSE_A_REPOSITORY_FROM_LIST="Choose a ${DOCKER__REPOSITORY_FG_PURPLE}Repository${DOCKER__NOCOLOR} from list (e.g. ubuntu_buildbin): "
     local READMSG_DO_YOU_WISH_TO_CONTINUE="Do you wish to continue (y/n/r)? "
     local READMSG_PROVIDE_ITS_CORRESPONDING_TAG="Provide its matching ${DOCKER__TAG_FG_LIGHTPINK}Tag${DOCKER__NOCOLOR} (e.g. latest): "
     local READMSG_NEW_REPOSITORY_NAME="${DOCKER__GENERAL_FG_YELLOW}New${DOCKER__NOCOLOR} ${DOCKER__NEW_REPOSITORY_FG_BRIGHTLIGHTPURPLE}Repository${DOCKER__NOCOLOR}'s name (e.g. ubuntu_buildbin_NEW): "
-    
-    local ERRMSG_NO_IMAGES_FOUND="=:${DOCKER__ERROR_FG_LIGHTRED}NO IMAGES FOUND${DOCKER__NOCOLOR}:="
 
     #Define Local message variables
     local echoMsg="${DOCKER__DIRS_FG_VERYLIGHTORANGE}SAVE-TO${DOCKER__NOCOLOR}: ${dockerfile_dir}"

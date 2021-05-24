@@ -301,7 +301,7 @@ docker__show_dockerList_files__sub() {
             fi
 
             #Check if 'mychoice' is a numeric value
-            if [[ ${mychoice} =~ [1-9,0,q] ]]; then
+            if [[ ${mychoice} =~ [1-90q] ]]; then
                 #check if 'mychoice' is one of the numbers shown in the overview...
                 #... AND 'mychoice' is NOT '0'
                 if [[ ${mychoice} -lt ${seqnum} ]] && [[ ${mychoice} -ne 0 ]]; then
@@ -360,7 +360,7 @@ docker__show_dockerList_files__sub() {
             read -N1 -p "${readInput_msg2}" mychoice
 
             #Check if 'mychoice' is a numeric value
-            if [[ ${mychoice} =~ [y,n,b,q] ]]; then
+            if [[ ${mychoice} =~ [ynbq] ]]; then
                 #print 2 empty lines
                 echo -e "\r"
                 echo -e "\r"

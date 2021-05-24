@@ -359,7 +359,6 @@ function docker__show_list_with_menuTitle__func() {
     ${dockerCmd}
 
     echo -e "\r"
-
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
     echo -e "${DOCKER__CTRL_C_QUIT}"
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
