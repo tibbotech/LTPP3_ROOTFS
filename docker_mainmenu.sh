@@ -14,6 +14,10 @@ DOCKER__FILES_FG_ORANGE=$'\e[30;38;5;215m'
 DOCKER__INSIDE_FG_LIGHTGREY=$'\e[30;38;5;246m'
 DOCKER__OUTSIDE_FG_WHITE=$'\e[30;38;5;231m'
 
+DOCKER__FG_SOFTLIGHTRED=$'\e[30;38;5;131m'
+DOCKER__FG_LIGHTGREEN=$'\e[30;38;5;71m'
+DOCKER__FG_LIGHTSOFTYELLOW=$'\e[30;38;5;229m'
+
 DOCKER__TITLE_BG_ORANGE=$'\e[30;48;5;215m'
 DOCKER__TITLE_BG_LIGHTBLUE=$'\e[30;48;5;45m'
 DOCKER__INSIDE_BG_WHITE=$'\e[30;48;5;15m'
@@ -222,6 +226,8 @@ docker__environmental_variables__sub() {
 
     docker__git_push_filename="git_push.sh"
     docker__git_pull_filename="git_pull.sh"
+    docker__git_create_checkout_local_branch_filename="git_create_checkout_local_branch.sh"
+    docker__git_delete_local_branch_filename="git_delete_local_branch.sh"
 
     docker__current_script_fpath="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
     docker__current_dir=$(dirname ${docker__current_script_fpath})
@@ -250,6 +256,8 @@ docker__environmental_variables__sub() {
 
     docker__git_push_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__git_push_filename}
     docker__git_pull_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__git_pull_filename}
+    docker__git_create_checkout_local_branch_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__git_create_checkout_local_branch_filename}
+    docker__git_delete_local_branch_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__git_delete_local_branch_filename}
 }
 
 docker__load_header__sub() {
@@ -285,8 +293,7 @@ docker__mainmenu__sub() {
         echo -e "${DOCKER__FOURSPACES}i. Import an ${DOCKER__IMAGEID_FG_BORDEAUX}image${DOCKER__NOCOLOR} file"
         echo -e "${DOCKER__FOURSPACES}e. Export an ${DOCKER__IMAGEID_FG_BORDEAUX}image${DOCKER__NOCOLOR} file"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-        echo -e "${DOCKER__FOURSPACES}p. Git ${DOCKER__OUTSIDE_BG_LIGHTGREY}${DOCKER__OUTSIDE_FG_WHITE}Push${DOCKER__NOCOLOR}"
-        echo -e "${DOCKER__FOURSPACES}g. Git ${DOCKER__INSIDE_BG_WHITE}${DOCKER__INSIDE_FG_LIGHTGREY}Pull${DOCKER__NOCOLOR}"
+        echo -e "${DOCKER__FOURSPACES}g. ${DOCKER__INSIDE_FG_LIGHTGREY}Git${DOCKER__NOCOLOR} Menu"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
         echo -e "${DOCKER__FOURSPACES}q. ${DOCKER__QUIT_CTRL_C}"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
@@ -372,12 +379,8 @@ docker__mainmenu__sub() {
                 cmd_exec__func "${docker__save_fpath}"
                 ;;
 
-            p)  
-                cmd_exec__func "${docker__git_push_fpath}"
-                ;;
-
             g)  
-                cmd_exec__func "${docker__git_pull_fpath}"
+                docker__git_menu__sub
                 ;;
 
             q)
@@ -406,8 +409,7 @@ docker__create_images_menu__sub() {
         echo -e "${DOCKER__FOURSPACES}i. Load from File"
         echo -e "${DOCKER__FOURSPACES}e. Save to File"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-        echo -e "${DOCKER__FOURSPACES}p. Git ${DOCKER__OUTSIDE_BG_LIGHTGREY}${DOCKER__OUTSIDE_FG_WHITE}Push${DOCKER__NOCOLOR}"
-        echo -e "${DOCKER__FOURSPACES}g. Git ${DOCKER__INSIDE_BG_WHITE}${DOCKER__INSIDE_FG_LIGHTGREY}Pull${DOCKER__NOCOLOR}"
+        echo -e "${DOCKER__FOURSPACES}g. ${DOCKER__INSIDE_FG_LIGHTGREY}Git${DOCKER__NOCOLOR} Menu"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
         echo -e "${DOCKER__FOURSPACES}h. Home"
         echo -e "${DOCKER__FOURSPACES}q. $DOCKER__QUIT_CTRL_C"
@@ -466,12 +468,82 @@ docker__create_images_menu__sub() {
                 cmd_exec__func "${docker__load_fpath}"
                 ;;
 
-            p)  
+            g)  
+                docker__git_menu__sub
+                ;;
+
+            h)
+                echo -e "\r"
+
+                docker__mainmenu__sub
+                ;;
+
+            q)
+                echo -e "\r"
+                echo -e "\r"
+
+                exit 0
+                ;;
+        esac
+    done
+}
+
+docker__git_menu__sub() {
+    echo -e "\r"
+
+    while true
+    do
+        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+        show_leadingAndTrailingStrings_separatedBySpaces__func "${DOCKER__SUBMENUTITLE}" "${DOCKER__VERSION}" "${DOCKER__TABLEWIDTH}"
+        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+        echo -e "${DOCKER__FOURSPACES}1. Git ${DOCKER__OUTSIDE_BG_LIGHTGREY}${DOCKER__OUTSIDE_FG_WHITE}Push${DOCKER__NOCOLOR}"
+        echo -e "${DOCKER__FOURSPACES}2. Git ${DOCKER__INSIDE_BG_WHITE}${DOCKER__INSIDE_FG_LIGHTGREY}Pull${DOCKER__NOCOLOR}"
+        echo -e "${DOCKER__FOURSPACES}3. Git ${DOCKER__FG_LIGHTGREEN}create${DOCKER__NOCOLOR}/${DOCKER__FG_LIGHTSOFTYELLOW}checkout${DOCKER__NOCOLOR} branch"
+        echo -e "${DOCKER__FOURSPACES}4. Git ${DOCKER__FG_SOFTLIGHTRED}delete${DOCKER__NOCOLOR} ${DOCKER__INSIDE_FG_LIGHTGREY}local${DOCKER__NOCOLOR} Brabranchnch"
+        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+        echo -e "${DOCKER__FOURSPACES}h. Home"
+        echo -e "${DOCKER__FOURSPACES}q. $DOCKER__QUIT_CTRL_C"
+        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+        # echo -e "\r"
+
+        while true
+        do
+            #Select an option
+            read -N1 -r -p "Please choose an option: " docker__mychoice
+            echo -e "\r"
+
+            #Only continue if a valid option is selected
+            if [[ ! -z ${docker__mychoice} ]]; then
+                if [[ ${docker__mychoice} =~ [1-4hq] ]]; then
+                    break
+                else
+                    if [[ ${docker__mychoice} == ${DOCKER__ENTER} ]]; then
+                        moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
+                    else
+                        moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+                    fi
+                fi
+            else
+                moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+            fi
+        done
+            
+        #Goto the selected option
+        case ${docker__mychoice} in
+            1)  
                 cmd_exec__func "${docker__git_push_fpath}"
                 ;;
 
-            g)  
+            2)  
                 cmd_exec__func "${docker__git_pull_fpath}"
+                ;;
+
+            3)
+                cmd_exec__func "${docker__git_create_checkout_local_branch_fpath}"
+                ;;
+
+            4)
+                cmd_exec__func "${docker__git_delete_local_branch_fpath}"
                 ;;
 
             h)
