@@ -307,16 +307,16 @@ docker__run_specified_repository_as_container__sub() {
                             #Combine 'myRepository' and 'myTag', but separated by a colon ':'
                             myRespository_colon_tag="${myRepository}:${myTag}"
 
-                            myRespository_colon_tag_isFound=`docker container ls | grep -w "${myRespository_colon_tag}"`    #check if 'myRespository_colon_tag' is found in 'docker container ls'
-                            if [[ -z ${myRespository_colon_tag_isFound} ]]; then    #match was NOT found, thus 'myTag_isFound' is an EMPTY STRING
-                                #Define Container Name
-                                containerName="containerOf__${myRepository}_${myTag}"
-                                
+                            # myRespository_colon_tag_isFound=`docker container ls | grep -w "${myRespository_colon_tag}"`    #check if 'myRespository_colon_tag' is found in 'docker container ls'
+                            # if [[ -z ${myRespository_colon_tag_isFound} ]]; then    #match was NOT found, thus 'myTag_isFound' is an EMPTY STRING                                
                                 #Get an unused value for the 'docker__ssh_localport'
                                 #Note: 
                                 #   function 'get_available_localport__func' does NOT have an output, instead...
                                 #   ....'docker__ssh_localport' is set in this function
                                 get_available_localport__func
+
+                                #Define Container Name
+                                containerName="containerOf__${myRepository}_${myTag}_${docker__ssh_localport}"
 
                                 #Run Docker Container
                                 echo -e "\r"
@@ -363,20 +363,20 @@ docker__run_specified_repository_as_container__sub() {
                                 else
                                     break
                                 fi
-                            else
-                                #Get running Container-ID
-                                containerid=`docker container ls | grep -w "${myRepository}:${myTag}" | awk '{print $1}'`
+                            # else
+                            #     #Get running Container-ID
+                            #     containerid=`docker container ls | grep -w "${myRepository}:${myTag}" | awk '{print $1}'`
 
-                                #Update error-message
-                                errMsg="***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: ${DOCKER__REPOSITORY_FG_PURPLE}Repository${DOCKER__NOCOLOR}:${DOCKER__TAG_FG_LIGHTPINK}TAG${DOCKER__NOCOLOR} pair already running under Container-ID: ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}${containerid}${DOCKER__NOCOLOR}"
+                            #     #Update error-message
+                            #     errMsg="***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: ${DOCKER__REPOSITORY_FG_PURPLE}Repository${DOCKER__NOCOLOR}:${DOCKER__TAG_FG_LIGHTPINK}TAG${DOCKER__NOCOLOR} pair already running under Container-ID: ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}${containerid}${DOCKER__NOCOLOR}"
 
-                                #Show error-message
-                                docker__show_errMsg_without_menuTitle__func "${errMsg}"
+                            #     #Show error-message
+                            #     docker__show_errMsg_without_menuTitle__func "${errMsg}"
 
-                                moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_6}"
+                            #     moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_6}"
 
-                                break
-                            fi
+                            #     break
+                            # fi
                         else
                             #Update error-message
                             errMsg="***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Un-matched pair ${DOCKER__REPOSITORY_FG_PURPLE}Repository${DOCKER__NOCOLOR} <-> ${DOCKER__TAG_FG_LIGHTPINK}TAG${DOCKER__NOCOLOR}"
