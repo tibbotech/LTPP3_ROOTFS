@@ -231,13 +231,13 @@ docker__remove_specified_images__sub() {
                 if [[ ! -z ${docker__myAnswer} ]]; then          
                     if [[ ${docker__myAnswer} == "y" ]]; then
                         if [[ ${docker__myImageId} == ${DOCKER__REMOVE_ALL} ]]; then
-                            docker rmi $(docker images -q) 2>&1 > /dev/null
+                            docker rmi $(docker images -q)
                         else
                             for docker__myImageId_item in "${docker__myImageId_arr[@]}"
                             do 
                                 docker__myImageId_isFound=`docker image ls | awk '{print $3}' | grep -w ${docker__myImageId_item}`
                                 if [[ ! -z ${docker__myImageId_isFound} ]]; then
-                                    docker image rmi -f ${docker__myImageId_item} 2>&1 > /dev/null
+                                    docker image rmi -f ${docker__myImageId_item}
                                     echo -e "\r"
                                     echo -e "Removed Image-ID: ${DOCKER__IMAGEID_FG_BORDEAUX}${docker__myImageId_item}${DOCKER__NOCOLOR}"
                                     echo -e "\r"

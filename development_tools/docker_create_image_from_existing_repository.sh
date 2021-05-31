@@ -357,7 +357,7 @@ docker__build_image_from_specified_repository__sub() {
                                                     create_dockerfile__sub "${docker__dockerfile_filename}" ${docker__myRepository_new} "${dockerfile_dir}"
 
                                                     #Execute command
-                                                    docker build --tag ${docker__myRepository_new}:${docker__myRepository_tag} - < ${docker__dockerfile_fpath} 2>&1 > /dev/null
+                                                    docker build --tag ${docker__myRepository_new}:${docker__myRepository_tag} - < ${docker__dockerfile_fpath}
                                                     
                                                     #Show Updated Image-list
                                                     echo -e "\r"

@@ -269,7 +269,7 @@ docker__create_image_of_specified_container__sub() {
                                         #Validate read-input answer
                                         if [[ ${docker__myanswer} == ${DOCKER__YES} ]]; then
                                             #Create Docker Image based on chosen Container-ID                
-                                            docker commit ${mycontainerid} ${myrepository_input}:${mytag_input} 2>&1 > /dev/null
+                                            docker commit ${mycontainerid} ${myrepository_input}:${mytag_input}
 
                                             #Show Docker Image List
                                             echo -e "\r"

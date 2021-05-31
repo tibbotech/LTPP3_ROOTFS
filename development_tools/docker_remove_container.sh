@@ -231,14 +231,14 @@ docker_remove_specified_containers__sub() {
                 if [[ ! -z ${docker__myAnswer} ]]; then          
                     if [[ ${docker__myAnswer} == "y" ]]; then
                         if [[ ${docker__myContainerId} == ${DOCKER__REMOVE_ALL} ]]; then
-                            docker kill $(docker ps -q) 2>&1 > /dev/null    #kill all RUNNING containers
-                            docker rm $(docker ps -a -q) 2>&1 > /dev/null   #Delete ALL STOPPED containers
+                            docker kill $(docker ps -q)    #kill all RUNNING containers
+                            docker rm $(docker ps -a -q)   #Delete ALL STOPPED containers
                         else
                             for docker__myContainerId_item in "${docker__myContainerId_arr[@]}"
                             do 
                                 docker__myContainerId_isFound=`docker ps -a | awk '{print $1}' | grep -w ${docker__myContainerId_item}`
                                 if [[ ! -z ${docker__myContainerId_isFound} ]]; then
-                                    docker container rm -f ${docker__myContainerId_item} 2>&1 > /dev/null
+                                    docker container rm -f ${docker__myContainerId_item}
 
                                     echo -e "\r"
                                     echo -e "Removed Container-ID: ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}${docker__myContainerId_item}${DOCKER__NOCOLOR}"
