@@ -27,7 +27,8 @@ DOCKER__OUTSIDE_BG_LIGHTGREY=$'\e[30;48;5;246m'
 DOCKER__TITLE="TIBBO"
 
 DOCKER__MENUTITLE="${DOCKER__TITLE_FG_LIGHTBLUE}DOCKER MAIN-MENU${DOCKER__NOCOLOR}"
-DOCKER__SUBMENUTITLE="${DOCKER__TITLE_FG_LIGHTBLUE}DOCKER SUB-MENU: CREATE IMAGE(S)${DOCKER__NOCOLOR}"
+DOCKER__CREATEIMAGE_SUBMENUTITLE="${DOCKER__TITLE_FG_LIGHTBLUE}DOCKER SUB-MENU: CREATE IMAGE(S)${DOCKER__NOCOLOR}"
+DOCKER__GIT_SUBMENUTITLE="${DOCKER__TITLE_FG_LIGHTBLUE}DOCKER SUB-MENU: GIT${DOCKER__NOCOLOR}"
 DOCKER__VERSION="v21.03.17-0.0.1"
 
 DOCKER__EXITING_NOW="Exiting Docker Main-menu..."
@@ -396,7 +397,7 @@ docker__create_images_menu__sub() {
     while true
     do
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-        show_leadingAndTrailingStrings_separatedBySpaces__func "${DOCKER__SUBMENUTITLE}" "${DOCKER__VERSION}" "${DOCKER__TABLEWIDTH}"
+        show_leadingAndTrailingStrings_separatedBySpaces__func "${DOCKER__CREATEIMAGE_SUBMENUTITLE}" "${DOCKER__VERSION}" "${DOCKER__TABLEWIDTH}"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
         echo -e "${DOCKER__FOURSPACES}1. Create an ${DOCKER__IMAGEID_FG_BORDEAUX}image${DOCKER__NOCOLOR} using a ${DOCKER__FG_DARKBLUE}docker-file${DOCKER__NOCOLOR}"
         echo -e "${DOCKER__FOURSPACES}2. Create ${DOCKER__IMAGEID_FG_BORDEAUX}images${DOCKER__NOCOLOR} using a ${DOCKER__TITLE_FG_LIGHTBLUE}docker-list${DOCKER__NOCOLOR}"
@@ -491,10 +492,15 @@ docker__create_images_menu__sub() {
 docker__git_menu__sub() {
     echo -e "\r"
 
+    #Get current CHECKOUT BRANCH
+    local git_current_checkout_branch=`git branch | grep "*" | cut -d"*" -f2 | xargs`
+
     while true
     do
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-        show_leadingAndTrailingStrings_separatedBySpaces__func "${DOCKER__SUBMENUTITLE}" "${DOCKER__VERSION}" "${DOCKER__TABLEWIDTH}"
+        show_leadingAndTrailingStrings_separatedBySpaces__func "${DOCKER__GIT_SUBMENUTITLE}" "${DOCKER__VERSION}" "${DOCKER__TABLEWIDTH}"
+        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+        echo -e "${DOCKER__FOURSPACES}Current Checkout Branch: ${DOCKER__FG_LIGHTSOFTYELLOW}${git_current_checkout_branch}${DOCKER__NOCOLOR}"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
         echo -e "${DOCKER__FOURSPACES}1. Git ${DOCKER__OUTSIDE_BG_LIGHTGREY}${DOCKER__OUTSIDE_FG_WHITE}Push${DOCKER__NOCOLOR}"
         echo -e "${DOCKER__FOURSPACES}2. Git ${DOCKER__INSIDE_BG_WHITE}${DOCKER__INSIDE_FG_LIGHTGREY}Pull${DOCKER__NOCOLOR}"
