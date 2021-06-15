@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/bin/bash -m
+#Remark: by using '-m' the INT will NOT propagate to the PARENT scripts
 #---COLOR CONSTANTS
 DOCKER__NOCOLOR=$'\e[0m'
 DOCKER__FG_LIGHTRED=$'\e[1;31m'
@@ -39,13 +40,9 @@ DOCKER__NUMOFLINES_9=9
 
 
 #---FUNCTIONS
-#---Trap ctrl-c and Call ctrl_c()
-trap CTRL_C_func INT
+trap CTRL_C__func INT
 
-function CTRL_C_func() {
-    echo -e "\r"
-    echo -e "\r"
-    echo -e "Exiting now..."
+function CTRL_C__func() {
     echo -e "\r"
     echo -e "\r"
 

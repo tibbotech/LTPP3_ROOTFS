@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/bin/bash -m
+#Remark: by using '-m' the INT will NOT propagate to the PARENT scripts
 #---COLOR CONSTANTS
 DOCKER__NOCOLOR=$'\e[0m'
 DOCKER__ERROR_FG_LIGHTRED=$'\e[1;31m'
@@ -55,12 +56,15 @@ DOCKER__Q_QUIT="${DOCKER__FOURSPACES}q. Quit (Ctrl+C)"
 
 
 
-#---Trap ctrl-c and Call ctrl_c()
-trap CTRL_C__sub INT
-
-
-
 #---FUNCTIONS
+trap CTRL_C__func INT
+function CTRL_C__func() {
+    echo -e "\r"
+    echo -e "\r"
+
+    exit
+}
+
 function press_any_key__func() {
 	#Define constants
 	local ANYKEY_TIMEOUT=10
@@ -89,17 +93,6 @@ function press_any_key__func() {
 		tcounter=$((tcounter+1))
 	done
 	echo -e "\r"
-}
-
-function exit__func() {
-    echo -e "\r"
-    echo -e "\r"
-
-    # echo -e ${DOCKER__EXITING_NOW}
-    # echo -e "\r"
-    # echo -e "\r"
-
-    exit
 }
 
 function show_centered_string__func()
@@ -173,14 +166,9 @@ function moveDown_and_cleanLines__func() {
 
 
 #---SUBROUTINES
-CTRL_C__sub() {
+docker__load_header__sub() {
     echo -e "\r"
-    echo -e "\r"
-    # echo -e "${DOCKER__EXITING_NOW}"
-    # echo -e "\r"
-    # echo -e "\r"
-
-    exit
+    echo -e "${DOCKER__TITLE_BG_ORANGE}                                 ${DOCKER__TITLE}${DOCKER__TITLE_BG_ORANGE}                                ${DOCKER__NOCOLOR}"
 }
 
 docker__load_environment_variables__sub() {
@@ -279,7 +267,10 @@ docker__show_dockerList_files__sub() {
             #check if 'mychoice' is one of the numbers shown in the overview...
             #... AND 'mychoice' is NOT '0'
             if [[ ${mychoice} == ${DOCKER__QUIT} ]]; then
-                exit__func
+                echo -e "\r"
+                echo -e "\r"
+
+                exit 90
             elif [[ ${mychoice} -le ${seqnum} ]] && [[ ${mychoice} -ne 0 ]]; then
                 echo -e "\r"    #print an empty line
 
@@ -404,6 +395,8 @@ function docker__show_list_with_menuTitle__func() {
 
 #---MAIN SUBROUTINE
 main_sub() {
+    docker__load_header__sub
+
     docker__load_environment_variables__sub
 
     docker__init_variables__sub

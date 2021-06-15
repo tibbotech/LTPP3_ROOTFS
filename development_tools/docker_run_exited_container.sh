@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/bin/bash -m
+#Remark: by using '-m' the INT will NOT propagate to the PARENT scripts
 #---COLOR CONSTANTS
 DOCKER__NOCOLOR=$'\e[0;0m'
 DOCKER__GENERAL_FG_YELLOW=$'\e[1;33m'

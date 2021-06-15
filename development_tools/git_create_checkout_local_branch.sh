@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/bin/bash -m
+#Remark: by using '-m' the INT will NOT propagate to the PARENT scripts
 #---COLOR CONSTANTS
 DOCKER__NOCOLOR=$'\e[0m'
 DOCKER__FG_LIGHTRED=$'\e[1;31m'
@@ -206,7 +207,7 @@ docker__load_header__sub() {
 
 docker__git_pull__sub() {
     #Define local constants
-    local MENUTITLE="Git ${DOCKER__FG_LIGHTGREEN}Create${DOCKER__NOCOLOR} and/or ${DOCKER__FG_LIGHTSOFTYELLOW}Checkout${DOCKER__NOCOLOR} Branch"
+    local MENUTITLE="Git ${DOCKER__FG_LIGHTGREEN}Create${DOCKER__NOCOLOR} and/or ${DOCKER__FG_LIGHTSOFTYELLOW}Checkout${DOCKER__NOCOLOR} ${DOCKER__INSIDE_FG_LIGHTGREY}Local${DOCKER__NOCOLOR} Branch"
 
     #Define local message constants
     local PRINTF_COMPLETED="${DOCKER__FILES_FG_ORANGE}COMPLETED${DOCKER__NOCOLOR}"

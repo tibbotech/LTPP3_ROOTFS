@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/bin/bash -m
+#Remark: by using '-m' the INT will NOT propagate to the PARENT scripts
 #---Define colors
 DOCKER__NOCOLOR=$'\e[0m'
 DOCKER__ERROR_FG_LIGHTRED=$'\e[1;31m'

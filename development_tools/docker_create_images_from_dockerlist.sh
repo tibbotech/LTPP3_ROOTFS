@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/bin/bash -m
+#Remark: by using '-m' the INT will NOT propagate to the PARENT scripts
 #---COLOR CONSTANTS
 DOCKER__NOCOLOR=$'\e[0m'
 DOCKER__ERROR_FG_LIGHTRED=$'\e[1;31m'
@@ -53,8 +54,13 @@ DOCKER__Q_QUIT="${DOCKER__FOURSPACES}q. Quit (Ctrl+C)"
 
 
 #---FUNCTIONS
-#---Trap ctrl-c and Call ctrl_c()
-trap CTRL_C__sub INT
+trap CTRL_C__func INT
+CTRL_C__func() {
+    echo -e "\r"
+    echo -e "\r"
+
+    exit
+}
 
 press_any_key__func() {
 	#Define constants
@@ -75,7 +81,10 @@ press_any_key__func() {
 
 		if [[ ! -z "${keypressed}" ]]; then
 			if [[ "${keypressed}" == "a" ]] || [[ "${keypressed}" == "A" ]]; then
-				exit__func
+                echo -e "\r"
+                echo -e "\r"
+
+                exit
 			else
 				break
 			fi
@@ -84,17 +93,6 @@ press_any_key__func() {
 		tcounter=$((tcounter+1))
 	done
 	echo -e "\r"
-}
-
-function exit__func() {
-    echo -e "\r"
-    echo -e "\r"
-
-    # echo -e ${DOCKER__EXITING_NOW}
-    # echo -e "\r"
-    # echo -e "\r"
-
-    exit
 }
 
 function show_centered_string__func()
@@ -168,10 +166,6 @@ function moveDown_and_cleanLines__func() {
 
 
 #---SUBROUTINES
-CTRL_C__sub() {
-    exit__func
-}
-
 docker__load_header__sub() {
     echo -e "\r"
     echo -e "${DOCKER__TITLE_BG_ORANGE}                                 ${DOCKER__TITLE}${DOCKER__TITLE_BG_ORANGE}                                ${DOCKER__NOCOLOR}"
@@ -309,7 +303,10 @@ docker__show_dockerList_files__sub() {
 
                     break   #exit loop
                 elif [[ ${mychoice} == ${DOCKER__QUIT} ]]; then
-                    exit__func
+                    echo -e "\r"
+                    echo -e "\r"
+
+                    exit
                 else
                     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
                     moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
@@ -368,7 +365,7 @@ docker__show_dockerList_files__sub() {
                 if [[ ${mychoice} == ${DOCKER__YES} ]]; then
                     return  #exit function
                 elif [[ ${mychoice} == ${DOCKER__NO} ]] || [[ ${mychoice} == ${DOCKER__QUIT} ]]; then
-                    CTRL_C__sub #same as Ctrl+C
+                    CTRL_C__func #same as Ctrl+C
                 elif [[ ${mychoice} == ${DOCKER__BACK} ]]; then
                     break
                 else

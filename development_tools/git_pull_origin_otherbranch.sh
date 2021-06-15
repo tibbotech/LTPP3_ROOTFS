@@ -3,19 +3,18 @@
 #---COLOR CONSTANTS
 DOCKER__NOCOLOR=$'\e[0m'
 DOCKER__FG_LIGHTRED=$'\e[1;31m'
+DOCKER__IMAGEID_FG_BORDEAUX=$'\e[30;38;5;198m'
 DOCKER__CHROOT_FG_GREEN=$'\e[30;38;5;82m'
-DOCKER__FG_SOFTLIGHTBLUE=$'\e[30;38;5;80m'
 DOCKER__FG_LIGHTBLUE=$'\e[30;38;5;51m'
-DOCKER__GENERAL_FG_YELLOW=$'\e[1;33m'
 DOCKER__INSIDE_FG_LIGHTGREY=$'\e[30;38;5;246m'
 DOCKER__FILES_FG_ORANGE=$'\e[30;38;5;215m'
-DOCKER__IMAGEID_FG_BORDEAUX=$'\e[30;38;5;198m'
 
-DOCKER__FG_SOFTLIGHTRED=$'\e[30;38;5;131m'
 DOCKER__FG_LIGHTGREEN=$'\e[30;38;5;71m'
-DOCKER__FG_LIGHTSOFTYELLOW=$'\e[30;38;5;229m'
 
+DOCKER__INSIDE_BG_WHITE=$'\e[30;48;5;15m'
 DOCKER__TITLE_BG_ORANGE=$'\e[30;48;5;215m'
+
+
 
 #---CONSTANTS
 DOCKER__TITLE="TIBBO"
@@ -54,11 +53,10 @@ DOCKER__NUMOFLINES_9=9
 
 
 #---VARIABLES
-docker__gitBranchList_arr=()
-docker__branchName_isNew=${FALSE}
+docker__local_branchList_arr=()
+docker__stdErr=${DOCKER__EMPTYSTRING}
 
 
-#---FUNCTIONS
 #---FUNCTIONS
 trap CTRL_C__func INT
 
@@ -209,27 +207,25 @@ docker__load_header__sub() {
 
 docker__git_pull__sub() {
     #Define local constants
-    local MENUTITLE="Git ${DOCKER__FG_SOFTLIGHTRED}Delete${DOCKER__NOCOLOR} ${DOCKER__INSIDE_FG_LIGHTGREY}Local${DOCKER__NOCOLOR} Branch"
+    local MENUTITLE="Git ${DOCKER__INSIDE_BG_WHITE}${DOCKER__INSIDE_FG_LIGHTGREY}Pull${DOCKER__NOCOLOR} Origin Other-Branch"
 
     #Define local message constants
     local PRINTF_COMPLETED="${DOCKER__FILES_FG_ORANGE}COMPLETED${DOCKER__NOCOLOR}"
-    local PRINTF_LIST_LOCAL="${DOCKER__FILES_FG_ORANGE}LIST${DOCKER__NOCOLOR} (${DOCKER__FILES_FG_ORANGE}LOCAL${DOCKER__NOCOLOR})"
-    local PRINTF_INPUT="${DOCKER__FILES_FG_ORANGE}INPUT${DOCKER__NOCOLOR}"
+    local PRINTF_QUESTION="${DOCKER__FILES_FG_ORANGE}QUESTION${DOCKER__NOCOLOR}"
     local PRINTF_START="${DOCKER__FILES_FG_ORANGE}START${DOCKER__NOCOLOR}"
     local PRINTF_STATUS="${DOCKER__FILES_FG_ORANGE}STATUS${DOCKER__NOCOLOR}"
-    local PRINTF_WARNING="${DOCKER__IMAGEID_FG_BORDEAUX}WARNING${DOCKER__NOCOLOR}"
-
-    local PRINTF_BRANCH_TOBE_DELETED="Branch ${DOCKER__INSIDE_FG_LIGHTGREY}to-be-deleted${DOCKER__NOCOLOR}"
+    
+    local PRINTF_PULL_FROM_WHICH_BRANCH="Pull from which branch?"
     local PRINTF_ERROR="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}"
+    local PRINTF_NO_ACTION_REQUIRED="No Action Required."
 
-    #Define local question constants
-    local QUESTION_PROCEED="Proceed (y/n/q)? "
+    #Define local Question constants
+    local QUESTION_CHECKOUT_BRANCH="Check out this Branch (y/n/q)? "
+    local QUESTION_CREATE_AND_CHECKOUT_BRANCH="Create & Check out this Branch (y/n/q)? "
+    local READMSG_DO_YOU_WISH_TO_CONTINUE="Do you wish to continue (y/n/q)? "
 
     #Define local read-input constants
-    local READ_YOURINPUT="${DOCKER__FG_LIGHTBLUE}Your input${DOCKER__NOCOLOR}: "
-
-    local READERR_CURRENTLY_CHECKEDOUT_NOTALLOWED="${DOCKER__FG_LIGHTRED}currently checked out${DOCKER__NOCOLOR}; ${DOCKER__FG_LIGHTRED}not allowed${DOCKER__NOCOLOR}"
-    local READERR_NOT_FOUND="${DOCKER__FG_LIGHTRED}not found${DOCKER__NOCOLOR}"
+    local READ_YOURINPUT="${DOCKER__FG_LIGHTBLUE}Your choice${DOCKER__NOCOLOR}: "
 
     #Define local variables
     local isCheckedOut=${FALSE}
@@ -237,6 +233,11 @@ docker__git_pull__sub() {
 
     #Define local message variables
     local printf_msg=${DOCKER__EMPTYSTRING}
+    local question_msg=${DOCKER__EMPTYSTRING}
+
+    #Define local read-input variables
+    local myChosen_remoteBranch=${DOCKER__EMPTYSTRING}
+    local myChosen_remoteBranch_isFound=${FALSE}
 
 
 
@@ -275,55 +276,50 @@ GOTO__func START
     #Show Branch List
     docker__show_git_branchList__func
 
-    GOTO__func BRANCH_INPUT    #goto next-phase
+    #Goto next-phase
+    GOTO__func BRANCH_INPUT    
 
 
 
 @BRANCH_INPUT:
     #Input Branch name
-    echo -e "---:${PRINTF_INPUT}: ${PRINTF_BRANCH_TOBE_DELETED}"
+    echo -e "---:${PRINTF_QUESTION}: ${PRINTF_PULL_FROM_WHICH_BRANCH}"
     
     while true
     do
-        read -e -p "${DOCKER__FOURSPACES}${READ_YOURINPUT}" myBranchName
-        if [[ ! -z ${myBranchName} ]]; then #contains data
-            #Check if 'myBranchName' already exists
-            myBranchName_isFound=`docker__checkIf_branch_alreadyExists__func "${myBranchName}"`
-            if [[ ${myBranchName_isFound} == ${TRUE} ]]; then
-                #Check if asterisk is present
-                isCheckedOut=`docker__checkIf_branch_isCheckedOut__func "${myBranchName}"`
-                if [[ ${isCheckedOut} == ${FALSE} ]]; then  #asterisk is NOT found
-                    echo -e "\r"
-
-                    break
-                else    #asterisk is found
-                    #Move-up 1 line
-                    tput cuu1
-
-                    #Show message with error
-                    echo -e "${DOCKER__FOURSPACES}${READ_YOURINPUT}${myBranchName} (${READERR_CURRENTLY_CHECKEDOUT_NOTALLOWED})"
-                fi
+        read -e -p "${DOCKER__FOURSPACES}${READ_YOURINPUT}" myChosen_remoteBranch
+        if [[ ! -z ${myChosen_remoteBranch} ]]; then #contains data
+            #Check if 'myChosen_remoteBranch' already exists
+            myChosen_remoteBranch_isFound=`docker__checkIf_remoteBranch_exists__func "${myChosen_remoteBranch}"`
+            if [[ ${myChosen_remoteBranch_isFound} == ${TRUE} ]]; then
+                break
             else
-                #Move-up 1 line
+                #Move-up twice and move-down once
                 tput cuu1
+                tput cuu1
+                tput cud1
 
-                #Show message with error
-                echo -e "${DOCKER__FOURSPACES}${READ_YOURINPUT}${myBranchName} (${READERR_NOT_FOUND})"
+                #Show error message (but do NOT exit)
+                echo -e "${DOCKER__FOURSPACES}${READ_YOURINPUT}${myChosen_remoteBranch} (${DOCKER__FG_LIGHTRED}not found${DOCKER__NOCOLOR})"
             fi
         else
             tput cuu1   #move-up without cleaning
         fi
     done
 
+    #Goto next-phase
+    GOTO__func CONFIRMATION_TO_CONTINUE
 
-    #Update message
-    printf_msg="About to Delete (local) branch '${DOCKER__INSIDE_FG_LIGHTGREY}${myBranchName}${DOCKER__NOCOLOR}'"
+
+
+@CONFIRMATION_TO_CONTINUE:
+    #Add an empty-line
+    echo -e "\r"
 
     #Show question
     while true
     do
-        echo -e "---:${PRINTF_WARNING}: ${printf_msg}"
-        read -N1 -p "${DOCKER__FOURSPACES}${QUESTION_PROCEED}" myAnswer
+        read -N1 -p "${DOCKER__FOURSPACES}${READMSG_DO_YOU_WISH_TO_CONTINUE}" myAnswer
 
         if [[ ! -z ${myAnswer} ]]; then #contains data
             #Handle 'myAnswer'
@@ -331,7 +327,7 @@ GOTO__func START
                 if [[ ${myAnswer} == "q" ]]; then
                     echo -e "\r"
 
-                    GOTO__func EXIT_SUCCESSFUL  #goto next-phase
+                    GOTO__func EXIT  #goto next-phase
                 elif [[ ${myAnswer} == "n" ]]; then
                     echo -e "\r"
                     echo -e "\r"
@@ -341,16 +337,16 @@ GOTO__func START
                     echo -e "\r"
                     echo -e "\r"
 
-                    GOTO__func DELETE_BRANCH    #goto next-phase
+                    GOTO__func GIT_PULL
                 fi
 
                 break
             else
                 if [[ ${myAnswer} != "${DOCKER__ENTER}" ]]; then
                     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-                    moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_3}"
+                    moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
                 else
-                    moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_3}"
+                    moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
                 fi
             fi
         fi
@@ -358,25 +354,22 @@ GOTO__func START
 
 
 
+@GIT_PULL:
+    echo -e "---:${PRINTF_START}: git fetch origin & merge ${DOCKER__INSIDE_FG_LIGHTGREY}${myBranchName}${DOCKER__NOCOLOR}"
 
-@DELETE_BRANCH:
-    echo -e "---:${PRINTF_START}: git branch -d ${DOCKER__INSIDE_FG_LIGHTGREY}${myBranchName}${DOCKER__NOCOLOR}"
+    #Git fetch
+    git fetch origin ${myChosen_remoteBranch}
 
-    #Execute
-    git branch -d ${myBranchName}
+    #Git Merge
+    git merge ${myChosen_remoteBranch}
 
-    #Check exit-code
-    exitCode=$?
-    if [[ ${exitCode} -eq 0 ]]; then
-        echo -e "---:${PRINTF_COMPLETED}: git branch -d ${DOCKER__INSIDE_FG_LIGHTGREY}${myBranchName}${DOCKER__NOCOLOR}"
-        echo -e "\r"
-        
-        #Goto next-phase
-        GOTO__func GET_AND_SHOW_BRANCH_LIST
-    else
-        #Goto next-phase
-        GOTO__func EXIT_FAILED
-    fi
+    echo -e "---:${PRINTF_COMPLETED}: git fetch origin & merge ${DOCKER__INSIDE_FG_LIGHTGREY}${myBranchName}${DOCKER__NOCOLOR}"
+
+    #Print empty line
+    echo -e "\r"
+
+    #Goto next-phase
+    GOTO__func GET_AND_SHOW_BRANCH_LIST
 
 
 
@@ -388,11 +381,11 @@ GOTO__func START
     docker__show_git_branchList__func
 
     #Goto next-phase
-    GOTO__func EXIT_SUCCESSFUL
+    GOTO__func EXIT
 
 
 
-@EXIT_SUCCESSFUL:
+@EXIT:
     echo -e "\r"
 
     exit 0
@@ -405,11 +398,19 @@ GOTO__func START
     exit 99
 
 @EXIT_FAILED:
-    echo -e "\r"
-    echo -e "${PRINTF_ERROR}: git branch -d ${DOCKER__INSIDE_FG_LIGHTGREY}${myBranchName}${DOCKER__NOCOLOR}"
-    echo -e "\r"
-
-    exit 99
+    if [[ ${myChosen_remoteBranch_isFound} == ${TRUE} ]]; then 
+        echo -e "\r"
+        echo -e "${PRINTF_ERROR}: git checkout ${DOCKER__INSIDE_FG_LIGHTGREY}${myChosen_remoteBranch}${DOCKER__NOCOLOR} (${DOCKER__FG_LIGHTRED}failed${DOCKER__NOCOLOR})"
+        echo -e "\r"
+        
+        exit 99
+    else
+        echo -e "\r"
+        echo -e "${PRINTF_ERROR}: git checkout -b ${DOCKER__INSIDE_FG_LIGHTGREY}${myChosen_remoteBranch}${DOCKER__NOCOLOR} (${DOCKER__FG_LIGHTRED}failed${DOCKER__NOCOLOR})"
+        echo -e "\r"
+        
+        exit 99
+    fi
 }
 
 function docker__get_git_branchList__func() {
@@ -417,37 +418,61 @@ function docker__get_git_branchList__func() {
     #REMARK: this is a MUST because otherwise an Asterisk would be treated as a NON-string
     set -f
 
-    #Get Git Branch-list and write directly to an array
-    readarray -t docker__gitBranchList_arr <<< "$(git branch | tr -d ' ')"
+    #Get Git Local Branch-list and write directly to an array
+    # readarray -t docker__local_branchList_arr <<< "$(git branch | tr -d ' ')"
+
+    #Get Git Remote Branch-list and write directly to an array
+    readarray -t docker__remote_branchList_arr <<< "$(git branch -r | tr -d ' ')"
 
     #Enable File-expansion
     set +f
 }
 
 function docker__show_git_branchList__func() {
+    #Define local message contants
+    local PRINTF_LIST_LOCAL="${DOCKER__FILES_FG_ORANGE}LIST${DOCKER__NOCOLOR} (LOCAL)"
+    local PRINTF_LIST_REMOTE="${DOCKER__FILES_FG_ORANGE}LIST${DOCKER__NOCOLOR} (${DOCKER__IMAGEID_FG_BORDEAUX}REMOTE${DOCKER__NOCOLOR})"
+
     #Define local constants
     local CHECKED_OUT="checked out"
+    local SED_OLD_PATTERN="origin\/"
+    local SED_NEW_PATTERN="(origin) "
 
     #Define local variables
     local gitBranchList_arrItem=${DOCKER__EMPTYSTRING}
     local gitBranchList_arrItem_wo_asterisk=${DOCKER__EMPTYSTRING} 
     local asterisk_isFound=${FALSE}
 
+    # #Print Status Message
+    # echo -e "---:${DOCKER__FILES_FG_ORANGE}${PRINTF_LIST_LOCAL}${DOCKER__NOCOLOR}: git branch"
+
+    # #Show Array items
+    # for gitBranchList_arrItem in "${docker__local_branchList_arr[@]}"
+    # do 
+    #     #Check if asterisk is present
+    #     asterisk_isFound=`checkForMatch_subString_in_string__func "${gitBranchList_arrItem}" "${DOCKER__ASTERISK}"`
+    #     if [[ ${asterisk_isFound} == ${TRUE} ]]; then
+    #         gitBranchList_arrItem_wo_asterisk=`echo ${gitBranchList_arrItem} | cut -d"${DOCKER__ASTERISK}" -f2`
+
+    #         echo -e "${DOCKER__FOURSPACES}${DOCKER__ASTERISK} ${DOCKER__CHROOT_FG_GREEN}${gitBranchList_arrItem_wo_asterisk}${DOCKER__NOCOLOR} (${CHECKED_OUT})"
+    #     else
+    #         echo -e "${DOCKER__FOURSPACES}${gitBranchList_arrItem}"
+    #     fi
+    # done
+
+
+    # #Move-down and clean line
+    # moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+
+    #Re-using variable 'gitBranchList_arrItem'
     #Print Status Message
-    echo -e "---:${DOCKER__FILES_FG_ORANGE}${PRINTF_LIST_LOCAL}${DOCKER__NOCOLOR}: git branch"
+    echo -e "---:${DOCKER__FILES_FG_ORANGE}${PRINTF_LIST_REMOTE}${DOCKER__NOCOLOR}: git branch"
 
     #Show Array items
-    for gitBranchList_arrItem in "${docker__gitBranchList_arr[@]}"
+    for gitBranchList_arrItem in "${docker__remote_branchList_arr[@]}"
     do 
-        #Check if asterisk is present
-        asterisk_isFound=`checkForMatch_subString_in_string__func "${gitBranchList_arrItem}" "${DOCKER__ASTERISK}"`
-        if [[ ${asterisk_isFound} == ${TRUE} ]]; then
-            gitBranchList_arrItem_wo_asterisk=`echo ${gitBranchList_arrItem} | cut -d"${DOCKER__ASTERISK}" -f2`
-
-            echo -e "${DOCKER__FOURSPACES}${DOCKER__ASTERISK} ${DOCKER__CHROOT_FG_GREEN}${gitBranchList_arrItem_wo_asterisk}${DOCKER__NOCOLOR} (${CHECKED_OUT})"
-        else
-            echo -e "${DOCKER__FOURSPACES}${gitBranchList_arrItem}"
-        fi
+        echo -e "${DOCKER__FOURSPACES}${gitBranchList_arrItem}" | sed "s/${SED_OLD_PATTERN}/${SED_NEW_PATTERN}/g"
     done
 
 
@@ -455,12 +480,12 @@ function docker__show_git_branchList__func() {
     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 }
 
-function docker__checkIf_branch_alreadyExists__func() {
+function docker__checkIf_remoteBranch_exists__func() {
     #Input args
     local branchName_input=${1}
 
     #Check if 'branchName_input' already exists
-    local stdOutput=`git branch | grep -w "${branchName_input}" 2>&1`
+    local stdOutput=`git branch -r | grep -w "${branchName_input}" 2>&1`
     if [[ ! -z ${stdOutput} ]]; then #contains data
         echo ${TRUE}
     else    #contains no data
@@ -480,6 +505,7 @@ function docker__checkIf_branch_isCheckedOut__func() {
         echo ${FALSE}
     fi
 }
+
 
 
 #---MAIN SUBROUTINE
