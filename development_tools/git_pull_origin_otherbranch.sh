@@ -355,15 +355,17 @@ GOTO__func START
 
 
 @GIT_PULL:
-    echo -e "---:${PRINTF_START}: git fetch origin & merge ${DOCKER__INSIDE_FG_LIGHTGREY}${myBranchName}${DOCKER__NOCOLOR}"
+    echo -e "---:${PRINTF_START}: git pull origin ${DOCKER__INSIDE_FG_LIGHTGREY}${myChosen_remoteBranch}${DOCKER__NOCOLOR}"
 
-    #Git fetch
-    git fetch origin ${myChosen_remoteBranch}
+    # #Git fetch
+    # git fetch origin ${myChosen_remoteBranch}
 
-    #Git Merge
-    git merge ${myChosen_remoteBranch}
+    # #Git Merge
+    # git merge ${myChosen_remoteBranch}
 
-    echo -e "---:${PRINTF_COMPLETED}: git fetch origin & merge ${DOCKER__INSIDE_FG_LIGHTGREY}${myBranchName}${DOCKER__NOCOLOR}"
+    git pull origin ${myChosen_remoteBranch}
+
+    echo -e "---:${PRINTF_COMPLETED}: git pull origin ${DOCKER__INSIDE_FG_LIGHTGREY}${myChosen_remoteBranch}${DOCKER__NOCOLOR}"
 
     #Print empty line
     echo -e "\r"
