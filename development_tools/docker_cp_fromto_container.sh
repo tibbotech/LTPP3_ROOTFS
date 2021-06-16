@@ -102,11 +102,8 @@ DOCKER__CTRL_C_QUIT="${DOCKER__FOURSPACES}Quit (Ctrl+C)"
 
 
 
-#---Trap ctrl-c and Call ctrl_c()
-trap CTRL_C_func INT
-
-
 #---FUNCTIONS
+trap CTRL_C_func INT
 function CTRL_C_func() {
     # echo -e "\r"
     # echo -e "\r"
