@@ -184,11 +184,11 @@ git__init_variables__sub() {
 }
 
 git__menu_sub() {
-    #Get current CHECKOUT BRANCH
-    local git_current_checkout_branch=`git branch | grep "*" | cut -d"*" -f2 | xargs`
-
     while true
     do
+        #Get current CHECKOUT BRANCH
+        local git_current_checkout_branch=`git branch | grep "*" | cut -d"*" -f2 | xargs`
+
         duplicate_char__func "${GIT__DASH}" "${GIT__TABLEWIDTH}"
         show_leadingAndTrailingStrings_separatedBySpaces__func "${GIT__MENUTITLE}" "${GIT__VERSION}" "${GIT__TABLEWIDTH}"
         duplicate_char__func "${GIT__DASH}" "${GIT__TABLEWIDTH}"
