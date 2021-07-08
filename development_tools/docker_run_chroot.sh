@@ -1,5 +1,4 @@
-#!/bin/bash -m
-#Remark: by using '-m' the INT will NOT propagate to the PARENT scripts
+#!/bin/bash
 #---COLOR CONSTANTS
 DOCKER__NOCOLOR=$'\e[0m'
 DOCKER__CHROOT_FG_GREEN=$'\e[30;38;5;82m'
@@ -416,21 +415,23 @@ docker__preCheck__sub() {
     #Check if running inside docker container
     if [[ ${docker__isRunning_inside_container} == ${TRUE} ]]; then   #running in docker container
         echo -e "---:${DOCKER__FILES_FG_ORANGE}STATUS${DOCKER__NOCOLOR}: Inside Container: ${TRUE}"
+
+        docker__numOf_errors_found=0
     else    #NOT running in docker container
         echo -e "---:${DOCKER__FILES_FG_ORANGE}STATUS${DOCKER__NOCOLOR}: Inside Container: ${FALSE}"
+
+        #Check if docker.io is installed
+        docker__preCheck_app_isInstalled__func "${DOCKER__PATTERN_DOCKER_IO}"
+
+        #Check if '/usr/bin/bash' is present
+        docker__preCheck_app_isPresent__func "${docker__bash_fpath}" "${docker__isRunning_inside_container}"
+
+        #Check if '/usr/bin/qemu-arm-static' is present
+        docker__preCheck_app_isPresent__func "${docker__qemu_fpath}" "${docker__isRunning_inside_container}"
+
+        #Check if '~/SP7021/linux/rootfs/initramfs/disk' is present
+        docker__preCheck_app_isPresent__func "${docker__SP7xxx_linux_rootfs_initramfs_disk_dir}" "${docker__isRunning_inside_container}"
     fi
-
-    #Check if docker.io is installed
-    docker__preCheck_app_isInstalled__func "${DOCKER__PATTERN_DOCKER_IO}"
-
-    #Check if '/usr/bin/bash' is present
-    docker__preCheck_app_isPresent__func "${docker__bash_fpath}" "${docker__isRunning_inside_container}"
-
-    #Check if '/usr/bin/qemu-arm-static' is present
-    docker__preCheck_app_isPresent__func "${docker__qemu_fpath}" "${docker__isRunning_inside_container}"
-
-    #Check if '~/SP7021/linux/rootfs/initramfs/disk' is present
-    docker__preCheck_app_isPresent__func "${docker__SP7xxx_linux_rootfs_initramfs_disk_dir}" "${docker__isRunning_inside_container}"
 
     #In case one or more failed check-items were found
     if [[ ${docker__numOf_errors_found} -gt 0 ]]; then
