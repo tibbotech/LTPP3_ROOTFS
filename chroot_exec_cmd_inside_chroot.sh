@@ -83,6 +83,7 @@ usr_dir=/usr
 sbin_init_dir=/sbin/init
 usr_bin_dir=${usr_dir}/bin
 usr_lib_dir=${usr_dir}/lib
+usr_include_dir=${usr_dir}/include
 etc_systemd_system_dir=${etc_dir}/systemd/system
 etc_systemd_system_multi_user_target_wants_dir=${etc_systemd_system_dir}/multi-user.target.wants
 
@@ -109,8 +110,15 @@ enable_ufw_before_login_service_fpath=${etc_systemd_system_dir}/${enable_ufw_bef
 enable_ufw_before_login_service_symlink_fpath=${etc_systemd_system_multi_user_target_wants_dir}/${enable_ufw_before_login_service_filename}
 
 environment_fpath=${etc_dir}/environment
+
 arm_linux_gnueabihf_filename="arm-linux-gnueabihf"
 arm_linux_gnueabihf_fpath=${usr_lib_dir}/${arm_linux_gnueabihf_filename}
+
+opensslconf_h_filename="opensslconf.h"
+src_openssl_dir=${usr_include_dir}/arm-linux-gnueabihf/openssl
+src_openssconf_fpath=${src_openssl_dir}/${opensslconf_h_filename}
+dst_openssl_dir=${usr_include_dir}/openssl
+dst_openssconf_fpath=${dst_openssl_dir}/${opensslconf_h_filename}
 
 
 
@@ -331,6 +339,18 @@ echo -e "\r"
 	apt-get -y install gpiod
 
 
+press_any_key__localfunc
+echo -e "\r"
+echo "---Installing <libssl-dev> (required for openssl-aes)---"
+echo -e "\r"
+	apt-get -y install libssl-dev
+
+echo "---IMPORTANT: copying 'opensslconf.h'"
+echo "------From: /usr/include/arm-linux-gnueabihf/openssl"
+echo "------To: /usr/include/openssl"
+	cp  /usr/include/openssl/opensslconf.h
+
+
 echo -e "\r"
 echo "---Installing <curl>---"
 echo -e "\r"
@@ -403,7 +423,7 @@ echo -e "\r"
 	ufw allow 22
 	ufw allow 80
 	ufw allow 8080
-	# ufw allow 443
+	ufw allow 443
 	# ufw allow 992
 	# ufw allow 5555
 	# ufw allow 1194
