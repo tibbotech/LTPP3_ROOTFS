@@ -114,13 +114,6 @@ environment_fpath=${etc_dir}/environment
 arm_linux_gnueabihf_filename="arm-linux-gnueabihf"
 arm_linux_gnueabihf_fpath=${usr_lib_dir}/${arm_linux_gnueabihf_filename}
 
-opensslconf_h_filename="opensslconf.h"
-src_openssl_dir=${usr_include_dir}/arm-linux-gnueabihf/openssl
-src_openssconf_fpath=${src_openssl_dir}/${opensslconf_h_filename}
-dst_openssl_dir=${usr_include_dir}/openssl
-dst_openssconf_fpath=${dst_openssl_dir}/${opensslconf_h_filename}
-
-
 
 #---Define useraccount variables
 root_pwd="root"
@@ -337,19 +330,6 @@ echo -e "\r"
 	apt-get -y install gdbserver
 	apt-get -y install libgpiod-dev
 	apt-get -y install gpiod
-
-
-press_any_key__localfunc
-echo -e "\r"
-echo "---Installing <libssl-dev> (required for openssl-aes)---"
-echo -e "\r"
-	apt-get -y install libssl-dev
-
-echo "---IMPORTANT: copying 'opensslconf.h'"
-echo "------From: ${src_openssconf_fpath}"
-echo "------To: ${dst_openssconf_fpath}"
-	cp ${src_openssconf_fpath} ${dst_openssconf_fpath}
-
 
 echo -e "\r"
 echo "---Installing <curl>---"
