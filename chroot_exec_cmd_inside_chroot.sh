@@ -346,9 +346,9 @@ echo -e "\r"
 	apt-get -y install libssl-dev
 
 echo "---IMPORTANT: copying 'opensslconf.h'"
-echo "------From: /usr/include/arm-linux-gnueabihf/openssl"
-echo "------To: /usr/include/openssl"
-	cp  /usr/include/openssl/opensslconf.h
+echo "------From: ${src_openssconf_fpath}"
+echo "------To: ${dst_openssconf_fpath}"
+	cp ${src_openssconf_fpath} ${dst_openssconf_fpath}
 
 
 echo -e "\r"
