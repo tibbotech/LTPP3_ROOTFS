@@ -25,6 +25,7 @@ GIT__VERSION="v21.03.17-0.0.1"
 GIT__QUIT_CTRL_C="Quit (Ctrl+C)"
 
 #---CHAR CONSTANTS
+GIT__DOT="."
 GIT__DASH="-"
 GIT__ENTER=$'\x0a'
 
@@ -34,6 +35,10 @@ GIT__TABLEWIDTH=70
 GIT__ONESPACE=" "
 GIT__TWOSPACES=${GIT__ONESPACE}${GIT__ONESPACE}
 GIT__FOURSPACES=${GIT__TWOSPACES}${GIT__TWOSPACES}
+
+GIT__NUMOFLINES_1=1
+GIT__NUMOFLINES_2=2
+
 
 
 #---VARIABLES
@@ -158,7 +163,7 @@ git__load_header__sub() {
 git__environmental_variables__sub() {
     git__current_script_fpath="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
     git__current_dir=$(dirname ${git__current_script_fpath})
-    if [[ ${git__current_dir} == ${DOCKER__DOT} ]]; then
+    if [[ ${git__current_dir} == ${GIT__DOT} ]]; then
         git__current_dir=$(pwd)
     fi
     git__current_folder=`basename ${git__current_dir}`
