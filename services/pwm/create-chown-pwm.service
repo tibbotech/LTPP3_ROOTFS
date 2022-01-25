@@ -1,0 +1,27 @@
+#--------------------------------------------------------------------
+# Remarks: 
+# 1. In order for the service to run after a reboot
+#		make sure to create a 'symlink'
+#		ln -s /etc/systemd/system/<myservice.service> /etc/systemd/system/multi-user.target.wants/<myservice.service>
+# 2. Reload daemon: systemctl daemon-reload
+# 3. Start Service: systemctl start <myservice.service>
+# 4. Check status: systemctl status <myservice.service>
+#--------------------------------------------------------------------
+[Unit]
+#This service is required because:
+#1. The pwm0 folder is removed after each reboot and needs to be created before login.
+#2. The pwm0 folder must be accessible without 'root' permission.
+
+Description=Creates pwm0 and chown root:gpio pwm0, and chmod 770 pwm0
+
+[Service]
+Type=oneshot
+#User MUST BE SET TO 'root'
+User=root
+RemainAfterExit=true
+ExecStart=/usr/local/bin/create-chown-pwm.sh "0"
+StandardInput=journal+console
+StandardOutput=journal+console
+
+[Install]
+WantedBy=multi-user.target

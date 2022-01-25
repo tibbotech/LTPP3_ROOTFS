@@ -101,6 +101,10 @@ enable_eth1_before_login_service_filename="enable-eth1-before-login.service"
 enable_eth1_before_login_service_fpath=${etc_systemd_system_dir}/${enable_eth1_before_login_service_filename}
 enable_eth1_before_login_service_symlink_fpath=${etc_systemd_system_multi_user_target_wants_dir}/${enable_eth1_before_login_service_filename}
 
+create_chown_pwm_service_filename="create-chown-pwm.service"
+create_chown_pwm_service_fpath=${etc_systemd_system_dir}/${create_chown_pwm_service_filename}
+create_chown_pwm_service_symlink_fpath=${etc_systemd_system_multi_user_target_wants_dir}/${create_chown_pwm_service_filename}
+
 one_time_exec_before_login_service_filename="one-time-exec-before-login.service"
 one_time_exec_before_login_service_fpath=${etc_systemd_system_dir}/${one_time_exec_before_login_service_filename}
 one_time_exec_before_login_service_symlink_fpath=${etc_systemd_system_multi_user_target_wants_dir}/${one_time_exec_before_login_service_filename}
@@ -475,12 +479,19 @@ echo "---Enable Services---"
 echo -e "\r"
 echo ">Create symlink for <${enable_eth1_before_login_service_filename}>"
 	ln -s ${enable_eth1_before_login_service_fpath} ${enable_eth1_before_login_service_symlink_fpath}
+
+echo -e "\r"
+echo ">Create symlink for <${create_chown_pwm_service_filename}>"
+	ln -s ${create_chown_pwm_service_fpath} ${create_chown_pwm_service_symlink_fpath}
+
 echo -e "\r"
 echo ">Create symlink for <${one_time_exec_before_login_service_filename}>"
 	ln -s ${one_time_exec_before_login_service_fpath} ${one_time_exec_before_login_service_symlink_fpath}
+
 echo -e "\r"
 echo ">Create symlink for <${enable_ufw_before_login_service_filename}>"
 	ln -s ${enable_ufw_before_login_service_fpath} ${enable_ufw_before_login_service_symlink_fpath}
+
 echo -e "\r"
 
 

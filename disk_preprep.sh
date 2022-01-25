@@ -76,6 +76,8 @@ chroot_exec_cmd_inside_chroot_filename="chroot_exec_cmd_inside_chroot.sh"
 # daisychain_mode_filename="mode"
 enable_eth1_before_login_service_filename="enable-eth1-before-login.service"
 enable_eth1_before_login_sh_filename="enable-eth1-before-login.sh"
+create_chown_pwm_service_filename="create-chown-pwm.service"
+create_chown_pwm_sh_filename="create-chown-pwm.sh"
 one_time_exec_sh_filename="one-time-exec.sh"
 one_time_exec_before_login_sh_filename="one-time-exec-before-login.sh"
 one_time_exec_before_login_service_filename="one-time-exec-before-login.service"
@@ -104,6 +106,7 @@ home_lttp3rootfs_rootfs_initramfs_disk_etc_dir=${home_lttp3rootfs_rootfs_initram
 home_lttp3rootfs_services_automount_dir=${home_lttp3rootfs_dir}/services/automount
 home_lttp3rootfs_services_oobe_oneshot_dir=${home_lttp3rootfs_dir}/services/oobe/oneshot
 home_lttp3rootfs_services_network_dir=${home_lttp3rootfs_dir}/services/network
+home_lttp3rootfs_services_pwm_dir=${home_lttp3rootfs_dir}/services/pwm
 home_lttp3rootfs_services_ufw_dir=${home_lttp3rootfs_dir}/services/ufw
 home_lttp3rootfs_services_permissions_dir=${home_lttp3rootfs_dir}/services/permissions
 home_lttp3rootfs_kernel_dir=${home_lttp3rootfs_dir}/kernel
@@ -187,6 +190,12 @@ dst_enable_eth1_before_login_service_fpath=${SP7xxx_linux_rootfs_initramfs_disk_
 
 src_enable_eth1_before_login_sh_fpath=${home_lttp3rootfs_services_network_dir}/${enable_eth1_before_login_sh_filename}
 dst_enable_eth1_before_login_sh_fpath=${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}/${enable_eth1_before_login_sh_filename}
+
+src_create_chown_pwm_service_fpath=${home_lttp3rootfs_services_pwm_dir}/${create_chown_pwm_service_filename}
+dst_create_chown_pwm_service_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}/${create_chown_pwm_service_filename}
+
+src_create_chown_pwm_sh_fpath=${home_lttp3rootfs_services_pwm_dir}/${create_chown_pwm_sh_filename}
+dst_create_chown_pwm_sh_fpath=${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}/${create_chown_pwm_sh_filename}
 
 src_one_time_exec_sh_fpath=${home_lttp3rootfs_services_oobe_oneshot_dir}/${one_time_exec_sh_filename}
 dst_one_time_exec_sh_fpath=${SP7xxx_linux_rootfs_initramfs_disk_scripts_dir}/${one_time_exec_sh_filename}
@@ -616,6 +625,37 @@ echo -e ">>>Change ownership to <root> for file: ${enable_eth1_before_login_sh_f
 echo -e "\r"
 echo -e ">>>Change permission to <-rwxr-xr-x> for file: ${enable_eth1_before_login_sh_filename}"
 	chmod 755 ${dst_enable_eth1_before_login_sh_fpath}
+
+
+
+echo -e "\r"
+echo -e ">Copying: ${create_chown_pwm_service_filename}>"
+echo -e ">from: ${home_lttp3rootfs_services_pwm_dir}"
+echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}"
+	cp ${src_create_chown_pwm_service_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}
+
+echo -e "\r"
+echo -e ">>>Change ownership to <root> for file: ${create_chown_pwm_service_filename}"
+	chown root:root ${dst_create_chown_pwm_service_fpath}
+
+echo -e "\r"
+echo -e ">>>Change permission to <-rwxr-xr-x> for file: ${create_chown_pwm_service_filename}"
+	chmod 644 ${dst_create_chown_pwm_service_fpath}
+
+echo -e "\r"
+echo -e ">Copying: ${create_chown_pwm_sh_filename}>"
+echo -e ">from: ${home_lttp3rootfs_services_pwm_dir}"
+echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}"
+	cp ${src_create_chown_pwm_sh_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}
+
+echo -e "\r"
+echo -e ">>>Change ownership to <root> for file: ${create_chown_pwm_sh_filename}"
+	chown root:root ${dst_create_chown_pwm_sh_fpath}
+
+echo -e "\r"
+echo -e ">>>Change permission to <-rwxr-xr-x> for file: ${create_chown_pwm_sh_filename}"
+	chmod 755 ${dst_create_chown_pwm_sh_fpath}
+
 
 
 echo -e "\r"

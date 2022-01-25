@@ -1,0 +1,37 @@
+#!/bin/bash
+#---version:22.01.25-0.0.1
+#---INPUT ARGS
+pwm_channel=${1}
+
+
+
+#---COLORS CONSTANTS
+NOCOLOR=$'\e[0m'
+FG_LIGHTRED=$'\e[1;31m'
+FG_ORANGE=$'\e[30;38;5;209m'
+FG_LIGHTGREY=$'\e[30;38;5;246m'
+FG_LIGHTGREEN=$'\e[30;38;5;71m'
+FG_SOFLIGHTRED=$'\e[30;38;5;131m'
+
+
+
+#CONSTANTS
+PWMCHIP0_DIR="/sys/devices/platform/soc@*/*.pwm/pwm/pwmchip0"
+
+
+
+#EXPORT pwm-channel 0
+echo -e ":-->${FG_ORANGE}STATUS${NOCOLOR}:  CREATED ${PWMCHIP0_DIR}/${FG_LIGHTGREY}${PWM0_FOLDER}${NOCOLOR}"
+echo "${pwm_channel}" > ${PWMCHIP0_DIR}/export
+
+
+
+#CHANGE OWNERSHIP
+echo -e ":-->${FG_ORANGE}STATUS${NOCOLOR}:  CHOWN ${FG_LIGHTGREEN}root:gpio${NOCOLOR} ${FG_LIGHTGREY}${PWMCHIP0_DIR}${NOCOLOR}"
+chown root:gpio -R ${PWMCHIP0_DIR}
+
+
+
+#CHANGE PERMISSIONS
+echo -e ":-->${FG_ORANGE}STATUS${NOCOLOR}:  CHMOD ${FG_LIGHTGREEN}770${NOCOLOR} ${FG_LIGHTGREY}${PWMCHIP0_DIR}${NOCOLOR}"
+chmod 770 -R ${PWMCHIP0_DIR}
