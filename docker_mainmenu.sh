@@ -259,6 +259,9 @@ docker__environmental_variables__sub() {
     docker__run_chroot_filename="docker_run_chroot.sh"
     docker__run_chroot_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__run_chroot_filename}
 
+    docker__enter_command_filename="docker_enter_command.sh"
+    docker__enter_command_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__enter_command_filename}
+
     docker__create_images_menu_filename="docker_create_images_menu.sh"
     docker__create_images_menu_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__create_images_menu_filename}
 
@@ -285,6 +288,7 @@ docker__mainmenu__sub() {
         echo -e "${DOCKER__FOURSPACES}7. Remove ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
         echo -e "${DOCKER__FOURSPACES}8. Copy a ${DOCKER__FILES_FG_ORANGE}file${DOCKER__NOCOLOR} from/to a ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
         echo -e "${DOCKER__FOURSPACES}9. ${DOCKER__CHROOT_FG_GREEN}Chroot${DOCKER__NOCOLOR} (from in/outside a container)"
+        echo -e "${DOCKER__FOURSPACES}0. Enter Command Prompt"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
         echo -e "${DOCKER__FOURSPACES}r. ${DOCKER__REPOSITORY_FG_PURPLE}Repository${DOCKER__NOCOLOR}-list"
         echo -e "${DOCKER__FOURSPACES}c. ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}-list"
@@ -308,7 +312,7 @@ docker__mainmenu__sub() {
 
             #Only continue if a valid option is selected
             if [[ ! -z ${docker__myChoice} ]]; then
-                if [[ ${docker__myChoice} =~ [1-9rcseipgq] ]]; then
+                if [[ ${docker__myChoice} =~ [1-90rcseipgq] ]]; then
                     break
                 else
                     if [[ ${docker__myChoice} == ${DOCKER__ENTER} ]]; then
@@ -359,6 +363,10 @@ docker__mainmenu__sub() {
 
             9)
                 ${docker__run_chroot_fpath}
+                ;;
+
+            0)
+                ${docker__enter_command_fpath}
                 ;;
 
             c)
