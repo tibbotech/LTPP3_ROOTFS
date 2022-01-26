@@ -239,13 +239,22 @@ docker__remove_specified_images__sub() {
                                 docker__myImageId_isFound=`docker image ls | awk '{print $3}' | grep -w ${docker__myImageId_item}`
                                 if [[ ! -z ${docker__myImageId_isFound} ]]; then
                                     docker image rmi -f ${docker__myImageId_item}
-                                    echo -e "\r"
-                                    echo -e "Removed Image-ID: ${DOCKER__IMAGEID_FG_BORDEAUX}${docker__myImageId_item}${DOCKER__NOCOLOR}"
-                                    echo -e "\r"
-                                    echo -e "Removing ALL unlinked images"
-                                    echo -e "y\n" | docker image prune
-                                    echo -e "Removing ALL stopped containers"
-                                    echo -e "y\n" | docker container prune
+
+                                    #Check if removing the image was successful
+                                    docker__myImageId_isFound=`docker image ls | awk '{print $3}' | grep -w ${docker__myImageId_item}`
+                                    if [[ -z ${docker__myImageId_isFound} ]]; then
+                                        echo -e "\r"
+                                        echo -e "Successfully Removed Image-ID: ${DOCKER__IMAGEID_FG_BORDEAUX}${docker__myImageId_item}${DOCKER__NOCOLOR}"
+                                        echo -e "\r"
+                                        echo -e "Removing ALL unlinked images"
+                                        echo -e "y\n" | docker image prune
+                                        echo -e "Removing ALL stopped containers"
+                                        echo -e "y\n" | docker container prune
+                                    else
+                                        echo -e "\r"
+                                        echo -e "Could *NOT* remove Image-ID: ${DOCKER__IMAGEID_FG_BORDEAUX}${docker__myImageId_item}${DOCKER__NOCOLOR}"
+                                        echo -e "\r"
+                                    fi
                                 else
                                     #Update error-message
                                     errMsg="***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Invalid Image-ID '${DOCKER__IMAGEID_FG_BORDEAUX}${docker__myImageId_item}${DOCKER__NOCOLOR}'"
