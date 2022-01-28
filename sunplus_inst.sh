@@ -113,10 +113,36 @@ press_any_key__func
 echo -e "\r"
 echo "---Updating submodules with git-command---"
 echo -e "\r"
-git submodule update --init --recursive
-git submodule update --remote --merge
-git submodule foreach --recursive git checkout master
+
+#-------------------------------------------------------------------
+# This part is not correct
+#-------------------------------------------------------------------
+# git submodule update --init --recursive
+# git submodule update --remote --merge
+# git submodule foreach --recursive git checkout master
+# git checkout 03645855a9a533cda7c4324072ef51d1fcfb8f7f
+# For example: 
+# 	cd linux
+# 	git status
+# Result:
+# 	On branch master
+# 	Your branch is up to date with 'origin/master'.
+#
+# 	nothing to commit, working tree clean	
+#-------------------------------------------------------------------
+
+#-------------------------------------------------------------------
+# It should be like this (verified with Jim)
+#-------------------------------------------------------------------
+# For example: 
+# 	cd linux
+# 	git status
+# Result:
+# 	HEAD detached at a649d0cc1	<--- This is the commit
+# 	nothing to commit, working tree clean
+#-------------------------------------------------------------------
 git checkout 03645855a9a533cda7c4324072ef51d1fcfb8f7f
+git submodule update --init --recursive
 
 echo -e "\r"
 echo ">Navigating to ${sunplus_dir}"
