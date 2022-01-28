@@ -298,7 +298,7 @@ docker__show_dockerList_files__sub() {
             if [[ ${mychoice} =~ [1-90q] ]]; then
                 #check if 'mychoice' is one of the numbers shown in the overview...
                 #... AND 'mychoice' is NOT '0'
-                if [[ ${mychoice} -lt ${seqnum} ]] && [[ ${mychoice} -ne 0 ]]; then
+                if [[ ${mychoice} -le ${seqnum} ]] && [[ ${mychoice} -ne 0 ]]; then
                     echo -e "\r"    #print an empty line
 
                     break   #exit loop
