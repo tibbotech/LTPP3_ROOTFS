@@ -361,7 +361,6 @@ docker__load_header__sub() {
 docker__environmental_variables__sub() {
 	#---Define PATHS
 	docker__ispbooot_bin_filename="ISPBOOOT.BIN"
-	docker__dockercontainer_dirlist_filename="dockercontainer_dirlist.sh"
 	docker__localhost_dirlist_filename="localhost_dirlist.sh"
 	
 	# docker__current_dir=`pwd`
@@ -371,9 +370,21 @@ docker__environmental_variables__sub() {
     if [[ -z ${docker__parent_dir} ]]; then
         docker__parent_dir="${DOCKER__SLASH}"
     fi
+	docker__current_folder=`basename ${docker__current_dir}`
+
+    docker__development_tools_folder="development_tools"
+    if [[ ${docker__current_folder} != ${docker__development_tools_folder} ]]; then
+        docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}/${docker__development_tools_folder}
+    else
+        docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}
+    fi
+
+    docker__containerlist_tableinfo_filename="docker_containerlist_tableinfo.sh"
+    docker__containerlist_tableinfo_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__containerlist_tableinfo_filename}
 
 	docker__root_sp7xxx_out_dir=/root/SP7021/out
 
+	docker__dockercontainer_dirlist_filename="dockercontainer_dirlist.sh"
 	docker__dockercontainer_dirlist_fpath=${docker__current_dir}/${docker__dockercontainer_dirlist_filename}
 	docker__localhost_dirlist_fpath=${docker__current_dir}/${docker__localhost_dirlist_filename}
 
@@ -548,7 +559,11 @@ function docker__show_list_with_menuTitle__func() {
     show_centered_string__func "${menuTitle}" "${DOCKER__TABLEWIDTH}"
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
     
-    ${dockerCmd}
+    if [[ ${dockerCmd} == ${docker_ps_a_cmd} ]]; then
+        ${docker__containerlist_tableinfo_fpath}
+    else
+        ${dockerCmd}
+    fi
 
     echo -e "\r"
 

@@ -165,6 +165,8 @@ docker__environmental_variables__sub() {
         docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}
     fi
 
+    docker__containerlist_tableinfo_filename="docker_containerlist_tableinfo.sh"
+    docker__containerlist_tableinfo_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__containerlist_tableinfo_filename}
     docker__create_an_image_from_dockerfile_filename="docker_create_an_image_from_dockerfile.sh"
     docker__create_an_image_from_dockerfile_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__create_an_image_from_dockerfile_filename}
     docker__create_images_from_dockerlist_filename="docker_create_images_from_dockerlist.sh"
@@ -332,7 +334,7 @@ docker__list_container__sub() {
 
         press_any_key__func
     else
-            docker ps -a
+        ${docker__containerlist_tableinfo_fpath}
         echo -e "\r"
         echo -e "\r"
     fi

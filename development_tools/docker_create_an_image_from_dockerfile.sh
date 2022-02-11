@@ -180,6 +180,17 @@ docker__load_environment_variables__sub() {
     fi
     #Define local variables
     docker_current_script_filename=`basename $0`
+	docker__current_folder=`basename ${docker__current_dir}`
+
+    docker__development_tools_folder="development_tools"
+    if [[ ${docker__current_folder} != ${docker__development_tools_folder} ]]; then
+        docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}/${docker__development_tools_folder}
+    else
+        docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}
+    fi
+
+    docker__containerlist_tableinfo_filename="docker_containerlist_tableinfo.sh"
+    docker__containerlist_tableinfo_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__containerlist_tableinfo_filename}
 
     docker__my_LTPP3_ROOTFS_docker_dir=${docker__parent_dir}/docker
     docker__my_LTPP3_ROOTFS_docker_dockerfiles_dir=${docker__my_LTPP3_ROOTFS_docker_dir}/dockerfiles
@@ -382,7 +393,11 @@ function docker__show_list_with_menuTitle__func() {
     show_centered_string__func "${menuTitle}" "${DOCKER__TABLEWIDTH}"
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
     
-    ${dockerCmd}
+    if [[ ${dockerCmd} == ${docker_ps_a_cmd} ]]; then
+        ${docker__containerlist_tableinfo_fpath}
+    else
+        ${dockerCmd}
+    fi
 
     echo -e "\r"
 

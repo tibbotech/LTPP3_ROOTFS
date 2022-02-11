@@ -237,7 +237,11 @@ function docker__show_list_with_menuTitle__func() {
     show_centered_string__func "${menuTitle}" "${DOCKER__TABLEWIDTH}"
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
     
-    ${dockerCmd}
+    if [[ ${dockerCmd} == ${docker_ps_a_cmd} ]]; then
+        ${docker__containerlist_tableinfo_fpath}
+    else
+        ${dockerCmd}
+    fi
 
     echo -e "\r"
 
@@ -336,6 +340,26 @@ docker__environmental_variables__sub() {
     docker__usr_bin_dir=/usr/bin
     docker__qemu_fpath=${docker__usr_bin_dir}/qemu-arm-static
     docker__bash_fpath=${docker__usr_bin_dir}/bash
+
+
+
+    docker__current_script_fpath="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
+    docker__current_dir=$(dirname ${docker__current_script_fpath})
+    if [[ ${docker__current_dir} == ${DOCKER__DOT} ]]; then
+        docker__current_dir=$(pwd)
+    fi
+    docker__current_folder=`basename ${docker__current_dir}`
+    docker__current_folder=`basename ${docker__current_dir}`
+
+    docker__development_tools_folder="development_tools"
+    if [[ ${docker__current_folder} != ${docker__development_tools_folder} ]]; then
+        docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}/${docker__development_tools_folder}
+    else
+        docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}
+    fi
+
+    docker__containerlist_tableinfo_filename="docker_containerlist_tableinfo.sh"
+    docker__containerlist_tableinfo_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__containerlist_tableinfo_filename}
 }
 
 
