@@ -73,6 +73,26 @@ press_any_key__localfunc() {
 	echo -e "\r"
 }
 
+docker__load_environment_variables__sub() {
+    #---Define PATHS
+    docker__current_script_fpath="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
+    docker__current_dir=$(dirname ${docker__current_script_fpath})
+    if [[ ${docker__current_dir} == ${DOCKER__DOT} ]]; then
+        docker__current_dir=$(pwd)
+    fi
+    docker__current_folder=`basename ${docker__current_dir}`
+
+    docker__development_tools_folder="development_tools"
+    if [[ ${docker__current_folder} != ${docker__development_tools_folder} ]]; then
+        docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}/${docker__development_tools_folder}
+    else
+        docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}
+    fi
+
+	docker_repolist_tableinfo_filename="docker_repolist_tableinfo.sh"
+	docker_repolist_tableinfo_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker_repolist_tableinfo_filename}
+}
+
 docker__load_header__sub() {
     echo -e "\r"
     echo -e "${DOCKER__TITLE_BG_ORANGE}                                 ${DOCKER__TITLE}${DOCKER__TITLE_BG_ORANGE}                                ${DOCKER__NOCOLOR}"
@@ -289,7 +309,7 @@ docker__run_dockercmd_with_error_check__sub() {
     docker__checkif_cmd_exec_was_successful__sub   #check if cmd ran successfully
 
     echo -e "\r"
-        sudo sh -c "docker image ls"    #show Docker IMAGE list
+        ${docker_repolist_tableinfo_fpath}
     echo -e "\r"
     echo -e "\r"
 }
@@ -324,6 +344,8 @@ docker__handle_chosen_dockerfile_list__sub() {
 
 
 main_sub() {
+    docker__load_environment_variables__sub
+
     docker__load_header__sub
 
     docker__get_this_running_script_dir__sub

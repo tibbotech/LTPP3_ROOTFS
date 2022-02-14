@@ -183,7 +183,7 @@ docker__load_header__sub() {
     echo -e "${DOCKER__TITLE_BG_ORANGE}                                 ${DOCKER__TITLE}${DOCKER__TITLE_BG_ORANGE}                                ${DOCKER__NOCOLOR}"
 }
 
-docker__environmental_variables__sub() {
+docker__load_environment_variables__sub() {
     #Define paths
     docker__dockerfile_filename="dockerfile_auto"
     docker__current_script_fpath="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
@@ -192,11 +192,22 @@ docker__environmental_variables__sub() {
     if [[ -z ${docker__parent_dir} ]]; then
         docker__parent_dir="${DOCKER__SLASH_CHAR}"
     fi
+    docker__current_folder=`basename ${docker__current_dir}`
 
     docker__first_dir=${docker__parent_dir%/*}    #gets one directory up
     dockerfile_dir=${docker__first_dir}/docker/dockerfiles
     docker__dockerfile_fpath=${DOCKER__EMPTYSTRING}
     docker__mydockerfile_location=${DOCKER__EMPTYSTRING}
+
+    docker__development_tools_folder="development_tools"
+    if [[ ${docker__current_folder} != ${docker__development_tools_folder} ]]; then
+        docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}/${docker__development_tools_folder}
+    else
+        docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}
+    fi
+
+	docker_repolist_tableinfo_filename="docker_repolist_tableinfo.sh"
+	docker_repolist_tableinfo_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker_repolist_tableinfo_filename}
 }
 
 docker__init_variables__sub() {
@@ -451,7 +462,7 @@ function docker__show_list_with_menuTitle__func() {
     show_centered_string__func "${menuTitle}" "${DOCKER__TABLEWIDTH}"
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
     
-    ${dockerCmd}
+    ${docker_repolist_tableinfo_fpath}
 
     echo -e "\r"
 
@@ -497,7 +508,7 @@ function docker__show_errMsg_without_menuTitle__func() {
 main_sub() {
     docker__load_header__sub
 
-    docker__environmental_variables__sub
+    docker__load_environment_variables__sub
 
     docker__init_variables__sub
 

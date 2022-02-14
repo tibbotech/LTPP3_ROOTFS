@@ -34,6 +34,9 @@ DOCKER__ONESPACE=" "
 DOCKER__TWOSPACES=${DOCKER__ONESPACE}${DOCKER__ONESPACE}
 DOCKER__FOURSPACES=${DOCKER__TWOSPACES}${DOCKER__TWOSPACES}
 
+#---PATTERN CONSTANTS
+DOCKER__PATTERN1="repository:tag"
+
 #---NUMERIC CONSTANTS
 DOCKER__NINE=9
 DOCKER__TABLEWIDTH=70
@@ -163,14 +166,113 @@ function moveDown_and_cleanLines__func() {
     done
 }
 
+function docker__create_image__func() {
+    #Input args
+    local dockerfile_fpath=${1}
+
+    #Define local constants
+    local MENUTITLE_UPDATED_CONTAINER_LIST="Updated ${DOCKER__IMAGEID_FG_BORDEAUX}Image${DOCKER__NOCOLOR}-list"
+    local GREP_PATTERN="LABEL repository:tag"
+
+    #Define local message variables
+    local statusMsg="---:${DOCKER__FILES_FG_ORANGE}STATUS${DOCKER__NOCOLOR}: Creating image..."
+
+    #Define local command variables
+    local docker_ps_a_cmd="docker ps -a"
+    
+
+
+    #Get REPOSITORY:TAG from dockerfile
+    local dockerfile_repository_tag=`egrep -w "${GREP_PATTERN}" ${dockerfile_fpath} | cut -d"\"" -f2`
+
+    #Check if 'dockerfile_repository_tag' is an EMPTY STRING
+    if [[ -z ${dockerfile_repository_tag} ]]; then
+        dockerfile_repository_tag="${dockerfile}:${DOCKER__LATEST}"
+    fi
+
+    #Print
+    echo -e "\r"
+    echo -e "${statusMsg}"
+    echo -e "\r"
+
+    docker build --tag ${dockerfile_repository_tag} - < ${dockerfile_fpath} #with REPOSITORY:TAG
+    
+    #Validate executed command
+    docker__validate_exitCode__func
+
+    #Print docker image list
+    echo -e "\r"
+
+    docker__show_list_with_menuTitle__func "${MENUTITLE_UPDATED_CONTAINER_LIST}" "${docker_ps_a_cmd}"
+    
+    echo -e "\r"
+    echo -e "\r"
+}
+function docker__validate_exitCode__func() {
+    #Define local message variables
+    local successMsg="---:${DOCKER__FILES_FG_ORANGE}STATUS${DOCKER__NOCOLOR}: Image was created ${DOCKER__SUCCESS_FG_LIGHTGREEN}successfully${DOCKER__NOCOLOR}..."
+    local errMsg="***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Unable to create Image"
+
+    #Get exit-code of the latest executed command
+    exit_code=$?
+    if [[ ${exit_code} -eq 0 ]]; then
+        echo -e "\r"
+        echo -e "${successMsg}"
+        echo -e "\r"
+
+    else
+        echo -e "\r"
+        echo -e "${errMsg}"
+        echo -e "\r"
+
+        # echo -e "${DOCKER__EXITING_NOW}"
+        # echo -e "\r"
+        # echo -e "\r"
+
+        exit
+    fi
+}
+
+function docker__show_list_with_menuTitle__func() {
+    #Input args
+    local menuTitle=${1}
+    local dockerCmd=${2}
+
+    #Show list
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    show_centered_string__func "${menuTitle}" "${DOCKER__TABLEWIDTH}"
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    
+    if [[ ${dockerCmd} == ${docker_ps_a_cmd} ]]; then
+        ${docker__containerlist_tableinfo_fpath}
+    else
+        ${dockerCmd}
+    fi
+
+    echo -e "\r"
+
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    echo -e "${DOCKER__CTRL_C_QUIT}"
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+}
+
+function repo_exists__func() {
+	#Input args
+	local repoName__input=${1}
+	local tag__input=${2}
+
+	#Check if imageID is found in container's list
+	local stdOutput=`docker images | grep "${repoName__input}" | grep "${tag__input}"`
+	if [[ ! -z ${stdOutput} ]]; then
+		echo "true"
+	else
+		echo "false"
+	fi
+}
+
 
 
 #---SUBROUTINES
-docker__load_header__sub() {
-    echo -e "\r"
-    echo -e "${DOCKER__TITLE_BG_ORANGE}                                 ${DOCKER__TITLE}${DOCKER__TITLE_BG_ORANGE}                                ${DOCKER__NOCOLOR}"
-}
-
 docker__load_environment_variables__sub() {
     docker__current_script_fpath="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
     docker__current_dir=$(dirname ${docker__current_script_fpath})
@@ -178,9 +280,11 @@ docker__load_environment_variables__sub() {
     if [[ -z ${docker__parent_dir} ]]; then
         docker__parent_dir="${DOCKER__SLASH_CHAR}"
     fi
-    #Define local variables
     docker_current_script_filename=`basename $0`
 	docker__current_folder=`basename ${docker__current_dir}`
+
+    docker__my_LTPP3_ROOTFS_docker_dir=${docker__parent_dir}/docker
+    docker__my_LTPP3_ROOTFS_docker_dockerfiles_dir=${docker__my_LTPP3_ROOTFS_docker_dir}/dockerfiles
 
     docker__development_tools_folder="development_tools"
     if [[ ${docker__current_folder} != ${docker__development_tools_folder} ]]; then
@@ -191,14 +295,19 @@ docker__load_environment_variables__sub() {
 
     docker__containerlist_tableinfo_filename="docker_containerlist_tableinfo.sh"
     docker__containerlist_tableinfo_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__containerlist_tableinfo_filename}
+	docker_repolist_tableinfo_filename="docker_repolist_tableinfo.sh"
+	docker_repolist_tableinfo_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker_repolist_tableinfo_filename}
+}
 
-    docker__my_LTPP3_ROOTFS_docker_dir=${docker__parent_dir}/docker
-    docker__my_LTPP3_ROOTFS_docker_dockerfiles_dir=${docker__my_LTPP3_ROOTFS_docker_dir}/dockerfiles
+docker__load_header__sub() {
+    echo -e "\r"
+    echo -e "${DOCKER__TITLE_BG_ORANGE}                                 ${DOCKER__TITLE}${DOCKER__TITLE_BG_ORANGE}                                ${DOCKER__NOCOLOR}"
 }
 
 docker__init_variables__sub() {
     docker__dockerFile_fpath=""
     docker__dockerFile_filename=""
+    docker__flagExitLoop=false
 }
 
 docker__show_dockerList_files__sub() {
@@ -309,116 +418,52 @@ docker__show_dockerList_files__sub() {
 
 docker__create_image_handler__sub() {
     if [[ -f ${docker__dockerFile_fpath} ]]; then
-        docker__create_image__func ${docker__dockerFile_fpath}
+        #Get repository-name
+        local repoName=`cat ${docker__dockerFile_fpath} | awk '{print $2}'| grep "${DOCKER__PATTERN1}" | cut -d"\"" -f2 | cut -d":" -f1`
+        #Get tag belonging to the previously retrieved repository-name
+        local tag=`cat ${docker__dockerFile_fpath} | awk '{print $3}'| grep "${DOCKER__PATTERN1}" | cut -d"\"" -f2 | cut -d":" -f2`
+        #Check if the repository-name & tag pair is already created
+        local isFound=`repo_exists__func "${repoName}" "${tag}"`
+        if [[ ${isFound} == true ]]; then
+            local docker_filename=`basename ${docker__dockerFile_fpath}`
+            local statusMsg="---:${DOCKER__FILES_FG_ORANGE}UPDATE${DOCKER__NOCOLOR}: '${docker_filename}' already executed..."
+            echo -e "\r"
+            echo -e "${statusMsg}"
+            echo -e "\r"
+
+            docker__flagExitLoop=false
+        else
+            docker__flagExitLoop=true
+
+            docker__create_image__func ${docker__dockerFile_fpath}
+        fi
     else
         echo -e "\r"
         echo -e "***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: File '${DOCKER__FG_DARKBLUE}${docker__dockerFile_fpath}${DOCKER__NOCOLOR}' does ${DOCKER__ERROR_FG_LIGHTRED}Not${DOCKER__NOCOLOR} exist"
         echo -e "\r"       
     fi
 }
-function docker__create_image__func() {
-    #Input args
-    local dockerfile_fpath=${1}
-
-    #Define local constants
-    local MENUTITLE_UPDATED_CONTAINER_LIST="Updated ${DOCKER__IMAGEID_FG_BORDEAUX}Image${DOCKER__NOCOLOR}-list"
-    local GREP_PATTERN="LABEL repository:tag"
-
-    #Define local message variables
-    local statusMsg="---:${DOCKER__FILES_FG_ORANGE}STATUS${DOCKER__NOCOLOR}: Creating image..."
-
-    #Define local command variables
-    local docker_ps_a_cmd="docker ps -a"
-    
-
-
-    #Get REPOSITORY:TAG from dockerfile
-    local dockerfile_repository_tag=`egrep -w "${GREP_PATTERN}" ${dockerfile_fpath} | cut -d"\"" -f2`
-
-    #Check if 'dockerfile_repository_tag' is an EMPTY STRING
-    if [[ -z ${dockerfile_repository_tag} ]]; then
-        dockerfile_repository_tag="${dockerfile}:${DOCKER__LATEST}"
-    fi
-
-    #Execute Docker command
-    echo -e "\r"
-    echo -e "${statusMsg}"
-    echo -e "\r"
-
-    docker build --tag ${dockerfile_repository_tag} - < ${dockerfile_fpath} #with REPOSITORY:TAG
-    
-    #Validate executed command
-    docker__validate_exitCode__func
-
-    #Print docker image list
-    echo -e "\r"
-
-    docker__show_list_with_menuTitle__func "${MENUTITLE_UPDATED_CONTAINER_LIST}" "${docker_ps_a_cmd}"
-    
-    echo -e "\r"
-    echo -e "\r"
-}
-function docker__validate_exitCode__func() {
-    #Define local message variables
-    local successMsg="---:${DOCKER__FILES_FG_ORANGE}STATUS${DOCKER__NOCOLOR}: Image was created ${DOCKER__SUCCESS_FG_LIGHTGREEN}successfully${DOCKER__NOCOLOR}..."
-    local errMsg="***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Unable to create Image"
-
-    #Get exit-code of the latest executed command
-    exit_code=$?
-    if [[ ${exit_code} -eq 0 ]]; then
-        echo -e "\r"
-        echo -e "${successMsg}"
-        echo -e "\r"
-
-    else
-        echo -e "\r"
-        echo -e "${errMsg}"
-        echo -e "\r"
-
-        # echo -e "${DOCKER__EXITING_NOW}"
-        # echo -e "\r"
-        # echo -e "\r"
-
-        exit
-    fi
-}
-
-function docker__show_list_with_menuTitle__func() {
-    #Input args
-    local menuTitle=${1}
-    local dockerCmd=${2}
-
-    #Show list
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-    show_centered_string__func "${menuTitle}" "${DOCKER__TABLEWIDTH}"
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-    
-    if [[ ${dockerCmd} == ${docker_ps_a_cmd} ]]; then
-        ${docker__containerlist_tableinfo_fpath}
-    else
-        ${dockerCmd}
-    fi
-
-    echo -e "\r"
-
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-    echo -e "${DOCKER__CTRL_C_QUIT}"
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-}
 
 
 
 #---MAIN SUBROUTINE
 main_sub() {
-    docker__load_header__sub
-
     docker__load_environment_variables__sub
+
+    docker__load_header__sub
 
     docker__init_variables__sub
 
-    docker__show_dockerList_files__sub
+    while true
+    do
+        docker__show_dockerList_files__sub
 
-    docker__create_image_handler__sub
+        docker__create_image_handler__sub
+
+        if [[ ${docker__flagExitLoop} == true ]]; then
+            break
+        fi
+    done
 }
 
 

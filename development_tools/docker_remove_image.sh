@@ -169,6 +169,27 @@ CTRL_C__sub() {
     exit
 }
 
+docker__load_environment_variables__sub() {
+    #Define paths
+    docker__current_script_fpath="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
+    docker__current_dir=$(dirname ${docker__current_script_fpath})
+    docker__parent_dir=${docker__current_dir%/*}    #gets one directory up
+    if [[ -z ${docker__parent_dir} ]]; then
+        docker__parent_dir="${DOCKER__SLASH_CHAR}"
+    fi
+
+    docker__current_folder=`basename ${docker__current_dir}`
+    docker__development_tools_folder="development_tools"
+    if [[ ${docker__current_folder} != ${docker__development_tools_folder} ]]; then
+        docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}/${docker__development_tools_folder}
+    else
+        docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}
+    fi
+
+	docker_repolist_tableinfo_filename="docker_repolist_tableinfo.sh"
+	docker_repolist_tableinfo_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker_repolist_tableinfo_filename}
+}
+
 docker__load_header__sub() {
     echo -e "\r"
     echo -e "${DOCKER__TITLE_BG_ORANGE}                                 ${DOCKER__TITLE}${DOCKER__TITLE_BG_ORANGE}                                ${DOCKER__NOCOLOR}"
@@ -330,7 +351,7 @@ function docker_imageId_input__func() {
         echo -e "- Remove ALL image-IDs by typing: ${DOCKER__REMOVE_ALL}"
 		echo -e "- Multiple image-IDs can be removed"
 		echo -e "- Comma-separator will be auto-appended (e.g. 0f7478cf7cab,5f1b8726ca97)"
-		echo -e "- [On an Empty Field] press ENTER to confirm to-be-deleted entries"
+		echo -e "- [On an Empty Field] press ENTER to confirm deletion"
 		echo -e "${DOCKER__IMAGEID_BG_BORDEAUX}Remove the following ${DOCKER__OUTSIDE_FG_WHITE}image-IDs${DOCKER__NOCOLOR}:${DOCKER__IMAGEID_BG_BORDEAUX}${DOCKER__OUTSIDE_FG_WHITE}${docker__myImageId}${DOCKER__NOCOLOR}"
 		read -e -p "Paste your input (here): " docker__myImageId_input
 
@@ -364,7 +385,7 @@ function docker__show_list_with_menuTitle__func() {
     show_centered_string__func "${menuTitle}" "${DOCKER__TABLEWIDTH}"
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
     
-    ${dockerCmd}
+    ${docker_repolist_tableinfo_fpath}
 
     echo -e "\r"
 
@@ -407,6 +428,8 @@ function docker__show_errMsg_without_menuTitle__func() {
 
 
 main_sub() {
+    docker__load_environment_variables__sub
+
     docker__load_header__sub
 
     docker__init_variables__sub

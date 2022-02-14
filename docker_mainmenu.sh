@@ -218,7 +218,7 @@ docker__checkIf_user_is_root__sub()
     fi
 }
 
-docker__environmental_variables__sub() {
+docker__load_environment_variables__sub() {
     #---Define PATHS
     docker__current_script_fpath="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
     docker__current_dir=$(dirname ${docker__current_script_fpath})
@@ -230,6 +230,8 @@ docker__environmental_variables__sub() {
 
     docker__containerlist_tableinfo_filename="docker_containerlist_tableinfo.sh"
     docker__containerlist_tableinfo_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__containerlist_tableinfo_filename}
+    docker_repolist_tableinfo_filename="docker_repolist_tableinfo.sh"
+    docker_repolist_tableinfo_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker_repolist_tableinfo_filename}
     docker__create_an_image_from_dockerfile_filename="docker_create_an_image_from_dockerfile.sh"
     docker__create_an_image_from_dockerfile_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__create_an_image_from_dockerfile_filename}
     docker__create_images_from_dockerlist_filename="docker_create_images_from_dockerlist.sh"
@@ -427,7 +429,7 @@ docker__list_repository__sub() {
 
         press_any_key__func
     else
-            docker image ls
+        ${docker_repolist_tableinfo_fpath}
         echo -e "\r"
         echo -e "\r"
     fi
@@ -469,7 +471,7 @@ main_sub() {
 
     docker__checkIf_user_is_root__sub
 
-    docker__environmental_variables__sub
+    docker__load_environment_variables__sub
 
     docker__init_variables__sub
 

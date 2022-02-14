@@ -343,7 +343,7 @@ docker_containerId_input__func() {
         echo -e "- Remove ALL container-IDs by typing: ${DOCKER__REMOVE_ALL}"
         echo -e "- Multiple container-IDs can be removed"
         echo -e "- Comma-separator will be auto-appended (e.g. 3e2226b5fb4c,78ae00114c5a)"
-		echo -e "- [On an Empty Field] press ENTER to confirm to-be-deleted entries"
+		echo -e "- [On an Empty Field] press ENTER to confirm deletion"
         echo -e "${DOCKER__CONTAINER_BG_BRIGHTPRUPLE}Remove the following ${DOCKER__OUTSIDE_FG_WHITE}container-IDs${DOCKER__NOCOLOR}:${DOCKER__CONTAINER_BG_BRIGHTPRUPLE}${DOCKER__OUTSIDE_FG_WHITE}${docker__myContainerId}${DOCKER__NOCOLOR}"
         read -e -p "Paste your input (here): " docker__myContainerId_input
 

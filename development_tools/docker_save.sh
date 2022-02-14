@@ -57,7 +57,7 @@ trap CTRL_C_func INT
 function CTRL_C_func() {
     echo -e "\r"
     echo -e "\r"
-    echo -e "${DOCKER__ERROR_FG_LIGHTRED}Saving${DOCKER__NOCOLOR} Docker Image Interrupted..."
+    echo -e "${DOCKER__ERROR_FG_LIGHTRED}Exporting${DOCKER__NOCOLOR} Docker Image Interrupted..."
     echo -e "\r"
     echo -e "Exiting now..."
     echo -e "\r"
@@ -173,7 +173,7 @@ docker__load_header__sub() {
     echo -e "${DOCKER__TITLE_BG_ORANGE}                                 ${DOCKER__TITLE}${DOCKER__TITLE_BG_ORANGE}                                ${DOCKER__NOCOLOR}"
 }
 
-docker__environmental_variables__sub() {
+docker__load_environment_variables__sub() {
     #Define paths
     docker__current_script_fpath="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
     docker__current_dir=$(dirname ${docker__current_script_fpath})
@@ -184,6 +184,17 @@ docker__environmental_variables__sub() {
 
     docker__first_dir=${docker__parent_dir%/*}    #gets one directory up
     docker__images_dir=${docker__first_dir}/docker/images
+
+    docker__current_folder=`basename ${docker__current_dir}`
+    docker__development_tools_folder="development_tools"
+    if [[ ${docker__current_folder} != ${docker__development_tools_folder} ]]; then
+        docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}/${docker__development_tools_folder}
+    else
+        docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}
+    fi
+
+	docker_repolist_tableinfo_filename="docker_repolist_tableinfo.sh"
+	docker_repolist_tableinfo_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker_repolist_tableinfo_filename}
 }
 
 docker__create_dirs__sub() {
@@ -271,14 +282,14 @@ docker__save_handler__sub() {
                                             if  [[ ${myAnswer} == "y" ]]; then
                                                 echo -e "\r"
                                                 echo -e "\r"
-                                                echo -e "---:${DOCKER__FILES_FG_ORANGE}START${DOCKER__NOCOLOR}: Saving image '${DOCKER__FG_LIGHTGREY}${myOutput_fPath}${DOCKER__NOCOLOR}'"
+                                                echo -e "---:${DOCKER__FILES_FG_ORANGE}START${DOCKER__NOCOLOR}: Exporting image '${DOCKER__FG_LIGHTGREY}${myOutput_fPath}${DOCKER__NOCOLOR}'"
                                                 echo -e "---:${DOCKER__FILES_FG_ORANGE}STATUS${DOCKER__NOCOLOR}: Depending on the image size..."
                                                 echo -e "---:${DOCKER__FILES_FG_ORANGE}STATUS${DOCKER__NOCOLOR}: This may take a while..."
                                                 echo -e "---:${DOCKER__FILES_FG_ORANGE}STATUS${DOCKER__NOCOLOR}: Please wait..."
                                                 
                                                 docker image save --output ${myOutput_fPath} ${myRepository}:${myTag} > /dev/null
 
-                                                echo -e "---:${DOCKER__FILES_FG_ORANGE}COMPLETED${DOCKER__NOCOLOR}: Saving image '${DOCKER__FG_LIGHTGREY}${myOutput_fPath}${DOCKER__NOCOLOR}'"
+                                                echo -e "---:${DOCKER__FILES_FG_ORANGE}COMPLETED${DOCKER__NOCOLOR}: Exporting image '${DOCKER__FG_LIGHTGREY}${myOutput_fPath}${DOCKER__NOCOLOR}'"
                                                 
                                                 echo -e "\r"
                                                 echo -e "\r"
@@ -353,7 +364,7 @@ function docker__show_list_with_menuTitle__func() {
     show_centered_string__func "${menuTitle}" "${DOCKER__TABLEWIDTH}"
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
     
-    ${dockerCmd}
+    ${docker_repolist_tableinfo_fpath}
 
     echo -e "\r"
 
@@ -381,9 +392,9 @@ function docker__show_errMsg_without_menuTitle__func() {
 
 #---MAIN SUBROUTINE
 main_sub() {
-    docker__load_header__sub
+    docker__load_environment_variables__sub
 
-    docker__environmental_variables__sub
+    docker__load_header__sub
 
     docker__create_dirs__sub
 
