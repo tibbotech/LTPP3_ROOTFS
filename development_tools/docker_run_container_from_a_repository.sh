@@ -255,8 +255,8 @@ docker__load_environment_variables__sub() {
 
     docker__containerlist_tableinfo_filename="docker_containerlist_tableinfo.sh"
     docker__containerlist_tableinfo_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__containerlist_tableinfo_filename}
-	docker_repolist_tableinfo_filename="docker_repolist_tableinfo.sh"
-	docker_repolist_tableinfo_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker_repolist_tableinfo_filename}
+	docker__repolist_tableinfo_filename="docker_repolist_tableinfo.sh"
+	docker__repolist_tableinfo_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__repolist_tableinfo_filename}
 }
 
 docker__load_header__sub() {
@@ -265,10 +265,25 @@ docker__load_header__sub() {
 }
 
 docker__init_variables__sub() {
-    docker__ipv4addr1=${DOCKER__EMPTYSTRING}
+    docker__exitCode=0
+    docker__ipv4_addr=${DOCKER__EMPTYSTRING}
     docker__ipv4_addr_summarize_str=${DOCKER__EMPTYSTRING}
     docker__ipv4_addr_summarize_arr=()
     docker__ssh_localport=${DOCKER__SSH_LOCALPORT}
+
+
+    #Newly Added (not in use yet)
+    docker__imageID_chosen=${DOCKER__EMPTYSTRING}
+    docker__repo_chosen=${DOCKER__EMPTYSTRING}
+    docker__tag_chosen=${DOCKER__EMPTYSTRING}
+    docker__repo_new=${DOCKER__EMPTYSTRING}
+
+    docker__images_cmd="docker images"
+    docker__ps_a_cmd="docker ps -a"
+
+    docker__images_repoColNo=1
+    docker__images_tagColNo=2
+    docker__images_IDColNo=3
 }
 
 docker__run_specified_repository_as_container__sub() {
@@ -280,7 +295,6 @@ docker__run_specified_repository_as_container__sub() {
     local ERRMSG_NO_IMAGES_FOUND="=:${DOCKER__ERROR_FG_LIGHTRED}NO IMAGES FOUND${DOCKER__NOCOLOR}:="
 
     #Define local variables
-    local exitCode=0
     local containerName=${DOCKER__EMPTYSTRING}
     local myRepository=${DOCKER__EMPTYSTRING}
     local myRepository_isFound=${DOCKER__EMPTYSTRING}
@@ -292,8 +306,6 @@ docker__run_specified_repository_as_container__sub() {
     local myRespository_colon_tag_isFound=${DOCKER__EMPTYSTRING}
 
     #Define local variables
-    local docker_image_ls_cmd="docker image ls"
-    local docker_ps_a_cmd="docker ps -a"
     local errMsg=${EMPTYSTRING}
 
 
@@ -303,7 +315,7 @@ docker__run_specified_repository_as_container__sub() {
     if [[ ${numof_images} -eq 0 ]]; then
         docker__show_errMsg_with_menuTitle__func "${MENUTITLE}" "${ERRMSG_NO_IMAGES_FOUND}"
     else
-        docker__show_list_with_menuTitle__func "${MENUTITLE}" "${docker_image_ls_cmd}"
+        docker__show_list_with_menuTitle__func "${MENUTITLE}" "${docker__images_cmd}"
     fi 
 
     while true
@@ -345,42 +357,44 @@ docker__run_specified_repository_as_container__sub() {
                                 echo -e "\r"
                                 docker run -d -p ${docker__ssh_localport}:${DOCKER__SSH_PORT} --name ${containerName} ${myRespository_colon_tag} > /dev/null
 
-                                #Check if exitCode=0
-                                exitCode=$? #get exitCode
-                                if [[ ${exitCode} -eq 0 ]]; then    #exitCode=0, which means that command was executed successfully
+                                #Check if docker__exitCode=0
+                                docker__exitCode=$? #get docker__exitCode
+                                if [[ ${docker__exitCode} -eq 0 ]]; then    #docker__exitCode=0, which means that command was executed successfully
                                     #Show DOCKER CONTAINERS
                                     #Show Container's list
                                     echo -e "\r"
 
-                                    docker__show_list_with_menuTitle__func "${MENUTITLE_UPDATED_CONTAINER_LIST}" "${docker_ps_a_cmd}"
+                                    docker__show_list_with_menuTitle__func "${MENUTITLE_UPDATED_CONTAINER_LIST}" "${docker__ps_a_cmd}"
 
                                     echo -e "\r"
-                                    echo -e "\r"
-                                    echo -e "Summary:"
-                                    echo -e "\tChosen Repository:\t\t\t${DOCKER__REPOSITORY_FG_PURPLE}${myRepository}${DOCKER__NOCOLOR}"
-                                    echo -e "\tCreated Container-ID:\t\t\t${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}${containerName}${DOCKER__NOCOLOR}"
-                                    echo -e "\tTCP-port to-used-for SSH:\t\t${DOCKER__PORTS_FG_LIGHTBLUE}${docker__ssh_localport}${DOCKER__NOCOLOR}"
-                                   
+                                    # echo -e "\r"
+                                    local echomsg1="Summary:\n"
+                                    echomsg1+="\tChosen Repository:\t\t\t${DOCKER__REPOSITORY_FG_PURPLE}${myRepository}${DOCKER__NOCOLOR}\n"
+                                    echomsg1+="\tCreated Container-ID:\t\t\t${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}${containerName}${DOCKER__NOCOLOR}\n"
+                                    echomsg1+="\tTCP-port to-used-for SSH:\t\t${DOCKER__PORTS_FG_LIGHTBLUE}${docker__ssh_localport}${DOCKER__NOCOLOR}\n"
+                                    echo -e "${echomsg1}"
+
                                     get_assigned_ipv4_addresses__func
                                    
-                                    echo -e "\tAvailable ip-address(es) for SSH:"
-                                   
+                                    local echomsg2="\tAvailable ip-address(es) for SSH:"
+                                    echo -e "${echomsg2}"
                                     for ipv4 in "${docker__ipv4_addr_summarize_arr[@]}"; do 
                                         echo -e "\t\t\t\t\t\t${DOCKER__IP_FG_LIGHTCYAN}${ipv4}${DOCKER__NOCOLOR}"
                                     done
                                    
-                                    echo -e "\r"
+                                    # echo -e "\r"
 
 
                                     #Show EXAMPLE OF HOW TO SSH FROM a REMOTE PC
-                                    docker__ipv4addr1=$(cut -d" " -f1 <<< ${docker__ipv4_addr_summarize_str})
+                                    docker__ipv4_addr=$(cut -d" " -f1 <<< ${docker__ipv4_addr_summarize_str})
+                                    local echomsg3="How to SSH from a remote PC?\n"
+                                    echomsg3="\tDefault login/pass: ${DOCKER__GENERAL_FG_YELLOW}root/root${DOCKER__NOCOLOR}\n"
+                                    echomsg3+="\tSample:\n"
+                                    echomsg3+="\t\tssh ${DOCKER__GENERAL_FG_YELLOW}root${DOCKER__NOCOLOR}@${DOCKER__IP_FG_LIGHTCYAN}${docker__ipv4_addr}${DOCKER__NOCOLOR} -p ${DOCKER__PORTS_FG_LIGHTBLUE}${docker__ssh_localport}${DOCKER__NOCOLOR}\n"
                                     echo -e "\r"
-                                    echo -e "How to SSH from a remote PC?"
-                                    echo -e "\tDefault login/pass: ${DOCKER__GENERAL_FG_YELLOW}root/root${DOCKER__NOCOLOR}"
-                                    echo -e "\tSample:"
-                                    echo -e "\t\tssh ${DOCKER__GENERAL_FG_YELLOW}root${DOCKER__NOCOLOR}@${DOCKER__IP_FG_LIGHTCYAN}${docker__ipv4addr1}${DOCKER__NOCOLOR} -p ${DOCKER__PORTS_FG_LIGHTBLUE}${docker__ssh_localport}${DOCKER__NOCOLOR}"
+                                    echo -e ${echomsg3}
                                     echo -e "\r"
-                                    echo -e "\r"
+                                    # echo -e "\r"
                                     
                                     exit
                                 else
@@ -438,10 +452,10 @@ function docker__show_list_with_menuTitle__func() {
     show_centered_string__func "${menuTitle}" "${DOCKER__TABLEWIDTH}"
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
     
-    if [[ ${dockerCmd} == ${docker_ps_a_cmd} ]]; then
+    if [[ ${dockerCmd} == ${docker__ps_a_cmd} ]]; then
         ${docker__containerlist_tableinfo_fpath}
     else
-        ${docker_repolist_tableinfo_fpath}
+        ${docker__repolist_tableinfo_fpath}
     fi
 
     echo -e "\r"

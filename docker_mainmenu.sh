@@ -1,27 +1,26 @@
 #!/bin/bash
 #---COLOR CONSTANTS
 DOCKER__NOCOLOR=$'\e[0m'
+DOCKER__CHROOT_FG_GREEN=$'\e[30;38;5;82m'
+DOCKER__CONTAINER_FG_BRIGHTPRUPLE=$'\e[30;38;5;141m'
 DOCKER__ERROR_FG_LIGHTRED=$'\e[1;31m'
 DOCKER__GENERAL_FG_YELLOW=$'\e[1;33m'
-DOCKER__TITLE_FG_LIGHTBLUE=$'\e[30;38;5;45m'
 DOCKER__FG_DARKBLUE=$'\e[30;38;5;33m'
-DOCKER__FG_SOFTDARKBLUE=$'\e[30;38;5;38m'
-DOCKER__CHROOT_FG_GREEN=$'\e[30;38;5;82m'
-DOCKER__REPOSITORY_FG_PURPLE=$'\e[30;38;5;93m'
-DOCKER__CONTAINER_FG_BRIGHTPRUPLE=$'\e[30;38;5;141m'
-DOCKER__IMAGEID_FG_BORDEAUX=$'\e[30;38;5;198m'
-DOCKER__FILES_FG_ORANGE=$'\e[30;38;5;215m'
-DOCKER__INSIDE_FG_LIGHTGREY=$'\e[30;38;5;246m'
-DOCKER__OUTSIDE_FG_WHITE=$'\e[30;38;5;231m'
-
-DOCKER__FG_SOFTLIGHTRED=$'\e[30;38;5;131m'
 DOCKER__FG_LIGHTGREEN=$'\e[30;38;5;71m'
 DOCKER__FG_LIGHTSOFTYELLOW=$'\e[30;38;5;229m'
+DOCKER__FG_SOFTDARKBLUE=$'\e[30;38;5;38m'
+DOCKER__FG_SOFTLIGHTRED=$'\e[30;38;5;131m'
+DOCKER__FILES_FG_ORANGE=$'\e[30;38;5;215m'
+DOCKER__IMAGEID_FG_BORDEAUX=$'\e[30;38;5;198m'
+DOCKER__INSIDE_FG_LIGHTGREY=$'\e[30;38;5;246m'
+DOCKER__OUTSIDE_FG_WHITE=$'\e[30;38;5;231m'
+DOCKER__REPOSITORY_FG_PURPLE=$'\e[30;38;5;93m'
+DOCKER__TITLE_FG_LIGHTBLUE=$'\e[30;38;5;45m'
 
-DOCKER__TITLE_BG_ORANGE=$'\e[30;48;5;215m'
-DOCKER__TITLE_BG_LIGHTBLUE=$'\e[30;48;5;45m'
 DOCKER__INSIDE_BG_WHITE=$'\e[30;48;5;15m'
 DOCKER__OUTSIDE_BG_LIGHTGREY=$'\e[30;48;5;246m'
+DOCKER__TITLE_BG_ORANGE=$'\e[30;48;5;215m'
+DOCKER__TITLE_BG_LIGHTBLUE=$'\e[30;48;5;45m'
 
 #---CONSTANTS
 DOCKER__TITLE="TIBBO"
@@ -230,8 +229,8 @@ docker__load_environment_variables__sub() {
 
     docker__containerlist_tableinfo_filename="docker_containerlist_tableinfo.sh"
     docker__containerlist_tableinfo_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__containerlist_tableinfo_filename}
-    docker_repolist_tableinfo_filename="docker_repolist_tableinfo.sh"
-    docker_repolist_tableinfo_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker_repolist_tableinfo_filename}
+    docker__repolist_tableinfo_filename="docker_repolist_tableinfo.sh"
+    docker__repolist_tableinfo_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__repolist_tableinfo_filename}
     docker__create_an_image_from_dockerfile_filename="docker_create_an_image_from_dockerfile.sh"
     docker__create_an_image_from_dockerfile_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__create_an_image_from_dockerfile_filename}
     docker__create_images_from_dockerlist_filename="docker_create_images_from_dockerlist.sh"
@@ -429,7 +428,7 @@ docker__list_repository__sub() {
 
         press_any_key__func
     else
-        ${docker_repolist_tableinfo_fpath}
+        ${docker__repolist_tableinfo_fpath}
         echo -e "\r"
         echo -e "\r"
     fi

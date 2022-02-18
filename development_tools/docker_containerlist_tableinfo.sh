@@ -15,7 +15,7 @@ DOCKER__BG_ORANGE=$'\e[30;48;5;215m'
 
 #---CHARACTER CHONSTANTS
 DOCKER__EMPTYSTRING=""
-
+DOCKER__DASH="-"
 
 
 #---VARIABLES
@@ -32,11 +32,13 @@ docker__docker_containerList_tmp__fpath=${docker__tmp_dir}/${docker__docker_cont
 #---SUBROUTINES
 get_docker_containerList__sub() {
     #Define constants
-    local REPO_TAG="REPO:TAG"
     local CONTAINER_ID="CONTAINER-ID"
-    local STATUS="STATUS"
+    local DOCKER_PS_A_CMD="docker ps -a"
     local PORT="SSH-PORT"
-    local GAPS_BETWEEN_COL=4
+    local REPO_TAG="REPO:TAG"
+    local STATUS="STATUS"
+
+    local GAPS_BETWEEN_COL=2
 
     #Define variables
     local containerID_width=0
@@ -56,14 +58,13 @@ get_docker_containerList__sub() {
     local status=${DOCKER__EMPTYSTRING}
     local sshPort=${DOCKER__EMPTYSTRING}
 
-
     #Remove existing files
     if [[ -f ${docker__docker_containerList_tmp__fpath} ]]; then
         rm ${docker__docker_containerList_tmp__fpath}
     fi
 
     #Get number of containers
-    local numOf_containers=`docker ps -a | head -n -1 | wc -l`
+    local numOf_containers=`${DOCKER_PS_A_CMD} -a | head -n -1 | wc -l`
 
     #Initialization
     while true
@@ -75,11 +76,24 @@ get_docker_containerList__sub() {
             echo -e "${CONTAINER_ID} ${REPO_TAG} ${STATUS} ${PORT}" >> ${docker__docker_containerList_tmp__fpath}
         else
             #Get data
-            containerID=`docker ps --format "table {{.ID}}" | tail -n+${lineNum} | head -n1`
-            repoNameTag=`docker ps --format "table {{.Image}}" | tail -n+${lineNum} | head -n1`
-            status=`docker ps --format "table {{.Status}}" | tail -n+${lineNum} | head -n1 | sed 's/ /_/g'`
-            sshPort=`docker ps --format "table {{.Ports}}" | tail -n+${lineNum} | head -n1 | cut -d":" -f2 | cut -d"-" -f1`
+            containerID=`${DOCKER_PS_A_CMD} --format "table {{.ID}}" | tail -n+${lineNum} | head -n1`
+            repoNameTag=`${DOCKER_PS_A_CMD} --format "table {{.Image}}" | tail -n+${lineNum} | head -n1`
+            status=`${DOCKER_PS_A_CMD} --format "table {{.Status}}" | tail -n+${lineNum} | head -n1 | sed 's/ /_/g'`
+            sshPort=`${DOCKER_PS_A_CMD} --format "table {{.Ports}}" | tail -n+${lineNum} | head -n1 | cut -d":" -f2 | cut -d"-" -f1`
 
+            #Check if any value is an Empty String
+            if [[ -z ${containerID} ]]; then
+                containerID=${DOCKER__DASH}
+            fi
+            if [[ -z ${repoNameTag} ]]; then
+                repoNameTag=${DOCKER__DASH}
+            fi
+            if [[ -z ${status} ]]; then
+                status=${DOCKER__DASH}
+            fi
+            if [[ -z ${sshPort} ]]; then
+                sshPort=${DOCKER__DASH}
+            fi
             #For each object value (e.g., repoNameTag, containerID, status, sshPort) calculate the longest length
             #Remark:
             #   This longest length will be used as reference for the column-widths

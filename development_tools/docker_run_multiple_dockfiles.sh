@@ -89,8 +89,8 @@ docker__load_environment_variables__sub() {
         docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}
     fi
 
-	docker_repolist_tableinfo_filename="docker_repolist_tableinfo.sh"
-	docker_repolist_tableinfo_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker_repolist_tableinfo_filename}
+	docker__repolist_tableinfo_filename="docker_repolist_tableinfo.sh"
+	docker__repolist_tableinfo_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__repolist_tableinfo_filename}
 }
 
 docker__load_header__sub() {
@@ -309,7 +309,7 @@ docker__run_dockercmd_with_error_check__sub() {
     docker__checkif_cmd_exec_was_successful__sub   #check if cmd ran successfully
 
     echo -e "\r"
-        ${docker_repolist_tableinfo_fpath}
+        ${docker__repolist_tableinfo_fpath}
     echo -e "\r"
     echo -e "\r"
 }
