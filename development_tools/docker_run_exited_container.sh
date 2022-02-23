@@ -23,6 +23,9 @@ DOCKER__ONESPACE=" "
 DOCKER__TWOSPACES=${DOCKER__ONESPACE}${DOCKER__ONESPACE}
 DOCKER__FOURSPACES=${DOCKER__TWOSPACES}${DOCKER__TWOSPACES}
 
+#---MENU CONSTANTS
+DOCKER__CTRL_C_QUIT="${DOCKER__FOURSPACES}Quit (Ctrl+C)"
+
 #---NUMERIC CONSTANTS
 DOCKER__TABLEWIDTH=70
 
@@ -33,24 +36,14 @@ DOCKER__NUMOFLINES_4=4
 DOCKER__NUMOFLINES_5=5
 DOCKER__NUMOFLINES_6=6
 
-#---MENU CONSTANTS
-DOCKER__CTRL_C_QUIT="${DOCKER__FOURSPACES}Quit (Ctrl+C)"
+#---PATTERN CONSTANTS
+DOCKER__PATTERN1="Exited"
 
 
 
 #---FUNCTIONS
 #---Trap ctrl-c and Call ctrl_c()
-trap CTRL_C_func INT
-
-function CTRL_C_func() {
-    echo -e "\r"
-    echo -e "\r"
-    # echo -e "Exiting now..."
-    # echo -e "\r"
-    # echo -e "\r"
-
-    exit
-}
+trap CTRL_C__sub INT
 
 function press_any_key__func() {
 	#Define constants
@@ -61,7 +54,7 @@ function press_any_key__func() {
 	local tcounter=0
 
 	#Show Press Any Key message with count-down
-	echo -e "\r"
+	moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 	while [[ ${tcounter} -le ${ANYKEY_TIMEOUT} ]];
 	do
 		delta_tcounter=$(( ${ANYKEY_TIMEOUT} - ${tcounter} ))
@@ -79,7 +72,40 @@ function press_any_key__func() {
 		
 		tcounter=$((tcounter+1))
 	done
-	echo -e "\r"
+	moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+}
+
+function exit__func() {
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
+    # echo -e ${DOCKER__EXITING_NOW}
+    # moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
+
+    exit
+}
+
+function duplicate_char__func()
+{
+    #Input args
+    local char_input=${1}
+    local numOf_times=${2}
+
+    #Duplicate 'char_input'
+    local char_duplicated=`printf '%*s' "${numOf_times}" | tr ' ' "${char_input}"`
+
+    #Print text including Leading Empty Spaces
+    echo -e "${char_duplicated}"
+}
+
+function get_output_from_file__func() {
+    #Read from file
+    if [[ -f ${docker__readInput_w_autocomplete_out__fpath} ]]; then
+        ret=`cat ${docker__readInput_w_autocomplete_out__fpath} | head -n1 | xargs`
+    else
+        ret=${DOCKER__EMPTYSTRING}
+    fi
+
+    #Output
+    echo ${ret}
 }
 
 function show_centered_string__func()
@@ -107,37 +133,48 @@ function show_centered_string__func()
     echo -e "${emptySpaces_string}${str_input}"
 }
 
-function duplicate_char__func()
-{
+function show_errMsg_without_menuTitle__func() {
     #Input args
-    local char_input=${1}
-    local numOf_times=${2}
+    local errMsg=${1}
 
-    #Duplicate 'char_input'
-    local char_duplicated=`printf '%*s' "${numOf_times}" | tr ' ' "${char_input}"`
+    # moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+    echo -e "${errMsg}"
 
-    #Print text including Leading Empty Spaces
-    echo -e "${char_duplicated}"
+    press_any_key__func
 }
 
-function moveUp_and_cleanLines__func() {
+function show_list_with_menuTitle__func() {
     #Input args
-    local numOf_lines_toBeCleared=${1}
+    local menuTitle=${1}
+    local dockerCmd=${2}
 
-    #Clear lines
-    local numOf_lines_cleared=1
-    while [[ ${numOf_lines_cleared} -le ${numOf_lines_toBeCleared} ]]
-    do
-        tput cuu1	#move UP with 1 line
-        tput el		#clear until the END of line
+    #Show list
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    show_centered_string__func "${menuTitle}" "${DOCKER__TABLEWIDTH}"
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    
+    if [[ ${dockerCmd} == ${docker__ps_a_cmd} ]]; then
+        ${docker__containerlist_tableinfo_fpath}
+    else
+        ${docker__repolist_tableinfo_fpath}
+    fi
 
-        numOf_lines_cleared=$((numOf_lines_cleared+1))  #increment by 1
-    done
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    echo -e "${DOCKER__CTRL_C_QUIT}"
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
 }
 
 
 
 #---SUBROUTINES
+CTRL_C__sub() {
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
+
+    exit
+}
+
 docker__environmental_variables__sub() {
     #---Define PATHS
     docker__current_script_fpath="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
@@ -154,135 +191,114 @@ docker__environmental_variables__sub() {
         docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}
     fi
 
+    docker__global_functions_filename="docker_global_functions.sh"
+    docker__global_functions_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__global_functions_filename}
+
     docker__containerlist_tableinfo_filename="docker_containerlist_tableinfo.sh"
     docker__containerlist_tableinfo_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__containerlist_tableinfo_filename}
+
+    docker_readInput_w_autocomplete_filename="docker_readInput_w_autocomplete.sh"
+    docker_readInput_w_autocomplete_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker_readInput_w_autocomplete_filename}
+
+    docker__tmp_dir=/tmp
+    docker__readInput_w_autocomplete_out__filename="docker__readInput_w_autocomplete.out"
+    docker__readInput_w_autocomplete_out__fpath=${docker__tmp_dir}/${docker__readInput_w_autocomplete_out__filename}
+}
+
+docker__load_source_files__sub() {
+    source ${docker__global_functions_fpath}
 }
 
 docker__load_header__sub() {
-    echo -e "\r"
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
     echo -e "${DOCKER__TITLE_BG_ORANGE}                                 ${DOCKER__TITLE}${DOCKER__TITLE_BG_ORANGE}                                ${DOCKER__NOCOLOR}"
 }
 
 docker__init_variables__sub() {
-    docker__myContainerId=""
-    docker__myContainerId_isFound=""
+    docker__containerID_chosen=${DOCKER__EMPTYSTRING}
+
+    docker__ps_a_cmd="docker ps -a"
+
+    docker__ps_a_containerIdColno=1
+
+    docker__onEnter_breakLoop=false
+    docker__showTable=true
 }
 
-docker_run_specified_exited_container__sub() {
-    #Define local constants
-    local MENUTITLE="${DOCKER__GENERAL_FG_YELLOW}Run${DOCKER__NOCOLOR} an ${DOCKER__INSIDE_FG_LIGHTGREY}Exited${DOCKER__NOCOLOR} ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
-    local SUBMENUTITLE="Updated ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}-list"
+docker__start_exited_container_handler__sub() {
+    #Define phase constants
+    local CONTAINERID_SELECT_PHASE=0
+    local START_EXITED_CONTAINERID=1
 
+    #Define local constants
+    local MENUTITLE="${DOCKER__GENERAL_FG_YELLOW}Start${DOCKER__NOCOLOR} an ${DOCKER__INSIDE_FG_LIGHTGREY}Exited${DOCKER__NOCOLOR} ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}Container-ID${DOCKER__NOCOLOR}"
+
+    local READMSG_CHOOSE_A_CONTAINERID="Choose a ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}Container-ID${DOCKER__NOCOLOR} (e.g. dfc5e2f3f7ee): "
+
+    local ERRMSG_CHOSEN_CONTAINERID_DOESNOT_EXISTS="***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: chosen ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}Container-ID${DOCKER__NOCOLOR} does NOT exist"
     local ERRMSG_NO_EXITED_CONTAINERS_FOUND="=:${DOCKER__ERROR_FG_LIGHTRED}NO *EXITED* CONTAINERS FOUND${DOCKER__NOCOLOR}:="
 
-    #Define local message variables
-    local readMsg="Choose a ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}Container-ID${DOCKER__NOCOLOR} (e.g. dfc5e2f3f7ee): "
-    local errMsg=${EMPTYSTRING}
+    #Define variables
+    local errMsg=${DOCKER__EMPTYSTRING}
+    local phase=${DOCKER__EMPTYSTRING}
+    local readmsg_remarks=${DOCKER__EMPTYSTRING}
 
-    #Define local command variables
-    local docker_ps_a_cmd="docker ps -a"
+    #Set 'readmsg_remarks'
+    readmsg_remarks="${DOCKER__REMARK_BG_ORANGE}Remarks:${DOCKER__NOCOLOR}\n"
+    readmsg_remarks+="${DOCKER__DASH} Up/Down arrow: to cycle thru existing values\n"
+    readmsg_remarks+="${DOCKER__DASH} TAB: auto-complete"
 
-
-
-#---Show Docker Container's List
-    #Get number of containers
-    local numof_containers=`docker ps -a | head -n -1 | wc -l`
-    if [[ ${numof_containers} -eq 0 ]]; then
-        docker__show_errMsg_with_menuTitle__func "${ERRMSG_NO_EXITED_CONTAINERS_FOUND}" "${ERRMSG_NO_CONTAINERS_FOUND}"
-    else
-        docker__show_list_with_menuTitle__func "${MENUTITLE}" "${docker_ps_a_cmd}"
-    fi
-
-    #Show read-input
+    #Set initial 'phase'
+    phase=${CONTAINERID_SELECT_PHASE}
     while true
     do
-        read -p "${readMsg}" docker__myContainerId
+        case "${phase}" in
+            ${CONTAINERID_SELECT_PHASE})
+                #Run script
+                ${docker_readInput_w_autocomplete_fpath} "${MENUTITLE}" \
+                                    "${READMSG_CHOOSE_A_CONTAINERID}" \
+                                    "${readmsg_remarks}" \
+                                    "${DOCKER__EMPTYSTRING}" \
+                                    "${ERRMSG_NO_EXITED_CONTAINERS_FOUND}" \
+                                    "${ERRMSG_CHOSEN_CONTAINERID_DOESNOT_EXISTS}" \
+                                    "${docker__ps_a_cmd}" \
+                                    "${docker__ps_a_containerIdColno}" \
+                                    "${DOCKER__PATTERN1}" \
+                                    "${docker__showTable}" \
+                                    "${docker__onEnter_breakLoop}"
 
-        if [[ ! -z ${docker__myContainerId} ]]; then
-            docker__myContainerId_isFound=`docker ps -a | awk '{print $1}' | grep -w ${docker__myContainerId} 2>&1`
-            if [[ ! -z ${docker__myContainerId_isFound} ]]; then    #match was found
-                #Execute command
-                docker start ${docker__myContainerId}
+                #Retrieve the selected container-ID from file
+                docker__containerID_chosen=`get_output_from_file__func` 
 
-                #Show Container's list
-                echo -e "\r"
-                
-                docker__show_list_with_menuTitle__func "${SUBMENUTITLE}" "${docker_ps_a_cmd}"
-                
-                echo -e "\r"
-                echo -e "\r"
+                #Check if output is an Empty String
+                if [[ -z ${docker__containerID_chosen} ]]; then
+                    return
+                else
+                    phase=${START_EXITED_CONTAINERID}
+                fi
+                ;;
+            ${START_EXITED_CONTAINERID})
+                docker__start_exited_container__sub
 
-                exit
-            else
-                #Update error-message
-                errMsg="***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Container ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}${docker__myContainerId}${DOCKER__NOCOLOR} is ${DOCKER__ERROR_FG_LIGHTRED}NOT${DOCKER__NOCOLOR} Found"
-
-                #Show error-message
-                echo -e "\r"
-                echo -e "${errMsg}"
-
-                press_any_key__func
-
-                moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_5}"
-            fi
-        else
-            moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-        fi
+                return
+                ;;
+        esac
     done
 }
 
-function docker__show_list_with_menuTitle__func() {
-    #Input args
-    local menuTitle=${1}
-    local dockerCmd=${2}
+docker__start_exited_container__sub() {
+    #Define message constants
+    local MENUTITLE_UPDATED_CONTAINER_LIST="Updated ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}-list"
 
-    #Show list
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-    show_centered_string__func "${menuTitle}" "${DOCKER__TABLEWIDTH}"
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    #Execute command
+    docker start ${docker__containerID_chosen}
+
+    #Show Container's list
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
     
-    if [[ ${dockerCmd} == ${docker_ps_a_cmd} ]]; then
-        ${docker__containerlist_tableinfo_fpath}
-    else
-        ${dockerCmd}
-    fi
-
-    echo -e "\r"
-
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-    echo -e "${DOCKER__CTRL_C_QUIT}"
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-}
-
-function docker__show_errMsg_with_menuTitle__func() {
-    #Input args
-    local menuTitle=${1}
-    local errMsg=${2}
-
-    #Show error-message
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-    show_centered_string__func "${menuTitle}" "${DOCKER__TABLEWIDTH}"
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    show_list_with_menuTitle__func "${MENUTITLE_UPDATED_CONTAINER_LIST}" "${docker__ps_a_cmd}"
     
-    echo -e "\r"
-    show_centered_string__func "${errMsg}" "${DOCKER__TABLEWIDTH}"
-    echo -e "\r"
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-    echo -e "\r"
-
-    press_any_key__func
-
-    CTRL_C__sub
-}
-
-function docker__show_errMsg_without_menuTitle__func() {
-    #Input args
-    local errMsg=${1}
-
-    echo -e "\r"
-    echo -e "${errMsg}"
-
-    press_any_key__func
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
 }
 
 
@@ -291,11 +307,13 @@ function docker__show_errMsg_without_menuTitle__func() {
 main_sub() {
     docker__environmental_variables__sub
 
+    docker__load_source_files__sub
+
     docker__load_header__sub
 
     docker__init_variables__sub
 
-    docker_run_specified_exited_container__sub
+    docker__start_exited_container_handler__sub
 }
 
 

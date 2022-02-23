@@ -55,11 +55,9 @@ DOCKER__NUMOFLINES_9=9
 trap CTRL_C_func INT
 
 function CTRL_C_func() {
-    echo -e "\r"
-    echo -e "\r"
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
     echo -e "Exiting now..."
-    echo -e "\r"
-    echo -e "\r"
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
     
     exit
 }
@@ -73,7 +71,7 @@ function press_any_key__func() {
 	local tcounter=0
 
 	#Show Press Any Key message with count-down
-	echo -e "\r"
+	moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 	while [[ ${tcounter} -le ${ANYKEY_TIMEOUT} ]];
 	do
 		delta_tcounter=$(( ${ANYKEY_TIMEOUT} - ${tcounter} ))
@@ -91,7 +89,19 @@ function press_any_key__func() {
 		
 		tcounter=$((tcounter+1))
 	done
-	echo -e "\r"
+	moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+}
+
+function duplicate_char__func() {
+    #Input args
+    local char_input=${1}
+    local numOf_times=${2}
+
+    #Duplicate 'char_input'
+    local char_duplicated=`printf '%*s' "${numOf_times}" | tr ' ' "${char_input}"`
+
+    #Print text including Leading Empty Spaces
+    echo -e "${char_duplicated}"
 }
 
 function isNumeric__func()
@@ -139,48 +149,34 @@ function show_centered_string__func()
     echo -e "${emptySpaces_string}${str_input}"
 }
 
-function duplicate_char__func()
-{
-    #Input args
-    local char_input=${1}
-    local numOf_times=${2}
-
-    #Duplicate 'char_input'
-    local char_duplicated=`printf '%*s' "${numOf_times}" | tr ' ' "${char_input}"`
-
-    #Print text including Leading Empty Spaces
-    echo -e "${char_duplicated}"
-}
-
-function moveUp_and_cleanLines__func() {
-    #Input args
-    local numOf_lines_toBeCleared=${1}
-
-    #Clear lines
-    local numOf_lines_cleared=1
-    while [[ ${numOf_lines_cleared} -le ${numOf_lines_toBeCleared} ]]
-    do
-        tput cuu1	#move UP with 1 line
-        tput el		#clear until the END of line
-
-        numOf_lines_cleared=$((numOf_lines_cleared+1))  #increment by 1
-    done
-}
-
 
 
 #---SUBROUTINES
-
 docker__environmental_variables__sub() {
     docker__current_script_fpath="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
     docker__current_dir=$(dirname ${docker__current_script_fpath})
     if [[ ${docker__current_dir} == ${DOCKER__DOT} ]]; then
         docker__current_dir=$(pwd)
     fi
+	docker__current_folder=`basename ${docker__current_dir}`
+
+    docker__development_tools_folder="development_tools"
+    if [[ ${docker__current_folder} != ${docker__development_tools_folder} ]]; then
+        docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}/${docker__development_tools_folder}
+    else
+        docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}
+    fi
+
+    docker__global_functions_filename="docker_global_functions.sh"
+    docker__global_functions_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__global_functions_filename}
+}
+
+docker__load_source_files__sub() {
+    source ${docker__global_functions_fpath}
 }
 
 docker__load_header__sub() {
-    echo -e "\r"
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
     echo -e "${DOCKER__TITLE_BG_ORANGE}                                 ${DOCKER__TITLE}${DOCKER__TITLE_BG_ORANGE}                                ${DOCKER__NOCOLOR}"
 }
 
@@ -290,11 +286,11 @@ docker__ssh_handler__sub() {
         for docker__ipv4List_arrItem in "${docker__ipv4List_arr[@]}"; do 
             echo -e "${DOCKER__FOURSPACES}${DOCKER__IP_FG_LIGHTCYAN}${docker__ipv4List_arrItem}${DOCKER__NOCOLOR}"
         done
-        echo -e "\r"
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
     else    #no ip-address found
-        echo -e "\r"
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
         show_centered_string__func "${ERRMSG_NO_IP_ADDRESS_FOUND}"  "${DOCKER__TABLEWIDTH}"
-        echo -e "\r"
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
     fi
 
     #Input IP-address    
@@ -342,10 +338,10 @@ docker__ssh_handler__sub() {
 
 
     #Print
-    echo -e "\r"
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
     echo -e "---:${DOCKER__FILES_FG_ORANGE}STATUS${DOCKER__NOCOLOR}: Trying to establish an SSH-connection"
     echo -e "---:${DOCKER__FILES_FG_ORANGE}STATUS${DOCKER__NOCOLOR}: Please wait..."
-    echo -e "\r"
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
     #Execute ssh-command
     #REMARK: 
@@ -354,7 +350,7 @@ docker__ssh_handler__sub() {
     ssh -o AddKeysToAgent=yes root@${container_ip} -p ${container_port}
 
     #Print an empty-line
-    echo -e "\r"
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 }
 function ipv4_checkIf_address_isValid__func()
 {
@@ -411,6 +407,10 @@ function ipv46_subst_comma_with_space__func()
 
 #---MAIN SUBROUTINE
 main_sub() {
+    docker__environmental_variables__sub
+
+    docker__load_source_files__sub
+
     docker__load_header__sub
 
     docker__init_variables__sub

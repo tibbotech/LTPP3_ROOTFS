@@ -33,6 +33,7 @@ DOCKER__LISTVIEW_NUMOFCOLS=0
 
 DOCKER__TABLEWIDTH=70
 
+DOCKER__NUMOFLINES_0=0
 DOCKER__NUMOFLINES_1=1
 DOCKER__NUMOFLINES_2=2
 DOCKER__NUMOFLINES_3=3
@@ -59,8 +60,8 @@ DOCKER__SEMICOLON_HOME=";h"
 DOCKER__READINPUT_H_OPTION="${DOCKER__GENERAL_FG_YELLOW};h${DOCKER__NOCOLOR}ome"
 DOCKER__READINPUT_B_OPTION="${DOCKER__GENERAL_FG_YELLOW};b${DOCKER__NOCOLOR}ack"
 DOCKER__READINPUT_C_OPTION="${DOCKER__GENERAL_FG_YELLOW};c${DOCKER__NOCOLOR}lear"
-DOCKER__READINPUT_B_C_OPTIONS="(${DOCKER__READINPUT_B_OPTION}/${DOCKER__READINPUT_C_OPTION})"
-DOCKER__READINPUT_H_B_C_OPTIONS="(${DOCKER__READINPUT_H_OPTION}/${DOCKER__READINPUT_B_OPTION}/${DOCKER__READINPUT_C_OPTION})"
+DOCKER__READINPUT_B_C_OPTIONS="(${DOCKER__READINPUT_B_OPTION},${DOCKER__READINPUT_C_OPTION})"
+DOCKER__READINPUT_H_B_C_OPTIONS="(${DOCKER__READINPUT_H_OPTION},${DOCKER__READINPUT_B_OPTION},${DOCKER__READINPUT_C_OPTION})"
 
 DOCKER__READINPUT_CONTAINERID="${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}:-:ID ${DOCKER__READINPUT_B_C_OPTIONS}: "
 
@@ -103,16 +104,7 @@ DOCKER__CTRL_C_QUIT="${DOCKER__FOURSPACES}Quit (Ctrl+C)"
 
 
 #---FUNCTIONS
-trap CTRL_C_func INT
-function CTRL_C_func() {
-    # echo -e "\r"
-    # echo -e "\r"
-    # echo -e "Exiting now..."
-    echo -e "\r"
-    echo -e "\r"
-
-    exit 0
-}
+trap CTRL_C__sub INT
 
 function GOTO__func {
 	#Input args
@@ -137,7 +129,7 @@ function press_any_key__func() {
 	local tcounter=0
 
 	#Show Press Any Key message with count-down
-	echo -e "\r"
+	moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 	while [[ ${tcounter} -le ${ANYKEY_TIMEOUT} ]];
 	do
 		delta_tcounter=$(( ${ANYKEY_TIMEOUT} - ${tcounter} ))
@@ -155,7 +147,7 @@ function press_any_key__func() {
 		
 		tcounter=$((tcounter+1))
 	done
-	echo -e "\r"
+	moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 }
 
 function get_lastTwoChars_of_string__func()
@@ -238,48 +230,13 @@ function duplicate_char__func()
     echo -e "${char_duplicated}"
 }
 
-function moveUp_and_cleanLines__func() {
-    #Input args
-    local numOf_lines_toBeCleared=${1}
-
-    #Clear lines
-    local numOf_lines_cleared=1
-    while [[ ${numOf_lines_cleared} -le ${numOf_lines_toBeCleared} ]]
-    do
-        tput cuu1	#move UP with 1 line
-        tput el		#clear until the END of line
-
-        numOf_lines_cleared=$((numOf_lines_cleared+1))  #increment by 1
-    done
-}
-
-
-function moveDown_and_cleanLines__func() {
-    #Input args
-    local numOf_lines_toBeCleared=${1}
-
-    #Clear lines
-    local numOf_lines_cleared=1
-    while [[ ${numOf_lines_cleared} -le ${numOf_lines_toBeCleared} ]]
-    do
-        tput cud1	#move UP with 1 line
-        tput el1	#clear until the END of line
-
-        numOf_lines_cleared=$((numOf_lines_cleared+1))  #increment by 1
-    done
-}
-
 
 
 #---SUBROUTINES
 CTRL_C__sub() {
-    echo -e "\r"
-    echo -e "\r"
-    # echo -e "Exiting now..."
-    # echo -e "\r"
-    # echo -e "\r"
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
     
-    exit
+    exit 99
 }
 
 docker__init_variables__sub() {
@@ -314,7 +271,7 @@ docker__init_variables__sub() {
 	docker__prevDir=${DOCKER__EMPTYSTRING}
 
 	#Assign values to specified variables (as mentioned below)
-	#REMARK: these variables will be used in function 'docker__get_source_destination_fpath__sub'
+	#REMARK: these variables will be used in function 'get_source_destination_fpath__sub'
 	#IMPORTANT: this MUST be done here!
 	if [[ ${docker__mycopychoice} -eq 1 ]]; then
 		docker__mySource_dir=${docker__root_sp7xxx_out_dir}
@@ -350,14 +307,6 @@ docker__init_variables__sub() {
 	fi
 }
 
-docker__load_header__sub() {
-    echo -e "\r"
-    echo -e "${DOCKER__TITLE_BG_ORANGE}                                 ${DOCKER__TITLE}${DOCKER__TITLE_BG_ORANGE}                                ${DOCKER__NOCOLOR}"
-
-	#Goto Next-Phase
-	GOTO__func PHASE_ENVIRONMENT_VARIABLES
-}
-
 docker__environmental_variables__sub() {
 	#---Define PATHS
 	docker__ispbooot_bin_filename="ISPBOOOT.BIN"
@@ -379,6 +328,9 @@ docker__environmental_variables__sub() {
         docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}
     fi
 
+    docker__global_functions_filename="docker_global_functions.sh"
+    docker__global_functions_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__global_functions_filename}
+
     docker__containerlist_tableinfo_filename="docker_containerlist_tableinfo.sh"
     docker__containerlist_tableinfo_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__containerlist_tableinfo_filename}
 
@@ -389,6 +341,20 @@ docker__environmental_variables__sub() {
 	docker__localhost_dirlist_fpath=${docker__current_dir}/${docker__localhost_dirlist_filename}
 
 	docker__bin_bash_dir=/bin/bash
+
+	#Goto Next-Phase
+	GOTO__func PHASE_SOURCE_FILES
+}
+
+docker__load_source_files__sub() {
+    source ${docker__global_functions_fpath}
+
+	GOTO__func PHASE_LOAD_HEADER
+}
+
+docker__load_header__sub() {
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+    echo -e "${DOCKER__TITLE_BG_ORANGE}                                 ${DOCKER__TITLE}${DOCKER__TITLE_BG_ORANGE}                                ${DOCKER__NOCOLOR}"
 
 	#Goto Next-Phase
 	GOTO__func PHASE_CHOOSE_COPY_DIRECTION
@@ -410,7 +376,7 @@ docker__choose_copy_direction__sub() {
 	echo -e "Choose copy direction:"
 	echo -e "${DOCKER__FOURSPACES}1. ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR} > ${DOCKER__HOST_FG_GREEN85}HOST${DOCKER__NOCOLOR}"
 	echo -e "${DOCKER__FOURSPACES}2. ${DOCKER__HOST_FG_GREEN85}HOST${DOCKER__NOCOLOR} > ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}"
-	echo -e "\r"
+	moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
 	#Start loop
 	while true
@@ -422,21 +388,19 @@ docker__choose_copy_direction__sub() {
 		docker__mycopychoice=`cell__remove_whitespaces__func "${docker__mycopychoice}"`
 		if [[ ! -z ${docker__mycopychoice} ]]; then
 			if [[ ${docker__mycopychoice} =~ [1,2] ]]; then
-				echo -e "\r"
-				echo -e "\r"
+				moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
 
-				break  
-			# else
-			# 	#Update error-message
-			# 	errMsg="***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Invalid option '${docker__mycopychoice}'"
+				break
+			else
+				# Flush "stdin" with 0.1  sec timeout.
+				read -rsn1 -t 0.1 tmp
+				if [[ "$tmp" == "[" ]]; then
+					# Flush "stdin" with 0.1  sec timeout.
+					read -rsn1 -t 0.1 tmp
+				fi
 
-			# 	#Show error-message
-			# 	echo -e "\r"
-			# 	echo -e "${errMsg}"
-
-			# 	press_any_key__func
-
-			# 	moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_4}"
+				#Clean up current line
+				moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_0}"
 			fi
 		else
 			moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
@@ -468,9 +432,9 @@ docker__choose_containerid__sub() {
     #Get number of containers
     local numof_containers=`docker ps -a | head -n -1 | wc -l`
     if [[ ${numof_containers} -eq 0 ]]; then
-        docker__show_errMsg_with_menuTitle__func "${MENUTITLE_CURRENT_REPOSITORY_LIST}" "${ERRMSG_NO_CONTAINERS_FOUND}"
+        show_errMsg_with_menuTitle__func "${MENUTITLE_CURRENT_REPOSITORY_LIST}" "${ERRMSG_NO_CONTAINERS_FOUND}"
     else
-        docker__show_list_with_menuTitle__func "${MENUTITLE_CURRENT_REPOSITORY_LIST}" "${docker_ps_a_cmd}"
+        show_list_with_menuTitle__func "${MENUTITLE_CURRENT_REPOSITORY_LIST}" "${docker_ps_a_cmd}"
     fi
 
 	#Initialize variable
@@ -491,7 +455,7 @@ docker__choose_containerid__sub() {
 		#Get the last-two-characters
 		docker__lastTwoChar=`get_lastTwoChars_of_string__func "${myContainerId_chosen}"`
 		if [[ ${docker__lastTwoChar} == ${DOCKER__SEMICOLON_BACK} ]]; then
-			echo -e "\r"
+			moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
 			#remove the last 2 char
 			myContainerId_chosen=`echo ${myContainerId_chosen} | sed -e "s/${docker__lastTwoChar}$//"`
@@ -533,7 +497,7 @@ docker__choose_containerid__sub() {
 				errMsg="***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Invalid Container-ID: '${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}${docker__myContainerId_accept}${DOCKER__NOCOLOR}'"
 				
 				#Show error-message
-				docker__show_errMsg_without_menuTitle__func "${errMsg}"
+				show_errMsg_without_menuTitle__func "${errMsg}"
 
 				#Move-up and Clean lines
 				moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_5}"
@@ -549,7 +513,7 @@ docker__choose_containerid__sub() {
 	#Goto Next-Phase
 	GOTO__func PHASE_GET_SRC_DST_FPATH
 }
-function docker__show_list_with_menuTitle__func() {
+function show_list_with_menuTitle__func() {
     #Input args
     local menuTitle=${1}
     local dockerCmd=${2}
@@ -565,14 +529,14 @@ function docker__show_list_with_menuTitle__func() {
         ${dockerCmd}
     fi
 
-    echo -e "\r"
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
     echo -e "${DOCKER__CTRL_C_QUIT}"
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
 }
 
-function docker__show_errMsg_with_menuTitle__func() {
+function show_errMsg_with_menuTitle__func() {
     #Input args
     local menuTitle=${1}
     local errMsg=${2}
@@ -582,28 +546,28 @@ function docker__show_errMsg_with_menuTitle__func() {
     show_centered_string__func "${menuTitle}" "${DOCKER__TABLEWIDTH}"
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
     
-    echo -e "\r"
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
     show_centered_string__func "${errMsg}" "${DOCKER__TABLEWIDTH}"
-    echo -e "\r"
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-    echo -e "\r"
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
     press_any_key__func
 
     CTRL_C__sub
 }
 
-function docker__show_errMsg_without_menuTitle__func() {
+function show_errMsg_without_menuTitle__func() {
     #Input args
     local errMsg=${1}
 
-    echo -e "\r"
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
     echo -e "${errMsg}"
 
     press_any_key__func
 }
 
-docker__get_source_destination_fpath__sub() {
+get_source_destination_fpath__sub() {
 	#Define local variables
 	local sourceFpath_toBeShown=${DOCKER__EMPTYSTRING}
 	local destFpath_toBeShown=${DOCKER__EMPTYSTRING}
@@ -616,17 +580,17 @@ docker__get_source_destination_fpath__sub() {
 			case ${docker__case_option} in
 				${DOCKER__CASE_SOURCE_DIR})
 					#---SOURCE: Provide the Location of the file which you want to copy (located  at the Container!)
-					docker__container_get_source_dir__func
+					container_get_source_dir__func
 					;;
 
 				${DOCKER__CASE_SOURCE_FOBJECT})
 					#---SOURCE: Provide the file/folder which you want to copy (located at the Container!)
-					docker__container_get_source_fobject__func
+					container_get_source_fobject__func
 					;;
 
 				${DOCKER__CASE_DEST_DIR})
 					#---DESTINATION: Provide the location where you want to copy to (located at the HOST!)
-					docker__host_get_dest_dir__func
+					host_get_dest_dir__func
 					;;
 
 				${DOCKER__CASE_DONE})
@@ -645,17 +609,17 @@ docker__get_source_destination_fpath__sub() {
 			case ${docker__case_option} in
 				${DOCKER__CASE_SOURCE_DIR})
 					#---SOURCE: Provide the location where you want to copy to (located at the HOST!)
-					docker__host_get_source_dir__func
+					host_get_source_dir__func
 					;;
 
 				${DOCKER__CASE_SOURCE_FOBJECT})			
 					#---SOURCE: Provide the file/folder which you want to copy (located  at the Container!)
-					docker__host_get_source_fobject__func
+					host_get_source_fobject__func
 					;;
 
 				${DOCKER__CASE_DEST_DIR})
 					#---DESTINATION: Provide the Location of the file which you want to copy (located  at the Container!)
-					docker__container_get_dest_dir__func
+					container_get_dest_dir__func
 					;;
 
 				${DOCKER__CASE_DONE})
@@ -671,7 +635,7 @@ docker__get_source_destination_fpath__sub() {
 	fi
 
 #---Summary
-	echo -e "\r"
+	moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 	duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
 	echo "Overview:"
 	duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
@@ -690,13 +654,13 @@ docker__get_source_destination_fpath__sub() {
 	echo "${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}Destination Full-path${DOCKER__NOCOLOR}: ${docker__accept_myDest_fPath}"
 
 	duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-	echo -e "\r"
+	moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 	
 	#Goto Next-Phase
 	GOTO__func PHASE_COPY_FROM_SRC_TO_DST
 }
-docker__container_get_source_dir__func()
-{
+
+function container_get_source_dir__func() {
 	#Define local variables
 	local dirExists=${FALSE}
 	local numOf_dirContent=0
@@ -707,7 +671,7 @@ docker__container_get_source_dir__func()
 	while true
 	do
 		#Print an Empty Line
-		# echo -e "\r"
+		# moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
 		if [[ -z ${docker__mySource_dir} ]]; then	#contains NO data
 			read -e -p "${DOCKER__READINPUT_CONTAINER_SOURCE_DIR}" docker__mySource_dir
@@ -717,7 +681,7 @@ docker__container_get_source_dir__func()
 
 		docker__lastTwoChar=`get_lastTwoChars_of_string__func "${docker__mySource_dir}"`
 		if [[ ${docker__lastTwoChar} == ${DOCKER__SEMICOLON_HOME} ]]; then	#goto HOME
-			echo -e "\r"
+			moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
 			docker__mySource_dir=`echo ${docker__mySource_dir} | sed -e "s/${docker__lastTwoChar}$//"`	#remove the last 2 char
 
@@ -741,12 +705,12 @@ docker__container_get_source_dir__func()
 		#None of the above if-condition is met	
 		if [[ ! -z ${docker__mySource_dir} ]]; then
 			#Get directory contents list based on the specified directory 'docker__mySource_dir'
-			docker__show_dirContent_handler__func "${docker__myContainerId_accept}" "${docker__mySource_dir}"
+			show_dirContent_handler__func "${docker__myContainerId_accept}" "${docker__mySource_dir}"
 
-			dirExists=`docker__container_file_or_dir_exists__func "${docker__myContainerId_accept}" "${docker__mySource_dir}"`
+			dirExists=`container_file_or_dir_exists__func "${docker__myContainerId_accept}" "${docker__mySource_dir}"`
 			if [[ ${dirExists} == ${TRUE} ]]; then
 
-				numOf_dirContent=`docker__calc_numOf_dirContent__func "${docker__myContainerId_accept}" "${docker__mySource_dir}"`
+				numOf_dirContent=`calc_numOf_dirContent__func "${docker__myContainerId_accept}" "${docker__mySource_dir}"`
 				if [[ ${numOf_dirContent} -gt 0 ]]; then
 					docker__accept_mySource_dir=${docker__mySource_dir}
 
@@ -761,8 +725,7 @@ docker__container_get_source_dir__func()
 		fi
 	done
 }
-docker__container_get_source_fobject__func()
-{
+function container_get_source_fobject__func() {
 	#Define local variables
 	local fObjectExists=${FALSE}
 	local sourceFpath=${DOCKER__EMPTYSTRING}
@@ -773,7 +736,7 @@ docker__container_get_source_fobject__func()
 	while true
 	do
 		# #Print an Empty Line
-		# echo -e "\r"
+		# moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 		
 		if [[ -z ${docker__mySource_fObject} ]]; then	#is an Empty String
 			read -e -p "${DOCKER__READINPUT_CONTAINER_SOURCE_FOBJECT}" docker__mySource_fObject
@@ -783,7 +746,7 @@ docker__container_get_source_fobject__func()
 
 		docker__lastTwoChar=`get_lastTwoChars_of_string__func "${docker__mySource_fObject}"`
 		if [[ ${docker__lastTwoChar} == ${DOCKER__SEMICOLON_HOME} ]]; then	#goto HOME
-			echo -e "\r"
+			moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
 			docker__mySource_fObject=`echo ${docker__mySource_fObject} | sed -e "s/${docker__lastTwoChar}$//"`	#remove the last 2 char
 
@@ -819,7 +782,7 @@ docker__container_get_source_fobject__func()
 			fi
 
 			#Check if full-path does exist (assuming that 'docker__mySource_fObject != *')
-			fObjectExists=`docker__container_file_or_dir_exists__func "${docker__myContainerId_accept}" "${sourceFpath}"`	
+			fObjectExists=`container_file_or_dir_exists__func "${docker__myContainerId_accept}" "${sourceFpath}"`	
 			if [[ ${fObjectExists} == ${TRUE} ]]; then	#full-path does exist
 				docker__accept_mySource_fObject=${docker__mySource_fObject}
 
@@ -838,8 +801,8 @@ docker__container_get_source_fobject__func()
 		fi
 	done
 }
-docker__host_get_dest_dir__func()
-{
+
+function host_get_dest_dir__func() {
 	#Define local variables
 	local dirExists=${FALSE}
 
@@ -849,7 +812,7 @@ docker__host_get_dest_dir__func()
 	while true
 	do
 		# #Print an Empty Line
-		# echo -e "\r"
+		# moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
 		if [[ -z ${docker__myDest_dir} ]]; then	#is an Empty String
 			read -e -p "${DOCKER__READINPUT_HOST_DEST_DIR}" docker__myDest_dir
@@ -859,7 +822,7 @@ docker__host_get_dest_dir__func()
 
 		docker__lastTwoChar=`get_lastTwoChars_of_string__func "${docker__myDest_dir}"`
 		if [[ ${docker__lastTwoChar} == ${DOCKER__SEMICOLON_HOME} ]]; then	#goto HOME
-			echo -e "\r"
+			moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
 			docker__myDest_dir=`echo ${docker__myDest_dir} | sed -e "s/${docker__lastTwoChar}$//"`	#remove the last 2 char
 
@@ -883,9 +846,9 @@ docker__host_get_dest_dir__func()
 		#Take action based on whether directory 'docker__myDest_dir' exist or not
 		if [[ ! -z ${docker__myDest_dir} ]]; then
 			#Get directory contents list based on the specified directory 'docker__mySource_dir'
-			docker__show_dirContent_handler__func "${DOCKER__EMPTYSTRING}" "${docker__myDest_dir}"
+			show_dirContent_handler__func "${DOCKER__EMPTYSTRING}" "${docker__myDest_dir}"
 
-			dirExists=`docker__host_file_or_dir_exists__func "${docker__myDest_dir}"`
+			dirExists=`host_file_or_dir_exists__func "${docker__myDest_dir}"`
 			if [[ ${dirExists} == ${TRUE} ]]; then
 				docker__accept_myDest_dir=${docker__myDest_dir}
 
@@ -898,8 +861,7 @@ docker__host_get_dest_dir__func()
 		fi
 	done
 }
-docker__host_get_source_dir__func()
-{
+function host_get_source_dir__func() {
 	#Define local variables
 	local dirExists=${FALSE}
 
@@ -909,7 +871,7 @@ docker__host_get_source_dir__func()
 	while true
 	do
 		# #Print an Empty Line
-		# echo -e "\r"
+		# moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
 		if [[ -z ${docker__mySource_dir} ]]; then	#is an Empty String
 			read -e -p "${DOCKER__READINPUT_HOST_SOURCE_DIR}" docker__mySource_dir
@@ -919,7 +881,7 @@ docker__host_get_source_dir__func()
 
 		docker__lastTwoChar=`get_lastTwoChars_of_string__func "${docker__mySource_dir}"`
 		if [[ ${docker__lastTwoChar} == ${DOCKER__SEMICOLON_HOME} ]]; then	#goto HOME
-			echo -e "\r"
+			moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
 			docker__mySource_dir=`echo ${docker__mySource_dir} | sed -e "s/${docker__lastTwoChar}$//"`	#remove the last 2 char
 
@@ -943,12 +905,12 @@ docker__host_get_source_dir__func()
 		#None of the above if-condition is met	
 		if [[ ! -z ${docker__mySource_dir} ]]; then
 			#Get directory contents list based on the specified directory 'docker__mySource_dir'
-			docker__show_dirContent_handler__func "${DOCKER__EMPTYSTRING}" "${docker__mySource_dir}"
+			show_dirContent_handler__func "${DOCKER__EMPTYSTRING}" "${docker__mySource_dir}"
 
-			dirExists=`docker__host_file_or_dir_exists__func "${docker__mySource_dir}"`
+			dirExists=`host_file_or_dir_exists__func "${docker__mySource_dir}"`
 			if [[ ${dirExists} == ${TRUE} ]]; then
 
-				numOf_dirContent=`docker__calc_numOf_dirContent__func "${DOCKER__EMPTYSTRING}" "${docker__mySource_dir}"`
+				numOf_dirContent=`calc_numOf_dirContent__func "${DOCKER__EMPTYSTRING}" "${docker__mySource_dir}"`
 				if [[ ${numOf_dirContent} -gt 0 ]]; then
 					docker__accept_mySource_dir=${docker__mySource_dir}
 
@@ -963,8 +925,7 @@ docker__host_get_source_dir__func()
 		fi
 	done
 }
-docker__host_get_source_fobject__func()
-{
+function host_get_source_fobject__func() {
 	#Define local variables
 	local fObjectExists=${FALSE}
 	local sourceFpath=${DOCKER__EMPTYSTRING}
@@ -975,7 +936,7 @@ docker__host_get_source_fobject__func()
 	while true
 	do
 		# #Print an Empty Line
-		# echo -e "\r"
+		# moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
 		if [[ -z ${docker__mySource_fObject} ]]; then	#is an Empty String
 			read -e -p "${DOCKER__READINPUT_HOST_SOURCE_FOBJECT}" docker__mySource_fObject
@@ -985,7 +946,7 @@ docker__host_get_source_fobject__func()
 
 		docker__lastTwoChar=`get_lastTwoChars_of_string__func "${docker__mySource_fObject}"`
 		if [[ ${docker__lastTwoChar} == ${DOCKER__SEMICOLON_HOME} ]]; then	#goto HOME
-			echo -e "\r"
+			moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
 			docker__mySource_fObject=`echo ${docker__mySource_fObject} | sed -e "s/${docker__lastTwoChar}$//"`	#remove the last 2 char
 
@@ -1021,7 +982,7 @@ docker__host_get_source_fobject__func()
 			fi
 
 			#Check if full-path does exist (assuming that 'docker__mySource_fObject != *')
-			fObjectExists=`docker__host_file_or_dir_exists__func "${sourceFpath}"`	
+			fObjectExists=`host_file_or_dir_exists__func "${sourceFpath}"`	
 			if [[ ${fObjectExists} == ${TRUE} ]]; then	#full-path does exist
 				docker__accept_mySource_fObject=${docker__mySource_fObject}
 
@@ -1040,8 +1001,7 @@ docker__host_get_source_fobject__func()
 		fi
 	done
 }
-docker__container_get_dest_dir__func()
-{
+function container_get_dest_dir__func() {
 	#Define local variables
 	local dirExists=${FALSE}
 
@@ -1051,7 +1011,7 @@ docker__container_get_dest_dir__func()
 	while true
 	do
 		# #Print an Empty Line
-		# echo -e "\r"
+		# moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
 		if [[ -z ${docker__myDest_dir} ]]; then	#is an Empty String
 			read -e -p "${DOCKER__READINPUT_CONTAINER_DEST_DIR}" docker__myDest_dir
@@ -1061,7 +1021,7 @@ docker__container_get_dest_dir__func()
 
 		docker__lastTwoChar=`get_lastTwoChars_of_string__func "${docker__myDest_dir}"`
 		if [[ ${docker__lastTwoChar} == ${DOCKER__SEMICOLON_HOME} ]]; then	#goto HOME
-			echo -e "\r"
+			moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
 			docker__myDest_dir=`echo ${docker__myDest_dir} | sed -e "s/${docker__lastTwoChar}$//"`	#remove the last 2 char
 
@@ -1085,9 +1045,9 @@ docker__container_get_dest_dir__func()
 		#Take action based on whether directory 'docker__myDest_dir' exist or not
 		if [[ ! -z ${docker__myDest_dir} ]]; then
 			#Get directory contents list based on the specified directory 'docker__mySource_dir'
-			docker__show_dirContent_handler__func "${docker__myContainerId_accept}" "${docker__myDest_dir}"
+			show_dirContent_handler__func "${docker__myContainerId_accept}" "${docker__myDest_dir}"
 
-			dirExists=`docker__container_file_or_dir_exists__func "${docker__myContainerId_accept}" "${docker__myDest_dir}"`
+			dirExists=`container_file_or_dir_exists__func "${docker__myContainerId_accept}" "${docker__myDest_dir}"`
 			if [[ ${dirExists} == ${TRUE} ]]; then
 				docker__accept_myDest_dir=${docker__myDest_dir}
 
@@ -1100,8 +1060,7 @@ docker__container_get_dest_dir__func()
 		fi
 	done
 }
-function docker__show_dirContent_handler__func()
-{
+function show_dirContent_handler__func() {
 	#Input args
 	local myContainerID=${1}
 	local dirInput=${2}
@@ -1116,8 +1075,7 @@ function docker__show_dirContent_handler__func()
 		${docker__dockercontainer_dirlist_fpath} "${myContainerID}" "${dirInput}" "${DOCKER__LISTVIEW_NUMOFROWS}" "${DOCKER__LISTVIEW_NUMOFCOLS}" "${keyWord}"
 	fi
 }
-function docker__host_file_or_dir_exists__func()
-{
+function host_file_or_dir_exists__func() {
 	#Input arg
 	local myPath=${1}
 
@@ -1133,8 +1091,7 @@ function docker__host_file_or_dir_exists__func()
 		echo ${TRUE} 
 	fi
 }
-function docker__container_file_or_dir_exists__func()
-{
+function container_file_or_dir_exists__func() {
 	#Input arg
 	local myContainerID=${1}
 	local myPath=${2}
@@ -1147,8 +1104,7 @@ function docker__container_file_or_dir_exists__func()
 		echo ${TRUE} 
 	fi
 }
-function docker__calc_numOf_dirContent__func()
-{
+function calc_numOf_dirContent__func() {
 	#Input args
 	local myContainerID=${1}
 	local dirInput=${2}
@@ -1174,8 +1130,7 @@ function docker__calc_numOf_dirContent__func()
 	echo ${dirContent_numOfItems_max}
 }
 
-docker__compose_source_dest_fpath__sub()
-{
+docker__compose_source_dest_fpath__sub() {
 	#Remove trailing slashes
 	docker__accept_mySource_dir=`remove_trailing_char__func "${docker__accept_mySource_dir}" "${DOCKER__ESCAPE_SLASH}"`
 	docker__accept_myDest_dir=`remove_trailing_char__func "${docker__accept_myDest_dir}" "${DOCKER__ESCAPE_SLASH}"`
@@ -1200,7 +1155,7 @@ docker__copy_src_to_dst__sub() {
 			if [[ ${docker__myanswer} =~ [y,n,r,h] ]]; then
 				break
 			else
-				# echo -e "\r"	#add empty line (necessary to clean 'read' line)
+				# moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"	#add empty line (necessary to clean 'read' line)
 
 				moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 				moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
@@ -1209,25 +1164,25 @@ docker__copy_src_to_dst__sub() {
 			moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 		fi
 	done
-	echo -e "\r"
+	moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
 	#---Confirm answer and take action
 	if [[ ${docker__myanswer} == "y" ]]; then
-		echo -e "\r"
+		moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 		echo -e "---${DOCKER__FILES_FG_ORANGE}START${DOCKER__NOCOLOR}: Copying Files/Folders"
 
-		docker__copy_src_to_dst_handler__func
+		copy_src_to_dst_handler__func
 		
 		echo -e "---${DOCKER__FILES_FG_ORANGE}COMPLETED${DOCKER__NOCOLOR}: Copying Files/Folders"
 
-		echo -e "\r"
+		moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 	elif [[ ${docker__myanswer} == "r" ]]; then
-		echo -e "\r"
+		moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
 		GOTO__func PHASE_GET_SRC_DST_FPATH
 
 	elif [[ ${docker__myanswer} == "h" ]]; then
-		echo -e "\r"
+		moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
 		GOTO__func PHASE_CHOOSE_COPY_DIRECTION
 
@@ -1236,8 +1191,7 @@ docker__copy_src_to_dst__sub() {
 	fi
 }
 
-docker__copy_src_to_dst_handler__func()
-{
+function copy_src_to_dst_handler__func() {
 	#Define local variables
 	local dirContent_list_string=${DOCKER__EMPTYSTRING}
 	local dirContent_list_array=${DOCKER__EMPTYSTRING}
@@ -1311,40 +1265,37 @@ docker__copy_src_to_dst_handler__func()
 	fi	
 }
 
-docker__exit__sub()
-{
-	# echo -e "\r"
-	# echo -e "Exiting now..."
-	
+docker__exit__sub() {
 	exit 0
 
-	echo -e "\r"
-	echo -e "\r"
+	moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+	moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 }
 
-main_sub() {
+
+
+#---MAIN SUBROUTINE
+main__sub() {
 #Goto FIRST-Phase
-GOTO__func PHASE_LOAD_HEADER	#start with this!
-
-
-@PHASE_LOAD_HEADER:
-    docker__load_header__sub
+GOTO__func PHASE_ENVIRONMENT_VARIABLES	#start with this!
 
 @PHASE_ENVIRONMENT_VARIABLES:
 	docker__environmental_variables__sub
 
+@PHASE_SOURCE_FILES:
+	docker__load_source_files__sub
+
+@PHASE_LOAD_HEADER:
+    docker__load_header__sub
 
 @PHASE_CHOOSE_COPY_DIRECTION:
 	docker__choose_copy_direction__sub
 
-
 @PHASE_CHOOSE_CONTAINERID:
 	docker__choose_containerid__sub
 
-
 @PHASE_GET_SRC_DST_FPATH:
-	docker__get_source_destination_fpath__sub
-
+	get_source_destination_fpath__sub
 
 @PHASE_COPY_FROM_SRC_TO_DST:
 	docker__copy_src_to_dst__sub
@@ -1355,5 +1306,6 @@ GOTO__func PHASE_LOAD_HEADER	#start with this!
 }
 
 
-#Execute main subroutine
-main_sub
+
+#---EXECUTE MAIN
+main__sub

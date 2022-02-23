@@ -57,13 +57,6 @@ docker__numOf_errors_found=0
 #---Trap ctrl-c and Call ctrl_c()
 trap CTRL_C__sub INT
 
-function CTRL_C__sub() {
-    echo -e "\r"
-    echo -e "\r"
-
-    exit
-}
-
 function press_any_key__func() {
 	#Define constants
 	local ANYKEY_TIMEOUT=3
@@ -73,7 +66,7 @@ function press_any_key__func() {
 	local tcounter=0
 
 	#Show Press Any Key message with count-down
-	echo -e "\r"
+	moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 	while [[ ${tcounter} -le ${ANYKEY_TIMEOUT} ]];
 	do
 		delta_tcounter=$(( ${ANYKEY_TIMEOUT} - ${tcounter} ))
@@ -83,8 +76,8 @@ function press_any_key__func() {
 
 		if [[ ! -z "${keypressed}" ]]; then
 			if [[ "${keypressed}" == "a" ]] || [[ "${keypressed}" == "A" ]]; then
-                echo -e "\r"
-                echo -e "\r"
+                moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
+
 				exit
 			else
 				break
@@ -93,7 +86,7 @@ function press_any_key__func() {
 		
 		tcounter=$((tcounter+1))
 	done
-	echo -e "\r"
+	moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 }
 
 function press_any_key_to_quit_func() {
@@ -105,7 +98,7 @@ function press_any_key_to_quit_func() {
 	local tcounter=0
 
 	#Show Press Any Key message with count-down
-	echo -e "\r"
+	moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 	while [[ ${tcounter} -le ${ANYKEY_TIMEOUT} ]];
 	do
 		delta_tcounter=$(( ${ANYKEY_TIMEOUT} - ${tcounter} ))
@@ -120,17 +113,14 @@ function press_any_key_to_quit_func() {
 		tcounter=$((tcounter+1))
 	done
 
-    echo -e "\r"
-    echo -e "\r"
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
     echo -e "EXITING NOW..."
-    echo -e "\r"
-    echo -e "\r"
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
 
     exit    #exit script
 }
 
-function show_centered_string__func()
-{
+function show_centered_string__func() {
     #Input args
     local str_input=${1}
     local maxStrLen_input=${2}
@@ -154,8 +144,7 @@ function show_centered_string__func()
     echo -e "${emptySpaces_string}${str_input}"
 }
 
-function duplicate_char__func()
-{
+function duplicate_char__func() {
     #Input args
     local char_input=${1}
     local numOf_times=${2}
@@ -165,36 +154,6 @@ function duplicate_char__func()
 
     #Print text including Leading Empty Spaces
     echo -e "${char_duplicated}"
-}
-
-function moveUp_and_cleanLines__func() {
-    #Input args
-    local numOf_lines_toBeCleared=${1}
-
-    #Clear lines
-    local numOf_lines_cleared=1
-    while [[ ${numOf_lines_cleared} -le ${numOf_lines_toBeCleared} ]]
-    do
-        tput cuu1	#move UP with 1 line
-        tput el		#clear until the END of line
-
-        numOf_lines_cleared=$((numOf_lines_cleared+1))  #increment by 1
-    done
-}
-
-function moveDown_and_cleanLines__func() {
-    #Input args
-    local numOf_lines_toBeCleared=${1}
-
-    #Clear lines
-    local numOf_lines_cleared=1
-    while [[ ${numOf_lines_cleared} -le ${numOf_lines_toBeCleared} ]]
-    do
-        tput cud1	#move UP with 1 line
-        tput el1	#clear until the END of line
-
-        numOf_lines_cleared=$((numOf_lines_cleared+1))  #increment by 1
-    done
 }
 
 function checkIf_isRunning_inside_container__func() {
@@ -208,8 +167,7 @@ function checkIf_isRunning_inside_container__func() {
    fi
 }
 
-function checkIf_software_isInstalled__func()
-{
+function checkIf_software_isInstalled__func() {
     #Input args
     local package_input=${1}
 
@@ -227,7 +185,7 @@ function checkIf_software_isInstalled__func()
     fi
 }
 
-function docker__show_list_with_menuTitle__func() {
+function show_list_with_menuTitle__func() {
     #Input args
     local menuTitle=${1}
     local dockerCmd=${2}
@@ -243,14 +201,14 @@ function docker__show_list_with_menuTitle__func() {
         ${dockerCmd}
     fi
 
-    echo -e "\r"
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
     echo -e "${DOCKER__CTRL_C_QUIT}"
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
 }
 
-function docker__show_errMsg_with_menuTitle__func() {
+function show_errMsg_with_menuTitle__func() {
     #Input args
     local menuTitle=${1}
     local errMsg=${2}
@@ -260,72 +218,47 @@ function docker__show_errMsg_with_menuTitle__func() {
     show_centered_string__func "${menuTitle}" "${DOCKER__TABLEWIDTH}"
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
     
-    echo -e "\r"
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
     show_centered_string__func "${errMsg}" "${DOCKER__TABLEWIDTH}"
-    echo -e "\r"
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-    echo -e "\r"
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
     press_any_key__func
 
     CTRL_C__sub
 }
 
-function docker__show_errMsg_without_menuTitle_noExit_func() {
+function show_errMsg_without_menuTitle_noExit_func() {
     #Input args
     local errMsg=${1}
 
-    echo -e "\r"
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
     echo -e "${errMsg}"
 
     press_any_key__func
 }
 
-function docker__show_errMsg_without_menuTitle_exit_func() {
+function show_errMsg_without_menuTitle_exit_func() {
     #Input args
     local errMsg=${1}
 
-    echo -e "\r"
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
     echo -e "${errMsg}"
-    echo -e "\r"
-    echo -e "\r"
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
 
     exit 99
-}
-
-function moveUp_and_cleanLines__func() {
-    #Input args
-    local numOf_lines_toBeCleared=${1}
-
-    #Clear lines
-    local numOf_lines_cleared=1
-    while [[ ${numOf_lines_cleared} -le ${numOf_lines_toBeCleared} ]]
-    do
-        tput cuu1	#move UP with 1 line
-        tput el		#clear until the END of line
-
-        numOf_lines_cleared=$((numOf_lines_cleared+1))  #increment by 1
-    done
-}
-
-function moveDown_and_cleanLines__func() {
-    #Input args
-    local numOf_lines_toBeCleared=${1}
-
-    #Clear lines
-    local numOf_lines_cleared=1
-    while [[ ${numOf_lines_cleared} -le ${numOf_lines_toBeCleared} ]]
-    do
-        tput cud1	#move UP with 1 line
-        tput el1	#clear until the END of line
-
-        numOf_lines_cleared=$((numOf_lines_cleared+1))  #increment by 1
-    done
 }
 
 
 
 #---SUBROUTINES
+CTRL_C__sub() {
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
+
+    exit
+}
+
 docker__environmental_variables__sub() {
     #---Define PATHS
     docker__SP7xxx_foldername="SP7021"
@@ -358,14 +291,20 @@ docker__environmental_variables__sub() {
         docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}
     fi
 
+    docker__global_functions_filenameker__global_functions.sh"
+    docker__global_functions_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__global_functions_filename
+
     docker__containerlist_tableinfo_filename="docker_containerlist_tableinfo.sh"
     docker__containerlist_tableinfo_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__containerlist_tableinfo_filename}
 }
 
 
-#SHOW DOCKER BANNER
+docker__load_source_files__sub() {
+    source ${docker__global_functions_fpath}
+}
+
 docker__load_header__sub() {
-    echo -e "\r"
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
     echo -e "${DOCKER__TITLE_BG_ORANGE}                                 ${DOCKER__TITLE}${DOCKER__TITLE_BG_ORANGE}                                ${DOCKER__NOCOLOR}"
 }
 
@@ -400,9 +339,9 @@ docker__choose_containerID__sub() {
     #Get number of containers
     local numof_containers=`docker ps -a | head -n -1 | wc -l`
     if [[ ${numof_containers} -eq 0 ]]; then
-        docker__show_errMsg_with_menuTitle__func "${MENUTITLE}" "${ERRMSG_NO_CONTAINERS_FOUND}"
+        show_errMsg_with_menuTitle__func "${MENUTITLE}" "${ERRMSG_NO_CONTAINERS_FOUND}"
     else
-        docker__show_list_with_menuTitle__func "${MENUTITLE}" "${docker_ps_a_cmd}"
+        show_list_with_menuTitle__func "${MENUTITLE}" "${docker_ps_a_cmd}"
     fi
 
     while true
@@ -418,7 +357,7 @@ docker__choose_containerID__sub() {
             else    #NO match was found
                 errMsg="***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Container-ID '${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}${docker__containerID}${DOCKER__NOCOLOR}' Not Found"
 
-                docker__show_errMsg_without_menuTitle_noExit_func "${errMsg}"
+                show_errMsg_without_menuTitle_noExit_func "${errMsg}"
 
                 moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_5}"         
             fi
@@ -433,7 +372,7 @@ docker__preCheck__sub() {
     local ERRMSG_ONE_OR_MORE_CHECKITEMS_FAILED="***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: One or More Check-items failed to Pass!"
 
     #Print
-    echo -e "\r"
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
     echo -e "---:${DOCKER__FG_PURPLERED}PRE${NOCOLOR}${FG_ORANGE}-CHECK:${DOCKER__NOCOLOR}: MANDATORY SOFTWARE & FILES"
 
     #Check if running inside docker container
@@ -459,7 +398,7 @@ docker__preCheck__sub() {
 
     #In case one or more failed check-items were found
     if [[ ${docker__numOf_errors_found} -gt 0 ]]; then
-        docker__show_errMsg_without_menuTitle_exit_func "${ERRMSG_ONE_OR_MORE_CHECKITEMS_FAILED}"
+        show_errMsg_without_menuTitle_exit_func "${ERRMSG_ONE_OR_MORE_CHECKITEMS_FAILED}"
     fi
 }
 function docker__preCheck_app_isInstalled__func() {
@@ -534,8 +473,8 @@ docker__run_script__sub() {
 
 
     #Show menu-title
-    echo -e "\r"
-    # echo -e "\r"
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+    # moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
     # duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
     # show_centered_string__func "${MENUTITLE}" "${DOCKER__TABLEWIDTH}"
     # duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
@@ -547,13 +486,12 @@ docker__run_script__sub() {
 
     press_any_key__func
 
-    echo -e "\r"
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
     echo -e "---:${DOCKER__FILES_FG_ORANGE}STATUS${DOCKER__NOCOLOR}: Entering ${DOCKER__CHROOT_FG_GREEN}Chroot${DOCKER__NOCOLOR} environment..."
     echo -e "---:${DOCKER__FILES_FG_ORANGE}INFO${DOCKER__NOCOLOR}: Type ${DOCKER__GENERAL_FG_YELLOW}exit${DOCKER__NOCOLOR} to Exit ${DOCKER__CHROOT_FG_GREEN}Chroot${DOCKER__NOCOLOR}"
-    echo -e "\r"
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-    echo -e "\r"
-    echo -e "\r"
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
 
     #Run chroot command
     #REMARK: make a choice based on whether currently running in 'local-host' or 'container'
@@ -568,13 +506,15 @@ docker__run_script__sub() {
     if [[ ${exitCode} -ne 0 ]]; then #no errors found
         echo -e "---:${DOCKER__FILES_FG_ORANGE}STATUS${DOCKER__NOCOLOR}: *Unable* to enter ${DOCKER__CHROOT_FG_GREEN}Chroot${DOCKER__NOCOLOR} environment..."
     fi
-    echo -e "\r"
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 }
 
 docker__main__sub(){
-    docker__load_header__sub
-
     docker__environmental_variables__sub
+
+    docker__load_source_files__sub
+
+    docker__load_header__sub
 
     docker__choose_containerID__sub
 

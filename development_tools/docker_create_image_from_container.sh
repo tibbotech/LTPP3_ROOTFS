@@ -64,7 +64,7 @@ DOCKER__CTRL_C_QUIT="${DOCKER__FOURSPACES}Quit (Ctrl+C)"
 
 
 #---Trap ctrl-c and Call ctrl_c()
-trap docker__ctrl_c__sub INT
+trap CTRL_C__sub INT
 
 
 
@@ -78,7 +78,7 @@ function press_any_key__func() {
 	local tcounter=0
 
 	#Show Press Any Key message with count-down
-	echo -e "\r"
+	moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 	while [[ ${tcounter} -le ${ANYKEY_TIMEOUT} ]];
 	do
 		delta_tcounter=$(( ${ANYKEY_TIMEOUT} - ${tcounter} ))
@@ -96,15 +96,11 @@ function press_any_key__func() {
 		
 		tcounter=$((tcounter+1))
 	done
-	echo -e "\r"
+	moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 }
 
 function exit__func() {
-    echo -e "\r"
-    echo -e "\r"
-    # echo -e ${DOCKER__EXITING_NOW}
-    # echo -e "\r"
-    # echo -e "\r"
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
 
     exit
 }
@@ -168,47 +164,6 @@ function get_output_from_file__func() {
     echo ${ret}
 }
 
-function moveUp_and_cleanLines__func() {
-    #Input args
-    local numOfLines=${1}
-
-    #Clear lines
-    local count=1
-    while [[ ${count} -le ${numOfLines} ]]
-    do
-        tput cuu1	#move UP with 1 line
-        tput el		#clear until the END of line
-
-        count=$((count+1))  #increment by 1
-    done
-}
-
-function moveDown_then_moveUp_and_clean__func() {
-    #Input args
-    local numOfLines=${1}
-
-    #Move-down 1 line
-    tput cud1
-
-    #Move-up and clean a specified number of times
-    moveUp_and_cleanLines__func "${numOfLines}"
-}
-
-function moveDown_and_cleanLines__func() {
-    #Input args
-    local numOf_lines_toBeCleared=${1}
-
-    #Clear lines
-    local numOf_lines_cleared=1
-    while [[ ${numOf_lines_cleared} -le ${numOf_lines_toBeCleared} ]]
-    do
-        tput cud1	#move UP with 1 line
-        tput el1	#clear until the END of line
-
-        numOf_lines_cleared=$((numOf_lines_cleared+1))  #increment by 1
-    done
-}
-
 function show_centered_string__func()
 {
     #Input args
@@ -238,7 +193,7 @@ function show_errMsg_without_menuTitle__func() {
     #Input args
     local errMsg=${1}
 
-    # echo -e "\r"
+    # moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
     echo -e "${errMsg}"
 
     press_any_key__func
@@ -260,7 +215,7 @@ function show_list_with_menuTitle__func() {
         ${docker__repolist_tableinfo_fpath}
     fi
 
-    echo -e "\r"
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
     echo -e "${DOCKER__CTRL_C_QUIT}"
@@ -269,12 +224,8 @@ function show_list_with_menuTitle__func() {
 
 
 #---SUBROUTINES
-docker__ctrl_c__sub() {
-    echo -e "\r"
-    echo -e "\r"
-    # echo -e "Exiting now..."
-    # echo -e "\r"
-    # echo -e "\r"
+CTRL_C__sub() {
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
     
     exit
 }
@@ -296,6 +247,9 @@ docker__environmental_variables__sub() {
         docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}
     fi
 
+    docker__global_functions_filename="docker_global_functions.sh"
+    docker__global_functions_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__global_functions_filename}
+
     docker__containerlist_tableinfo_filename="docker_containerlist_tableinfo.sh"
     docker__containerlist_tableinfo_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__containerlist_tableinfo_filename}
 	docker__repolist_tableinfo_filename="docker_repolist_tableinfo.sh"
@@ -309,8 +263,12 @@ docker__environmental_variables__sub() {
     docker__readInput_w_autocomplete_out__fpath=${docker__tmp_dir}/${docker__readInput_w_autocomplete_out__filename}
 }
 
+docker__load_source_files__sub() {
+    source ${docker__global_functions_fpath}
+}
+
 docker__load_header__sub() {
-    echo -e "\r"
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
     echo -e "${DOCKER__TITLE_BG_ORANGE}                                 ${DOCKER__TITLE}${DOCKER__TITLE_BG_ORANGE}                                ${DOCKER__NOCOLOR}"
 }
 
@@ -323,9 +281,12 @@ docker__init_variables__sub() {
     docker__images_cmd="docker images"
     docker__ps_a_cmd="docker ps -a"
 
-    docker__ps_a_IDcolNo=1
+    docker__ps_a_containerIdColno=1
     docker__images_repoColNo=1
     docker__images_tagColNo=2
+
+    docker__onEnter_breakLoop=false
+    docker__showTable=true
 }
 
 docker__create_image_handler__sub() {
@@ -358,11 +319,9 @@ docker__create_image_handler__sub() {
 
     local repoTag_isUniq=false
 
-
-
     #Set 'readmsg_remarks'
     readmsg_remarks="${DOCKER__REMARK_BG_ORANGE}Remarks:${DOCKER__NOCOLOR}\n"
-    readmsg_remarks+="${DOCKER__DASH} Up/Down arrow: cycle thru existing values\n"
+    readmsg_remarks+="${DOCKER__DASH} Up/Down arrow: to cycle thru existing values\n"
     readmsg_remarks+="${DOCKER__DASH} TAB: auto-complete"
 
     #Set initial 'phase'
@@ -375,11 +334,16 @@ docker__create_image_handler__sub() {
                 ${docker_readInput_w_autocomplete_fpath} "${MENUTITLE}" \
                                     "${READMSG_CHOOSE_A_CONTAINERID}" \
                                     "${readmsg_remarks}" \
+                                    "${DOCKER__EMPTYSTRING}" \
                                     "${ERRMSG_NO_CONTAINERS_FOUND}" \
                                     "${ERRMSG_NONEXISTING_VALUE}" \
                                     "${docker__ps_a_cmd}" \
-                                    "${docker__ps_a_IDcolNo}" \
-                                    "false"
+                                    "${docker__ps_a_containerIdColno}" \
+                                    "${DOCKER__EMPTYSTRING}" \
+                                    "${docker__showTable}" \
+                                    "${docker__onEnter_breakLoop}"
+                                    
+
 
                 #Retrieve the selected container-ID from file
                 docker__containerID_chosen=`get_output_from_file__func` 
@@ -396,11 +360,14 @@ docker__create_image_handler__sub() {
                 ${docker_readInput_w_autocomplete_fpath} "${MENUTITLE_CURRENT_IMAGE_LIST}" \
                                     "${READMSG_NEW_REPOSITORY_NAME}" \
                                     "${readmsg_remarks}" \
+                                    "${DOCKER__EMPTYSTRING}" \
                                     "${ERRMSG_NO_IMAGES_FOUND}" \
                                     "${DOCKER__EMPTYSTRING}" \
                                     "${docker__images_cmd}" \
                                     "${docker__images_repoColNo}" \
-                                    "false"
+                                    "${DOCKER__EMPTYSTRING}" \
+                                    "${docker__showTable}" \
+                                    "${docker__onEnter_breakLoop}"
 
 
                 #Retrieve the selected container-ID from file
@@ -418,11 +385,14 @@ docker__create_image_handler__sub() {
                 ${docker_readInput_w_autocomplete_fpath} "${MENUTITLE_CURRENT_IMAGE_LIST}" \
                                     "${READMSG_NEW_REPOSITORY_TAG}" \
                                     "${readmsg_remarks}" \
+                                    "${DOCKER__EMPTYSTRING}" \
                                     "${ERRMSG_NO_IMAGES_FOUND}" \
                                     "${DOCKER__EMPTYSTRING}" \
                                     "${docker__images_cmd}" \
                                     "${docker__images_tagColNo}" \
-                                    "false"
+                                    "${DOCKER__EMPTYSTRING}" \
+                                    "${docker__showTable}" \
+                                    "${docker__onEnter_breakLoop}"
             
                 #Retrieve the selected container-ID from file
                 docker__tag_new=`get_output_from_file__func` 
@@ -482,7 +452,7 @@ docker__create_image_exec__sub() {
              moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
         elif [[ ${docker__myAnswer} == ${DOCKER__YES} ]]; then
             #Print empty line
-            echo -e "\r"
+            moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
             #Show start
             echo "---${DOCKER__FG_ORANGE}START${DOCKER__NOCOLOR}: ${ECHOMSG_CREATING_IMAGE}"
@@ -497,7 +467,7 @@ docker__create_image_exec__sub() {
             echo "---${DOCKER__FG_ORANGE}COMPLETED${DOCKER__NOCOLOR}: ${ECHOMSG_CREATING_IMAGE}"
 
             #Print empty line
-            echo -e "\r"
+            moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
             #Show Docker Image List
             show_list_with_menuTitle__func "${MENUTITLE_UPDATED_IMAGE_LIST}" "${docker_image_ls_cmd}"
@@ -507,13 +477,11 @@ docker__create_image_exec__sub() {
         elif [[ ${docker__myAnswer} == ${DOCKER__NO} ]]; then
             exit__func
         elif [[ ${docker__myAnswer} == ${DOCKER__REDO} ]]; then
-            echo -e "\r"
-            echo -e "\r"
+            moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
 
             break
         else
-            moveDown_then_moveUp_and_clean__func "${DOCKER__NUMOFLINES_1}"    
-                                                                                                                           
+            moveDown_oneLine_then_moveUp_and_clean__func "${DOCKER__NUMOFLINES_1}"                                                                                               
         fi
     done
 }
@@ -523,6 +491,8 @@ docker__create_image_exec__sub() {
 #---MAIN SUBROUTINE
 main_sub() {
     docker__environmental_variables__sub
+
+    docker__load_source_files__sub
 
     docker__load_header__sub
 

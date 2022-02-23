@@ -40,8 +40,7 @@ DOCKER__NUMOFLINES_9=9
 trap CTRL_C__func INT
 
 function CTRL_C__func() {
-    echo -e "\r"
-    echo -e "\r"
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
 
     exit
 }
@@ -87,12 +86,37 @@ function duplicate_char__func()
 
 
 #---SUBROUTINES
-docker__load_header__sub() {
-    echo -e "\r"
+git__environmental_variables__sub() {
+	# git__current_dir=`pwd`
+	git__current_script_fpath="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
+    git__current_dir=$(dirname ${git__current_script_fpath})	#/repo/LTPP3_ROOTFS/development_tools
+	git__parent_dir=${git__current_dir%/*}    #gets one directory up (/repo/LTPP3_ROOTFS)
+    if [[ -z ${git__parent_dir} ]]; then
+        git__parent_dir="${DOCKER__SLASH}"
+    fi
+	git__current_folder=`basename ${git__current_dir}`
+
+    git__development_tools_folder="development_tools"
+    if [[ ${git__current_folder} != ${git__development_tools_folder} ]]; then
+        git__my_LTPP3_ROOTFS_development_tools_dir=${git__current_dir}/${git__development_tools_folder}
+    else
+        git__my_LTPP3_ROOTFS_development_tools_dir=${git__current_dir}
+    fi
+
+    docker__global_functions_filename="docker_global_functions.sh"
+    docker__global_functions_fpath=${git__my_LTPP3_ROOTFS_development_tools_dir}/${docker__global_functions_filename}
+}
+
+git__load_source_files__sub() {
+    source ${docker__global_functions_fpath}
+}
+
+git__load_header__sub() {
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
     echo -e "${DOCKER__TITLE_BG_ORANGE}                                 ${DOCKER__TITLE}${DOCKER__TITLE_BG_ORANGE}                                ${DOCKER__NOCOLOR}"
 }
 
-docker__git_pull__sub() {
+git__git_pull__sub() {
     #Define local constants
     local MENUTITLE="Git ${DOCKER__INSIDE_BG_WHITE}${DOCKER__INSIDE_FG_LIGHTGREY}Pull${DOCKER__NOCOLOR}"
 
@@ -107,15 +131,15 @@ docker__git_pull__sub() {
     #Check exit-code
     exitCode=$?
     if [[ ${exitCode} -eq 0 ]]; then
-        echo -e "\r"
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
         echo -e "---:${DOCKER__FILES_FG_ORANGE}STATUS${DOCKER__NOCOLOR}: git pull (${DOCKER__CHROOT_FG_GREEN}done${DOCKER__NOCOLOR})"
-        echo -e "\r"
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
         exit 0
     else
-        echo -e "\r"
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
         echo -e "***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: git pull (${DOCKER__FG_LIGHTRED}failed${DOCKER__NOCOLOR})"
-        echo -e "\r"
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
         
         exit 99
     fi
@@ -125,9 +149,13 @@ docker__git_pull__sub() {
 
 #---MAIN SUBROUTINE
 main_sub() {
-    docker__load_header__sub
+    git__environmental_variables__sub
 
-    docker__git_pull__sub
+    git__load_source_files__sub
+
+    git__load_header__sub
+
+    git__git_pull__sub
 }
 
 

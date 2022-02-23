@@ -59,16 +59,9 @@ FALSE=false
 
 
 #---FUNCTIONS
-trap CTRL_C__func INT
-function CTRL_C__func() {
-    echo -e "\r"
-    echo -e "\r"
+trap CTRL_C__sub INT
 
-    exit
-}
-
-function press_any_key__func()
-{
+function press_any_key__func() {
 	#Define constants
 	local cTIMEOUT_ANYKEY=10
 
@@ -77,7 +70,8 @@ function press_any_key__func()
 	local tcounter=0
 
 	#Show Press Any Key message with count-down
-	echo -e "\r"
+	moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
 	while [[ ${tcounter} -le ${cTIMEOUT_ANYKEY} ]];
 	do
 		delta_tcounter=$(( ${cTIMEOUT_ANYKEY} - ${tcounter} ))
@@ -95,11 +89,11 @@ function press_any_key__func()
 		
 		tcounter=$((tcounter+1))
 	done
-	echo -e "\r"
+
+	moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 }
 
-function GOTO__func
-{
+function GOTO__func() {
 	#Input args
     LABEL=$1
 	
@@ -113,8 +107,20 @@ function GOTO__func
     exit
 }
 
-function show_leadingAndTrailingStrings_separatedBySpaces__func()
+function duplicate_char__func()
 {
+    #Input args
+    local char_input=${1}
+    local numOf_times=${2}
+
+    #Duplicate 'char_input'
+    local char_duplicated=`printf '%*s' "${numOf_times}" | tr ' ' "${char_input}"`
+
+    #Print text including Leading Empty Spaces
+    echo -e "${char_duplicated}"
+}
+
+function show_leadingAndTrailingStrings_separatedBySpaces__func() {
     #Input args
     local leadStr_input=${1}
     local trailStr_input=${2}
@@ -141,8 +147,7 @@ function show_leadingAndTrailingStrings_separatedBySpaces__func()
     echo -e "${leadStr_input}${emptySpaces_string}${trailStr_input}"
 }
 
-function show_centered_string__func()
-{
+function show_centered_string__func() {
     #Input args
     local str_input=${1}
     local maxStrLen_input=${2}
@@ -166,56 +171,15 @@ function show_centered_string__func()
     echo -e "${emptySpaces_string}${str_input}"
 }
 
-function duplicate_char__func()
-{
-    #Input args
-    local char_input=${1}
-    local numOf_times=${2}
-
-    #Duplicate 'char_input'
-    local char_duplicated=`printf '%*s' "${numOf_times}" | tr ' ' "${char_input}"`
-
-    #Print text including Leading Empty Spaces
-    echo -e "${char_duplicated}"
-}
-
-function moveUp_and_cleanLines__func() {
-    #Input args
-    local numOf_lines_toBeCleared=${1}
-
-    #Clear lines
-    local numOf_lines_cleared=1
-    while [[ ${numOf_lines_cleared} -le ${numOf_lines_toBeCleared} ]]
-    do
-        tput cuu1	#move UP with 1 line
-        tput el		#clear until the END of line
-
-        numOf_lines_cleared=$((numOf_lines_cleared+1))  #increment by 1
-    done
-}
-
 
 
 #---SUBROUTINES
-docker__load_header__sub() {
-    echo -e "\r"
-    echo -e "${DOCKER__TITLE_BG_ORANGE}                                 ${DOCKER__TITLE}${DOCKER__TITLE_BG_ORANGE}                                ${DOCKER__NOCOLOR}"
+CTRL_C__sub() {
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
+
+    exit
 }
 
-docker__checkIf_user_is_root__sub()
-{
-    #Define local variable
-    currUser=$(whoami)
-
-    #Exec command
-    if [[ ${currUser} != "root" ]]; then
-        echo -e "\r"
-        echo -e "***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: current user is not ${DOCKER__INSIDE_FG_LIGHTGREY}root${DOCKER__NOCOLOR}"
-        echo -e "\r"
-
-        exit 99
-    fi
-}
 
 docker__load_environment_variables__sub() {
     #---Define PATHS
@@ -229,6 +193,8 @@ docker__load_environment_variables__sub() {
 
     docker__containerlist_tableinfo_filename="docker_containerlist_tableinfo.sh"
     docker__containerlist_tableinfo_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__containerlist_tableinfo_filename}
+    docker__global_functions_filename="docker_global_functions.sh"
+    docker__global_functions_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__global_functions_filename}
     docker__repolist_tableinfo_filename="docker_repolist_tableinfo.sh"
     docker__repolist_tableinfo_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__repolist_tableinfo_filename}
     docker__create_an_image_from_dockerfile_filename="docker_create_an_image_from_dockerfile.sh"
@@ -272,6 +238,32 @@ docker__load_environment_variables__sub() {
     docker__git_menu_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__git_menu_filename}
 }
 
+docker__load_source_files__sub() {
+    source ${docker__global_functions_fpath}
+}
+
+
+docker__load_header__sub() {
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+    echo -e "${DOCKER__TITLE_BG_ORANGE}                                 ${DOCKER__TITLE}${DOCKER__TITLE_BG_ORANGE}                                ${DOCKER__NOCOLOR}"
+}
+
+docker__checkIf_user_is_root__sub()
+{
+    #Define local variable
+    currUser=$(whoami)
+
+    #Exec command
+    if [[ ${currUser} != "root" ]]; then
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+        echo -e "***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: current user is not ${DOCKER__INSIDE_FG_LIGHTGREY}root${DOCKER__NOCOLOR}"
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+        exit 99
+    fi
+}
+
 docker__init_variables__sub() {
     docker__myChoice=""
 }
@@ -298,20 +290,20 @@ docker__mainmenu__sub() {
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
         echo -e "${DOCKER__FOURSPACES}s. ${DOCKER__GENERAL_FG_YELLOW}SSH${DOCKER__NOCOLOR} to a ${DOCKER__CONTAINER_FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-        echo -e "${DOCKER__FOURSPACES}i. Import an ${DOCKER__IMAGEID_FG_BORDEAUX}image${DOCKER__NOCOLOR} file"
-        echo -e "${DOCKER__FOURSPACES}e. Export an ${DOCKER__IMAGEID_FG_BORDEAUX}image${DOCKER__NOCOLOR} file"
+        echo -e "${DOCKER__FOURSPACES}i. Load an ${DOCKER__IMAGEID_FG_BORDEAUX}image${DOCKER__NOCOLOR} file"
+        echo -e "${DOCKER__FOURSPACES}e. Save an ${DOCKER__IMAGEID_FG_BORDEAUX}image${DOCKER__NOCOLOR} file"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
         echo -e "${DOCKER__FOURSPACES}g. ${DOCKER__INSIDE_FG_LIGHTGREY}Git${DOCKER__NOCOLOR} Menu"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
         echo -e "${DOCKER__FOURSPACES}q. ${DOCKER__QUIT_CTRL_C}"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-        # echo -e "\r"
+        # moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
         while true
         do
             #Select an option
             read -N1 -r -p "Please choose an option: " docker__myChoice
-            echo -e "\r"
+            moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
             #Only continue if a valid option is selected
             if [[ ! -z ${docker__myChoice} ]]; then
@@ -420,17 +412,17 @@ docker__list_repository__sub() {
     #Get number of containers
     local numOf_repositories=`docker image ls | head -n -1 | wc -l`
     if [[ ${numOf_repositories} -eq 0 ]]; then
-        echo -e "\r"
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
             show_centered_string__func "${ERRMSG_NO_IMAGES_FOUND}" "${DOCKER__TABLEWIDTH}"
-        echo -e "\r"
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-        echo -e "\r"
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
         press_any_key__func
     else
         ${docker__repolist_tableinfo_fpath}
-        echo -e "\r"
-        echo -e "\r"
+
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
     fi
 }
 
@@ -450,27 +442,29 @@ docker__list_container__sub() {
     #Get number of containers
     local numOf_containers=`docker ps -a | head -n -1 | wc -l`
     if [[ ${numOf_containers} -eq 0 ]]; then
-        echo -e "\r"
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
             show_centered_string__func "${ERRMSG_NO_CONTAINERS_FOUND}" "${DOCKER__TABLEWIDTH}"
-        echo -e "\r"
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-        echo -e "\r"
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
         press_any_key__func
     else
         ${docker__containerlist_tableinfo_fpath}
-        echo -e "\r"
-        echo -e "\r"
+
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
     fi
 }
 
 
 main_sub() {
+    docker__load_environment_variables__sub
+
+    docker__load_source_files__sub
+
     docker__load_header__sub
 
     docker__checkIf_user_is_root__sub
-
-    docker__load_environment_variables__sub
 
     docker__init_variables__sub
 

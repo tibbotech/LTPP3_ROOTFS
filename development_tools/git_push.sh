@@ -40,14 +40,7 @@ DOCKER__NUMOFLINES_9=9
 
 
 #---FUNCTIONS
-trap CTRL_C__func INT
-
-function CTRL_C__func() {
-    echo -e "\r"
-    echo -e "\r"
-
-    exit
-}
+trap CTRL_C__sub INT
 
 function show_centered_string__func()
 {
@@ -90,19 +83,50 @@ function duplicate_char__func()
 
 
 #---SUBROUTINES
-docker__environmental_variables__sub() {
-    #---Define paths
-    docker__home_dir="/home/imcase"
-    docker__home_scripts_dir=${docker__home_dir}/scripts
+CTRL_C__sub() {
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
+
+    exit 99
 }
 
-docker__load_header__sub() {
-    echo -e "\r"
+git__environmental_variables__sub() {
+	# git__current_dir=`pwd`
+	git__current_script_fpath="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
+    git__current_dir=$(dirname ${git__current_script_fpath})	#/repo/LTPP3_ROOTFS/development_tools
+	git__parent_dir=${git__current_dir%/*}    #gets one directory up (/repo/LTPP3_ROOTFS)
+    if [[ -z ${git__parent_dir} ]]; then
+        git__parent_dir="${DOCKER__SLASH}"
+    fi
+	git__current_folder=`basename ${git__current_dir}`
+
+    git__development_tools_folder="development_tools"
+    if [[ ${git__current_folder} != ${git__development_tools_folder} ]]; then
+        git__my_LTPP3_ROOTFS_development_tools_dir=${git__current_dir}/${git__development_tools_folder}
+    else
+        git__my_LTPP3_ROOTFS_development_tools_dir=${git__current_dir}
+    fi
+
+    docker__global_functions_filename="docker_global_functions.sh"
+    docker__global_functions_fpath=${git__my_LTPP3_ROOTFS_development_tools_dir}/${docker__global_functions_filename}
+}
+
+git__load_source_files__sub() {
+    source ${docker__global_functions_fpath}
+}
+
+git__environmental_variables__sub() {
+    #---Define paths
+    git__home_dir="/home/imcase"
+    git__home_scripts_dir=${git__home_dir}/scripts
+}
+
+git__load_header__sub() {
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
     echo -e "${DOCKER__TITLE_BG_ORANGE}                                 ${DOCKER__TITLE}${DOCKER__TITLE_BG_ORANGE}                                ${DOCKER__NOCOLOR}"
 }
 
 
-docker__add_comment_push__sub() {
+git__add_comment_push__sub() {
     #Define local constants
     local MENUTITLE="Git ${DOCKER__OUTSIDE_BG_LIGHTGREY}${DOCKER__OUTSIDE_FG_WHITE}Push${DOCKER__NOCOLOR}"
 
@@ -127,19 +151,19 @@ docker__add_comment_push__sub() {
     #Check exit-code
     exitCode=$?
     if [[ ${exitCode} -eq 0 ]]; then
-        echo -e "\r"
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
         echo -e "---:${DOCKER__FILES_FG_ORANGE}STATUS${DOCKER__NOCOLOR}: git add. (${DOCKER__CHROOT_FG_GREEN}done${DOCKER__NOCOLOR})"
     else
-        echo -e "\r"
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
         echo -e "***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: git add. (${DOCKER__FG_LIGHTRED}failed${DOCKER__NOCOLOR})"
-        echo -e "\r"
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
         exit 99
     fi
 
 #---Git Commit
     #Provide a commit description
-    echo -e "\r"
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
     while true
     do
         read -e -p "Provide a description for this commit: " commit_description
@@ -159,12 +183,12 @@ docker__add_comment_push__sub() {
     #Check exit-code
     exitCode=$?
     if [[ ${exitCode} -eq 0 ]]; then
-        echo -e "\r"
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
         echo -e "---:${DOCKER__FILES_FG_ORANGE}STATUS${DOCKER__NOCOLOR}: git commit -m <your description> (${DOCKER__CHROOT_FG_GREEN}done${DOCKER__NOCOLOR})"
     else
-        echo -e "\r"
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
         echo -e "***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}:  git commit -m <your description> (${DOCKER__FG_LIGHTRED}failed${DOCKER__NOCOLOR})"
-        echo -e "\r"
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
         exit 99
     fi
@@ -178,40 +202,30 @@ docker__add_comment_push__sub() {
     exitCode=$?
     if [[ ${exitCode} -eq 0 ]]; then
         echo -e "---:${DOCKER__FILES_FG_ORANGE}STATUS${DOCKER__NOCOLOR}: git push (${DOCKER__CHROOT_FG_GREEN}done${DOCKER__NOCOLOR})"
-        echo -e "\r"
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
         exit 0
     else
         echo -e "***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: git push (${DOCKER__FG_LIGHTRED}failed${DOCKER__NOCOLOR})"
-        echo -e "\r"
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
         exit 99
     fi
 }
 
-function moveUp_and_cleanLines__func() {
-    #Input args
-    local numOf_lines_toBeCleared=${1}
-
-    #Clear lines
-    local numOf_lines_cleared=1
-    while [[ ${numOf_lines_cleared} -le ${numOf_lines_toBeCleared} ]]
-    do
-        tput cuu1	#move UP with 1 line
-        tput el		#clear until the END of line
-
-        numOf_lines_cleared=$((numOf_lines_cleared+1))  #increment by 1
-    done
-}
 
 
 #---MAIN SUBROUTINE
 main_sub() {
-    docker__load_header__sub
+    git__environmental_variables__sub
 
-    docker__environmental_variables__sub
+    git__load_source_files__sub
 
-    docker__add_comment_push__sub
+    git__load_header__sub
+
+    git__environmental_variables__sub
+
+    git__add_comment_push__sub
 }
 
 

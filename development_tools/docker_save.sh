@@ -55,13 +55,11 @@ DOCKER__Q_QUIT="${DOCKER__FOURSPACES}q. Quit (Ctrl+C)"
 trap CTRL_C_func INT
 
 function CTRL_C_func() {
-    echo -e "\r"
-    echo -e "\r"
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
     echo -e "${DOCKER__ERROR_FG_LIGHTRED}Exporting${DOCKER__NOCOLOR} Docker Image Interrupted..."
-    echo -e "\r"
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
     echo -e "Exiting now..."
-    echo -e "\r"
-    echo -e "\r"
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
 
     exit
 }
@@ -75,7 +73,7 @@ function press_any_key__func() {
 	local tCounter=0
 
 	#Show Press Any Key message with count-down
-	echo -e "\r"
+	moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 	while [[ ${tCounter} -le ${ANYKEY_TIMEOUT} ]];
 	do
 		delta_tCounter=$(( ${ANYKEY_TIMEOUT} - ${tCounter} ))
@@ -93,11 +91,23 @@ function press_any_key__func() {
 		
 		tCounter=$((tCounter+1))
 	done
-	echo -e "\r"
+	moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 }
 
-function show_centered_string__func()
-{
+function duplicate_char__func() {
+    #Input args
+    local char_input=${1}
+    local numOf_times=${2}
+
+    #Duplicate 'char_input'
+    local char_duplicated=`printf '%*s' "${numOf_times}" | tr ' ' "${char_input}"`
+
+    #Print text including Leading Empty Spaces
+    echo -e "${char_duplicated}"
+}
+
+
+function show_centered_string__func() {
     #Input args
     local str_input=${1}
     local maxStrLen_input=${2}
@@ -121,58 +131,9 @@ function show_centered_string__func()
     echo -e "${emptySpaces_string}${str_input}"
 }
 
-function duplicate_char__func()
-{
-    #Input args
-    local char_input=${1}
-    local numOf_times=${2}
-
-    #Duplicate 'char_input'
-    local char_duplicated=`printf '%*s' "${numOf_times}" | tr ' ' "${char_input}"`
-
-    #Print text including Leading Empty Spaces
-    echo -e "${char_duplicated}"
-}
-
-
-function moveUp_and_cleanLines__func() {
-    #Input args
-    local numOf_lines_toBeCleared=${1}
-
-    #Clear lines
-    local numOf_lines_cleared=1
-    while [[ ${numOf_lines_cleared} -le ${numOf_lines_toBeCleared} ]]
-    do
-        tput cuu1	#move UP with 1 line
-        tput el		#clear until the END of line
-
-        numOf_lines_cleared=$((numOf_lines_cleared+1))  #increment by 1
-    done
-}
-
-function moveDown_and_cleanLines__func() {
-    #Input args
-    local numOf_lines_toBeCleared=${1}
-
-    #Clear lines
-    local numOf_lines_cleared=1
-    while [[ ${numOf_lines_cleared} -le ${numOf_lines_toBeCleared} ]]
-    do
-        tput cud1	#move UP with 1 line
-        tput el	#clear until the END of line
-
-        numOf_lines_cleared=$((numOf_lines_cleared+1))  #increment by 1
-    done
-}
-
 
 
 #---SUBROUTINES
-docker__load_header__sub() {
-    echo -e "\r"
-    echo -e "${DOCKER__TITLE_BG_ORANGE}                                 ${DOCKER__TITLE}${DOCKER__TITLE_BG_ORANGE}                                ${DOCKER__NOCOLOR}"
-}
-
 docker__load_environment_variables__sub() {
     #Define paths
     docker__current_script_fpath="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
@@ -193,8 +154,20 @@ docker__load_environment_variables__sub() {
         docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}
     fi
 
+    docker__global_functions_filename="docker_global_functions.sh"
+    docker__global_functions_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__global_functions_filename}
+
 	docker__repolist_tableinfo_filename="docker_repolist_tableinfo.sh"
 	docker__repolist_tableinfo_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__repolist_tableinfo_filename}
+}
+
+docker__load_source_files__sub() {
+    source ${docker__global_functions_fpath}
+}
+
+docker__load_header__sub() {
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+    echo -e "${DOCKER__TITLE_BG_ORANGE}                                 ${DOCKER__TITLE}${DOCKER__TITLE_BG_ORANGE}                                ${DOCKER__NOCOLOR}"
 }
 
 docker__create_dirs__sub() {
@@ -261,8 +234,7 @@ docker__save_handler__sub() {
                                 
 #-------------------------------This part has been implemented to make sure that the file-location...
 #-------------------------------is not shown on the last terminal line
-                                echo -e "\r"
-                                echo -e "\r"
+                                moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
                                 
                                 moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
 #-------------------------------This part has been implemented to make sure that the file-location...
@@ -280,8 +252,8 @@ docker__save_handler__sub() {
                                         do
                                             read -N1 -p "${READMSG_DO_YOU_WISH_TO_CONTINUE}" myAnswer
                                             if  [[ ${myAnswer} == "y" ]]; then
-                                                echo -e "\r"
-                                                echo -e "\r"
+                                                moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
+
                                                 echo -e "---:${DOCKER__FILES_FG_ORANGE}START${DOCKER__NOCOLOR}: Exporting image '${DOCKER__FG_LIGHTGREY}${myOutput_fPath}${DOCKER__NOCOLOR}'"
                                                 echo -e "---:${DOCKER__FILES_FG_ORANGE}STATUS${DOCKER__NOCOLOR}: Depending on the image size..."
                                                 echo -e "---:${DOCKER__FILES_FG_ORANGE}STATUS${DOCKER__NOCOLOR}: This may take a while..."
@@ -291,8 +263,7 @@ docker__save_handler__sub() {
 
                                                 echo -e "---:${DOCKER__FILES_FG_ORANGE}COMPLETED${DOCKER__NOCOLOR}: Exporting image '${DOCKER__FG_LIGHTGREY}${myOutput_fPath}${DOCKER__NOCOLOR}'"
                                                 
-                                                echo -e "\r"
-                                                echo -e "\r"
+                                                moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
 
                                                 exit
                                             elif  [[ ${myAnswer} == "n" ]]; then
@@ -366,7 +337,7 @@ function docker__show_list_with_menuTitle__func() {
     
     ${docker__repolist_tableinfo_fpath}
 
-    echo -e "\r"
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
     echo -e "${DOCKER__CTRL_C_QUIT}"
@@ -393,6 +364,8 @@ function docker__show_errMsg_without_menuTitle__func() {
 #---MAIN SUBROUTINE
 main_sub() {
     docker__load_environment_variables__sub
+
+    docker__load_source_files__sub
 
     docker__load_header__sub
 

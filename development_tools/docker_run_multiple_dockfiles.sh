@@ -32,12 +32,10 @@ docker__dockerfile_list_fpath=""
 #---Trap ctrl-c and Call ctrl_c()
 trap CTRL_C__sub INT
 
-function CTRL_C__sub() {
-    echo -e "\r"
-    echo -e "\r"
+CTRL_C__sub() {
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
     echo -e "${DOCKER__EXITING_NOW}"
-    echo -e "\r"
-    echo -e "\r"
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
 
     exit
 }
@@ -52,7 +50,7 @@ press_any_key__localfunc() {
 	local tcounter=0
 
 	#Show Press Any Key message with count-down
-	echo -e "\r"
+	moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 	while [[ ${tcounter} -le ${ANYKEY_TIMEOUT} ]];
 	do
 		delta_tcounter=$(( ${ANYKEY_TIMEOUT} - ${tcounter} ))
@@ -70,7 +68,7 @@ press_any_key__localfunc() {
 		
 		tcounter=$((tcounter+1))
 	done
-	echo -e "\r"
+	moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 }
 
 docker__load_environment_variables__sub() {
@@ -94,7 +92,7 @@ docker__load_environment_variables__sub() {
 }
 
 docker__load_header__sub() {
-    echo -e "\r"
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
     echo -e "${DOCKER__TITLE_BG_ORANGE}                                 ${DOCKER__TITLE}${DOCKER__TITLE_BG_ORANGE}                                ${DOCKER__NOCOLOR}"
 }
 
@@ -114,9 +112,9 @@ docker__mandatory_apps_check__sub() {
         if [[ -z ${qemu_user_static_isInstalled} ]]; then
             echo -e "${DOCKER__FIVE_SPACES}- qemu-user-static"
         fi
-        echo -e "\r"
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
         echo -e "${DOCKER__FIVE_SPACES}PLEASE INSTALL the missing software."
-        echo -e "\r"
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
         
         press_any_key__localfunc
     fi
@@ -151,15 +149,14 @@ docker__show_dockerfile_list_files__sub() {
 
     #Check if '' is an EMPTY STRING
     if [[ -z ${dockerfile_list_fpath_string} ]]; then
-        echo -e "\r"
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
         echo -e "----------------------------------------------------------------------"
         echo -e "***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: no files found in directory:"
         echo -e "${DOCKER__FIVE_SPACES}${docker__my_LTPP3_ROOTFS_docker_list_dir}"
-        echo -e "\r"
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
         echo -e "Please put all ${DOCKER__GENERAL_FG_YELLOW}dockerfile-list${DOCKER__NOCOLOR} files in this directory"
 
-        echo -e "\r"
-        echo -e "\r"
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
 
         exit
     fi
@@ -202,7 +199,7 @@ docker__show_dockerfile_list_files__sub() {
                 #check if 'mychoice' is one of the numbers shown in the overview...
                 #... AND 'mychoice' is NOT '0'
                 if [[ ${mychoice} -lt ${seqnum} ]] && [[ ${mychoice} -ne 0 ]]; then
-                    echo -e "\r"    #print an empty line
+                    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"    #print an empty line
 
                     break   #exit loop
                 else
@@ -224,7 +221,7 @@ docker__show_dockerfile_list_files__sub() {
         local dockerfile_list_filename=`basename ${docker__dockerfile_list_fpath}`
 
         #Show chosen file contents
-        echo -e "\r"
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
         echo -e "----------------------------------------------------------------------"
         echo -e "Contents of File ${DOCKER__FILES_FG_ORANGE}${dockerfile_list_filename}${DOCKER__NOCOLOR}"
         echo -e "----------------------------------------------------------------------"
@@ -244,8 +241,7 @@ docker__show_dockerfile_list_files__sub() {
             #Check if 'mychoice' is a numeric value
             if [[ ${mychoice} =~ [y,n] ]]; then
                 #print 2 empty lines
-                echo -e "\r"
-                echo -e "\r"
+                moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
 
                 if [[ ${mychoice} == ${DOCKER__YES} ]]; then
                     return  #exit function
@@ -264,19 +260,18 @@ docker__checkif_cmd_exec_was_successful__sub() {
     exit_code=$?
     
     if [[ ${exit_code} -eq 0 ]]; then
-        echo -e "\r"
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
         echo -e "script was executed ${DOCKER__SUCCESS_FG_LIGHTGREEN}successfully${DOCKER__NOCOLOR}..."
-        echo -e "\r"
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
     else
-        echo -e "\r"
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
         echo -e "***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: script was stopped due to an error occurred..."
-        echo -e "\r"
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
         echo -e "Please resolve the issue..."
-        echo -e "\r"
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
         echo -e "${DOCKER__EXITING_NOW}"
-        echo -e "\r"
-        echo -e "\r"
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
 
         exit
     fi
@@ -300,18 +295,17 @@ docker__run_dockercmd_with_error_check__sub() {
     dockercmd="docker build --tag ${dockerfile_repository_tag} - < ${dockerfile_fpath}" #with REPOSITORY:TAG
 
     #Execute Docker command
-    echo -e "\r"
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
     echo -e "Running: ${DOCKER__FILES_FG_ORANGE}${dockerfile_fpath}${DOCKER__NOCOLOR}"
-    echo -e "\r"
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
     sudo sh -c "${dockercmd}" #execute cmd
 
     docker__checkif_cmd_exec_was_successful__sub   #check if cmd ran successfully
 
-    echo -e "\r"
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
         ${docker__repolist_tableinfo_fpath}
-    echo -e "\r"
-    echo -e "\r"
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
 }
 
 docker__handle_chosen_dockerfile_list__sub() {
@@ -332,9 +326,9 @@ docker__handle_chosen_dockerfile_list__sub() {
             if [[ -f ${dockerfile_fpath} ]]; then
                 docker__run_dockercmd_with_error_check__sub ${dockerfile_fpath}
             else
-                echo -e "\r"
+                moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
                 echo -e "***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: non-existing file: ${dockerfile_fpath}"
-                echo -e "\r"       
+                moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"       
             fi
         fi
 

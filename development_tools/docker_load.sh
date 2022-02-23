@@ -52,8 +52,7 @@ DOCKER__Q_QUIT="${DOCKER__FOURSPACES}q. Quit (Ctrl+C)"
 trap CTRL_C__func INT
 
 function CTRL_C__func() {
-    echo -e "\r"
-    echo -e "\r"
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
 
     exit
 }
@@ -67,7 +66,7 @@ function press_any_key__func() {
 	local tCounter=0
 
 	#Show Press Any Key message with count-down
-	echo -e "\r"
+	moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 	while [[ ${tCounter} -le ${ANYKEY_TIMEOUT} ]];
 	do
 		delta_tCounter=$(( ${ANYKEY_TIMEOUT} - ${tCounter} ))
@@ -85,7 +84,7 @@ function press_any_key__func() {
 		
 		tCounter=$((tCounter+1))
 	done
-	echo -e "\r"
+	moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 }
 
 function show_centered_string__func()
@@ -126,44 +125,9 @@ function duplicate_char__func()
     echo -e "${char_duplicated}"
 }
 
-function moveUp_and_cleanLines__func() {
-    #Input args
-    local numOf_lines_toBeCleared=${1}
-
-    #Clear lines
-    local numOf_lines_cleared=1
-    while [[ ${numOf_lines_cleared} -le ${numOf_lines_toBeCleared} ]]
-    do
-        tput cuu1	#move UP with 1 line
-        tput el		#clear until the END of line
-
-        numOf_lines_cleared=$((numOf_lines_cleared+1))  #increment by 1
-    done
-}
-
-function moveDown_and_cleanLines__func() {
-    #Input args
-    local numOf_lines_toBeCleared=${1}
-
-    #Clear lines
-    local numOf_lines_cleared=1
-    while [[ ${numOf_lines_cleared} -le ${numOf_lines_toBeCleared} ]]
-    do
-        tput cud1	#move UP with 1 line
-        tput el	#clear until the END of line
-
-        numOf_lines_cleared=$((numOf_lines_cleared+1))  #increment by 1
-    done
-}
-
 
 
 #--SUBROUTINES
-docker__load_header__sub() {
-    echo -e "\r"
-    echo -e "${DOCKER__TITLE_BG_ORANGE}                                 ${DOCKER__TITLE}${DOCKER__TITLE_BG_ORANGE}                                ${DOCKER__NOCOLOR}"
-}
-
 docker__load_environment_variables__sub() {
     #Define paths
     docker__current_script_fpath="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
@@ -185,8 +149,20 @@ docker__load_environment_variables__sub() {
         docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}
     fi
 
+    docker__global_functions_filename="docker_global_functions.sh"
+    docker__global_functions_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__global_functions_filename}
+
 	docker__repolist_tableinfo_filename="docker_repolist_tableinfo.sh"
 	docker__repolist_tableinfo_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__repolist_tableinfo_filename}
+}
+
+docker__load_source_files__sub() {
+    source ${docker__global_functions_fpath}
+}
+
+docker__load_header__sub() {
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+    echo -e "${DOCKER__TITLE_BG_ORANGE}                                 ${DOCKER__TITLE}${DOCKER__TITLE_BG_ORANGE}                                ${DOCKER__NOCOLOR}"
 }
 
 docker__import_handler__sub() {
@@ -225,7 +201,7 @@ docker__import_handler__sub() {
 
     #Check if '' is an EMPTY STRING
     if [[ -z ${imageList_fPath_string} ]]; then
-        echo -e "\r"
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
         show_centered_string__func "${ERRMSG_NO_IMAGES_FILES_FOUND}" "${DOCKER__TABLEWIDTH}"
     else
@@ -249,7 +225,7 @@ docker__import_handler__sub() {
         done
     fi
 
-    echo -e "\r"
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
     echo -e "${locationMsg_dockerFiles}"
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
@@ -278,14 +254,12 @@ docker__import_handler__sub() {
                     arrNum=$((myChoice-1))
                     myOutput_fPath=${imageList_fPath_arr[${arrNum}]}
 
-                    echo -e "\r"
-                    echo -e "\r"
+                    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
                     echo -e "${ECHOMSG_IMAGE_LOCATION}"
 
 #---This part has been implemented to make sure that the file-location...
 #---is not shown on the last terminal line
-                    echo -e "\r"
-                    echo -e "\r"
+                    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
                     
                     moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
 #---This part has been implemented to make sure that the file-location...
@@ -300,14 +274,12 @@ docker__import_handler__sub() {
                 elif [[ ${myChoice} == "m" ]]; then
                     myOutput_fPath=${imageList_fPath_arr[0]}  #'imageList_fPath_arr' contains the full-path
 
-                    echo -e "\r"
-                    echo -e "\r"
+                    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
                     echo -e "${ECHOMSG_IMAGE_LOCATION}"
 
 #---This part has been implemented to make sure that the file-location...
 #---is not shown on the last terminal line
-                    echo -e "\r"
-                    echo -e "\r"
+                    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
                     
                     moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
 #---This part has been implemented to make sure that the file-location...
@@ -343,8 +315,7 @@ docker__import_handler__sub() {
             do
                 read -N1 -p "${READMSG_DO_YOU_WISH_TO_CONTINUE}" myAnswer
                 if  [[ ${myAnswer} == "y" ]]; then
-                    echo -e "\r"
-                    echo -e "\r"
+                    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
                     echo -e "---:${DOCKER__FILES_FG_ORANGE}START${DOCKER__NOCOLOR}: Loading image '${DOCKER__FG_LIGHTGREY}${myOutput_fPath}${DOCKER__NOCOLOR}'"
                     echo -e "---:${DOCKER__FILES_FG_ORANGE}STATUS${DOCKER__NOCOLOR}: Depending on the image size..."
                     echo -e "---:${DOCKER__FILES_FG_ORANGE}STATUS${DOCKER__NOCOLOR}: This may take a while..."
@@ -355,12 +326,11 @@ docker__import_handler__sub() {
                     echo -e "---:${DOCKER__FILES_FG_ORANGE}COMPLETED${DOCKER__NOCOLOR}: Loading image '${DOCKER__FG_LIGHTGREY}${myOutput_fPath}${DOCKER__NOCOLOR}'"
 
                     #Show Docker Image List
-                    echo -e "\r"
+                    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
                     docker__show_list_with_menuTitle__func "${MENUTITLE_UPDATED_IMAGE_LIST}" "${docker_image_ls_cmd}"
                     
-                    echo -e "\r"
-                    echo -e "\r"
+                    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
 
                     exit
 
@@ -400,7 +370,7 @@ function docker__show_list_with_menuTitle__func() {
     
     ${docker__repolist_tableinfo_fpath}
 
-    echo -e "\r"
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
     echo -e "${DOCKER__CTRL_C_QUIT}"
@@ -426,9 +396,11 @@ function docker__show_errMsg_without_menuTitle__func() {
 
 #---MAIN SUBROUTINE
 main_sub() {
-    docker__load_header__sub
-
     docker__load_environment_variables__sub
+
+    docker__load_source_files__sub
+
+    docker__load_header__sub
 
     docker__import_handler__sub
 }

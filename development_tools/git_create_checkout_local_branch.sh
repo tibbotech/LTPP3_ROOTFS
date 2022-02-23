@@ -61,8 +61,7 @@ docker__stdErr=${DOCKER__EMPTYSTRING}
 trap CTRL_C__func INT
 
 function CTRL_C__func() {
-    echo -e "\r"
-    echo -e "\r"
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
 
     exit
 }
@@ -76,7 +75,7 @@ function press_any_key__func() {
 	local tcounter=0
 
 	#Show Press Any Key message with count-down
-	echo -e "\r"
+	moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 	while [[ ${tcounter} -le ${ANYKEY_TIMEOUT} ]];
 	do
 		delta_tcounter=$(( ${ANYKEY_TIMEOUT} - ${tcounter} ))
@@ -94,7 +93,7 @@ function press_any_key__func() {
 		
 		tcounter=$((tcounter+1))
 	done
-	echo -e "\r"
+	moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 }
 
 function GOTO__func
@@ -164,44 +163,36 @@ function duplicate_char__func()
     echo -e "${char_duplicated}"
 }
 
-function moveUp_and_cleanLines__func() {
-    #Input args
-    local numOf_lines_toBeCleared=${1}
-
-    #Clear lines
-    local numOf_lines_cleared=1
-    while [[ ${numOf_lines_cleared} -le ${numOf_lines_toBeCleared} ]]
-    do
-        tput cuu1	#move UP with 1 line
-        tput el		#clear until the END of line
-
-        numOf_lines_cleared=$((numOf_lines_cleared+1))  #increment by 1
-    done
-
-
-    echo -e "\r"
-}
-
-function moveDown_and_cleanLines__func() {
-    #Input args
-    local numOf_lines_toBeCleared=${1}
-
-    #Clear lines
-    local numOf_lines_cleared=1
-    while [[ ${numOf_lines_cleared} -le ${numOf_lines_toBeCleared} ]]
-    do
-        tput cud1	#move UP with 1 line
-        tput el1	#clear until the END of line
-
-        numOf_lines_cleared=$((numOf_lines_cleared+1))  #increment by 1
-    done
-}
-
 
 
 #---SUBROUTINES
+docker__environmental_variables__sub() {
+	# docker__current_dir=`pwd`
+	docker__current_script_fpath="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
+    docker__current_dir=$(dirname ${docker__current_script_fpath})	#/repo/LTPP3_ROOTFS/development_tools
+	docker__parent_dir=${docker__current_dir%/*}    #gets one directory up (/repo/LTPP3_ROOTFS)
+    if [[ -z ${docker__parent_dir} ]]; then
+        docker__parent_dir="${DOCKER__SLASH}"
+    fi
+	docker__current_folder=`basename ${docker__current_dir}`
+
+    docker__development_tools_folder="development_tools"
+    if [[ ${docker__current_folder} != ${docker__development_tools_folder} ]]; then
+        docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}/${docker__development_tools_folder}
+    else
+        docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}
+    fi
+
+    docker__global_functions_filename="docker_global_functions.sh"
+    docker__global_functions_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__global_functions_filename}
+}
+
+docker__load_source_files__sub() {
+    source ${docker__global_functions_fpath}
+}
+
 docker__load_header__sub() {
-    echo -e "\r"
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
     echo -e "${DOCKER__TITLE_BG_ORANGE}                                 ${DOCKER__TITLE}${DOCKER__TITLE_BG_ORANGE}                                ${DOCKER__NOCOLOR}"
 }
 
@@ -307,7 +298,7 @@ GOTO__func START
             question_msg=${QUESTION_CHECKOUT_BRANCH}
         else    #asterisk is found
             #Add an empty-line
-            echo -e "\r"
+            moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
             
             #Update message
             printf_msg="Branch '${DOCKER__INSIDE_FG_LIGHTGREY}${myBranchName}${DOCKER__NOCOLOR}' already Exist and Checked Out"
@@ -330,7 +321,7 @@ GOTO__func START
     fi
 
     #Add an empty-line
-    echo -e "\r"
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
     #Show question
     while true
@@ -342,17 +333,15 @@ GOTO__func START
             #Handle 'myAnswer'
             if [[ ${myAnswer} =~ [y,n,q] ]]; then
                 if [[ ${myAnswer} == "q" ]]; then
-                    echo -e "\r"
+                    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
                     GOTO__func EXIT_SUCCESSFUL  #goto next-phase
                 elif [[ ${myAnswer} == "n" ]]; then
-                    echo -e "\r"
-                    echo -e "\r"
+                    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
 
                     GOTO__func BRANCH_LIST    #goto next-phase
                 else
-                    echo -e "\r"
-                    echo -e "\r"
+                    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
 
                     if [[ ${myBranchName_isFound} == ${TRUE} ]]; then
                         GOTO__func CHECKOUT_BRANCH    #goto next-phase
@@ -385,7 +374,7 @@ GOTO__func START
     exitCode=$?
     if [[ ${exitCode} -eq 0 ]]; then
         echo -e "---:${PRINTF_COMPLETED}: git checkout ${DOCKER__INSIDE_FG_LIGHTGREY}${myBranchName}${DOCKER__NOCOLOR}"
-        echo -e "\r"
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
         
         #Goto next-phase
         GOTO__func GET_AND_SHOW_BRANCH_LIST
@@ -406,7 +395,7 @@ GOTO__func START
     exitCode=$?
     if [[ ${exitCode} -eq 0 ]]; then
         echo -e "---:${PRINTF_COMPLETED}: git checkout -b ${DOCKER__INSIDE_FG_LIGHTGREY}${myBranchName}${DOCKER__NOCOLOR}"
-        echo -e "\r"
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
         
         #Goto next-phase
         GOTO__func GET_AND_SHOW_BRANCH_LIST
@@ -430,28 +419,28 @@ GOTO__func START
 
 
 @EXIT_SUCCESSFUL:
-    echo -e "\r"
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
     exit 0
 
 @EXIT_PRECHECK_FAILED:
-    echo -e "\r"
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
     echo -e "${PRINTF_ERROR}: ${docker__stdErr}"
-    echo -e "\r"
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
     
     exit 99
 
 @EXIT_FAILED:
     if [[ ${myBranchName_isFound} == ${TRUE} ]]; then 
-        echo -e "\r"
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
         echo -e "${PRINTF_ERROR}: git checkout ${DOCKER__INSIDE_FG_LIGHTGREY}${myBranchName}${DOCKER__NOCOLOR} (${DOCKER__FG_LIGHTRED}failed${DOCKER__NOCOLOR})"
-        echo -e "\r"
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
         
         exit 99
     else
-        echo -e "\r"
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
         echo -e "${PRINTF_ERROR}: git checkout -b ${DOCKER__INSIDE_FG_LIGHTGREY}${myBranchName}${DOCKER__NOCOLOR} (${DOCKER__FG_LIGHTRED}failed${DOCKER__NOCOLOR})"
-        echo -e "\r"
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
         
         exit 99
     fi
@@ -530,6 +519,10 @@ function docker__checkIf_branch_isCheckedOut__func() {
 
 #---MAIN SUBROUTINE
 main_sub() {
+    docker__environmental_variables__sub
+
+    docker__load_source_files__sub
+
     docker__load_header__sub
 
     docker__git_pull__sub

@@ -55,8 +55,7 @@ cachedInput_ArrIndex_max=0
 trap CTRL_C__func INT
 
 function CTRL_C__func() {
-    echo -e "\r"
-    echo -e "\r"
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
 
     exit
 }
@@ -81,7 +80,7 @@ git_enter_command__sub() {
     #Arrow-up/down is used to cycle through the 'cached' input
     while true 
     do
-        echo -e "\r"
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
         read -e -p "${READ_INPUT_MSG}" cmd
 
         if [[ ! -z ${cmd} ]]; then
@@ -94,7 +93,7 @@ git_enter_command__sub() {
         fi
     done
 
-    echo -e "\r"
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 }
 
 

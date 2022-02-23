@@ -4,11 +4,14 @@
 menuTitle__input=${1}
 readMsg__input=${2}
 readMsgRemarks__input=${3}
-errorMsg__input=${4}
-errorMsg2__input=${5}
-dockerCmd__input=${6}
-colNo__input=${7}
-flagCleanLines__input=${8}
+readMsgRemarks2__input=${4}
+errorMsg__input=${5}
+errorMsg2__input=${6}
+dockerCmd__input=${7}
+colNo__input=${8}
+grepPattern__input=${9}
+showTable__input=${10}
+onEnter_breakLoop__input=${11}
 
 
 
@@ -22,6 +25,9 @@ DOCKER__ERROR_FG_LIGHTRED=$'\e[1;31m'
 # DOCKER__NEW_REPOSITORY_FG_BRIGHTLIGHTPURPLE=$'\e[30;38;5;147m'
 # DOCKER__CONTAINER_FG_BRIGHTPRUPLE=$'\e[30;38;5;141m'
 DOCKER__INSIDE_FG_LIGHTGREY=$'\e[30;38;5;246m'
+
+#---CONSTANTS
+DOCKER__REMOVE_ALL="REMOVE-ALL"
 
 #---CHARACTER CHONSTANTS
 DOCKER__DASH="-"
@@ -39,6 +45,7 @@ DOCKER__ONESPACE=" "
 DOCKER__NINE=9
 DOCKER__TABLEWIDTH=70
 
+DOCKER__NUMOFLINES_0=0
 DOCKER__NUMOFLINES_1=1
 DOCKER__NUMOFLINES_2=2
 DOCKER__NUMOFLINES_3=3
@@ -73,7 +80,7 @@ function press_any_key__func() {
 	local tcounter=0
 
 	#Show Press Any Key message with count-down
-	echo -e "\r"
+	moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 	while [[ ${tcounter} -le ${ANYKEY_TIMEOUT} ]];
 	do
 		delta_tcounter=$(( ${ANYKEY_TIMEOUT} - ${tcounter} ))
@@ -91,7 +98,7 @@ function press_any_key__func() {
 		
 		tcounter=$((tcounter+1))
 	done
-	echo -e "\r"
+	moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 }
 
 function arrowKeys_upDown_handler__func() {
@@ -116,6 +123,13 @@ function arrowKeys_upDown_handler__func() {
 
     #Flush "stdin" with 0.1  sec timeout.
     read -rsn5 -t 0.1
+
+    #Check if 'cachedInput_ArrLen > 0'
+    #Remark:
+    #   If false, then exit this function right away.
+    if [[ ${cachedInput_ArrLen} -eq 0 ]]; then
+        return
+    fi
 
     #*********************************************************
     #This part MUST be executed after the 'Arrow-key handling'
@@ -258,6 +272,7 @@ function load_containerID_into_array__func() {
     #Input args
     local dockerCmd__input=${1}
     local colNo__input=${2}
+    local grepPattern__input=${3}
 
     #Define local variables
     local cachedInputArr_string=${DOCKER__EMPTYSTRING}
@@ -270,7 +285,11 @@ function load_containerID_into_array__func() {
     cachedInput_ArrIndex_max=0
 
     #Get all values stored under the specified column 'colNo__input' (excluding header)
-    cachedInputArr_raw_string=`${dockerCmd__input} | awk -vcolNo=${colNo__input} '{print $colNo}' | tail -n+2`
+    if [[ -z ${grepPattern__input} ]]; then
+        cachedInputArr_raw_string=`${dockerCmd__input} | awk -vcolNo=${colNo__input} '{print $colNo}' | tail -n+2`
+    else
+        cachedInputArr_raw_string=`${dockerCmd__input} | grep "${grepPattern__input}" | awk -vcolNo=${colNo__input} '{print $colNo}'`
+    fi
 
     #Get only UNIQUE values
     cachedInputArr_string=`echo ${cachedInputArr_raw_string} | tr ' ' '\n' | awk '!a[$0]++'`
@@ -288,66 +307,21 @@ function load_containerID_into_array__func() {
     cachedInput_ArrIndex=${cachedInput_ArrIndex_max}
 }
 
-function moveUp_and_cleanLines__func() {
-    #Input args
-    local numOfLines=${1}
-
-    #Clear lines
-    local count=1
-    while [[ ${count} -le ${numOfLines} ]]
-    do
-        tput cuu1	#move UP with 1 line
-        tput el		#clear until the END of line
-
-        count=$((count+1))  #increment by 1
-    done
-}
-
-function moveDown_then_moveUp_and_clean__func() {
-    #Input args
-    local numOfLines=${1}
-
-    #Move-down 1 line
-    tput cud1
-
-    #Move-up and clean a specified number of times
-    moveUp_and_cleanLines__func "${numOfLines}"
-}
-
-function moveUp_then_moveRight__func() {
-    #Input args
-    local mainMsg=${1}
-    local keyInput=${2}
-
-    #Get lengths
-    local mainMsg_wo_regEx=$(echo -e "$mainMsg" | sed "s/$(echo -e "\e")[^m]*m//g")
-    local mainMsg_wo_regEx_len=${#mainMsg_wo_regEx}
-    local keyInput_wo_regEx=$(echo -e "$keyInput" | sed "s/$(echo -e "\e")[^m]*m//g")
-    local keyInput_wo_regEx_len=${#keyInput_wo_regEx}
-    local total_len=$((mainMsg_wo_regEx_len + keyInput_wo_regEx_len + 1))
-
-    #Move cursor up by 1 line
-    tput cuu1
-    #Move cursor to right
-    tput cuf ${total_len}
-}
-
-
 function show_errMsg_with_menuTitle__func() {
     #Input args
     local menuTitle=${1}
     local errMsg=${2}
 
     #Show error-message
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-    show_centered_string__func "${menuTitle}" "${DOCKER__TABLEWIDTH}"
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"  #horizontal line
+    show_centered_string__func "${menuTitle}" "${DOCKER__TABLEWIDTH}"   #menu-title
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"  #horizontal line
     
-    echo -e "\r"
-    show_centered_string__func "${errMsg}" "${DOCKER__TABLEWIDTH}"
-    echo -e "\r"
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-    echo -e "\r"
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+    show_centered_string__func "${errMsg}" "${DOCKER__TABLEWIDTH}"  #error message
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"  #horizontal line
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
     press_any_key__func
 
@@ -358,9 +332,9 @@ function show_errMsg_without_menuTitle__func() {
     #Input args
     local errMsg=${1}
 
-    echo -e "\r"
-    echo -e "\r"
-    echo -e "${errMsg}"
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_3}"
+
+    echo -e "${errMsg}" #error message
 
     press_any_key__func
 }
@@ -371,22 +345,22 @@ function show_list_with_menuTitle__func() {
     local dockerCmd=${2}
 
     #Show list
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-    show_centered_string__func "${menuTitle}" "${DOCKER__TABLEWIDTH}"
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"   #horizontal line
+    show_centered_string__func "${menuTitle}" "${DOCKER__TABLEWIDTH}"   #menu-title
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"   #horizontal line
     
     if [[ ${dockerCmd} == ${docker__ps_a_cmd} ]]; then
-        ${docker__containerlist_tableinfo_fpath}
+        ${docker__containerlist_tableinfo_fpath}    #show container-list
     else
-        ${docker__repolist_tableinfo_fpath}
+        ${docker__repolist_tableinfo_fpath} #show image-list
     fi
 
-    echo -e "\r"
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"   #horizontal line
     echo -e "${DOCKER__CTRL_C_QUIT}"
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-}
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"   #horizontal line
+} 
 
 function show_centered_string__func()
 {
@@ -410,16 +384,22 @@ function show_centered_string__func()
     echo -e "${emptySpaces_string}${str_input}"
 }
 
-function readInput_w_autocomplete__func() {
+
+
+#---SUBROUTINE
+docker__readInput_w_autocomplete__sub() {
     #Input args
     local menuTitle__input=${1}
     local readMsg__input=${2}
     local readMsgRemarks__input=${3}
-    local errorMsg__input=${4}
-    local errorMsg2__input=${5}
-    local dockerCmd__input=${6}
-    local colNo__input=${7}
-    local flagCleanLines__input=${8}
+    local readMsgRemarks2__input=${4}
+    local errorMsg__input=${5}
+    local errorMsg2__input=${6}
+    local dockerCmd__input=${7}
+    local colNo__input=${8}
+    local grepPattern__input=${9}
+    local showTable__input=${10}
+    local onEnter_breakLoop__input=${11}
 
     #Define variables
     local keyInput=${DOCKER__EMPTYSTRING}
@@ -435,26 +415,34 @@ function readInput_w_autocomplete__func() {
     fi
 
 #---Load ContainerIDs into Array 'cachedInput_Arr'
-    load_containerID_into_array__func "${dockerCmd__input}" "${colNo__input}"
+    load_containerID_into_array__func "${dockerCmd__input}" "${colNo__input}" "${grepPattern__input}"
 
 #---Show Docker Container's List
     #Calculate number of lines to be cleaned
-    local remarks_numOfLines=`echo -e ${readMsgRemarks__input} | wc -l`
+    local readMsg_numOfLines=0
+    if [[ ! -z ${readMsg__input} ]]; then    #this condition is important
+        readMsg_numOfLines=`echo -e ${readMsg__input} | wc -l`      
+    fi
+    local remarks_numOfLines=0
+    if [[ ! -z ${readMsgRemarks__input} ]]; then    #this condition is important
+        remarks_numOfLines=`echo -e ${readMsgRemarks__input} | wc -l`      
+    fi
+    local remarks2_numOfLines=0
+    if [[ ! -z ${readMsgRemarks2__input} ]]; then    #this condition is important
+        remarks2_numOfLines=`echo -e ${readMsgRemarks2__input} | wc -l`      
+    fi
 
-    local numOfLines1=$((DOCKER__NUMOFLINES_1 + remarks_numOfLines))
-    local numOfLines2=$((DOCKER__NUMOFLINES_5 + remarks_numOfLines))
-    local numOfLines3=$((DOCKER__NUMOFLINES_6 + remarks_numOfLines))
+    local numOfLines_noError_tot=$((readMsg_numOfLines + remarks_numOfLines + remarks2_numOfLines))
+    local numOfLines_wError_tot=$((DOCKER__NUMOFLINES_5 + remarks_numOfLines + remarks2_numOfLines))
 
-    #Get number of containers
-    if [[ ${flagCleanLines__input} == false ]]; then
-        local numOf_containers=`${dockerCmd__input} | head -n -1 | wc -l`
-        if [[ ${numOf_containers} -eq 0 ]]; then
-            show_errMsg_with_menuTitle__func "${menuTitle__input}" "${errorMsg__input}"
-        else
-            show_list_with_menuTitle__func "${menuTitle__input}" "${dockerCmd__input}"
-        fi
-    else
-        moveDown_then_moveUp_and_clean__func "${numOfLines3}"
+    #Only execute this condition if 'menuTitle__input' is not an Empty String
+    #Remark:
+    #   This way we can control whether to show the Image-list Table or not.
+    if [[ ${showTable__input} == true ]]; then
+        docker__show_infoTable__sub "${menuTitle__input}" \
+                        "${dockerCmd__input}" \
+                        "${errorMsg__input}" \
+                        "${DOCKER__NUMOFLINES_0}"
     fi
 
     while true
@@ -462,98 +450,146 @@ function readInput_w_autocomplete__func() {
         #Check if there is only 1 containerID.
         #Remark:
         #   If that is the case, then set 'ret' to that value.
-        if [[ ${numOf_containers} -eq 1 ]]; then
+        if [[ ${cachedInput_ArrLen} -eq 1 ]]; then
             ret=${cachedInput_Arr[0]}
         fi
 
         #Show current input
-        echo -e "${readMsgRemarks__input}"
-        echo -e "${readMsg__input} ${ret}"
+        if [[ ! -z ${readMsgRemarks__input} ]]; then
+            echo -e "${readMsgRemarks__input}"
+        fi
+        if [[ ! -z ${readMsgRemarks2__input} ]]; then
+            echo -e "${readMsgRemarks2__input}"
+        fi
+        echo -e "${readMsg__input}${ret}"
+
         #Move cursor up
-        moveUp_then_moveRight__func "${readMsg__input}" "${ret}"
+        moveUp_oneLine_then_moveRight__func "${readMsg__input}" "${ret}"
+        
         #Execute read-input
         read -N1 -rs -p "" keyInput
 
-        if [[ ${keyInput} == ${DOCKER__ENTER} ]]; then
-            if [[ ! -z ${ret} ]]; then    #input is NOT an EMPTY STRING
-                #Only do the following check if 'errorMsg2__input is NOT an Empty String'
-                if [[ ! -z ${errorMsg2__input} ]]; then
-                    #Check if 'ret' is found in whether the image's or container's list
-                    stdOutput=`${dockerCmd__input} | awk -vcolNo=${colNo__input} '{print $colNo}' | grep -w ${ret}`
-                    if [[ ! -z ${stdOutput} ]]; then    #match was found
+        case "${keyInput}" in
+            ${DOCKER__ENTER})
+                #Move-up 1 line because ENTER was pressed, 
+                moveUp__func "${DOCKER__NUMOFLINES_1}"
+
+                if [[ ! -z ${ret} ]]; then    #'ret' contains data
+                    if [[ ! -z ${errorMsg2__input} ]]; then #not an Empty String
+                        #Check if 'ret' is found in the image-/container-list
+                        stdOutput=`${dockerCmd__input} | awk -vcolNo=${colNo__input} '{print $colNo}' | grep -w ${ret}`
+                        if [[ ! -z ${stdOutput} ]] || [[ ${ret} == ${DOCKER__REMOVE_ALL} ]]; then    #match
+                            break
+                        else    #no match
+                            #Update error messagae
+                            errMsg="${errorMsg2__input}'${DOCKER__INSIDE_FG_LIGHTGREY}${ret}${DOCKER__NOCOLOR}'"
+
+                            #Show error message
+                            show_errMsg_without_menuTitle__func "${errMsg}"
+
+                            #Reset return value
+                            ret=${DOCKER__EMPTYSTRING}
+
+                            #Move Up and Clean
+                            moveUp_and_cleanLines__func "${numOfLines_wError_tot}"
+                        fi
+                    else    #is an Empty String 
                         break
-                    else    #NO match was found
-                        #Update error messagae
-                        errMsg="${errorMsg2__input}'${DOCKER__INSIDE_FG_LIGHTGREY}${ret}${DOCKER__NOCOLOR}'"
-
-                        #Show error message
-                        show_errMsg_without_menuTitle__func "${errMsg}"
-
-                        #Reset return value
-                        ret=${DOCKER__EMPTYSTRING}
-
-                        #Move Up and Clean
-                        moveUp_and_cleanLines__func "${numOfLines2}"
                     fi
-                else
-                    break
+                else    #'ret' is an Empty String
+                    #Reset variable
+                    ret=${DOCKER__EMPTYSTRING}
+
+                    #If boolean is set to true, then exit while-loop.
+                    if [[ ${onEnter_breakLoop__input} == true ]]; then
+                        break
+                    fi
+
+                    #First Move-down, then Move-up, after that clean line
+                    moveDown_oneLine_then_moveUp_and_clean__func "${numOfLines_noError_tot}"
                 fi
-            else
-                #Reset variable
-                ret=${DOCKER__EMPTYSTRING}
+                ;;
+            ${DOCKER__BACKSPACE})
+                #Update variable
+                ret=`backspace_handler__func "${ret}"`
 
                 #First Move-down, then Move-up, after that clean line
-                moveDown_then_moveUp_and_clean__func "${numOfLines1}"
-            fi
-        elif [[ ${keyInput} == ${DOCKER__BACKSPACE} ]]; then
-            #Update variable
-            ret=`backspace_handler__func "${ret}"`
+                moveDown_oneLine_then_moveUp_and_clean__func "${numOfLines_noError_tot}"
+                ;;
+            ${DOCKER__ESCAPEKEY})
+                #Handle Arrowkey-press
+                arrowKeys_upDown_handler__func
 
-            #First Move-down, then Move-up, after that clean line
-            moveDown_then_moveUp_and_clean__func "${numOfLines1}"
-        elif [[ ${keyInput} == ${DOCKER__ESCAPEKEY} ]]; then
-            #Handle Arrowkey-press
-            arrowKeys_upDown_handler__func
+                #Update variable
+                if [[ ${cachedInput_ArrLen} -gt 0 ]]; then
+                    ret=${cachedInput_Arr[cachedInput_ArrIndex]}
+                else
+                    ret=${DOCKER__EMPTYSTRING}
+                fi
 
-            #Update variable
-            ret=${cachedInput_Arr[cachedInput_ArrIndex]}
+                #First Move-down, then Move-up, after that clean line
+                moveDown_oneLine_then_moveUp_and_clean__func "${numOfLines_noError_tot}"
+                ;;
+            ${DOCKER__ONESPACE})
+                #First Move-down, then Move-up, after that clean line
+                moveDown_oneLine_then_moveUp_and_clean__func "${numOfLines_noError_tot}"
+                ;;
+            ${DOCKER__TAB})
+                #This subroutine will also update 'ret'
+                ret=`autocomplete__func "${ret}" "${cachedInput_Arr[@]}"`
 
-            #First Move-down, then Move-up, after that clean line
-            moveDown_then_moveUp_and_clean__func "${numOfLines1}"
-        elif [[ ${keyInput} == ${DOCKER__ONESPACE} ]]; then
-            #First Move-down, then Move-up, after that clean line
-            moveDown_then_moveUp_and_clean__func "${numOfLines1}"
-        elif [[ ${keyInput} == ${DOCKER__TAB} ]]; then
-            #This subroutine will also update 'ret'
-            ret=`autocomplete__func "${ret}" "${cachedInput_Arr[@]}"`
+                #First Move-down, then Move-up, after that clean line
+                moveDown_oneLine_then_moveUp_and_clean__func "${numOfLines_noError_tot}"
+                ;;
+            *)
+                #Append 'keyInput' to 'ret'
+                if [[ ! -z ${keyInput} ]]; then
+                    ret="${ret}${keyInput}"
+                fi
 
-            #First Move-down, then Move-up, after that clean line
-            moveDown_then_moveUp_and_clean__func "${numOfLines1}"
-        else
-            if [[ ! -z ${keyInput} ]]; then
-                ret="${ret}${keyInput}"
-            fi
-
-            #First Move-down, then Move-up, after that clean line
-            moveDown_then_moveUp_and_clean__func "${numOfLines1}"
-        fi
+                #First Move-down, then Move-up, after that clean line
+                moveDown_oneLine_then_moveUp_and_clean__func "${numOfLines_noError_tot}"
+                ;;
+        esac
     done
 
     #Write to file
     echo ${ret} > ${docker__readInput_w_autocomplete_out__fpath}
 }
 
+docker__show_infoTable__sub() {
+    #Input args
+    local menuTitle__input=${1}
+    local dockerCmd__input=${2}
+    local errorMsg__input=${3}
+    local numOfLines_toPrint__input=${4}
+
+    #Print empty lines (if applicable)
+    local counter=1
+    while [[ ${counter} -le ${numOfLines_toPrint__input} ]];
+    do
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+        counter=$((counter+1))
+    done
+
+    #Get number of containers
+    local numOf_items=`${dockerCmd__input} | head -n -1 | wc -l`
+
+    #Show Table
+    if [[ ${numOf_items} -eq 0 ]]; then
+        show_errMsg_with_menuTitle__func "${menuTitle__input}" "${errorMsg__input}"
+    else
+        show_list_with_menuTitle__func "${menuTitle__input}" "${dockerCmd__input}"
+    fi
+}
 
 
 #---SUBROUTINES
 CTRL_C__sub() {
-    echo -e "\r"
-    echo -e "\r"
-    # echo -e "Exiting now..."
-    # echo -e "\r"
-    # echo -e "\r"
-    
-    exit
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
+
+    exit 99
 }
 
 docker__environmental_variables__sub() {
@@ -573,6 +609,9 @@ docker__environmental_variables__sub() {
         docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}
     fi
 
+    docker__global_functions_filename="docker_global_functions.sh"
+    docker__global_functions_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__global_functions_filename}
+
     docker__containerlist_tableinfo_filename="docker_containerlist_tableinfo.sh"
     docker__containerlist_tableinfo_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__containerlist_tableinfo_filename}
 	docker__repolist_tableinfo_filename="docker_repolist_tableinfo.sh"
@@ -583,7 +622,11 @@ docker__environmental_variables__sub() {
     docker__readInput_w_autocomplete_out__fpath=${docker__tmp_dir}/${docker__readInput_w_autocomplete_out__filename}
 }
 
-docker__load_variables__sub() {
+docker__load_source_files__sub() {
+    source ${docker__global_functions_fpath}
+}
+
+docker__init_variables__sub() {
     docker__image_ls_cmd="docker image ls"
     docker__ps_a_cmd="docker ps -a"
     docker__1stTimeUse=true
@@ -591,27 +634,31 @@ docker__load_variables__sub() {
 
 docker__readInput_handler__sub() {
     #Get read-input value
-    readInput_w_autocomplete__func "${menuTitle__input}" \
+    docker__readInput_w_autocomplete__sub "${menuTitle__input}" \
                         "${readMsg__input}" \
                         "${readMsgRemarks__input}" \
+                        "${readMsgRemarks2__input}" \
                         "${errorMsg__input}" \
                         "${errorMsg2__input}" \
                         "${dockerCmd__input}" \
                         "${colNo__input}" \
-                        "${flagCleanLines__input}"
+                        "${grepPattern__input}" \
+                        "${showTable__input}" \
+                        "${onEnter_breakLoop__input}"
 
     #Print empty lines
-    echo -e "\r"
-    echo -e "\r"
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
 }
 
 
 
 #---MAIN SUBROUTINE
-main_sub() {
+main__sub() {
     docker__environmental_variables__sub
 
-    docker__load_variables__sub
+    docker__load_source_files__sub
+
+    docker__init_variables__sub
 
     docker__readInput_handler__sub
 }
@@ -619,5 +666,4 @@ main_sub() {
 
 
 #---EXECUTE
-main_sub
-
+main__sub

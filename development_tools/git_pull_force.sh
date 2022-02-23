@@ -18,7 +18,7 @@ DOCKER__TITLE="TIBBO"
 
 #---Local functions & subroutines
 docker__load_header__sub() {
-    echo -e "\r"
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
     echo -e "${DOCKER__TITLE_BG_ORANGE}                                 ${DOCKER__TITLE}${DOCKER__TITLE_BG_ORANGE}                                ${DOCKER__NOCOLOR}"
 }
 
@@ -27,7 +27,7 @@ docker__git_pull_force__sub() {
     echo -e "${DOCKER__GENERAL_FG_YELLOW}Git${DOCKER__NOCOLOR} ${DOCKER__FG_ORANGE}PULL${DOCKER__NOCOLOR} ${DOCKER__FG_PURPLERED}FORCE${DOCKER__NOCOLOR}"
     echo -e "----------------------------------------------------------------------"
 
-        echo -e "\r"
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
         while true
         do
             echo -e "***${DOCKER__FG_PURPLERED}WARNING${DOCKER__NOCOLOR}: ALL local data will be LOST!!!"
@@ -48,8 +48,7 @@ docker__git_pull_force__sub() {
             fi
         done
 
-    echo -e "\r"
-    echo -e "\r"
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
 }
 
 
