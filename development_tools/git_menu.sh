@@ -49,7 +49,8 @@ GIT__NUMOFLINES_2=2
 trap CTRL_C__func INT
 
 function CTRL_C__func() {
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
+    echo -e "\r"
+    echo -e "\r"
 
     exit
 }
@@ -123,7 +124,8 @@ function show_centered_string__func()
     echo -e "${emptySpaces_string}${str_input}"
 }
 
-function duplicate_char__func() {
+function duplicate_char__func()
+{
     #Input args
     local char_input=${1}
     local numOf_times=${2}
@@ -135,9 +137,29 @@ function duplicate_char__func() {
     echo -e "${char_duplicated}"
 }
 
+function moveUp_and_cleanLines__func() {
+    #Input args
+    local numOf_lines_toBeCleared=${1}
+
+    #Clear lines
+    local numOf_lines_cleared=1
+    while [[ ${numOf_lines_cleared} -le ${numOf_lines_toBeCleared} ]]
+    do
+        tput cuu1	#move UP with 1 line
+        tput el		#clear until the END of line
+
+        numOf_lines_cleared=$((numOf_lines_cleared+1))  #increment by 1
+    done
+}
+
 
 
 #---SUBROUTINES
+git__load_header__sub() {
+    echo -e "\r"
+    echo -e "${GIT__TITLE_BG_ORANGE}                                 ${GIT__TITLE}${GIT__TITLE_BG_ORANGE}                                ${GIT__NOCOLOR}"
+}
+
 git__environmental_variables__sub() {
     git__current_script_fpath="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
     git__current_dir=$(dirname ${git__current_script_fpath})
@@ -153,10 +175,6 @@ git__environmental_variables__sub() {
         git__my_LTPP3_ROOTFS_development_tools_dir=${git__current_dir}
     fi
 
-    docker__my_LTPP3_ROOTFS_development_tools_dir=${git__current_dir}/development_tools
-    docker__global_functions_filename="docker_global_functions.sh"
-    docker__global_functions_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__global_functions_filename}
-
     git__git_push_filename="git_push.sh"
     git__git_pull_filename="git_pull.sh"
     git__git_pull_origin_otherBranch_filename="git_pull_origin_otherbranch.sh"
@@ -167,15 +185,6 @@ git__environmental_variables__sub() {
     git__git_pull_origin_otherBranch_fpath=${git__my_LTPP3_ROOTFS_development_tools_dir}/${git__git_pull_origin_otherBranch_filename}
     git__git_create_checkout_local_branch_fpath=${git__my_LTPP3_ROOTFS_development_tools_dir}/${git__git_create_checkout_local_branch_filename}
     git__git_delete_local_branch_fpath=${git__my_LTPP3_ROOTFS_development_tools_dir}/${git__git_delete_local_branch_filename}
-}
-
-git__load_source_files__sub() {
-    source ${docker__global_functions_fpath}
-}
-
-git__load_header__sub() {
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-    echo -e "${GIT__TITLE_BG_ORANGE}                                 ${GIT__TITLE}${GIT__TITLE_BG_ORANGE}                                ${GIT__NOCOLOR}"
 }
 
 git__init_variables__sub() {
@@ -201,13 +210,13 @@ git__menu_sub() {
         duplicate_char__func "${GIT__DASH}" "${GIT__TABLEWIDTH}"
         echo -e "${GIT__FOURSPACES}q. $GIT__QUIT_CTRL_C"
         duplicate_char__func "${GIT__DASH}" "${GIT__TABLEWIDTH}"
-        # moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+        # echo -e "\r"
 
         while true
         do
             #Select an option
             read -N1 -r -p "Please choose an option: " git__myChoice
-            moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+            echo -e "\r"
 
             #Only continue if a valid option is selected
             if [[ ! -z ${git__myChoice} ]]; then
@@ -215,13 +224,13 @@ git__menu_sub() {
                     break
                 else
                     if [[ ${git__myChoice} == ${GIT__ENTER} ]]; then
-                        moveUp_and_cleanLines__func "${GIT__NUMOFLINES_1}"
+                        moveUp_and_cleanLines__func "${GIT__NUMOFLINES_2}"
                     else
-                        moveDown_oneLine_then_moveUp_and_clean__func "${GIT__NUMOFLINES_1}"
+                        moveUp_and_cleanLines__func "${GIT__NUMOFLINES_1}"
                     fi
                 fi
             else
-                moveDown_oneLine_then_moveUp_and_clean__func "${GIT__NUMOFLINES_1}"
+                moveUp_and_cleanLines__func "${GIT__NUMOFLINES_1}"
             fi
         done
             
@@ -248,7 +257,8 @@ git__menu_sub() {
                 ;;
 
             q)
-                moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
+                echo -e "\r"
+                echo -e "\r"
 
                 exit 0
                 ;;
@@ -260,11 +270,9 @@ git__menu_sub() {
 
 #---MAIN SUBROUTINE
 main__sub() {
-    git__environmental_variables__sub
-
-    git__load_source_files__sub
-
     git__load_header__sub
+
+    git__environmental_variables__sub
 
     git__init_variables__sub
 

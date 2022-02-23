@@ -114,12 +114,6 @@ git__load_source_files__sub() {
     source ${docker__global_functions_fpath}
 }
 
-git__environmental_variables__sub() {
-    #---Define paths
-    git__home_dir="/home/imcase"
-    git__home_scripts_dir=${git__home_dir}/scripts
-}
-
 git__load_header__sub() {
     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
     echo -e "${DOCKER__TITLE_BG_ORANGE}                                 ${DOCKER__TITLE}${DOCKER__TITLE_BG_ORANGE}                                ${DOCKER__NOCOLOR}"

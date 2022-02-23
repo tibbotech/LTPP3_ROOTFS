@@ -242,7 +242,6 @@ docker__load_source_files__sub() {
     source ${docker__global_functions_fpath}
 }
 
-
 docker__load_header__sub() {
     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
