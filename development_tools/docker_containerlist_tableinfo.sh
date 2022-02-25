@@ -1,36 +1,34 @@
 #!/bin/bash
-#---COLOR CONSTANTS
-DOCKER__NOCOLOR=$'\e[0;0m'
-DOCKER__FG_BRIGHTPRUPLE=$'\e[30;38;5;141m'
-DOCKER__FG_GREEN85=$'\e[30;38;5;85m'
-DOCKER__FG_LIGHTGREY=$'\e[30;38;5;246m'
-DOCKER__FG_LIGHTRED=$'\e[1;31m'
-DOCKER__FG_ORANGE=$'\e[30;38;5;215m'
-DOCKER__FG_PURPLE=$'\e[30;38;5;93m'
-DOCKER__FG_VERYLIGHTORANGE=$'\e[30;38;5;223m'
-DOCKER__FG_YELLOW=$'\e[1;33m'
-DOCKER__BG_ORANGE=$'\e[30;48;5;215m'
-
-
-
-#---CHARACTER CHONSTANTS
-DOCKER__EMPTYSTRING=""
-DOCKER__DASH="-"
-
-
-#---VARIABLES
-
-
-
-#---ENVIRONMENT VARIABLES
-docker__tmp_dir="/tmp"
-docker__docker_containerList_tmp__filename="docker__docker_containerList.tmp"
-docker__docker_containerList_tmp__fpath=${docker__tmp_dir}/${docker__docker_containerList_tmp__filename}
-
-
-
 #---SUBROUTINES
-get_docker_containerList__sub() {
+docker__environmental_variables__sub() {
+    #---Define PATHS
+    docker__current_script_fpath="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
+    docker__current_dir=$(dirname ${docker__current_script_fpath})
+    if [[ ${docker__current_dir} == ${DOCKER__DOT} ]]; then
+        docker__current_dir=$(pwd)
+    fi
+    docker__current_folder=`basename ${docker__current_dir}`
+
+    docker__development_tools_folder="development_tools"
+    if [[ ${docker__current_folder} != ${docker__development_tools_folder} ]]; then
+        docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}/${docker__development_tools_folder}
+    else
+        docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}
+    fi
+
+    docker__global_functions_filename="docker_global_functions.sh"
+    docker__global_functions_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__global_functions_filename}
+
+    docker__tmp_dir="/tmp"
+    docker__docker_containerList_tmp__filename="docker__docker_containerList.tmp"
+    docker__docker_containerList_tmp__fpath=${docker__tmp_dir}/${docker__docker_containerList_tmp__filename}
+}
+
+docker__load_source_files__sub() {
+    source ${docker__global_functions_fpath}
+}
+
+docker__get_docker_containerList__sub() {
     #Define constants
     local CONTAINER_ID="CONTAINER-ID"
     local DOCKER_PS_A_CMD="docker ps -a"
@@ -150,7 +148,11 @@ get_docker_containerList__sub() {
 
 #---MAIN SUBROUTINES
 main__sub() {
-    get_docker_containerList__sub
+    docker__environmental_variables__sub
+
+    docker__load_source_files__sub
+
+    docker__get_docker_containerList__sub
 }
 
 

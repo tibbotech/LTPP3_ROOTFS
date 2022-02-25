@@ -1,132 +1,5 @@
 #!/bin/bash -m
 #Remark: by using '-m' the INT will NOT propagate to the PARENT scripts
-#---COLOR CONSTANTS
-DOCKER__NOCOLOR=$'\e[0m'
-DOCKER__ERROR_FG_LIGHTRED=$'\e[1;31m'
-DOCKER__GENERAL_FG_YELLOW=$'\e[1;33m'
-DOCKER__IMAGEID_FG_BORDEAUX=$'\e[30;38;5;198m'
-DOCKER__DIRS_FG_VERYLIGHTORANGE=$'\e[30;38;5;223m'
-DOCKER__FILES_FG_ORANGE=$'\e[30;38;5;215m'
-DOCKER__TAG_FG_LIGHTPINK=$'\e[30;38;5;218m'
-DOCKER__FG_LIGHTGREY=$'\e[30;38;5;246m'
-
-DOCKER__TITLE_BG_ORANGE=$'\e[30;48;5;215m'
-
-#---CONSTANTS
-DOCKER__TITLE="TIBBO"
-
-#---CHARACTER CONSTANTS
-DOCKER__DASH="-"
-DOCKER__EMPTYSTRING=""
-DOCKER__SLASH_CHAR="/"
-
-DOCKER__ENTER=$'\x0a'
-
-DOCKER__ONESPACE=" "
-DOCKER__TWOSPACES=${DOCKER__ONESPACE}${DOCKER__ONESPACE}
-DOCKER__FOURSPACES=${DOCKER__TWOSPACES}${DOCKER__TWOSPACES}
-
-#---NUMERIC CONSTANTS
-DOCKER__NINE=9
-DOCKER__TABLEWIDTH=70
-
-DOCKER__NUMOFLINES_0=0
-DOCKER__NUMOFLINES_1=1
-DOCKER__NUMOFLINES_2=2
-DOCKER__NUMOFLINES_3=3
-DOCKER__NUMOFLINES_4=4
-DOCKER__NUMOFLINES_5=5
-DOCKER__NUMOFLINES_6=6
-DOCKER__NUMOFLINES_7=7
-DOCKER__NUMOFLINES_8=8
-DOCKER__NUMOFLINES_9=9
-
-#---MENU CONSTANTS
-DOCKER__CTRL_C_QUIT="${DOCKER__FOURSPACES}Quit (Ctrl+C)"
-DOCKER__Q_QUIT="${DOCKER__FOURSPACES}q. Quit (Ctrl+C)"
-
-
-
-#---FUNCTIONS
-#---Trap ctrl-c and Call ctrl_c()
-trap CTRL_C__func INT
-
-function CTRL_C__func() {
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
-
-    exit
-}
-
-function press_any_key__func() {
-	#Define constants
-	local ANYKEY_TIMEOUT=10
-
-	#Initialize variables
-	local keyPressed=${DOCKER__EMPTYSTRING}
-	local tCounter=0
-
-	#Show Press Any Key message with count-down
-	moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-	while [[ ${tCounter} -le ${ANYKEY_TIMEOUT} ]];
-	do
-		delta_tCounter=$(( ${ANYKEY_TIMEOUT} - ${tCounter} ))
-
-		echo -e "\rPress (a)bort or any key to continue... (${delta_tCounter}) \c"
-		read -N 1 -t 1 -s -r keyPressed
-
-		if [[ ! -z "${keyPressed}" ]]; then
-			if [[ "${keyPressed}" == "a" ]] || [[ "${keyPressed}" == "A" ]]; then
-				exit
-			else
-				break
-			fi
-		fi
-		
-		tCounter=$((tCounter+1))
-	done
-	moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-}
-
-function show_centered_string__func()
-{
-    #Input args
-    local str_input=${1}
-    local maxStrLen_input=${2}
-
-    #Define one-space constant
-    local ONESPACE=" "
-
-    #Get string 'without visiable' color characters
-    local strInput_wo_colorChars=`echo "${str_input}" | sed "s,\x1B\[[0-9;]*m,,g"`
-
-    #Get string length
-    local strInput_wo_colorChars_len=${#strInput_wo_colorChars}
-
-    #Calculated the number of spaces to-be-added
-    local numOf_spaces=$(( (maxStrLen_input-strInput_wo_colorChars_len)/2 ))
-
-    #Create a string containing only EMPTY SPACES
-    local emptySpaces_string=`duplicate_char__func "${ONESPACE}" "${numOf_spaces}" `
-
-    #Print text including Leading Empty Spaces
-    echo -e "${emptySpaces_string}${str_input}"
-}
-
-function duplicate_char__func()
-{
-    #Input args
-    local char_input=${1}
-    local numOf_times=${2}
-
-    #Duplicate 'char_input'
-    local char_duplicated=`printf '%*s' "${numOf_times}" | tr ' ' "${char_input}"`
-
-    #Print text including Leading Empty Spaces
-    echo -e "${char_duplicated}"
-}
-
-
-
 #--SUBROUTINES
 docker__load_environment_variables__sub() {
     #Define paths
@@ -162,17 +35,17 @@ docker__load_source_files__sub() {
 
 docker__load_header__sub() {
     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-    echo -e "${DOCKER__TITLE_BG_ORANGE}                                 ${DOCKER__TITLE}${DOCKER__TITLE_BG_ORANGE}                                ${DOCKER__NOCOLOR}"
+    echo -e "${DOCKER__BG_ORANGE}                                 ${DOCKER__TITLE}${DOCKER__BG_ORANGE}                                ${DOCKER__NOCOLOR}"
 }
 
 docker__import_handler__sub() {
     #Define local constants
-    local MENUTITLE="${DOCKER__GENERAL_FG_YELLOW}Import${DOCKER__NOCOLOR} an ${DOCKER__IMAGEID_FG_BORDEAUX}Image${DOCKER__NOCOLOR} file"
-    local MENUTITLE_UPDATED_IMAGE_LIST="Updated ${DOCKER__IMAGEID_FG_BORDEAUX}Image${DOCKER__NOCOLOR}-list"
+    local MENUTITLE="${DOCKER__FG_YELLOW}Import${DOCKER__NOCOLOR} an ${DOCKER__FG_BORDEAUX}Image${DOCKER__NOCOLOR} file"
+    local MENUTITLE_UPDATED_IMAGE_LIST="Updated ${DOCKER__FG_BORDEAUX}Image${DOCKER__NOCOLOR}-list"
 
     #Define local message constants
-    local ECHOMSG_IMAGE_LOCATION="${DOCKER__IMAGEID_FG_BORDEAUX}Image${DOCKER__NOCOLOR} Location: "
-    local ERRMSG_NO_IMAGES_FILES_FOUND="=:${DOCKER__ERROR_FG_LIGHTRED}NO IMAGES FILES FOUND${DOCKER__NOCOLOR}:="
+    local ECHOMSG_IMAGE_LOCATION="${DOCKER__FG_BORDEAUX}Image${DOCKER__NOCOLOR} Location: "
+    local ERRMSG_NO_IMAGES_FILES_FOUND="=:${DOCKER__FG_LIGHTRED}NO IMAGES FILES FOUND${DOCKER__NOCOLOR}:="
 
     #Define local read-input constants
     local READMSG_YOUR_CHOICE="Your choice: "
@@ -185,7 +58,7 @@ docker__import_handler__sub() {
 
     #Define local message variables
     local errMsg=${DOCKER__EMPTYSTRING}
-    local locationMsg_dockerFiles="${DOCKER__FOURSPACES}${DOCKER__DIRS_FG_VERYLIGHTORANGE}Location${DOCKER__NOCOLOR}: ${docker__images_dir}"
+    local locationMsg_dockerFiles="${DOCKER__FOURSPACES}${DOCKER__FG_VERYLIGHTORANGE}Location${DOCKER__NOCOLOR}: ${docker__images_dir}"
 
     #Define local command variables
     local docker_image_ls_cmd="docker image ls"
@@ -292,7 +165,7 @@ docker__import_handler__sub() {
                     break
 
                 elif [[ ${myChoice} == "q" ]]; then
-                    CTRL_C__func
+                    CTRL_C__sub
 
                 else
                     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
@@ -316,14 +189,14 @@ docker__import_handler__sub() {
                 read -N1 -p "${READMSG_DO_YOU_WISH_TO_CONTINUE}" myAnswer
                 if  [[ ${myAnswer} == "y" ]]; then
                     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
-                    echo -e "---:${DOCKER__FILES_FG_ORANGE}START${DOCKER__NOCOLOR}: Loading image '${DOCKER__FG_LIGHTGREY}${myOutput_fPath}${DOCKER__NOCOLOR}'"
-                    echo -e "---:${DOCKER__FILES_FG_ORANGE}STATUS${DOCKER__NOCOLOR}: Depending on the image size..."
-                    echo -e "---:${DOCKER__FILES_FG_ORANGE}STATUS${DOCKER__NOCOLOR}: This may take a while..."
-                    echo -e "---:${DOCKER__FILES_FG_ORANGE}STATUS${DOCKER__NOCOLOR}: Please wait..."
+                    echo -e "---:${DOCKER__FG_ORANGE}START${DOCKER__NOCOLOR}: Loading image '${DOCKER__FG_LIGHTGREY}${myOutput_fPath}${DOCKER__NOCOLOR}'"
+                    echo -e "---:${DOCKER__FG_ORANGE}STATUS${DOCKER__NOCOLOR}: Depending on the image size..."
+                    echo -e "---:${DOCKER__FG_ORANGE}STATUS${DOCKER__NOCOLOR}: This may take a while..."
+                    echo -e "---:${DOCKER__FG_ORANGE}STATUS${DOCKER__NOCOLOR}: Please wait..."
 
                         docker image load --input ${myOutput_fPath} > /dev/null
 
-                    echo -e "---:${DOCKER__FILES_FG_ORANGE}COMPLETED${DOCKER__NOCOLOR}: Loading image '${DOCKER__FG_LIGHTGREY}${myOutput_fPath}${DOCKER__NOCOLOR}'"
+                    echo -e "---:${DOCKER__FG_ORANGE}COMPLETED${DOCKER__NOCOLOR}: Loading image '${DOCKER__FG_LIGHTGREY}${myOutput_fPath}${DOCKER__NOCOLOR}'"
 
                     #Show Docker Image List
                     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
@@ -349,7 +222,7 @@ docker__import_handler__sub() {
                 fi
             done
         else    #directory does NOT exist
-            errMsg="***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: File '${DOCKER__FG_LIGHTGREY}${myOutput_fPath}${DOCKER__NOCOLOR}' not found"
+            errMsg="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: File '${DOCKER__FG_LIGHTGREY}${myOutput_fPath}${DOCKER__NOCOLOR}' not found"
 
             docker__show_errMsg_without_menuTitle__func "${errMsg}" "${DOCKER__NUMOFLINES_0}"
 

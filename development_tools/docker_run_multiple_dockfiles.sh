@@ -1,47 +1,7 @@
 #!/bin/bash -m
 #Remark: by using '-m' the INT will NOT propagate to the PARENT scripts
-#---Define colors
-DOCKER__NOCOLOR=$'\e[0m'
-DOCKER__ERROR_FG_LIGHTRED=$'\e[1;31m'
-DOCKER__SUCCESS_FG_LIGHTGREEN=$'\e[1;32m'
-DOCKER__GENERAL_FG_YELLOW=$'\e[1;33m'
-DOCKER__TITLE_FG_LIGHTBLUE=$'\e[30;38;5;45m'
-DOCKER__IMAGEID_FG_BORDEAUX=$'\e[30;38;5;198m'
-
-DOCKER__TITLE_BG_ORANGE=$'\e[30;48;5;215m'
-DOCKER__FILES_FG_ORANGE=$'\e[30;38;5;215m'
-DOCKER__DIRS_FG_VERYLIGHTORANGE=$'\e[30;38;5;223m'
-DOCKER__TITLE_BG_LIGHTBLUE=$'\e[30;48;5;45m'
-
-#---Define constants
-DOCKER__TITLE="TIBBO"
-DOCKER__YES="y"
-DOCKER__FIVE_SPACES="     "
-DOCKER__LATEST="latest"
-DOCKER__EXITING_NOW="Exiting now..."
-
-
-#---Define PATHS
-docker__LICENSE_filename="LICENSE"
-docker__README_md_filename="README.md"
-docker__LTPP3_ROOTFS_foldername="LTPP3_ROOTFS"
-
-docker__dockerfile_list_fpath=""
-
-
-#---Trap ctrl-c and Call ctrl_c()
-trap CTRL_C__sub INT
-
-CTRL_C__sub() {
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
-    echo -e "${DOCKER__EXITING_NOW}"
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
-
-    exit
-}
-
-#---Local functions & subroutines
-press_any_key__localfunc() {
+#---FUNCTIONS
+press_any_key__func() {
 	#Define constants
 	local ANYKEY_TIMEOUT=10
 
@@ -72,7 +32,6 @@ press_any_key__localfunc() {
 }
 
 docker__load_environment_variables__sub() {
-    #---Define PATHS
     docker__current_script_fpath="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
     docker__current_dir=$(dirname ${docker__current_script_fpath})
     if [[ ${docker__current_dir} == ${DOCKER__DOT} ]]; then
@@ -87,13 +46,28 @@ docker__load_environment_variables__sub() {
         docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}
     fi
 
+    docker__global_functions_filename="docker_global_functions.sh"
+    docker__global_functions_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__global_functions_filename}
+
 	docker__repolist_tableinfo_filename="docker_repolist_tableinfo.sh"
 	docker__repolist_tableinfo_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__repolist_tableinfo_filename}
 }
 
+docker__load_source_files__sub() {
+    source ${docker__global_functions_fpath}
+}
+
 docker__load_header__sub() {
     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-    echo -e "${DOCKER__TITLE_BG_ORANGE}                                 ${DOCKER__TITLE}${DOCKER__TITLE_BG_ORANGE}                                ${DOCKER__NOCOLOR}"
+    echo -e "${DOCKER__BG_ORANGE}                                 ${DOCKER__TITLE}${DOCKER__BG_ORANGE}                                ${DOCKER__NOCOLOR}"
+}
+
+docker__init_variables__sub() {
+    docker__LICENSE_filename="LICENSE"
+    docker__README_md_filename="README.md"
+    docker__LTPP3_ROOTFS_foldername="LTPP3_ROOTFS"
+
+    docker__dockerfile_list_fpath=""
 }
 
 docker__mandatory_apps_check__sub() {
@@ -116,7 +90,7 @@ docker__mandatory_apps_check__sub() {
         echo -e "${DOCKER__FIVE_SPACES}PLEASE INSTALL the missing software."
         moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
         
-        press_any_key__localfunc
+        press_any_key__func
     fi
 }
 
@@ -151,10 +125,10 @@ docker__show_dockerfile_list_files__sub() {
     if [[ -z ${dockerfile_list_fpath_string} ]]; then
         moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
         echo -e "----------------------------------------------------------------------"
-        echo -e "***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: no files found in directory:"
+        echo -e "***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: no files found in directory:"
         echo -e "${DOCKER__FIVE_SPACES}${docker__my_LTPP3_ROOTFS_docker_list_dir}"
         moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-        echo -e "Please put all ${DOCKER__GENERAL_FG_YELLOW}dockerfile-list${DOCKER__NOCOLOR} files in this directory"
+        echo -e "Please put all ${DOCKER__FG_YELLOW}dockerfile-list${DOCKER__NOCOLOR} files in this directory"
 
         moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
 
@@ -173,7 +147,7 @@ docker__show_dockerfile_list_files__sub() {
 
         #Show all 'dockerfile-list' files
         echo -e "----------------------------------------------------------------------"
-        echo -e "\t${DOCKER__GENERAL_FG_YELLOW}Create${DOCKER__NOCOLOR} multiple ${DOCKER__IMAGEID_FG_BORDEAUX}IMAGES${DOCKER__NOCOLOR} with ${DOCKER__TITLE_FG_LIGHTBLUE}DOCKER-FILES${DOCKER__NOCOLOR}"
+        echo -e "\t${DOCKER__FG_YELLOW}Create${DOCKER__NOCOLOR} multiple ${DOCKER__FG_BORDEAUX}IMAGES${DOCKER__NOCOLOR} with ${DOCKER__FG_LIGHTBLUE}DOCKER-FILES${DOCKER__NOCOLOR}"
         echo -e "----------------------------------------------------------------------"
         for arr_line in "${dockerfile_list_fpath_arr[@]}"
         do
@@ -192,7 +166,7 @@ docker__show_dockerfile_list_files__sub() {
         while true
         do
             #Show read-input
-            read -p "Choose a file (ctrl+c: quit): " mychoice
+            read -e -p "Choose a file (ctrl+c: quit): " mychoice
 
             #Check if 'mychoice' is a numeric value
             if [[ ${mychoice} =~ [1-9,0] ]]; then
@@ -223,7 +197,7 @@ docker__show_dockerfile_list_files__sub() {
         #Show chosen file contents
         moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
         echo -e "----------------------------------------------------------------------"
-        echo -e "Contents of File ${DOCKER__FILES_FG_ORANGE}${dockerfile_list_filename}${DOCKER__NOCOLOR}"
+        echo -e "Contents of File ${DOCKER__FG_ORANGE}${dockerfile_list_filename}${DOCKER__NOCOLOR}"
         echo -e "----------------------------------------------------------------------"
         while read file_line
         do
@@ -261,12 +235,12 @@ docker__checkif_cmd_exec_was_successful__sub() {
     
     if [[ ${exit_code} -eq 0 ]]; then
         moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-        echo -e "script was executed ${DOCKER__SUCCESS_FG_LIGHTGREEN}successfully${DOCKER__NOCOLOR}..."
+        echo -e "script was executed ${DOCKER__FG_LIGHTGREEN}successfully${DOCKER__NOCOLOR}..."
         moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
     else
         moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-        echo -e "***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: script was stopped due to an error occurred..."
+        echo -e "***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: script was stopped due to an error occurred..."
         moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
         echo -e "Please resolve the issue..."
         moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
@@ -296,7 +270,7 @@ docker__run_dockercmd_with_error_check__sub() {
 
     #Execute Docker command
     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-    echo -e "Running: ${DOCKER__FILES_FG_ORANGE}${dockerfile_fpath}${DOCKER__NOCOLOR}"
+    echo -e "Running: ${DOCKER__FG_ORANGE}${dockerfile_fpath}${DOCKER__NOCOLOR}"
     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
     sudo sh -c "${dockercmd}" #execute cmd
@@ -327,7 +301,7 @@ docker__handle_chosen_dockerfile_list__sub() {
                 docker__run_dockercmd_with_error_check__sub ${dockerfile_fpath}
             else
                 moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-                echo -e "***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: non-existing file: ${dockerfile_fpath}"
+                echo -e "***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: non-existing file: ${dockerfile_fpath}"
                 moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"       
             fi
         fi
@@ -340,7 +314,11 @@ docker__handle_chosen_dockerfile_list__sub() {
 main_sub() {
     docker__load_environment_variables__sub
 
+    docker__load_source_files__sub
+
     docker__load_header__sub
+
+    docker__init_variables__sub
 
     docker__get_this_running_script_dir__sub
 

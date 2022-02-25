@@ -1,138 +1,5 @@
 #!/bin/bash -m
 #Remark: by using '-m' the INT will NOT propagate to the PARENT scripts
-#---COLOR CONSTANTS
-DOCKER__NOCOLOR=$'\e[0m'
-DOCKER__ERROR_FG_LIGHTRED=$'\e[1;31m'
-DOCKER__GENERAL_FG_YELLOW=$'\e[1;33m'
-DOCKER__IMAGEID_FG_BORDEAUX=$'\e[30;38;5;198m'
-DOCKER__DIRS_FG_VERYLIGHTORANGE=$'\e[30;38;5;223m'
-DOCKER__FILES_FG_ORANGE=$'\e[30;38;5;215m'
-DOCKER__TAG_FG_LIGHTPINK=$'\e[30;38;5;218m'
-DOCKER__FG_LIGHTGREY=$'\e[30;38;5;246m'
-DOCKER__REPOSITORY_FG_PURPLE=$'\e[30;38;5;93m'
-
-DOCKER__TITLE_BG_ORANGE=$'\e[30;48;5;215m'
-
-
-
-#---CONSTANTS
-DOCKER__TITLE="TIBBO"
-
-#---CHARACTER CHONSTANTS
-DOCKER__DASH="-"
-DOCKER__EMPTYSTRING=""
-DOCKER__SLASH_CHAR="/"
-
-DOCKER__ENTER=$'\x0a'
-
-DOCKER__ONESPACE=" "
-DOCKER__TWOSPACES=${DOCKER__ONESPACE}${DOCKER__ONESPACE}
-DOCKER__FOURSPACES=${DOCKER__TWOSPACES}${DOCKER__TWOSPACES}
-
-#---NUMERIC CONSTANTS
-DOCKER__NINE=9
-DOCKER__TABLEWIDTH=70
-
-DOCKER__NUMOFLINES_0=0
-DOCKER__NUMOFLINES_1=1
-DOCKER__NUMOFLINES_2=2
-DOCKER__NUMOFLINES_3=3
-DOCKER__NUMOFLINES_4=4
-DOCKER__NUMOFLINES_5=5
-DOCKER__NUMOFLINES_6=6
-DOCKER__NUMOFLINES_7=7
-DOCKER__NUMOFLINES_8=8
-DOCKER__NUMOFLINES_9=9
-
-#---MENU CONSTANTS
-DOCKER__CTRL_C_QUIT="${DOCKER__FOURSPACES}Quit (Ctrl+C)"
-DOCKER__Q_QUIT="${DOCKER__FOURSPACES}q. Quit (Ctrl+C)"
-
-
-
-#---FUNCTIONS
-#---Trap ctrl-c and Call ctrl_c()
-trap CTRL_C_func INT
-
-function CTRL_C_func() {
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
-    echo -e "${DOCKER__ERROR_FG_LIGHTRED}Exporting${DOCKER__NOCOLOR} Docker Image Interrupted..."
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-    echo -e "Exiting now..."
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
-
-    exit
-}
-
-function press_any_key__func() {
-	#Define constants
-	local ANYKEY_TIMEOUT=3
-
-	#Initialize variables
-	local keyPressed=${DOCKER__EMPTYSTRING}
-	local tCounter=0
-
-	#Show Press Any Key message with count-down
-	moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-	while [[ ${tCounter} -le ${ANYKEY_TIMEOUT} ]];
-	do
-		delta_tCounter=$(( ${ANYKEY_TIMEOUT} - ${tCounter} ))
-
-		echo -e "\rPress (a)bort or any key to continue... (${delta_tCounter}) \c"
-		read -N 1 -t 1 -s -r keyPressed
-
-		if [[ ! -z "${keyPressed}" ]]; then
-			if [[ "${keyPressed}" == "a" ]] || [[ "${keyPressed}" == "A" ]]; then
-				exit
-			else
-				break
-			fi
-		fi
-		
-		tCounter=$((tCounter+1))
-	done
-	moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-}
-
-function duplicate_char__func() {
-    #Input args
-    local char_input=${1}
-    local numOf_times=${2}
-
-    #Duplicate 'char_input'
-    local char_duplicated=`printf '%*s' "${numOf_times}" | tr ' ' "${char_input}"`
-
-    #Print text including Leading Empty Spaces
-    echo -e "${char_duplicated}"
-}
-
-
-function show_centered_string__func() {
-    #Input args
-    local str_input=${1}
-    local maxStrLen_input=${2}
-
-    #Define one-space constant
-    local ONESPACE=" "
-
-    #Get string 'without visiable' color characters
-    local strInput_wo_colorChars=`echo "${str_input}" | sed "s,\x1B\[[0-9;]*m,,g"`
-
-    #Get string length
-    local strInput_wo_colorChars_len=${#strInput_wo_colorChars}
-
-    #Calculated the number of spaces to-be-added
-    local numOf_spaces=$(( (maxStrLen_input-strInput_wo_colorChars_len)/2 ))
-
-    #Create a string containing only EMPTY SPACES
-    local emptySpaces_string=`duplicate_char__func "${ONESPACE}" "${numOf_spaces}" `
-
-    #Print text including Leading Empty Spaces
-    echo -e "${emptySpaces_string}${str_input}"
-}
-
-
-
 #---SUBROUTINES
 docker__load_environment_variables__sub() {
     #Define paths
@@ -167,7 +34,7 @@ docker__load_source_files__sub() {
 
 docker__load_header__sub() {
     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-    echo -e "${DOCKER__TITLE_BG_ORANGE}                                 ${DOCKER__TITLE}${DOCKER__TITLE_BG_ORANGE}                                ${DOCKER__NOCOLOR}"
+    echo -e "${DOCKER__BG_ORANGE}                                 ${DOCKER__TITLE}${DOCKER__BG_ORANGE}                                ${DOCKER__NOCOLOR}"
 }
 
 docker__create_dirs__sub() {
@@ -179,15 +46,15 @@ docker__create_dirs__sub() {
 
 docker__save_handler__sub() {
     #Define local constants
-    local MENUTITLE="Export an ${DOCKER__IMAGEID_FG_BORDEAUX}Image${DOCKER__NOCOLOR} file"
+    local MENUTITLE="Export an ${DOCKER__FG_BORDEAUX}Image${DOCKER__NOCOLOR} file"
 
     #Define local message constants
-    local ECHOMSG_IMAGE_LOCATION="${DOCKER__IMAGEID_FG_BORDEAUX}Image${DOCKER__NOCOLOR} Location: "
+    local ECHOMSG_IMAGE_LOCATION="${DOCKER__FG_BORDEAUX}Image${DOCKER__NOCOLOR} Location: "
 
     #Define local read-input constants
-    local READMSG_CHOOSE_A_REPOSITORY_FROM_LIST="Choose a ${DOCKER__REPOSITORY_FG_PURPLE}Repository${DOCKER__NOCOLOR} from list (e.g. ubuntu_buildbin): "
+    local READMSG_CHOOSE_A_REPOSITORY_FROM_LIST="Choose a ${DOCKER__FG_PURPLE}Repository${DOCKER__NOCOLOR} from list (e.g. ubuntu_buildbin): "
     local READMSG_DO_YOU_WISH_TO_CONTINUE="Do you wish to continue (y/n)? "    #Define local command variables
-    local READMSG_PROVIDE_ITS_CORRESPONDING_TAG="Provide its matching ${DOCKER__TAG_FG_LIGHTPINK}Tag${DOCKER__NOCOLOR} (e.g. latest): "
+    local READMSG_PROVIDE_ITS_CORRESPONDING_TAG="Provide its matching ${DOCKER__FG_LIGHTPINK}Tag${DOCKER__NOCOLOR} (e.g. latest): "
 
     #Define local variables
     local myRepository=${DOCKER__EMPTYSTRING}
@@ -254,14 +121,14 @@ docker__save_handler__sub() {
                                             if  [[ ${myAnswer} == "y" ]]; then
                                                 moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
 
-                                                echo -e "---:${DOCKER__FILES_FG_ORANGE}START${DOCKER__NOCOLOR}: Exporting image '${DOCKER__FG_LIGHTGREY}${myOutput_fPath}${DOCKER__NOCOLOR}'"
-                                                echo -e "---:${DOCKER__FILES_FG_ORANGE}STATUS${DOCKER__NOCOLOR}: Depending on the image size..."
-                                                echo -e "---:${DOCKER__FILES_FG_ORANGE}STATUS${DOCKER__NOCOLOR}: This may take a while..."
-                                                echo -e "---:${DOCKER__FILES_FG_ORANGE}STATUS${DOCKER__NOCOLOR}: Please wait..."
+                                                echo -e "---:${DOCKER__FG_ORANGE}START${DOCKER__NOCOLOR}: Exporting image '${DOCKER__FG_LIGHTGREY}${myOutput_fPath}${DOCKER__NOCOLOR}'"
+                                                echo -e "---:${DOCKER__FG_ORANGE}STATUS${DOCKER__NOCOLOR}: Depending on the image size..."
+                                                echo -e "---:${DOCKER__FG_ORANGE}STATUS${DOCKER__NOCOLOR}: This may take a while..."
+                                                echo -e "---:${DOCKER__FG_ORANGE}STATUS${DOCKER__NOCOLOR}: Please wait..."
                                                 
                                                 docker image save --output ${myOutput_fPath} ${myRepository}:${myTag} > /dev/null
 
-                                                echo -e "---:${DOCKER__FILES_FG_ORANGE}COMPLETED${DOCKER__NOCOLOR}: Exporting image '${DOCKER__FG_LIGHTGREY}${myOutput_fPath}${DOCKER__NOCOLOR}'"
+                                                echo -e "---:${DOCKER__FG_ORANGE}COMPLETED${DOCKER__NOCOLOR}: Exporting image '${DOCKER__FG_LIGHTGREY}${myOutput_fPath}${DOCKER__NOCOLOR}'"
                                                 
                                                 moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
 
@@ -281,7 +148,7 @@ docker__save_handler__sub() {
                                             fi
                                         done
                                     else    #directory does NOT exist
-                                        errMsg="***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Directory '${DOCKER__FG_LIGHTGREY}${myOutput_dir}${DOCKER__NOCOLOR}' not found"
+                                        errMsg="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Directory '${DOCKER__FG_LIGHTGREY}${myOutput_dir}${DOCKER__NOCOLOR}' not found"
 
                                         docker__show_errMsg_without_menuTitle__func "${errMsg}" "${DOCKER__NUMOFLINES_0}"
 
@@ -297,7 +164,7 @@ docker__save_handler__sub() {
                                 fi
                             done
                         else
-                            errMsg="***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Un-matched pair ${DOCKER__REPOSITORY_FG_PURPLE}Repository${DOCKER__NOCOLOR} <-> ${DOCKER__TAG_FG_LIGHTPINK}Tag${DOCKER__NOCOLOR}"
+                            errMsg="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Un-matched pair ${DOCKER__FG_PURPLE}Repository${DOCKER__NOCOLOR} <-> ${DOCKER__FG_LIGHTPINK}Tag${DOCKER__NOCOLOR}"
                             
                             docker__show_errMsg_without_menuTitle__func "${errMsg}" "${DOCKER__NUMOFLINES_1}"
 
@@ -313,7 +180,7 @@ docker__save_handler__sub() {
                     fi
                 done
             else
-                errMsg="***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: repository '${DOCKER__FG_LIGHTGREY}${myOutput_fPath}${DOCKER__NOCOLOR}' not found"
+                errMsg="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: repository '${DOCKER__FG_LIGHTGREY}${myOutput_fPath}${DOCKER__NOCOLOR}' not found"
 
                 docker__show_errMsg_without_menuTitle__func "${errMsg}" "${DOCKER__NUMOFLINES_1}"
 

@@ -3,8 +3,8 @@
 #---INPUT ARGS
 menuTitle__input=${1}
 readMsg__input=${2}
-readMsgRemarks__input=${3}
-readMsgRemarks2__input=${4}
+readMsgUpdate__input=${3}
+readMsgRemarks__input=${4}
 errorMsg__input=${5}
 errorMsg2__input=${6}
 dockerCmd__input=${7}
@@ -15,92 +15,7 @@ onEnter_breakLoop__input=${11}
 
 
 
-#---COLOR CONSTANTS
-DOCKER__NOCOLOR=$'\e[0;0m'
-DOCKER__ERROR_FG_LIGHTRED=$'\e[1;31m'
-# DOCKER__FG_PURPLERED=$'\e[30;38;5;198m'
-# DOCKER__GENERAL_FG_YELLOW=$'\e[1;33m'
-# DOCKER__IMAGEID_FG_BORDEAUX=$'\e[30;38;5;198m'
-# DOCKER__REPOSITORY_FG_PURPLE=$'\e[30;38;5;93m'
-# DOCKER__NEW_REPOSITORY_FG_BRIGHTLIGHTPURPLE=$'\e[30;38;5;147m'
-# DOCKER__CONTAINER_FG_BRIGHTPRUPLE=$'\e[30;38;5;141m'
-DOCKER__INSIDE_FG_LIGHTGREY=$'\e[30;38;5;246m'
-
-#---CONSTANTS
-DOCKER__REMOVE_ALL="REMOVE-ALL"
-
-#---CHARACTER CHONSTANTS
-DOCKER__DASH="-"
-DOCKER__EMPTYSTRING=""
-
-DOCKER__BACKSPACE=$'\b'
-DOCKER__DEL=$'\x7e'
-DOCKER__ENTER=$'\x0a'
-DOCKER__ESCAPEKEY=$'\x1b'   #note: this escape key is ^[
-DOCKER__TAB=$'\t'
-
-DOCKER__ONESPACE=" "
-
-#---NUMERIC CONSTANTS
-DOCKER__NINE=9
-DOCKER__TABLEWIDTH=70
-
-DOCKER__NUMOFLINES_0=0
-DOCKER__NUMOFLINES_1=1
-DOCKER__NUMOFLINES_2=2
-DOCKER__NUMOFLINES_3=3
-DOCKER__NUMOFLINES_4=4
-DOCKER__NUMOFLINES_5=5
-DOCKER__NUMOFLINES_6=6
-DOCKER__NUMOFLINES_7=7
-DOCKER__NUMOFLINES_8=8
-DOCKER__NUMOFLINES_9=9
-
-
-
-#---MENU CONSTANTS
-DOCKER__ARROWUP="arrowUp"
-DOCKER__ARROWDOWN="arrowDown"
-DOCKER__CTRL_C_QUIT="${DOCKER__FOURSPACES}Quit (Ctrl+C)"
-
-
-
-#---Trap ctrl-c and Call ctrl_c()
-trap CTRL_C__sub INT
-
-
-
 #---FUNCTIONS
-function press_any_key__func() {
-	#Define constants
-	local ANYKEY_TIMEOUT=10
-
-	#Initialize variables
-	local keypressed=""
-	local tcounter=0
-
-	#Show Press Any Key message with count-down
-	moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-	while [[ ${tcounter} -le ${ANYKEY_TIMEOUT} ]];
-	do
-		delta_tcounter=$(( ${ANYKEY_TIMEOUT} - ${tcounter} ))
-
-		echo -e "\rPress (a)bort or any key to continue... (${delta_tcounter}) \c"
-		read -N 1 -t 1 -s -r keypressed
-
-		if [[ ! -z "${keypressed}" ]]; then
-			if [[ "${keypressed}" == "a" ]] || [[ "${keypressed}" == "A" ]]; then
-				exit
-			else
-				break
-			fi
-		fi
-		
-		tcounter=$((tcounter+1))
-	done
-	moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-}
-
 function arrowKeys_upDown_handler__func() {
     # Flush "stdin" with 0.1  sec timeout.
     read -rsn1 -t 0.1 tmp
@@ -255,19 +170,6 @@ function backspace_handler__func() {
     echo "${str_output}"
 }
 
-function duplicate_char__func()
-{
-    #Input args
-    local char_input=${1}
-    local numOf_times=${2}
-
-    #Duplicate 'char_input'
-    local char_duplicated=`printf '%*s' "${numOf_times}" | tr ' ' "${char_input}"`
-
-    #Print text including Leading Empty Spaces
-    echo -e "${char_duplicated}"
-}
-
 function load_containerID_into_array__func() {
     #Input args
     local dockerCmd__input=${1}
@@ -307,83 +209,6 @@ function load_containerID_into_array__func() {
     cachedInput_ArrIndex=${cachedInput_ArrIndex_max}
 }
 
-function show_errMsg_with_menuTitle__func() {
-    #Input args
-    local menuTitle=${1}
-    local errMsg=${2}
-
-    #Show error-message
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"  #horizontal line
-    show_centered_string__func "${menuTitle}" "${DOCKER__TABLEWIDTH}"   #menu-title
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"  #horizontal line
-    
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-    show_centered_string__func "${errMsg}" "${DOCKER__TABLEWIDTH}"  #error message
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"  #horizontal line
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-
-    press_any_key__func
-
-    CTRL_C__sub
-}
-
-function show_errMsg_without_menuTitle__func() {
-    #Input args
-    local errMsg=${1}
-
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_3}"
-
-    echo -e "${errMsg}" #error message
-
-    press_any_key__func
-}
-
-function show_list_with_menuTitle__func() {
-    #Input args
-    local menuTitle=${1}
-    local dockerCmd=${2}
-
-    #Show list
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"   #horizontal line
-    show_centered_string__func "${menuTitle}" "${DOCKER__TABLEWIDTH}"   #menu-title
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"   #horizontal line
-    
-    if [[ ${dockerCmd} == ${docker__ps_a_cmd} ]]; then
-        ${docker__containerlist_tableinfo_fpath}    #show container-list
-    else
-        ${docker__repolist_tableinfo_fpath} #show image-list
-    fi
-
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"   #horizontal line
-    echo -e "${DOCKER__CTRL_C_QUIT}"
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"   #horizontal line
-} 
-
-function show_centered_string__func()
-{
-    #Input args
-    local str_input=${1}
-    local maxStrLen_input=${2}
-
-    #Get string 'without visiable' color characters
-    local strInput_wo_colorChars=`echo "${str_input}" | sed "s,\x1B\[[0-9;]*m,,g"`
-
-    #Get string length
-    local strInput_wo_colorChars_len=${#strInput_wo_colorChars}
-
-    #Calculated the number of spaces to-be-added
-    local numOf_spaces=$(( (maxStrLen_input-strInput_wo_colorChars_len)/2 ))
-
-    #Create a string containing only EMPTY SPACES
-    local emptySpaces_string=`duplicate_char__func "${DOCKER__ONESPACE}" "${numOf_spaces}" `
-
-    #Print text including Leading Empty Spaces
-    echo -e "${emptySpaces_string}${str_input}"
-}
-
 
 
 #---SUBROUTINE
@@ -391,8 +216,8 @@ docker__readInput_w_autocomplete__sub() {
     #Input args
     local menuTitle__input=${1}
     local readMsg__input=${2}
-    local readMsgRemarks__input=${3}
-    local readMsgRemarks2__input=${4}
+    local readMsgUpdate__input=${3}
+    local readMsgRemarks__input=${4}
     local errorMsg__input=${5}
     local errorMsg2__input=${6}
     local dockerCmd__input=${7}
@@ -404,6 +229,7 @@ docker__readInput_w_autocomplete__sub() {
     #Define variables
     local keyInput=${DOCKER__EMPTYSTRING}
     local ret=${DOCKER__EMPTYSTRING}
+    local ret_tmp=${DOCKER__EMPTYSTRING}
     local stdOutput=${DOCKER__EMPTYSTRING}
 
     #Define messages
@@ -427,13 +253,13 @@ docker__readInput_w_autocomplete__sub() {
     if [[ ! -z ${readMsgRemarks__input} ]]; then    #this condition is important
         remarks_numOfLines=`echo -e ${readMsgRemarks__input} | wc -l`      
     fi
-    local remarks2_numOfLines=0
-    if [[ ! -z ${readMsgRemarks2__input} ]]; then    #this condition is important
-        remarks2_numOfLines=`echo -e ${readMsgRemarks2__input} | wc -l`      
+    local update_numOfLines=0
+    if [[ ! -z ${readMsgUpdate__input} ]]; then    #this condition is important
+        update_numOfLines=`echo -e ${readMsgUpdate__input} | wc -l`      
     fi
 
-    local numOfLines_noError_tot=$((readMsg_numOfLines + remarks_numOfLines + remarks2_numOfLines))
-    local numOfLines_wError_tot=$((DOCKER__NUMOFLINES_5 + remarks_numOfLines + remarks2_numOfLines))
+    local numOfLines_noError_tot=$((readMsg_numOfLines + update_numOfLines))
+    local numOfLines_wError_tot=$((DOCKER__NUMOFLINES_5 +  update_numOfLines))
 
     #Only execute this condition if 'menuTitle__input' is not an Empty String
     #Remark:
@@ -443,23 +269,24 @@ docker__readInput_w_autocomplete__sub() {
                         "${dockerCmd__input}" \
                         "${errorMsg__input}" \
                         "${DOCKER__NUMOFLINES_0}"
-    fi
-
-    while true
-    do
-        #Check if there is only 1 containerID.
-        #Remark:
-        #   If that is the case, then set 'ret' to that value.
-        if [[ ${cachedInput_ArrLen} -eq 1 ]]; then
-            ret=${cachedInput_Arr[0]}
-        fi
 
         #Show current input
         if [[ ! -z ${readMsgRemarks__input} ]]; then
             echo -e "${readMsgRemarks__input}"
         fi
-        if [[ ! -z ${readMsgRemarks2__input} ]]; then
-            echo -e "${readMsgRemarks2__input}"
+    fi
+
+    # #Check if there is only 1 array-element.
+    # #Remark:
+    # #   If that is the case, then set 'ret' to that value.
+    # if [[ ${cachedInput_ArrLen} -eq 1 ]]; then
+    #     ret=${cachedInput_Arr[0]}
+    # fi
+    
+    while true
+    do
+        if [[ ! -z ${readMsgUpdate__input} ]]; then
+            echo -e "${readMsgUpdate__input}"
         fi
         echo -e "${readMsg__input}${ret}"
 
@@ -471,18 +298,25 @@ docker__readInput_w_autocomplete__sub() {
 
         case "${keyInput}" in
             ${DOCKER__ENTER})
-                #Move-up 1 line because ENTER was pressed, 
-                moveUp__func "${DOCKER__NUMOFLINES_1}"
-
+                #Check if there were any ';b', ';c', ';h' issued,...
+                #...and get the end-result (if that's the case).
+                ret_tmp=${ret}  #set value
+                ret=`get_endResult_ofString_with_semiColonChar__func ${ret_tmp}` 
+                
                 if [[ ! -z ${ret} ]]; then    #'ret' contains data
+                    #Break immeidiately if ';b' or ';h' was found.
+                    if [[ ${ret} == ${DOCKER__SEMICOLON_BACK} ]] || [[ ${ret} == ${DOCKER__SEMICOLON_HOME} ]]; then
+                        break
+                    fi
+
                     if [[ ! -z ${errorMsg2__input} ]]; then #not an Empty String
                         #Check if 'ret' is found in the image-/container-list
                         stdOutput=`${dockerCmd__input} | awk -vcolNo=${colNo__input} '{print $colNo}' | grep -w ${ret}`
                         if [[ ! -z ${stdOutput} ]] || [[ ${ret} == ${DOCKER__REMOVE_ALL} ]]; then    #match
                             break
                         else    #no match
-                            #Update error messagae
-                            errMsg="${errorMsg2__input}'${DOCKER__INSIDE_FG_LIGHTGREY}${ret}${DOCKER__NOCOLOR}'"
+                            #Update error message
+                            errMsg="${errorMsg2__input}'${DOCKER__FG_LIGHTGREY}${ret}${DOCKER__NOCOLOR}'"
 
                             #Show error message
                             show_errMsg_without_menuTitle__func "${errMsg}"
@@ -562,11 +396,11 @@ docker__show_infoTable__sub() {
     local menuTitle__input=${1}
     local dockerCmd__input=${2}
     local errorMsg__input=${3}
-    local numOfLines_toPrint__input=${4}
+    local numOfLines_toMoveDown=${4}
 
     #Print empty lines (if applicable)
     local counter=1
-    while [[ ${counter} -le ${numOfLines_toPrint__input} ]];
+    while [[ ${counter} -le ${numOfLines_toMoveDown} ]];
     do
         moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
@@ -577,7 +411,7 @@ docker__show_infoTable__sub() {
     local numOf_items=`${dockerCmd__input} | head -n -1 | wc -l`
 
     #Show Table
-    if [[ ${numOf_items} -eq 0 ]]; then
+    if [[ ${cachedInput_ArrLen} -eq 0 ]]; then
         show_errMsg_with_menuTitle__func "${menuTitle__input}" "${errorMsg__input}"
     else
         show_list_with_menuTitle__func "${menuTitle__input}" "${dockerCmd__input}"
@@ -586,12 +420,6 @@ docker__show_infoTable__sub() {
 
 
 #---SUBROUTINES
-CTRL_C__sub() {
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
-
-    exit 99
-}
-
 docker__environmental_variables__sub() {
 	# docker__current_dir=`pwd`
 	docker__current_script_fpath="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
@@ -636,8 +464,8 @@ docker__readInput_handler__sub() {
     #Get read-input value
     docker__readInput_w_autocomplete__sub "${menuTitle__input}" \
                         "${readMsg__input}" \
+                        "${readMsgUpdate__input}" \
                         "${readMsgRemarks__input}" \
-                        "${readMsgRemarks2__input}" \
                         "${errorMsg__input}" \
                         "${errorMsg2__input}" \
                         "${dockerCmd__input}" \

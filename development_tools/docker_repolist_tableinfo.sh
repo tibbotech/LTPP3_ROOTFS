@@ -1,27 +1,4 @@
 #!/bin/bash
-#---COLOR CONSTANTS
-DOCKER__NOCOLOR=$'\e[0;0m'
-DOCKER__FG_BRIGHTPRUPLE=$'\e[30;38;5;141m'
-DOCKER__FG_GREEN85=$'\e[30;38;5;85m'
-DOCKER__FG_LIGHTGREY=$'\e[30;38;5;246m'
-DOCKER__FG_LIGHTRED=$'\e[1;31m'
-DOCKER__FG_ORANGE=$'\e[30;38;5;215m'
-DOCKER__FG_PURPLE=$'\e[30;38;5;93m'
-DOCKER__FG_VERYLIGHTORANGE=$'\e[30;38;5;223m'
-DOCKER__FG_YELLOW=$'\e[1;33m'
-DOCKER__BG_ORANGE=$'\e[30;48;5;215m'
-
-
-
-#---CHARACTER CHONSTANTS
-DOCKER__EMPTYSTRING=""
-
-
-
-#---VARIABLES
-
-
-
 #---ENVIRONMENT VARIABLES
 docker__tmp_dir="/tmp"
 docker__docker_repoList_tmp__filename="docker__docker_repoList.tmp"

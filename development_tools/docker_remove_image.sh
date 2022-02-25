@@ -1,209 +1,6 @@
 #!/bin/bash -m
 #Remark: by using '-m' the INT will NOT propagate to the PARENT scripts
-#---COLOR CONSTANTS
-DOCKER__NOCOLOR=$'\e[0;0m'
-DOCKER__GENERAL_FG_YELLOW=$'\e[1;33m'
-DOCKER__ERROR_FG_LIGHTRED=$'\e[1;31m'
-DOCKER__IMAGEID_FG_BORDEAUX=$'\e[30;38;5;198m'
-DOCKER__REPOSITORY_FG_PURPLE=$'\e[30;38;5;93m'
-DOCKER__OUTSIDE_FG_WHITE=$'\e[30;38;5;231m'
-
-DOCKER__TITLE_BG_ORANGE=$'\e[30;48;5;215m'
-DOCKER__TITLE_BG_LIGHTBLUE=$'\e[30;48;5;45m'
-DOCKER__IMAGEID_BG_BORDEAUX=$'\e[30;48;5;198m'
-DOCKER__REMARK_BG_ORANGE=$'\e[30;48;5;208m'
-
-#---CONSTANTS
-DOCKER__TITLE="TIBBO"
-
-DOCKER__REMOVE_ALL="REMOVE-ALL"
-
-#---CHARACTER CONSTANTS
-DOCKER__DASH="-"
-DOCKER__EMPTYSTRING=""
-
-DOCKER__ENTER=$'\x0a'
-
-DOCKER__ONESPACE=" "
-DOCKER__TWOSPACES=${DOCKER__ONESPACE}${DOCKER__ONESPACE}
-DOCKER__FOURSPACES=${DOCKER__TWOSPACES}${DOCKER__TWOSPACES}
-
-#---NUMERIC CONSTANTS
-DOCKER__TABLEWIDTH=70
-
-DOCKER__NUMOFLINES_1=1
-DOCKER__NUMOFLINES_2=2
-DOCKER__NUMOFLINES_3=3
-DOCKER__NUMOFLINES_4=4
-DOCKER__NUMOFLINES_5=5
-DOCKER__NUMOFLINES_6=6
-DOCKER__NUMOFLINES_7=7
-DOCKER__NUMOFLINES_8=8
-DOCKER__NUMOFLINES_9=9
-DOCKER__NUMOFLINES_10=10
-
-#---MENU CONSTANTS
-DOCKER__CTRL_C_QUIT="${DOCKER__FOURSPACES}Quit (Ctrl+C)"
-
-
-
-#---FUNCTIONS
-#---Trap ctrl-c and Call ctrl_c()
-trap CTRL_C__sub INT
-
-function press_any_key__func() {
-	#Define constants
-	local ANYKEY_TIMEOUT=10
-
-	#Initialize variables
-	local keyPressed=""
-	local tCounter=0
-
-	#Show Press Any Key message with count-down
-	moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-	while [[ ${tCounter} -le ${ANYKEY_TIMEOUT} ]];
-	do
-		delta_tcounter=$(( ${ANYKEY_TIMEOUT} - ${tCounter} ))
-
-		echo -e "\rPress (a)bort or any key to continue... (${delta_tcounter}) \c"
-		read -N 1 -t 1 -s -r keyPressed
-
-		if [[ ! -z "${keyPressed}" ]]; then
-			if [[ "${keyPressed}" == "a" ]] || [[ "${keyPressed}" == "A" ]]; then
-				exit
-			else
-				break
-			fi
-		fi
-		
-		tCounter=$((tCounter+1))
-	done
-	moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-}
-
-function duplicate_char__func() {
-    #Input args
-    local char_input=${1}
-    local numOf_times=${2}
-
-    #Duplicate 'char_input'
-    local char_duplicated=`printf '%*s' "${numOf_times}" | tr ' ' "${char_input}"`
-
-    #Print text including Leading Empty Spaces
-    echo -e "${char_duplicated}"
-}
-
-function get_output_from_file__func() {
-    #Read from file
-    if [[ -f ${docker__readInput_w_autocomplete_out__fpath} ]]; then
-        ret=`cat ${docker__readInput_w_autocomplete_out__fpath} | head -n1 | xargs`
-    else
-        ret=${DOCKER__EMPTYSTRING}
-    fi
-
-    #Output
-    echo ${ret}
-}
-
-function show_centered_string__func() {
-    #Input args
-    local str_input=${1}
-    local maxStrLen_input=${2}
-
-    #Define one-space constant
-    local ONESPACE=" "
-
-    #Get string 'without visiable' color characters
-    local strInput_wo_colorChars=`echo "${str_input}" | sed "s,\x1B\[[0-9;]*m,,g"`
-
-    #Get string length
-    local strInput_wo_colorChars_len=${#strInput_wo_colorChars}
-
-    #Calculated the number of spaces to-be-added
-    local numOf_spaces=$(( (maxStrLen_input-strInput_wo_colorChars_len)/2 ))
-
-    #Create a string containing only EMPTY SPACES
-    local emptySpaces_string=`duplicate_char__func "${ONESPACE}" "${numOf_spaces}" `
-
-    #Print text including Leading Empty Spaces
-    echo -e "${emptySpaces_string}${str_input}"
-}
-
-function show_errMsg_with_menuTitle__func() {
-    #Input args
-    local menuTitle=${1}
-    local errMsg=${2}
-
-    #Show error-message
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"  #horizontal line
-    show_centered_string__func "${menuTitle}" "${DOCKER__TABLEWIDTH}"   #menu-title
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"  #horizontal line
-    
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-    show_centered_string__func "${errMsg}" "${DOCKER__TABLEWIDTH}"  #error message
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"  #horizontal line
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-
-    press_any_key__func
-
-    CTRL_C__sub
-}
-
-function show_errMsg_without_menuTitle__func() {
-    #Input args
-    local errMsg=${1}
-
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
-
-    echo -e "${errMsg}" #error message
-
-    press_any_key__func
-}
-
-function show_errMsg_plainVersion__func() {
-    #Input args
-    local errMsg=${1}
-
-    # moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
-
-    echo -e "${errMsg}" #error message
-
-    # press_any_key__func
-}
-
-function show_list_with_menuTitle__func() {
-    #Input args
-    local menuTitle=${1}
-    local dockerCmd=${2}
-
-    #Show list
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"   #horizontal line
-    show_centered_string__func "${menuTitle}" "${DOCKER__TABLEWIDTH}"   #menu-title
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"   #horizontal line
-    
-    if [[ ${dockerCmd} == ${docker__ps_a_cmd} ]]; then
-        ${docker__containerlist_tableinfo_fpath}    #show container-list
-    else
-        ${docker__repolist_tableinfo_fpath} #show image-list
-    fi
-
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"   #horizontal line
-    echo -e "${DOCKER__CTRL_C_QUIT}"
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"   #horizontal line
-}   
-
-
-
 #---SUBROUTINES
-CTRL_C__sub() {
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
-    
-    exit 99
-}
-
 docker__load_environment_variables__sub() {
     #Define paths
     docker__current_script_fpath="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
@@ -212,8 +9,8 @@ docker__load_environment_variables__sub() {
     if [[ -z ${docker__parent_dir} ]]; then
         docker__parent_dir="${DOCKER__SLASH_CHAR}"
     fi
-
     docker__current_folder=`basename ${docker__current_dir}`
+
     docker__development_tools_folder="development_tools"
     if [[ ${docker__current_folder} != ${docker__development_tools_folder} ]]; then
         docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}/${docker__development_tools_folder}
@@ -241,7 +38,7 @@ docker__load_source_files__sub() {
 
 docker__load_header__sub() {
     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-    echo -e "${DOCKER__TITLE_BG_ORANGE}                                 ${DOCKER__TITLE}${DOCKER__TITLE_BG_ORANGE}                                ${DOCKER__NOCOLOR}"
+    echo -e "${DOCKER__BG_ORANGE}                                 ${DOCKER__TITLE}${DOCKER__BG_ORANGE}                                ${DOCKER__NOCOLOR}"
 }
 
 docker__init_variables__sub() {
@@ -253,9 +50,9 @@ docker__init_variables__sub() {
     docker__myImageId_isFound=""
     docker__myAnswer=""
 
-    docker__images_cmd="docker image ls"
-
     docker__exitCode=0
+
+    docker__images_cmd="docker image ls"
     docker__images_IDColNo=3
 
     docker__showTable=false
@@ -264,14 +61,11 @@ docker__init_variables__sub() {
 
 docker__remove_specified_images__sub() {
     #Define message constants
-    local MENUTITLE="Remove ${DOCKER__IMAGEID_FG_BORDEAUX}Image${DOCKER__NOCOLOR}/${DOCKER__REPOSITORY_FG_PURPLE}Repository${DOCKER__NOCOLOR}"
-    local MENUTITLE_UPDATED_IMAGE_LIST="Updated ${DOCKER__IMAGEID_FG_BORDEAUX}Image${DOCKER__NOCOLOR}-list"
     local READMSG_DO_YOU_REALLY_WISH_TO_CONTINUE="***Do you REALLY wish to continue (y/n/q/b)? "
-    local ERRMSG_NO_IMAGES_FOUND="=:${DOCKER__ERROR_FG_LIGHTRED}NO IMAGES FOUND${DOCKER__NOCOLOR}:="
 
     #Define local message variables
     local errMsg=${DOCKER__EMPTYSTRING}
-    local numof_images=0
+    local numOfLines=${DOCKER__NUMOFLINES_0}
 
     #Set flag to true
     docker__showTable=true
@@ -294,7 +88,7 @@ docker__remove_specified_images__sub() {
             break
         fi
 
-        #
+        #Check if 'docker__myImageId' contains data.
         if [[ ! -z ${docker__myImageId} ]]; then
             #Substitute COMMA with SPACE
             docker__myImageId_subst=`echo ${docker__myImageId} | sed 's/,/\ /g'`
@@ -316,54 +110,59 @@ docker__remove_specified_images__sub() {
                     case "${docker__myAnswer}" in
                         "y")
                             if [[ ${docker__myImageId} == ${DOCKER__REMOVE_ALL} ]]; then    #remove-all image-IDs
-                                # docker rmi $(docker images -q)
+                                #Remove image-IDs
+                                docker rmi $(docker images -q)
 
-                                #Show image-list table
-                                docker__show_infoTable__sub "${MENUTITLE_UPDATED_IMAGE_LIST}" \
-                                        "${docker__images_cmd}" \
-                                        "${ERRMSG_NO_IMAGES_FOUND}" \
-                                        "${DOCKER__NUMOFLINES_2}"
-
-                                #Exit this current loop
-                                break
+                                #Set number of lines
+                                numOfLines=${DOCKER__NUMOFLINES_2}
                             else    #Handle each image-ID at the time
                                 #Print Empty Lines
                                 moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
 
                                 for docker__myImageId_item in "${docker__myImageId_arr[@]}"
                                 do 
-                                    docker__myImageId_isFound=`docker image ls | awk '{print $3}' | grep -w ${docker__myImageId_item}`
-                                    if [[ ! -z ${docker__myImageId_isFound} ]]; then
-                                        # docker image rmi -f ${docker__myImageId_item}
+                                    #Check if 'docker__myImageId_item' is present
+                                    docker__myImageId_isFound=`checkForMatch_dockerCmd_result__func "${docker__myImageId_item}" \
+                                            "${docker__images_cmd}" \
+                                            "${docker__images_IDColNo}"`
+                                    if [[ ${docker__myImageId_isFound} == true ]]; then
+                                        #Remove selected image-IDs
+                                        docker image rmi -f ${docker__myImageId_item}
 
-                                        #Check if removing the image was successful
-                                        docker__myImageId_isFound=`docker image ls | awk '{print $3}' | grep -w ${docker__myImageId_item}`
-                                        if [[ -z ${docker__myImageId_isFound} ]]; then
+                                        ##Check if 'docker__myImageId_item' has been removed successfully
+                                        docker__myImageId_isFound=`checkForMatch_dockerCmd_result__func "${docker__myImageId_item}" \
+                                                "${docker__images_cmd}" \
+                                                "${docker__images_IDColNo}"`
+                                        if [[ ${docker__myImageId_isFound} == false ]]; then
                                             docker__prune_handler__sub "${docker__myImageId_item}"
                                         else  
-                                            errMsg="***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Could *NOT* remove Image-ID: ${DOCKER__IMAGEID_FG_BORDEAUX}${docker__myImageId_item}${DOCKER__NOCOLOR}"
+                                            errMsg="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Could *NOT* remove image-ID: ${DOCKER__FG_BORDEAUX}${docker__myImageId_item}${DOCKER__NOCOLOR}"
                                             
                                             show_errMsg_plainVersion__func "${errMsg}"
                                         fi
                                     else
                                         #Update error-message
-                                        errMsg="***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Invalid Image-ID '${DOCKER__IMAGEID_FG_BORDEAUX}${docker__myImageId_item}${DOCKER__NOCOLOR}'"
+                                        errMsg="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Invalid image-ID '${DOCKER__FG_BORDEAUX}${docker__myImageId_item}${DOCKER__NOCOLOR}'"
 
                                         show_errMsg_plainVersion__func "${errMsg}"
                                     fi
                                 done
+
+                                #Set number of lines
+                                numOfLines=${DOCKER__NUMOFLINES_1}
                             fi
 
                             #Print an Empty Line
-                            moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+                            moveDown_and_cleanLines__func "${numOfLines}"
 
                             #Set flag back to true
                             docker__showTable=true
 
+                            #Exit while-loop
                             break
                             ;;
                         "n")
-                            moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_10}"
+                            moveDown_oneLine_then_moveUp_and_clean__func "${DOCKER__NUMOFLINES_5}"
 
                             break
                             ;;
@@ -373,7 +172,7 @@ docker__remove_specified_images__sub() {
                             exit
                             ;;
                         "b")
-                            moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_10}"
+                            moveDown_oneLine_then_moveUp_and_clean__func "${DOCKER__NUMOFLINES_5}"
 
                             break
                             ;;
@@ -393,20 +192,19 @@ docker__remove_specified_images__sub() {
 docker_imageId_input__sub() {
     #Define message constants
     local READMSG_PASTE_YOUR_INPUT="Paste your input (here): "
-    local MENUTITLE="Remove ${DOCKER__IMAGEID_FG_BORDEAUX}Image${DOCKER__NOCOLOR}/${DOCKER__REPOSITORY_FG_PURPLE}Repository${DOCKER__NOCOLOR}"
-    local ERRMSG_NO_IMAGES_FOUND="=:${DOCKER__ERROR_FG_LIGHTRED}NO IMAGES FOUND${DOCKER__NOCOLOR}:="
-
-    local ERRMSG_CHOSEN_IMAGEID_DOESNOT_EXISTS="***${DOCKER__ERROR_FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Invalid input value "
-    local ERRMSG_NO_IMAGES_FOUND="=:${DOCKER__ERROR_FG_LIGHTRED}NO IMAGES FOUND${DOCKER__NOCOLOR}:="
+    local MENUTITLE="Remove ${DOCKER__FG_BORDEAUX}image${DOCKER__NOCOLOR}/${DOCKER__FG_PURPLE}repository${DOCKER__NOCOLOR}"
+    local ERRMSG_NO_IMAGES_FOUND="=:${DOCKER__FG_LIGHTRED}NO IMAGES FOUND${DOCKER__NOCOLOR}:="
+    local ERRMSG_CHOSEN_IMAGEID_DOESNOT_EXISTS="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Invalid input value "
 
     #Define variables
-    local readmsg_remarks1="${DOCKER__REMARK_BG_ORANGE}Remarks:${DOCKER__NOCOLOR}\n"
-    readmsg_remarks1+="${DOCKER__DASH} Remove ALL image-IDs by typing: ${DOCKER__REMOVE_ALL}\n"
-    readmsg_remarks1+="${DOCKER__DASH} Multiple image-IDs can be removed\n"
-    readmsg_remarks1+="${DOCKER__DASH} Comma-separator will be appended automatically\n"
-    readmsg_remarks1+="${DOCKER__DASH} Up/Down arrow: to cycle thru existing values\n"
-    readmsg_remarks1+="${DOCKER__DASH} TAB: auto-complete\n"
-    readmsg_remarks1+="${DOCKER__DASH} [On an Empty Field] press ENTER to confirm deletion"
+    local readmsg_remarks="${DOCKER__BG_ORANGE}Remarks:${DOCKER__NOCOLOR}\n"
+    readmsg_remarks+="${DOCKER__DASH} Remove ALL image-IDs by typing: ${DOCKER__FG_LIGHTGREY}${DOCKER__REMOVE_ALL}${DOCKER__NOCOLOR}\n"
+    readmsg_remarks+="${DOCKER__DASH} Multiple image-IDs can be removed\n"
+    readmsg_remarks+="${DOCKER__DASH} Comma-separator will be appended automatically\n"
+    readmsg_remarks+="${DOCKER__DASH} Up/Down arrow: to cycle thru existing values\n"
+    readmsg_remarks+="${DOCKER__DASH} TAB: auto-complete\n"
+    readmsg_remarks+="${DOCKER__DASH} ${DOCKER__FG_YELLOW};c${DOCKER__NOCOLOR}: clear\n"
+    readmsg_remarks+="${DOCKER__DASH} [On an Empty Field] press ENTER to confirm deletion"
 
     #Reset variable based on the chosen answer (e.g., n, b)
     if [[ ${docker__myAnswer} != "b" ]]; then
@@ -419,39 +217,39 @@ docker_imageId_input__sub() {
 
     #Initialization
     local isFound=false
-    local readmsg_remarks2=${DOCKER__EMPTYSTRING}
+    local readmsg_update=${DOCKER__EMPTYSTRING}
     local readMsg_numOfLines=0
     local remarks_numOfLines=0
-    local remarks2_numOfLines=0
+    local update_numOfLines=0
     local numOfLines_tot=0
 
     #Calculate number of lines to be cleaned
     if [[ ! -z ${READMSG_PASTE_YOUR_INPUT} ]]; then    #this condition is important
         readMsg_numOfLines=`echo -e ${READMSG_PASTE_YOUR_INPUT} | wc -l`      
     fi
-    if [[ ! -z ${readmsg_remarks1} ]]; then    #this condition is important
-        remarks_numOfLines=`echo -e ${readmsg_remarks1} | wc -l`      
+    if [[ ! -z ${readmsg_remarks} ]]; then    #this condition is important
+        remarks_numOfLines=`echo -e ${readmsg_remarks} | wc -l`      
     fi
 
     while true
     do
-        #Define 'readmsg_remarks2'
-        readmsg_remarks2="${DOCKER__IMAGEID_BG_BORDEAUX}Remove the following ${DOCKER__OUTSIDE_FG_WHITE}image-IDs${DOCKER__NOCOLOR}:"
-        readmsg_remarks2+="${DOCKER__IMAGEID_BG_BORDEAUX}${DOCKER__OUTSIDE_FG_WHITE}${docker__myImageId}${DOCKER__NOCOLOR}"
+        #Define 'readmsg_update'
+        readmsg_update="${DOCKER__BG_BORDEAUX}Remove the following ${DOCKER__FG_WHITE}image-IDs${DOCKER__NOCOLOR}:"
+        readmsg_update+="${DOCKER__BG_BORDEAUX}${DOCKER__FG_WHITE}${docker__myImageId}${DOCKER__NOCOLOR}"
 
-        #Get the length of 'readmsg_remarks2'
-        if [[ ! -z ${readmsg_remarks2} ]]; then    #this condition is important
-            remarks2_numOfLines=`echo -e ${readmsg_remarks2} | wc -l`      
+        #Get the length of 'readmsg_update'
+        if [[ ! -z ${readmsg_update} ]]; then    #this condition is important
+            update_numOfLines=`echo -e ${readmsg_update} | wc -l`      
         fi
 
         #Update total number of lines to be cleaned 'numOfLines_tot'
-        numOfLines_tot=$((readMsg_numOfLines + remarks_numOfLines + remarks2_numOfLines))
+        numOfLines_tot=$((readMsg_numOfLines + update_numOfLines + DOCKER__NUMOFLINES_1))
 
         #Only show the read-input message, but do not show the image-list table.
         ${docker_readInput_w_autocomplete_fpath} "${MENUTITLE}" \
                             "${READMSG_PASTE_YOUR_INPUT}" \
-                            "${readmsg_remarks1}" \
-                            "${readmsg_remarks2}" \
+                            "${readmsg_update}" \
+                            "${readmsg_remarks}" \
                             "${ERRMSG_NO_IMAGES_FOUND}" \
                             "${ERRMSG_CHOSEN_IMAGEID_DOESNOT_EXISTS}" \
                             "${docker__images_cmd}" \
@@ -466,7 +264,7 @@ docker_imageId_input__sub() {
             docker__myImageId_input=${DOCKER__EMPTYSTRING}
         else
             #Retrieve the selected container-ID from file
-            docker__myImageId_input=`get_output_from_file__func`  
+            docker__myImageId_input=`get_output_from_file__func "${docker__readInput_w_autocomplete_out__fpath}"`
         fi  
 
         #This boolean will make sure that the image-list table is only displayed once.
@@ -508,16 +306,29 @@ docker_imageId_input__sub() {
 	done
 }
 
+docker__prune_handler__sub()  {
+    #Input args
+    local imageId__input=${1}
+
+    #Prune and print messages
+    echo -e "Successfully Removed image-ID: ${DOCKER__FG_BORDEAUX}${imageId__input}${DOCKER__NOCOLOR}"
+    echo -e "\r"
+    echo -e "Removing ALL unlinked images"
+    echo -e "y\n" | docker image prune
+    echo -e "Removing ALL stopped containers"
+    echo -e "y\n" | docker container prune
+}
+
 docker__show_infoTable__sub() {
     #Input args
     local menuTitle__input=${1}
     local dockerCmd__input=${2}
     local errorMsg__input=${3}
-    local numOfLines_toPrint__input=${4}
+    local nunOfEmptyLines_toAdd__input=${4}
 
     #Move-down a specified number of lines
     local counter=1
-    while [[ ${counter} -le ${numOfLines_toPrint__input} ]];
+    while [[ ${counter} -le ${nunOfEmptyLines_toAdd__input} ]];
     do
         moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
@@ -535,19 +346,9 @@ docker__show_infoTable__sub() {
     fi
 }
 
-docker__prune_handler__sub()  {
-    #Input args
-    local ${imageId__input}=${1}
 
-    #Prune and print messages
-    echo -e "Successfully Removed Image-ID: ${DOCKER__IMAGEID_FG_BORDEAUX}${imageId__input}${DOCKER__NOCOLOR}"
-    echo -e "\r"
-    echo -e "Removing ALL unlinked images"
-    echo -e "y\n" | docker image prune
-    echo -e "Removing ALL stopped containers"
-    echo -e "y\n" | docker container prune
-}
 
+#---MAIN SUBROUTINE
 main_sub() {
     docker__load_environment_variables__sub
 
@@ -561,5 +362,6 @@ main_sub() {
 }
 
 
-#Execute main subroutine
+
+#---EXECUTE MAIN
 main_sub

@@ -1,118 +1,11 @@
 #!/bin/bash -m
 #Remark: by using '-m' the INT will NOT propagate to the PARENT scripts
-#---COLOR CONSTANTS
-DOCKER__NOCOLOR=$'\e[0m'
-DOCKER__FG_LIGHTRED=$'\e[1;31m'
-DOCKER__CHROOT_FG_GREEN=$'\e[30;38;5;82m'
-DOCKER__FG_SOFTLIGHTBLUE=$'\e[30;38;5;80m'
-DOCKER__FG_LIGHTBLUE=$'\e[30;38;5;51m'
-DOCKER__GENERAL_FG_YELLOW=$'\e[1;33m'
-DOCKER__INSIDE_FG_LIGHTGREY=$'\e[30;38;5;246m'
-DOCKER__FILES_FG_ORANGE=$'\e[30;38;5;215m'
-DOCKER__IMAGEID_FG_BORDEAUX=$'\e[30;38;5;198m'
-
-DOCKER__FG_SOFTLIGHTRED=$'\e[30;38;5;131m'
-DOCKER__FG_LIGHTGREEN=$'\e[30;38;5;71m'
-DOCKER__FG_LIGHTSOFTYELLOW=$'\e[30;38;5;229m'
-
-DOCKER__TITLE_BG_ORANGE=$'\e[30;48;5;215m'
-
-#---CONSTANTS
-DOCKER__TITLE="TIBBO"
-
-DOCKER__CTRL_C_QUIT="Quit (Ctrl+C)"
-
-#---CHARACTER CONSTANTS
-DOCKER__ASTERISK="*"
-DOCKER__DASH="-"
-DOCKER__EMPTYSTRING=""
-
-DOCKER__ENTER=$'\x0a'
-
-DOCKER__ONESPACE=" "
-DOCKER__TWOSPACES=${DOCKER__ONESPACE}${DOCKER__ONESPACE}
-DOCKER__FOURSPACES=${DOCKER__TWOSPACES}${DOCKER__TWOSPACES}
-
-#---BOOLEAN CONSTANTS
-TRUE=true
-FALSE=false
-
-#---NUMERIC CONSTANTS
-DOCKER__TABLEWIDTH=70
-
-DOCKER__NUMOFLINES_0=0
-DOCKER__NUMOFLINES_1=1
-DOCKER__NUMOFLINES_2=2
-DOCKER__NUMOFLINES_3=3
-DOCKER__NUMOFLINES_4=4
-DOCKER__NUMOFLINES_5=5
-DOCKER__NUMOFLINES_6=6
-DOCKER__NUMOFLINES_7=7
-DOCKER__NUMOFLINES_8=8
-DOCKER__NUMOFLINES_9=9
-
-
-
 #---VARIABLES
 git__gitBranchList_arr=()
-git__branchName_isNew=${FALSE}
+git__branchName_isNew=${DOCKER__FALSE}
 
 
 #---FUNCTIONS
-#---FUNCTIONS
-trap CTRL_C__func INT
-
-function CTRL_C__func() {
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
-
-    exit
-}
-
-function press_any_key__func() {
-	#Define constants
-	local ANYKEY_TIMEOUT=10
-
-	#Initialize variables
-	local keypressed=""
-	local tcounter=0
-
-	#Show Press Any Key message with count-down
-	moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-	while [[ ${tcounter} -le ${ANYKEY_TIMEOUT} ]];
-	do
-		delta_tcounter=$(( ${ANYKEY_TIMEOUT} - ${tcounter} ))
-
-		echo -e "\rPress (a)bort or any key to continue... (${delta_tcounter}) \c"
-		read -N 1 -t 1 -s -r keypressed
-
-		if [[ ! -z "${keypressed}" ]]; then
-			if [[ "${keypressed}" == "a" ]] || [[ "${keypressed}" == "A" ]]; then
-				exit
-			else
-				break
-			fi
-		fi
-		
-		tcounter=$((tcounter+1))
-	done
-	moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-}
-
-function GOTO__func
-{
-	#Input args
-    LABEL=$1
-	
-	#Define Command line
-    cmd_line=$(sed -n "/$LABEL:/{:a;n;p;ba;};" $0 | grep -v ':$')
-	
-	#Execute Command line
-    eval "${cmd_line}"
-	
-	#Exit Function
-    exit
-}
-
 function checkForMatch_subString_in_string__func() {
     #Input args
     local str_input=${1}
@@ -121,9 +14,9 @@ function checkForMatch_subString_in_string__func() {
     #Check if 'subStr_input' is found in 'str_input'
     local stdOutput=`echo "${str_input}" | grep "${subStr_input}"`
     if [[ ! -z ${stdOutput} ]]; then
-        echo ${TRUE}
+        echo ${DOCKER__TRUE}
     else
-        echo ${FALSE}
+        echo ${DOCKER__FALSE}
     fi
 }
 
@@ -134,9 +27,9 @@ function checkIf_branch_alreadyExists__func() {
     #Check if 'branchName_input' already exists
     local stdOutput=`git branch | grep -w "${branchName_input}" 2>&1`
     if [[ ! -z ${stdOutput} ]]; then #contains data
-        echo ${TRUE}
+        echo ${DOCKER__TRUE}
     else    #contains no data
-        echo ${FALSE}
+        echo ${DOCKER__FALSE}
     fi
 }
 
@@ -147,22 +40,10 @@ function checkIf_branch_isCheckedOut__func() {
     #Check if 'branchName_input' already exists
     local stdOutput=`git branch | grep -w "${branchName_input}" | grep "${DOCKER__ASTERISK}" 2>&1`
     if [[ ! -z ${stdOutput} ]]; then #contains data
-        echo ${TRUE}
+        echo ${DOCKER__TRUE}
     else    #contains no data
-        echo ${FALSE}
+        echo ${DOCKER__FALSE}
     fi
-}
-
-function duplicate_char__func() {
-    #Input args
-    local char_input=${1}
-    local numOf_times=${2}
-
-    #Duplicate 'char_input'
-    local char_duplicated=`printf '%*s' "${numOf_times}" | tr ' ' "${char_input}"`
-
-    #Print text including Leading Empty Spaces
-    echo -e "${char_duplicated}"
 }
 
 function get_git_branchList__func() {
@@ -177,30 +58,6 @@ function get_git_branchList__func() {
     set +f
 }
 
-function show_centered_string__func() {
-    #Input args
-    local str_input=${1}
-    local maxStrLen_input=${2}
-
-    #Define one-space constant
-    local ONESPACE=" "
-
-    #Get string 'without visiable' color characters
-    local strInput_wo_colorChars=`echo "${str_input}" | sed "s,\x1B\[[0-9;]*m,,g"`
-
-    #Get string length
-    local strInput_wo_colorChars_len=${#strInput_wo_colorChars}
-
-    #Calculated the number of spaces to-be-added
-    local numOf_spaces=$(( (maxStrLen_input-strInput_wo_colorChars_len)/2 ))
-
-    #Create a string containing only EMPTY SPACES
-    local emptySpaces_string=`duplicate_char__func "${ONESPACE}" "${numOf_spaces}" `
-
-    #Print text including Leading Empty Spaces
-    echo -e "${emptySpaces_string}${str_input}"
-}
-
 function show_git_branchList__func() {
     #Define local constants
     local CHECKED_OUT="checked out"
@@ -208,20 +65,20 @@ function show_git_branchList__func() {
     #Define local variables
     local gitBranchList_arrItem=${DOCKER__EMPTYSTRING}
     local gitBranchList_arrItem_wo_asterisk=${DOCKER__EMPTYSTRING} 
-    local asterisk_isFound=${FALSE}
+    local asterisk_isFound=${DOCKER__FALSE}
 
     #Print Status Message
-    echo -e "---:${DOCKER__FILES_FG_ORANGE}${PRINTF_LIST_LOCAL}${DOCKER__NOCOLOR}: git branch"
+    echo -e "---:${DOCKER__FG_ORANGE}${PRINTF_LIST_LOCAL}${DOCKER__NOCOLOR}: git branch"
 
     #Show Array items
     for gitBranchList_arrItem in "${git__gitBranchList_arr[@]}"
     do 
         #Check if asterisk is present
         asterisk_isFound=`checkForMatch_subString_in_string__func "${gitBranchList_arrItem}" "${DOCKER__ASTERISK}"`
-        if [[ ${asterisk_isFound} == ${TRUE} ]]; then
+        if [[ ${asterisk_isFound} == ${DOCKER__TRUE} ]]; then
             gitBranchList_arrItem_wo_asterisk=`echo ${gitBranchList_arrItem} | cut -d"${DOCKER__ASTERISK}" -f2`
 
-            echo -e "${DOCKER__FOURSPACES}${DOCKER__ASTERISK} ${DOCKER__CHROOT_FG_GREEN}${gitBranchList_arrItem_wo_asterisk}${DOCKER__NOCOLOR} (${CHECKED_OUT})"
+            echo -e "${DOCKER__FOURSPACES}${DOCKER__ASTERISK} ${DOCKER__FG_GREEN}${gitBranchList_arrItem_wo_asterisk}${DOCKER__NOCOLOR} (${CHECKED_OUT})"
         else
             echo -e "${DOCKER__FOURSPACES}${gitBranchList_arrItem}"
         fi
@@ -262,22 +119,22 @@ git__load_source_files__sub() {
 
 git__load_header__sub() {
     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-    echo -e "${DOCKER__TITLE_BG_ORANGE}                                 ${DOCKER__TITLE}${DOCKER__TITLE_BG_ORANGE}                                ${DOCKER__NOCOLOR}"
+    echo -e "${DOCKER__BG_ORANGE}                                 ${DOCKER__TITLE}${DOCKER__BG_ORANGE}                                ${DOCKER__NOCOLOR}"
 }
 
 git__git_pull__sub() {
     #Define local constants
-    local MENUTITLE="Git ${DOCKER__FG_SOFTLIGHTRED}Delete${DOCKER__NOCOLOR} ${DOCKER__INSIDE_FG_LIGHTGREY}Local${DOCKER__NOCOLOR} Branch"
+    local MENUTITLE="Git ${DOCKER__FG_SOFTLIGHTRED}Delete${DOCKER__NOCOLOR} ${DOCKER__FG_LIGHTGREY}Local${DOCKER__NOCOLOR} Branch"
 
     #Define local message constants
-    local PRINTF_COMPLETED="${DOCKER__FILES_FG_ORANGE}COMPLETED${DOCKER__NOCOLOR}"
-    local PRINTF_LIST_LOCAL="${DOCKER__FILES_FG_ORANGE}LIST${DOCKER__NOCOLOR} (${DOCKER__FILES_FG_ORANGE}LOCAL${DOCKER__NOCOLOR})"
-    local PRINTF_INPUT="${DOCKER__FILES_FG_ORANGE}INPUT${DOCKER__NOCOLOR}"
-    local PRINTF_START="${DOCKER__FILES_FG_ORANGE}START${DOCKER__NOCOLOR}"
-    local PRINTF_STATUS="${DOCKER__FILES_FG_ORANGE}STATUS${DOCKER__NOCOLOR}"
-    local PRINTF_WARNING="${DOCKER__IMAGEID_FG_BORDEAUX}WARNING${DOCKER__NOCOLOR}"
+    local PRINTF_COMPLETED="${DOCKER__FG_ORANGE}COMPLETED${DOCKER__NOCOLOR}"
+    local PRINTF_LIST_LOCAL="${DOCKER__FG_ORANGE}LIST${DOCKER__NOCOLOR} (${DOCKER__FG_ORANGE}LOCAL${DOCKER__NOCOLOR})"
+    local PRINTF_INPUT="${DOCKER__FG_ORANGE}INPUT${DOCKER__NOCOLOR}"
+    local PRINTF_START="${DOCKER__FG_ORANGE}START${DOCKER__NOCOLOR}"
+    local PRINTF_STATUS="${DOCKER__FG_ORANGE}STATUS${DOCKER__NOCOLOR}"
+    local PRINTF_WARNING="${DOCKER__FG_BORDEAUX}WARNING${DOCKER__NOCOLOR}"
 
-    local PRINTF_BRANCH_TOBE_DELETED="Branch ${DOCKER__INSIDE_FG_LIGHTGREY}to-be-deleted${DOCKER__NOCOLOR}"
+    local PRINTF_BRANCH_TOBE_DELETED="Branch ${DOCKER__FG_LIGHTGREY}to-be-deleted${DOCKER__NOCOLOR}"
     local PRINTF_ERROR="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}"
 
     #Define local question constants
@@ -290,7 +147,7 @@ git__git_pull__sub() {
     local READERR_NOT_FOUND="${DOCKER__FG_LIGHTRED}not found${DOCKER__NOCOLOR}"
 
     #Define local variables
-    local isCheckedOut=${FALSE}
+    local isCheckedOut=${DOCKER__FALSE}
     local myAnswer=${DOCKER__EMPTYSTRING}
 
     #Define local message variables
@@ -308,7 +165,7 @@ GOTO__func START
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
     show_centered_string__func "${MENUTITLE}" "${DOCKER__TABLEWIDTH}"
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-    echo -e "${DOCKER__FOURSPACES}${DOCKER__CTRL_C_QUIT}"
+    echo -e "${DOCKER__FOURSPACES}${DOCKER__QUIT_CTRL_C}"
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
 
     GOTO__func PRECHECK    #goto next-phase
@@ -347,10 +204,10 @@ GOTO__func START
         if [[ ! -z ${myBranchName} ]]; then #contains data
             #Check if 'myBranchName' already exists
             myBranchName_isFound=`checkIf_branch_alreadyExists__func "${myBranchName}"`
-            if [[ ${myBranchName_isFound} == ${TRUE} ]]; then
+            if [[ ${myBranchName_isFound} == ${DOCKER__TRUE} ]]; then
                 #Check if asterisk is present
                 isCheckedOut=`checkIf_branch_isCheckedOut__func "${myBranchName}"`
-                if [[ ${isCheckedOut} == ${FALSE} ]]; then  #asterisk is NOT found
+                if [[ ${isCheckedOut} == ${DOCKER__FALSE} ]]; then  #asterisk is NOT found
                     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
                     break
@@ -375,7 +232,7 @@ GOTO__func START
 
 
     #Update message
-    printf_msg="About to Delete (local) branch '${DOCKER__INSIDE_FG_LIGHTGREY}${myBranchName}${DOCKER__NOCOLOR}'"
+    printf_msg="About to Delete (local) branch '${DOCKER__FG_LIGHTGREY}${myBranchName}${DOCKER__NOCOLOR}'"
 
     #Show question
     while true
@@ -416,7 +273,7 @@ GOTO__func START
 
 
 @DELETE_BRANCH:
-    echo -e "---:${PRINTF_START}: git branch -d ${DOCKER__INSIDE_FG_LIGHTGREY}${myBranchName}${DOCKER__NOCOLOR}"
+    echo -e "---:${PRINTF_START}: git branch -d ${DOCKER__FG_LIGHTGREY}${myBranchName}${DOCKER__NOCOLOR}"
 
     #Execute
     git branch -d ${myBranchName}
@@ -424,7 +281,7 @@ GOTO__func START
     #Check exit-code
     exitCode=$?
     if [[ ${exitCode} -eq 0 ]]; then
-        echo -e "---:${PRINTF_COMPLETED}: git branch -d ${DOCKER__INSIDE_FG_LIGHTGREY}${myBranchName}${DOCKER__NOCOLOR}"
+        echo -e "---:${PRINTF_COMPLETED}: git branch -d ${DOCKER__FG_LIGHTGREY}${myBranchName}${DOCKER__NOCOLOR}"
         moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
         
         #Goto next-phase
@@ -462,7 +319,7 @@ GOTO__func START
 
 @EXIT_FAILED:
     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-    echo -e "${PRINTF_ERROR}: git branch -d ${DOCKER__INSIDE_FG_LIGHTGREY}${myBranchName}${DOCKER__NOCOLOR}"
+    echo -e "${PRINTF_ERROR}: git branch -d ${DOCKER__FG_LIGHTGREY}${myBranchName}${DOCKER__NOCOLOR}"
     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
     exit 99
