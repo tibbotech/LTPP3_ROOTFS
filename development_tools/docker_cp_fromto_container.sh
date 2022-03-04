@@ -4,6 +4,11 @@
 DOCKER__LISTVIEW_NUMOFROWS=20
 DOCKER__LISTVIEW_NUMOFCOLS=0
 
+#---ENUM CONSTANTS
+DOCKER__CONTAINER_TO_HOST=1
+DOCKER__HOST_TO_CONTAINER=2
+
+
 
 # #---VARIABLES
 # docker__myContainerId_accept=${DOCKER__EMPTYSTRING}
@@ -32,7 +37,6 @@ DOCKER__LISTVIEW_NUMOFCOLS=0
 docker__environmental_variables__sub() {
 	#---Define PATHS
 	docker__ispbooot_bin_filename="ISPBOOOT.BIN"
-	docker__localhost_dirlist_filename="localhost_dirlist.sh"
 
 	docker__bin_bash_dir=/bin/bash
 	docker__root_sp7xxx_out_dir=/root/SP7021/out
@@ -55,20 +59,6 @@ docker__environmental_variables__sub() {
 
     docker__global_functions_filename="docker_global_functions.sh"
     docker__global_functions_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__global_functions_filename}
-
-    docker__containerlist_tableinfo_filename="docker_containerlist_tableinfo.sh"
-    docker__containerlist_tableinfo_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__containerlist_tableinfo_filename}
-
-	docker__dockercontainer_dirlist_filename="dockercontainer_dirlist.sh"
-	docker__dockercontainer_dirlist_fpath=${docker__current_dir}/${docker__dockercontainer_dirlist_filename}
-	docker__localhost_dirlist_fpath=${docker__current_dir}/${docker__localhost_dirlist_filename}
-
-    docker_readInput_w_autocomplete_filename="docker_readInput_w_autocomplete.sh"
-    docker_readInput_w_autocomplete_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker_readInput_w_autocomplete_filename}
-
-    docker__tmp_dir=/tmp
-    docker__readInput_w_autocomplete_out__filename="docker__readInput_w_autocomplete.out"
-    docker__readInput_w_autocomplete_out__fpath=${docker__tmp_dir}/${docker__readInput_w_autocomplete_out__filename}
 }
 
 docker__load_source_files__sub() {
@@ -91,8 +81,8 @@ docker__load_constants__sub() {
 	DOCKER__READINPUT_H_OPTION="${DOCKER__FG_YELLOW}${DOCKER__SEMICOLON_HOME}${DOCKER__NOCOLOR}ome"
 	DOCKER__READINPUT_B_OPTION="${DOCKER__FG_YELLOW}${DOCKER__SEMICOLON_BACK}${DOCKER__NOCOLOR}ack"
 	DOCKER__READINPUT_C_OPTION="${DOCKER__FG_YELLOW}${DOCKER__SEMICOLON_CLEAR}${DOCKER__NOCOLOR}lear"
-	DOCKER__READINPUT_B_C_OPTIONS="(${DOCKER__READINPUT_B_OPTION},${DOCKER__READINPUT_C_OPTION})"
-	DOCKER__READINPUT_H_B_C_OPTIONS="(${DOCKER__READINPUT_H_OPTION},${DOCKER__READINPUT_B_OPTION},${DOCKER__READINPUT_C_OPTION})"
+	DOCKER__READINPUT_B_C_OPTIONS="(${DOCKER__READINPUT_B_OPTION} ${DOCKER__READINPUT_C_OPTION})"
+	DOCKER__READINPUT_H_B_C_OPTIONS="(${DOCKER__READINPUT_H_OPTION} ${DOCKER__READINPUT_B_OPTION} ${DOCKER__READINPUT_C_OPTION})"
 
 	DOCKER__READINPUT_CONTAINERID="${DOCKER__FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}:-:ID ${DOCKER__READINPUT_B_C_OPTIONS}: "
 
@@ -106,7 +96,7 @@ docker__load_constants__sub() {
 }
 
 docker__init_variables__sub() {
-	#Initialize variables for 'docker_readInput_w_autocomplete_fpath'
+	#Initialize variables for 'docker__readInput_w_autocomplete_fpath'
 	docker__containerID_chosen=${DOCKER__EMPTYSTRING}
     
 	docker__ps_a_cmd="docker ps -a"
@@ -135,9 +125,10 @@ docker__init_variables__sub() {
 	docker__myTmpSource_fPath=${DOCKER__EMPTYSTRING}
 	docker__myTmpDest_fPath=${DOCKER__EMPTYSTRING}
 
-	docker__myanswer=${DOCKER__EMPTYSTRING}
-	docker__lastTwoChar=${DOCKER__EMPTYSTRING}
 	docker__case_option=${DOCKER__EMPTYSTRING}
+	docker__lastTwoChar=${DOCKER__EMPTYSTRING}
+	docker__myanswer=${DOCKER__EMPTYSTRING}
+	docker__mycopychoice=${DOCKER__EMPTYSTRING}
 
 	docker__accept_mySource_dir=${DOCKER__EMPTYSTRING}
 	docker__accept_mySource_fObject=${DOCKER__EMPTYSTRING}
@@ -148,7 +139,7 @@ docker__init_variables__sub() {
 	#Assign values to specified variables (as mentioned below)
 	#REMARK: these variables will be used in function 'get_source_destination_fpath__sub'
 	#IMPORTANT: this MUST be done here!
-	if [[ ${docker__mycopychoice} -eq 1 ]]; then
+	if [[ ${docker__mycopychoice} -eq ${DOCKER__CONTAINER_TO_HOST} ]]; then
 		docker__mySource_dir=${docker__root_sp7xxx_out_dir}
 		# if [[ -z ${docker__accept_mySource_dir} ]]; then
 		# 	docker__accept_mySource_dir=${docker__mySource_dir}
@@ -204,12 +195,18 @@ docker__choose_copy_direction__sub() {
 	while true
 	do
 		#Show read-input
-		read -N1 -r -p "${readMsg}" docker__mycopychoice
+		read -N1 -r -p "${readMsg}" docker__myanswer
 
 		#Remove (white-)spaces
-		docker__mycopychoice=`remove_whiteSpaces__func "${docker__mycopychoice}"`
-		if [[ ! -z ${docker__mycopychoice} ]]; then
-			if [[ ${docker__mycopychoice} =~ [1,2] ]]; then
+		docker__myanswer=`remove_whiteSpaces__func "${docker__myanswer}"`
+		if [[ ! -z ${docker__myanswer} ]]; then
+			if [[ ${docker__myanswer} == [1,2] ]]; then
+				if [[ ${docker__myanswer} -eq 1 ]]; then
+					docker__mycopychoice=${DOCKER__CONTAINER_TO_HOST}
+				else
+					docker__mycopychoice=${DOCKER__HOST_TO_CONTAINER}
+				fi
+
 				moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
 
 				break
@@ -242,10 +239,8 @@ docker__choose_containerid__sub() {
     local ERRMSG_NO_CONTAINERS_FOUND="=:${DOCKER__FG_LIGHTRED}NO CONTAINERS FOUND${DOCKER__NOCOLOR}:="
 	local ERRMSG_CHOSEN_CONTAINERID_DOESNOT_EXISTS="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Invalid input value "
 
-	#Start loop
-	while true
-	do
-		${docker_readInput_w_autocomplete_fpath} "${MENUTITLE_CURRENT_REPOSITORY_LIST}" \
+	#Show read-input
+		${docker__readInput_w_autocomplete_fpath} "${MENUTITLE_CURRENT_REPOSITORY_LIST}" \
                             "${DOCKER__READINPUT_CONTAINERID}" \
                             "${DOCKER__EMPTYSTRING}" \
                             "${DOCKER__EMPTYSTRING}" \
@@ -257,56 +252,26 @@ docker__choose_containerid__sub() {
                             "${docker__showTable}" \
                             "${docker__onEnter_breakLoop}"
 
-        #Get the exitcode just in case a Ctrl-C was pressed in script 'docker_readInput_w_autocomplete_fpath'.
-        docker__exitCode=$?
-        if [[ ${docker__exitCode} -eq 99 ]]; then
-            exit 99
-        else
-            #Retrieve the selected container-ID from file
-            docker__myContainerId_input=`get_output_from_file__func "${docker__readInput_w_autocomplete_out__fpath}"`
-        fi  
-
+	#Get the exitcode just in case a Ctrl-C was pressed in script 'docker__readInput_w_autocomplete_fpath'.
+	docker__exitCode=$?
+	if [[ ${docker__exitCode} -eq 99 ]]; then
+		exit 99
+	else
 		#Retrieve the selected container-ID from file
-		docker__containerID_chosen=`get_output_from_file__func "${docker__readInput_w_autocomplete_out__fpath}"`
+		docker__myContainerId_input=`get_output_from_file__func "${docker__readInput_w_autocomplete_out_fpath}"`
+	fi  
 
-		if [[ ${docker__containerID_chosen} == ${DOCKER__SEMICOLON_BACK} ]]; then
-			moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+	#Retrieve the selected container-ID from file
+	docker__containerID_chosen=`get_output_from_file__func "${docker__readInput_w_autocomplete_out_fpath}"`
+	if [[ ${docker__containerID_chosen} == ${DOCKER__SEMICOLON_BACK} ]]; then
+		moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
-			#remove the last 2 char
-			docker__containerID_chosen=${DOCKER__EMPTYSTRING}
+		#remove the last 2 char
+		docker__containerID_chosen=${DOCKER__EMPTYSTRING}
 
-			#Set next-phase
-			GOTO__func CHOOSE_COPY_DIRECTION
-
-			break
-		fi
-
-		#Only continue if none of the above if-condition is met
-		if [[ ! -z ${docker__containerID_chosen} ]]; then
-			#Remove any white-spaces
-			docker__myContainerId_accept=`remove_whiteSpaces__func "${docker__containerID_chosen}"`
-
-			#Check if 'docker__myContainerId_accept' can be found in the 'container's list'
-			docker__myContainerId_isFound=`docker ps -a | awk '{print $1}' | grep -w ${docker__myContainerId_accept}`
-			if [[ ! -z ${docker__myContainerId_isFound} ]]; then
-				break         
-			else
-				#Update error-message
-				errMsg="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Invalid Container-ID: '${DOCKER__FG_BRIGHTPRUPLE}${docker__myContainerId_accept}${DOCKER__NOCOLOR}'"
-				
-				#Show error-message
-				show_errMsg_without_menuTitle__func "${errMsg}"
-
-				#Move-up and Clean lines
-				moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_5}"
-
-				#Reset variable
-				docker__myContainerId_accept=${DOCKER__EMPTYSTRING}
-			fi
-		else
-			moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-		fi
-	done
+		#Set next-phase
+		GOTO__func CHOOSE_COPY_DIRECTION
+	fi
 }
 
 get_source_destination_fpath__sub() {
@@ -316,13 +281,13 @@ get_source_destination_fpath__sub() {
 
 	#Initial phase
 	docker__case_option=${DOCKER__CASE_SOURCE_DIR}
-	if [[ ${docker__mycopychoice} -eq 1 ]]; then	#Container -to- HOST (docker__mycopychoice = 1)
+	if [[ ${docker__mycopychoice} -eq ${DOCKER__CONTAINER_TO_HOST} ]]; then
 		while true
 		do
 			case ${docker__case_option} in
 				${DOCKER__CASE_SOURCE_DIR})
 					#---SOURCE: Provide the Location of the file which you want to copy (located  at the Container!)
-					container_get_source_dir__func
+					docker__container2host_get_src_dir__sub
 					;;
 
 				${DOCKER__CASE_SOURCE_FOBJECT})
@@ -345,7 +310,7 @@ get_source_destination_fpath__sub() {
 		#Compose Source and Destination Fullpath
 		docker__compose_source_dest_fpath__sub
 
-	else	#HOST -to- Container (docker__mycopychoice = 2)
+	else	#HOST -to- Container
 		while true
 		do
 			case ${docker__case_option} in
@@ -399,7 +364,7 @@ get_source_destination_fpath__sub() {
 	moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 }
 
-function container_get_source_dir__func() {
+docker__container2host_get_src_dir__sub() {
 	#Define local variables
 	local dirExists=${DOCKER__FALSE}
 	local numOf_dirContent=0
@@ -942,7 +907,7 @@ function copy_src_to_dst_handler__func() {
 	#Define docker exec command which inclues '/bin/bash -c'
 	local docker_exec_cmd="docker exec -it ${docker__myContainerId_accept} ${docker__bin_bash_dir} -c"
 
-	if [[ ${docker__mycopychoice} -eq 1 ]]; then
+	if [[ ${docker__mycopychoice} -eq ${DOCKER__CONTAINER_TO_HOST} ]]; then
 		if [[ ${docker__mySource_fObject} = ${DOCKER__ASTERISK} ]]; then	#an asterisk was inputted for file-/folder-name
 			#Get directory contents specified by 'docker__accept_mySource_dir'
 			dirContent_list_string=`${docker_exec_cmd} "ls -1 ${docker__accept_mySource_dir}"`	

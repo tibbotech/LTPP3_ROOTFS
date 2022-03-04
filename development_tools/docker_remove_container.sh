@@ -201,8 +201,8 @@ docker_containerId_input__sub() {
     readmsg_remarks+="${DOCKER__DASH} Remove ALL container-IDs by typing: ${DOCKER__FG_LIGHTGREY}${DOCKER__REMOVE_ALL}${DOCKER__NOCOLOR}\n"
     readmsg_remarks+="${DOCKER__DASH} Multiple container-IDs can be removed\n"
     readmsg_remarks+="${DOCKER__DASH} Comma-separator will be appended automatically\n"
-    readmsg_remarks+="${DOCKER__DASH} Up/Down arrow: to cycle thru existing values\n"
-    readmsg_remarks+="${DOCKER__DASH} TAB: auto-complete\n"
+    readmsg_remarks+="${DOCKER__DASH} ${DOCKER__FG_YELLOW}Up/Down Arrow${DOCKER__NOCOLOR}: to cycle thru existing values\n"
+    readmsg_remarks+="${DOCKER__DASH} ${DOCKER__FG_YELLOW}TAB${DOCKER__NOCOLOR}: auto-complete\n"
     readmsg_remarks+="${DOCKER__DASH} ${DOCKER__FG_YELLOW};c${DOCKER__NOCOLOR}: clear\n"
     readmsg_remarks+="${DOCKER__DASH} [On an Empty Field] press ENTER to confirm deletion"
 

@@ -20,16 +20,6 @@ docker__load_environment_variables__sub() {
 
     docker__global_functions_filename="docker_global_functions.sh"
     docker__global_functions_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__global_functions_filename}
-
-	docker__repolist_tableinfo_filename="docker_repolist_tableinfo.sh"
-	docker__repolist_tableinfo_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__repolist_tableinfo_filename}
-
-    docker_readInput_w_autocomplete_filename="docker_readInput_w_autocomplete.sh"
-    docker_readInput_w_autocomplete_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker_readInput_w_autocomplete_filename}
-
-    docker__tmp_dir=/tmp
-    docker__readInput_w_autocomplete_out__filename="docker__readInput_w_autocomplete.out"
-    docker__readInput_w_autocomplete_out__fpath=${docker__tmp_dir}/${docker__readInput_w_autocomplete_out__filename}
 }
 
 docker__load_source_files__sub() {
@@ -201,8 +191,8 @@ docker_imageId_input__sub() {
     readmsg_remarks+="${DOCKER__DASH} Remove ALL image-IDs by typing: ${DOCKER__FG_LIGHTGREY}${DOCKER__REMOVE_ALL}${DOCKER__NOCOLOR}\n"
     readmsg_remarks+="${DOCKER__DASH} Multiple image-IDs can be removed\n"
     readmsg_remarks+="${DOCKER__DASH} Comma-separator will be appended automatically\n"
-    readmsg_remarks+="${DOCKER__DASH} Up/Down arrow: to cycle thru existing values\n"
-    readmsg_remarks+="${DOCKER__DASH} TAB: auto-complete\n"
+    readmsg_remarks+="${DOCKER__DASH} ${DOCKER__FG_YELLOW}Up/Down Arrow${DOCKER__NOCOLOR}: to cycle thru existing values\n"
+    readmsg_remarks+="${DOCKER__DASH} ${DOCKER__FG_YELLOW}TAB${DOCKER__NOCOLOR}: auto-complete\n"
     readmsg_remarks+="${DOCKER__DASH} ${DOCKER__FG_YELLOW};c${DOCKER__NOCOLOR}: clear\n"
     readmsg_remarks+="${DOCKER__DASH} [On an Empty Field] press ENTER to confirm deletion"
 
@@ -246,7 +236,7 @@ docker_imageId_input__sub() {
         numOfLines_tot=$((readMsg_numOfLines + update_numOfLines + DOCKER__NUMOFLINES_1))
 
         #Only show the read-input message, but do not show the image-list table.
-        ${docker_readInput_w_autocomplete_fpath} "${MENUTITLE}" \
+        ${docker__readInput_w_autocomplete_fpath} "${MENUTITLE}" \
                             "${READMSG_PASTE_YOUR_INPUT}" \
                             "${readmsg_update}" \
                             "${readmsg_remarks}" \
@@ -258,13 +248,13 @@ docker_imageId_input__sub() {
                             "${docker__showTable}" \
                             "${docker__onEnter_breakLoop}"
 
-        #Get the exitcode just in case a Ctrl-C was pressed in script 'docker_readInput_w_autocomplete_fpath'.
+        #Get the exitcode just in case a Ctrl-C was pressed in script 'docker__readInput_w_autocomplete_fpath'.
         docker__exitCode=$?
         if [[ ${docker__exitCode} -eq 99 ]]; then
             docker__myImageId_input=${DOCKER__EMPTYSTRING}
         else
             #Retrieve the selected container-ID from file
-            docker__myImageId_input=`get_output_from_file__func "${docker__readInput_w_autocomplete_out__fpath}"`
+            docker__myImageId_input=`get_output_from_file__func "${docker__readInput_w_autocomplete_out_fpath}"`
         fi  
 
         #This boolean will make sure that the image-list table is only displayed once.

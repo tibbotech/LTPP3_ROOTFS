@@ -9,7 +9,7 @@ errorMsg__input=${5}
 errorMsg2__input=${6}
 dockerCmd__input=${7}
 colNo__input=${8}
-grepPattern__input=${9}
+pattern__input=${9}
 showTable__input=${10}
 onEnter_breakLoop__input=${11}
 
@@ -174,7 +174,7 @@ function load_containerID_into_array__func() {
     #Input args
     local dockerCmd__input=${1}
     local colNo__input=${2}
-    local grepPattern__input=${3}
+    local pattern__input=${3}
 
     #Define local variables
     local cachedInputArr_string=${DOCKER__EMPTYSTRING}
@@ -187,10 +187,10 @@ function load_containerID_into_array__func() {
     cachedInput_ArrIndex_max=0
 
     #Get all values stored under the specified column 'colNo__input' (excluding header)
-    if [[ -z ${grepPattern__input} ]]; then
+    if [[ -z ${pattern__input} ]]; then
         cachedInputArr_raw_string=`${dockerCmd__input} | awk -vcolNo=${colNo__input} '{print $colNo}' | tail -n+2`
     else
-        cachedInputArr_raw_string=`${dockerCmd__input} | grep "${grepPattern__input}" | awk -vcolNo=${colNo__input} '{print $colNo}'`
+        cachedInputArr_raw_string=`${dockerCmd__input} | grep "${pattern__input}" | awk -vcolNo=${colNo__input} '{print $colNo}'`
     fi
 
     #Get only UNIQUE values
@@ -211,7 +211,56 @@ function load_containerID_into_array__func() {
 
 
 
-#---SUBROUTINE
+#---SUBROUTINES
+docker__environmental_variables__sub() {
+	# docker__current_dir=`pwd`
+	docker__current_script_fpath="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
+    docker__current_dir=$(dirname ${docker__current_script_fpath})	#/repo/LTPP3_ROOTFS/development_tools
+	docker__parent_dir=${docker__current_dir%/*}    #gets one directory up (/repo/LTPP3_ROOTFS)
+    if [[ -z ${docker__parent_dir} ]]; then
+        docker__parent_dir="${DOCKER__SLASH}"
+    fi
+	docker__current_folder=`basename ${docker__current_dir}`
+
+    docker__development_tools_folder="development_tools"
+    if [[ ${docker__current_folder} != ${docker__development_tools_folder} ]]; then
+        docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}/${docker__development_tools_folder}
+    else
+        docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}
+    fi
+
+    docker__global_functions_filename="docker_global_functions.sh"
+    docker__global_functions_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__global_functions_filename}
+}
+
+docker__load_source_files__sub() {
+    source ${docker__global_functions_fpath}
+}
+
+docker__init_variables__sub() {
+    docker__image_ls_cmd="docker image ls"
+    docker__ps_a_cmd="docker ps -a"
+    docker__1stTimeUse=true
+}
+
+docker__readInput_handler__sub() {
+    #Get read-input value
+    docker__readInput_w_autocomplete__sub "${menuTitle__input}" \
+                        "${readMsg__input}" \
+                        "${readMsgUpdate__input}" \
+                        "${readMsgRemarks__input}" \
+                        "${errorMsg__input}" \
+                        "${errorMsg2__input}" \
+                        "${dockerCmd__input}" \
+                        "${colNo__input}" \
+                        "${pattern__input}" \
+                        "${showTable__input}" \
+                        "${onEnter_breakLoop__input}"
+
+    #Print empty lines
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
+}
+
 docker__readInput_w_autocomplete__sub() {
     #Input args
     local menuTitle__input=${1}
@@ -222,26 +271,27 @@ docker__readInput_w_autocomplete__sub() {
     local errorMsg2__input=${6}
     local dockerCmd__input=${7}
     local colNo__input=${8}
-    local grepPattern__input=${9}
+    local pattern__input=${9}
     local showTable__input=${10}
     local onEnter_breakLoop__input=${11}
 
     #Define variables
     local keyInput=${DOCKER__EMPTYSTRING}
+    local keyInput_addit=${DOCKER__EMPTYSTRING}
     local ret=${DOCKER__EMPTYSTRING}
-    local ret_tmp=${DOCKER__EMPTYSTRING}
+    local ret_bck=${DOCKER__EMPTYSTRING}
     local stdOutput=${DOCKER__EMPTYSTRING}
 
     #Define messages
     local errMsg=${DOCKER__EMPTYSTRING}
  
     #Remove file
-    if [[ -f ${docker__readInput_w_autocomplete_out__fpath} ]]; then
-        rm ${docker__readInput_w_autocomplete_out__fpath}
+    if [[ -f ${docker__readInput_w_autocomplete_out_fpath} ]]; then
+        rm ${docker__readInput_w_autocomplete_out_fpath}
     fi
 
 #---Load ContainerIDs into Array 'cachedInput_Arr'
-    load_containerID_into_array__func "${dockerCmd__input}" "${colNo__input}" "${grepPattern__input}"
+    load_containerID_into_array__func "${dockerCmd__input}" "${colNo__input}" "${pattern__input}"
 
 #---Show Docker Container's List
     #Calculate number of lines to be cleaned
@@ -282,7 +332,6 @@ docker__readInput_w_autocomplete__sub() {
     # if [[ ${cachedInput_ArrLen} -eq 1 ]]; then
     #     ret=${cachedInput_Arr[0]}
     # fi
-    
     while true
     do
         if [[ ! -z ${readMsgUpdate__input} ]]; then
@@ -298,10 +347,12 @@ docker__readInput_w_autocomplete__sub() {
 
         case "${keyInput}" in
             ${DOCKER__ENTER})
-                #Check if there were any ';b', ';c', ';h' issued,...
-                #...and get the end-result (if that's the case).
-                ret_tmp=${ret}  #set value
-                ret=`get_endResult_ofString_with_semiColonChar__func ${ret_tmp}` 
+                #Check if there were any ';b', ';c', ';h' issued.
+                #In other words, whether 'ret' contains any of the above semi-colon chars.
+                #If that's the case then function 'get_endResult_ofString_with_semiColonChar__func'
+                #   will handle and return a modified 'ret'.
+                ret_bck=${ret}  #set value
+                ret=`get_endResult_ofString_with_semiColonChar__func ${ret_bck}` 
                 
                 if [[ ! -z ${ret} ]]; then    #'ret' contains data
                     #Break immeidiately if ';b' or ';h' was found.
@@ -319,7 +370,7 @@ docker__readInput_w_autocomplete__sub() {
                             errMsg="${errorMsg2__input}'${DOCKER__FG_LIGHTGREY}${ret}${DOCKER__NOCOLOR}'"
 
                             #Show error message
-                            show_errMsg_without_menuTitle__func "${errMsg}"
+                            show_errMsg_without_menuTitle__func "${errMsg}" "${DOCKER__NUMOFLINES_2}"
 
                             #Reset return value
                             ret=${DOCKER__EMPTYSTRING}
@@ -376,6 +427,14 @@ docker__readInput_w_autocomplete__sub() {
                 moveDown_oneLine_then_moveUp_and_clean__func "${numOfLines_noError_tot}"
                 ;;
             *)
+                #wait for another 0.5 seconds to capture additional characters.
+                #Remark:
+                #   This part has been implemented just in case long text has been copied/pasted.
+                read -rs -t0.01 keyInput_addit
+
+                #Append 'keyInput_addit' to 'keyInput'
+                keyInput="${keyInput}${keyInput_addit}"
+
                 #Append 'keyInput' to 'ret'
                 if [[ ! -z ${keyInput} ]]; then
                     ret="${ret}${keyInput}"
@@ -388,7 +447,7 @@ docker__readInput_w_autocomplete__sub() {
     done
 
     #Write to file
-    echo ${ret} > ${docker__readInput_w_autocomplete_out__fpath}
+    echo ${ret} > ${docker__readInput_w_autocomplete_out_fpath}
 }
 
 docker__show_infoTable__sub() {
@@ -416,66 +475,6 @@ docker__show_infoTable__sub() {
     else
         show_list_with_menuTitle__func "${menuTitle__input}" "${dockerCmd__input}"
     fi
-}
-
-
-#---SUBROUTINES
-docker__environmental_variables__sub() {
-	# docker__current_dir=`pwd`
-	docker__current_script_fpath="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
-    docker__current_dir=$(dirname ${docker__current_script_fpath})	#/repo/LTPP3_ROOTFS/development_tools
-	docker__parent_dir=${docker__current_dir%/*}    #gets one directory up (/repo/LTPP3_ROOTFS)
-    if [[ -z ${docker__parent_dir} ]]; then
-        docker__parent_dir="${DOCKER__SLASH}"
-    fi
-	docker__current_folder=`basename ${docker__current_dir}`
-
-    docker__development_tools_folder="development_tools"
-    if [[ ${docker__current_folder} != ${docker__development_tools_folder} ]]; then
-        docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}/${docker__development_tools_folder}
-    else
-        docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}
-    fi
-
-    docker__global_functions_filename="docker_global_functions.sh"
-    docker__global_functions_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__global_functions_filename}
-
-    docker__containerlist_tableinfo_filename="docker_containerlist_tableinfo.sh"
-    docker__containerlist_tableinfo_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__containerlist_tableinfo_filename}
-	docker__repolist_tableinfo_filename="docker_repolist_tableinfo.sh"
-	docker__repolist_tableinfo_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__repolist_tableinfo_filename}
-
-    docker__tmp_dir=/tmp
-    docker__readInput_w_autocomplete_out__filename="docker__readInput_w_autocomplete.out"
-    docker__readInput_w_autocomplete_out__fpath=${docker__tmp_dir}/${docker__readInput_w_autocomplete_out__filename}
-}
-
-docker__load_source_files__sub() {
-    source ${docker__global_functions_fpath}
-}
-
-docker__init_variables__sub() {
-    docker__image_ls_cmd="docker image ls"
-    docker__ps_a_cmd="docker ps -a"
-    docker__1stTimeUse=true
-}
-
-docker__readInput_handler__sub() {
-    #Get read-input value
-    docker__readInput_w_autocomplete__sub "${menuTitle__input}" \
-                        "${readMsg__input}" \
-                        "${readMsgUpdate__input}" \
-                        "${readMsgRemarks__input}" \
-                        "${errorMsg__input}" \
-                        "${errorMsg2__input}" \
-                        "${dockerCmd__input}" \
-                        "${colNo__input}" \
-                        "${grepPattern__input}" \
-                        "${showTable__input}" \
-                        "${onEnter_breakLoop__input}"
-
-    #Print empty lines
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
 }
 
 

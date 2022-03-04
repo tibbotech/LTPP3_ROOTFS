@@ -54,8 +54,7 @@ printf_numOfContents_shown=${EMPTYSTRING}
 
 
 #---Subroutines
-dirContent_main__sub() 
-{
+dirContent_main__sub() {
     #Get Terminal Window's number of columns
     terminal_numOfCols=`tput cols`
     if [[ ${terminal_numOfCols} -gt ${TERMINAL_NUMOFCOLS_MAX} ]]; then
@@ -176,8 +175,7 @@ dirContent_main__sub()
     #Print an Empty Line
     printf '%b\n' "${EMPTYSTRING}"   
 }
-dirContent_get_and_show_list__func()
-{
+dirContent_get_and_show_list__func() {
     #Input args
     local lv_numOfCols=${1} #input is whether 'listView_numOfCols_auto' or 'listView_numOfCols_input'
 
@@ -215,8 +213,7 @@ dirContent_get_and_show_list__func()
     printf '%b\t\n' "${FG_ORANGE}${dirContent_list_string}${NOCOLOR}"
 }
 
-main__sub()
-{
+main__sub() {
   dirContent_main__sub  
 }
 

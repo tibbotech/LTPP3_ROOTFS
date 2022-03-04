@@ -56,6 +56,15 @@ DOCKER__BG_WHITE=$'\e[30;48;5;15m'
 
 
 
+#---DOCKER RELATED CONSTANTS
+DOCKER__GREPPATTERN_EXITED="Exited"
+
+DOCKER__STATE_RUNNING="Running"
+DOCKER__STATE_EXITED="Exited"
+DOCKER__STATE_NOTFOUND="NotFound"
+
+
+
 #---MENU CONSTANTS
 DOCKER__TITLE="TIBBO"
 DOCKER__A_ABORT="${DOCKER__FOURSPACES}b. Back"
@@ -72,6 +81,9 @@ DOCKER__QUIT_CTRL_C="Quit (Ctrl+C)"
 
 
 #---NUMERIC CONSTANTS
+DOCKER__LISTVIEW_NUMOFROWS=20
+DOCKER__LISTVIEW_NUMOFCOLS=0
+
 DOCKER__NINE=9
 DOCKER__TABLEWIDTH=70
 
@@ -120,6 +132,7 @@ DOCKER__FIVE_SPACES=${DOCKER__FOURSPACES}${DOCKER__ONESPACE}
 #---VARIABLES
 docker__images_cmd="docker images"
 docker__ps_a_cmd="docker ps -a"
+
 
 
 #---SPECIFAL FUNCTIONS
@@ -175,7 +188,134 @@ function press_any_key__func() {
 
 
 
+#---DOCKER RELATED FUNCTIONS
+function check_containerID_state__func() {
+    #Input args
+    local containerID__input=${1}
+
+    #Check if 'containterID__input' is running
+    local stdOutput=`${docker__ps_a_cmd} --format "table {{.ID}}|{{.Status}}" | grep -w "${containerID__input}"`
+    if [[ -z ${stdOutput} ]]; then  #contains NO data
+        echo "${DOCKER__STATE_NOTFOUND}"
+    else    #contains data
+        local stdOutput2=`echo ${stdOutput} | grep -w "${DOCKER__GREPPATTERN_EXITED}"`
+        if [[ ! -z ${stdOutput2} ]]; then   #contains data
+            echo "${DOCKER__STATE_EXITED}"
+        else    #contains NO data
+            echo "${DOCKER__STATE_RUNNING}"
+        fi
+    fi
+}
+
+
+
 #---FILE RELATED FUNCTIONS
+function checkIf_container_dir_exists__func() {
+	#Input args
+    local containerID__input=${1}
+	local dir__input=${2}
+
+	#Define variables
+    local bin_bash_dir=/bin/bash
+    local docker_exec_cmd="docker exec -t ${containerID__input} ${bin_bash_dir} -c"
+
+    #Check if directory exists
+    local ret_raw=`${docker_exec_cmd} "[ -d "${str__input}" ] && echo true || echo false"`
+
+    #Remove carriage returns '\r' caused by '/bin/bash -c'
+    local ret=`echo "${ret_raw}" | tr -d $'\r'`
+
+    #Output
+    echo ${ret}
+}
+
+function checkIf_localhost_dir_exists__func() {
+	#Input args
+	local dir__input=${1}
+
+     #Check if directory exists
+     if [[ -d ${dir__input} ]]; then
+        echo true
+     else
+        echo false
+     fi
+}
+
+function checkIf_dir_exists__func() {
+    #Input args
+    local containerID__input=${1}
+    local dir__input=${2}
+
+    #Check if dir exists
+    local ret=false
+    if [[ -z ${containerID__input} ]]; then
+        ret=`checkIf_localhost_dir_exists__func "${dir__input}"`
+    else
+        ret=`checkIf_container_dir_exists__func "${containerID__input}" "${dir__input}"`
+    fi
+
+    #Output
+    echo "${ret}"
+}
+
+function checkIf__dirname_of_two_paths_are_the_same__func() {
+    #Input args
+    local fpath_new__input=${1}
+    local fpath_bck__input=${2}
+
+    #Retrieve dirname from 'fpath1__input' and 'fpath2__input'
+    local dir1=`get_dirname_from_specified_path__func "${fpath_new__input}"`
+    local dir2=`get_dirname_from_specified_path__func "${fpath_bck__input}"`
+
+    #Check if both paths are the same
+    if [[ ${dir1} == ${dir2} ]]; then
+        echo "true"
+    else
+        echo "false"
+    fi
+}
+
+function checkIf_files_are_different__func() {
+    #Input args
+    local file1__input=${1}
+    local file2__input=${2}
+
+    #Compare both files
+    local stdOutput=`diff ${file1__input} ${file2__input}`
+    if [[ -z ${stdOutput} ]]; then
+        echo "false"
+    else
+        echo "true"
+    fi
+}
+
+function get_dirname_from_specified_path__func() {
+    #Input arg
+    local fpath__input=${1}
+
+    #Get dirname
+    local dir=`echo ${fpath__input} | rev | cut -d"${DOCKER__SLASH}" -f2- | rev`
+    if [[ ${dir} == ${DOCKER__EMPTYSTRING} ]]; then
+        ret=${DOCKER__SLASH}
+    else
+        ret=${dir}${DOCKER__SLASH}
+    fi
+
+    #Output
+    echo ${ret}
+}
+
+function get_basename_from_specified_path__func() {
+    #Input arg
+    local fpath__input=${1}
+
+    #Get basename (which is a file or folder)
+    local ret=`echo ${fpath__input} | rev | cut -d"${DOCKER__SLASH}" -f1 | rev`
+
+    #Output
+    echo ${ret}
+}
+
 function get_output_from_file__func() {
     #Input args
     outputFpath__input=${1}
@@ -393,8 +533,9 @@ function show_errMsg_with_menuTitle__func() {
 function show_errMsg_without_menuTitle__func() {
     #Input args
     local errMsg=${1}
+    local numOfLines=${2}
 
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+    moveDown_and_cleanLines__func "${numOfLines}"
     echo -e "${errMsg}"
 
     press_any_key__func
@@ -415,6 +556,11 @@ function checkForMatch_keyWord_within_string__func() {
     else    #match
         echo "true"
     fi
+}
+
+function checkIf_lastChar_ofString_isHash__func() {
+    #Input Args
+    local string__input=${1}  
 }
 
 function checkForMatch_dockerCmd_result__func() {
@@ -460,17 +606,6 @@ function get_endResult_ofString_with_semiColonChar__func() {
 
     local rightPart_len=0
 
-    #Check if ';b' is found
-    #If TRUE, then return with the original 'DOCKER__SEMICOLON_BACK'
-    backIsFound=`checkForMatch_keyWord_within_string__func "${DOCKER__SEMICOLON_BACK}" "${string__input}"`
-    if [[ ${backIsFound} == true ]]; then
-        ret=${DOCKER__SEMICOLON_BACK}
-
-        echo ${ret}
-
-        return
-    fi
-
     #Check if ';h' is found
     #If TRUE, then return with the original 'DOCKER__SEMICOLON_HOME'
     homeIsFound=`checkForMatch_keyWord_within_string__func "${DOCKER__SEMICOLON_HOME}" "${string__input}"`
@@ -479,6 +614,17 @@ function get_endResult_ofString_with_semiColonChar__func() {
 
         echo ${ret}
         
+        return
+    fi
+
+    #Check if ';b' is found
+    #If TRUE, then return with the original 'DOCKER__SEMICOLON_BACK'
+    backIsFound=`checkForMatch_keyWord_within_string__func "${DOCKER__SEMICOLON_BACK}" "${string__input}"`
+    if [[ ${backIsFound} == true ]]; then
+        ret=${DOCKER__SEMICOLON_BACK}
+
+        echo ${ret}
+
         return
     fi
 
@@ -587,6 +733,35 @@ docker__environmental_variables__sub() {
 
 	docker__repolist_tableinfo_filename="docker_repolist_tableinfo.sh"
 	docker__repolist_tableinfo_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__repolist_tableinfo_filename}
+
+    docker__readInput_w_autocomplete_filename="docker_readInput_w_autocomplete.sh"
+    docker__readInput_w_autocomplete_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__readInput_w_autocomplete_filename}
+
+    docker__tmp_dir=/tmp
+    docker__readInput_w_autocomplete_out_filename="docker__readInput_w_autocomplete.out"
+    docker__readInput_w_autocomplete_out_fpath=${docker__tmp_dir}/${docker__readInput_w_autocomplete_out_filename}
+
+    dirlist__readInput_w_autocomplete_out__filename="dirlist__readInput_w_autocomplete.out"
+    dirlist__readInput_w_autocomplete_out__fpath=${docker__tmp_dir}/${dirlist__readInput_w_autocomplete_out__filename}
+
+    dirlist__readInput_w_autocomplete_filename="dirlist_readInput_w_autocomplete.sh"
+    dirlist__readInput_w_autocomplete_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${dirlist__readInput_w_autocomplete_filename}
+    
+    dirlist_ls_raw_tmp_filename="dirlist_ls_raw.tmp"
+    dirlist_ls_raw_tmp_fpath=${docker__tmp_dir}/${dirlist_ls_raw_tmp_filename}
+    dirlist_ls_raw_bck_tmp_filename="dirlist_ls_raw_bck.tmp"
+    dirlist_ls_raw_bck_tmp_fpath=${docker__tmp_dir}/${dirlist_ls_raw_bck_tmp_filename}
+
+    dclcau_lh_ls_filename="dclcau_lh_ls.sh"
+    dclcau_lh_ls_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${dclcau_lh_ls_filename}
+    dclcau_dc_ls_filename="dclcau_dc_ls.sh"
+    dclcau_dc_ls_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${dclcau_dc_ls_filename}
+
+    #OLD VERSION (is temporarily present for backwards compaitibility)
+	docker__dockercontainer_dirlist_filename="dockercontainer_dirlist.sh"
+	docker__dockercontainer_dirlist_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__dockercontainer_dirlist_filename}
+	docker__localhost_dirlist_filename="localhost_dirlist.sh"
+	docker__localhost_dirlist_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__localhost_dirlist_filename}
 }
 
 

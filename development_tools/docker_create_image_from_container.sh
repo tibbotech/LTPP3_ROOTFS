@@ -57,18 +57,6 @@ docker__environmental_variables__sub() {
 
     docker__global_functions_filename="docker_global_functions.sh"
     docker__global_functions_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__global_functions_filename}
-
-    docker__containerlist_tableinfo_filename="docker_containerlist_tableinfo.sh"
-    docker__containerlist_tableinfo_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__containerlist_tableinfo_filename}
-	docker__repolist_tableinfo_filename="docker_repolist_tableinfo.sh"
-	docker__repolist_tableinfo_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__repolist_tableinfo_filename}
-
-    docker_readInput_w_autocomplete_filename="docker_readInput_w_autocomplete.sh"
-    docker_readInput_w_autocomplete_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker_readInput_w_autocomplete_filename}
-
-    docker__tmp_dir=/tmp
-    docker__readInput_w_autocomplete_out__filename="docker__readInput_w_autocomplete.out"
-    docker__readInput_w_autocomplete_out__fpath=${docker__tmp_dir}/${docker__readInput_w_autocomplete_out__filename}
 }
 
 docker__load_source_files__sub() {
@@ -129,8 +117,8 @@ docker__create_image_handler__sub() {
 
     #Set 'readmsg_remarks'
     readmsg_remarks="${DOCKER__BG_ORANGE}Remarks:${DOCKER__NOCOLOR}\n"
-    readmsg_remarks+="${DOCKER__DASH} ${DOCKER__FG_LIGHTGREY}Up/Down Arrow${DOCKER__NOCOLOR}: to cycle thru existing values\n"
-    readmsg_remarks+="${DOCKER__DASH} ${DOCKER__FG_LIGHTGREY}TAB${DOCKER__NOCOLOR}: auto-complete\n"
+    readmsg_remarks+="${DOCKER__DASH} ${DOCKER__FG_YELLOW}Up/Down Arrow${DOCKER__NOCOLOR}: to cycle thru existing values\n"
+    readmsg_remarks+="${DOCKER__DASH} ${DOCKER__FG_YELLOW}TAB${DOCKER__NOCOLOR}: auto-complete\n"
     readmsg_remarks+="${DOCKER__DASH} ${DOCKER__FG_YELLOW};c${DOCKER__NOCOLOR}: clear"
 
     #Set initial 'phase'
@@ -140,7 +128,7 @@ docker__create_image_handler__sub() {
         case "${phase}" in
             ${CONTAINERID_SELECT_PHASE})
                 #Run script
-                ${docker_readInput_w_autocomplete_fpath} "${MENUTITLE}" \
+                ${docker__readInput_w_autocomplete_fpath} "${MENUTITLE}" \
                         "${READMSG_CHOOSE_A_CONTAINERID}" \
                         "${DOCKER__EMPTYSTRING}" \
                         "${readmsg_remarks}" \
@@ -155,7 +143,7 @@ docker__create_image_handler__sub() {
 
 
                 #Retrieve the selected container-ID from file
-                docker__containerID_chosen=`get_output_from_file__func "${docker__readInput_w_autocomplete_out__fpath}"`
+                docker__containerID_chosen=`get_output_from_file__func "${docker__readInput_w_autocomplete_out_fpath}"`
 
                 #Check if output is an Empty String
                 if [[ -z ${docker__containerID_chosen} ]]; then
@@ -166,7 +154,7 @@ docker__create_image_handler__sub() {
                 ;;
             ${NEW_REPO_INPUT_PHASE})
                 #Run script
-                ${docker_readInput_w_autocomplete_fpath} "${MENUTITLE_CURRENT_IMAGE_LIST}" \
+                ${docker__readInput_w_autocomplete_fpath} "${MENUTITLE_CURRENT_IMAGE_LIST}" \
                         "${READMSG_NEW_REPOSITORY_NAME}" \
                         "${DOCKER__EMPTYSTRING}" \
                         "${readmsg_remarks}" \
@@ -180,7 +168,7 @@ docker__create_image_handler__sub() {
 
 
                 #Retrieve the selected container-ID from file
-                docker__repo_new=`get_output_from_file__func "${docker__readInput_w_autocomplete_out__fpath}"`
+                docker__repo_new=`get_output_from_file__func "${docker__readInput_w_autocomplete_out_fpath}"`
 
                 #Check if output is an Empty String
                 if [[ -z ${docker__repo_new} ]]; then
@@ -191,7 +179,7 @@ docker__create_image_handler__sub() {
                 ;;
             ${NEW_TAG_INPUT_PHASE})
                 #Run script
-                ${docker_readInput_w_autocomplete_fpath} "${MENUTITLE_CURRENT_IMAGE_LIST}" \
+                ${docker__readInput_w_autocomplete_fpath} "${MENUTITLE_CURRENT_IMAGE_LIST}" \
                         "${READMSG_NEW_REPOSITORY_TAG}" \
                         "${DOCKER__EMPTYSTRING}" \
                         "${readmsg_remarks}" \
@@ -204,7 +192,7 @@ docker__create_image_handler__sub() {
                         "${docker__onEnter_breakLoop}"
             
                 #Retrieve the selected container-ID from file
-                docker__tag_new=`get_output_from_file__func "${docker__readInput_w_autocomplete_out__fpath}"`
+                docker__tag_new=`get_output_from_file__func "${docker__readInput_w_autocomplete_out_fpath}"`
 
                 #Check if output is an Empty String
                 if [[ -z ${docker__tag_new} ]]; then
@@ -217,7 +205,7 @@ docker__create_image_handler__sub() {
                 #Check if Repository:Tag pair is Unique
                 repoTag_isUniq=`checkIf_repoTag_isUniq__func "${docker__repo_new}" "${docker__tag_new}"`
                 if [[ ${repoTag_isUniq} == false ]]; then
-                    show_errMsg_without_menuTitle__func "${ERRMSG_CHOSEN_REPO_PAIR_ALREADY_EXISTS}"
+                    show_errMsg_without_menuTitle__func "${ERRMSG_CHOSEN_REPO_PAIR_ALREADY_EXISTS}" "${DOCKER__NUMOFLINES_2}"
 
                     phase=${NEW_TAG_INPUT_PHASE}
                 else
