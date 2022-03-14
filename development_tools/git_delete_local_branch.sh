@@ -38,7 +38,7 @@ function checkIf_branch_isCheckedOut__func() {
     local branchName_input=${1}
 
     #Check if 'branchName_input' already exists
-    local stdOutput=`git branch | grep -w "${branchName_input}" | grep "${DOCKER__ASTERISK}" 2>&1`
+    local stdOutput=`git branch | grep -w "${branchName_input}" | grep "${DOCKER__BACKSLASH_ASTERISK}" 2>&1`
     if [[ ! -z ${stdOutput} ]]; then #contains data
         echo ${DOCKER__TRUE}
     else    #contains no data
@@ -74,11 +74,11 @@ function show_git_branchList__func() {
     for gitBranchList_arrItem in "${git__gitBranchList_arr[@]}"
     do 
         #Check if asterisk is present
-        asterisk_isFound=`checkForMatch_subString_in_string__func "${gitBranchList_arrItem}" "${DOCKER__ASTERISK}"`
+        asterisk_isFound=`checkForMatch_subString_in_string__func "${gitBranchList_arrItem}" "${DOCKER__BACKSLASH_ASTERISK}"`
         if [[ ${asterisk_isFound} == ${DOCKER__TRUE} ]]; then
-            gitBranchList_arrItem_wo_asterisk=`echo ${gitBranchList_arrItem} | cut -d"${DOCKER__ASTERISK}" -f2`
+            gitBranchList_arrItem_wo_asterisk=`echo ${gitBranchList_arrItem} | cut -d"${DOCKER__BACKSLASH_ASTERISK}" -f2`
 
-            echo -e "${DOCKER__FOURSPACES}${DOCKER__ASTERISK} ${DOCKER__FG_GREEN}${gitBranchList_arrItem_wo_asterisk}${DOCKER__NOCOLOR} (${CHECKED_OUT})"
+            echo -e "${DOCKER__FOURSPACES}${DOCKER__BACKSLASH_ASTERISK} ${DOCKER__FG_GREEN}${gitBranchList_arrItem_wo_asterisk}${DOCKER__NOCOLOR} (${CHECKED_OUT})"
         else
             echo -e "${DOCKER__FOURSPACES}${gitBranchList_arrItem}"
         fi

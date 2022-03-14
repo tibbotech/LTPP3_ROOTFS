@@ -143,7 +143,7 @@ docker__create_image_handler__sub() {
 
 
                 #Retrieve the selected container-ID from file
-                docker__containerID_chosen=`get_output_from_file__func "${docker__readInput_w_autocomplete_out_fpath}"`
+                docker__containerID_chosen=`get_output_from_file__func "${docker__readInput_w_autocomplete_out_fpath}" "1"`
 
                 #Check if output is an Empty String
                 if [[ -z ${docker__containerID_chosen} ]]; then
@@ -168,7 +168,7 @@ docker__create_image_handler__sub() {
 
 
                 #Retrieve the selected container-ID from file
-                docker__repo_new=`get_output_from_file__func "${docker__readInput_w_autocomplete_out_fpath}"`
+                docker__repo_new=`get_output_from_file__func "${docker__readInput_w_autocomplete_out_fpath}" "1"`
 
                 #Check if output is an Empty String
                 if [[ -z ${docker__repo_new} ]]; then
@@ -192,7 +192,7 @@ docker__create_image_handler__sub() {
                         "${docker__onEnter_breakLoop}"
             
                 #Retrieve the selected container-ID from file
-                docker__tag_new=`get_output_from_file__func "${docker__readInput_w_autocomplete_out_fpath}"`
+                docker__tag_new=`get_output_from_file__func "${docker__readInput_w_autocomplete_out_fpath}" "1"`
 
                 #Check if output is an Empty String
                 if [[ -z ${docker__tag_new} ]]; then
@@ -205,7 +205,7 @@ docker__create_image_handler__sub() {
                 #Check if Repository:Tag pair is Unique
                 repoTag_isUniq=`checkIf_repoTag_isUniq__func "${docker__repo_new}" "${docker__tag_new}"`
                 if [[ ${repoTag_isUniq} == false ]]; then
-                    show_errMsg_without_menuTitle__func "${ERRMSG_CHOSEN_REPO_PAIR_ALREADY_EXISTS}" "${DOCKER__NUMOFLINES_2}"
+                    show_msg_wo_menuTitle_w_PressAnyKey__func "${ERRMSG_CHOSEN_REPO_PAIR_ALREADY_EXISTS}" "${DOCKER__NUMOFLINES_2}"
 
                     phase=${NEW_TAG_INPUT_PHASE}
                 else
@@ -267,12 +267,12 @@ docker__create_image_exec__sub() {
             moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
             #Show Docker Image List
-            show_list_with_menuTitle__func "${MENUTITLE_UPDATED_IMAGE_LIST}" "${docker__images_cmd}"
+            show_list_w_menuTitle__func "${MENUTITLE_UPDATED_IMAGE_LIST}" "${docker__images_cmd}"
             
             #Exit this script
-            exit__func
+            docker__exitFunc "${DOCKER__EXITCODE_0}" "${DOCKER__NUMOFLINES_0}"
         elif [[ ${docker__myAnswer} == ${DOCKER__NO} ]]; then
-            exit__func
+            docker__exitFunc "${DOCKER__EXITCODE_0}" "${DOCKER__NUMOFLINES_0}"
         elif [[ ${docker__myAnswer} == ${DOCKER__REDO} ]]; then
             moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
 

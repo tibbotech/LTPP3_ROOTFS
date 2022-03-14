@@ -6,7 +6,10 @@ DOCKER__FALSE=false
 
 
 #---CHARACTER CHONSTANTS
-DOCKER__ASTERISK="\*"
+DOCKER__BACKSLASH_ASTERISK="\*"
+DOCKER__ASTERISK="*"
+DOCKER__BACKSLASH="\\"
+DOCKER__COMMA=","
 DOCKER__DASH="-"
 DOCKER__DOT="."
 DOCKER__ESCAPE_SLASH="\/"
@@ -21,6 +24,9 @@ DOCKER__ENTER=$'\x0a'
 DOCKER__ESCAPEKEY=$'\x1b'   #note: this escape key is ^[
 DOCKER__TAB=$'\t'
 
+DOCKER__EXIT="exit"
+
+
 
 #---COLOR CONSTANTS
 DOCKER__NOCOLOR=$'\e[0;0m'
@@ -29,6 +35,7 @@ DOCKER__FG_BORDEAUX=$'\e[30;38;5;198m'
 DOCKER__FG_BRIGHTPRUPLE=$'\e[30;38;5;141m'
 DOCKER__FG_BRIGHTLIGHTPURPLE=$'\e[30;38;5;147m'
 DOCKER__FG_DARKBLUE=$'\e[30;38;5;33m'
+DOCKER__FG_REDORANGE=$'\e[30;38;5;203m'
 DOCKER__FG_GREEN=$'\e[30;38;5;82m'
 DOCKER__FG_GREEN85=$'\e[30;38;5;85m'
 DOCKER__FG_LIGHTBLUE=$'\e[30;38;5;45m'
@@ -49,10 +56,17 @@ DOCKER__FG_YELLOW=$'\e[1;33m'
 
 DOCKER__BG_BRIGHTPRUPLE=$'\e[30;48;5;141m'
 DOCKER__BG_BORDEAUX=$'\e[30;48;5;198m'
+DOCKER__BG_GREEN85=$'\e[30;48;5;85m'
 DOCKER__BG_ORANGE=$'\e[30;48;5;215m'
 DOCKER__BG_LIGHTBLUE=$'\e[30;48;5;45m'
 DOCKER__BG_LIGHTGREY=$'\e[30;48;5;246m'
 DOCKER__BG_WHITE=$'\e[30;48;5;15m'
+
+
+
+#---DIMENSION CONSTANTS
+DOCKER__NINE=9
+DOCKER__TABLEWIDTH=70
 
 
 
@@ -62,6 +76,12 @@ DOCKER__GREPPATTERN_EXITED="Exited"
 DOCKER__STATE_RUNNING="Running"
 DOCKER__STATE_EXITED="Exited"
 DOCKER__STATE_NOTFOUND="NotFound"
+
+
+
+#---EXIT-CODE CONSTANTS
+DOCKER__EXITCODE_0=0
+DOCKER__EXITCODE_99=99
 
 
 
@@ -81,11 +101,13 @@ DOCKER__QUIT_CTRL_C="Quit (Ctrl+C)"
 
 
 #---NUMERIC CONSTANTS
+DOCKER__LINENUM_1=1
+DOCKER__LINENUM_2=2
+
 DOCKER__LISTVIEW_NUMOFROWS=20
 DOCKER__LISTVIEW_NUMOFCOLS=0
 
-DOCKER__NINE=9
-DOCKER__TABLEWIDTH=70
+DOCKER__NUMOFCHARS_1=1
 
 DOCKER__NUMOFLINES_0=0
 DOCKER__NUMOFLINES_1=1
@@ -98,6 +120,16 @@ DOCKER__NUMOFLINES_7=7
 DOCKER__NUMOFLINES_8=8
 DOCKER__NUMOFLINES_9=9
 DOCKER__NUMOFLINES_10=10
+
+DOCKER__NUMOFMATCH_0=0
+DOCKER__NUMOFMATCH_1=1
+
+
+
+#---PHASE CONSTANTS
+PHASE_SHOW_REMARKS=0
+PHASE_SHOW_READINPUT=1
+PHASE_SHOW_KEYINPUT_HANDLER=2
 
 
 
@@ -113,6 +145,17 @@ DOCKER__YES="y"
 DOCKER__SEMICOLON_BACK=";b"
 DOCKER__SEMICOLON_CLEAR=";c"
 DOCKER__SEMICOLON_HOME=";h"
+
+
+
+#---SED CONSTANTS
+SED__ASTERISK="*"
+SED__BACKSLASH="\\\\"
+SED__DOT="\\."
+SED__SLASH="\\/"
+
+SED__DOUBLE_BACKSLASH=${SED__BACKSLASH}${SED__BACKSLASH}
+SED__BACKSLASH_DOT="${SED__BACKSLASH}${SED__DOT}"
 
 
 
@@ -136,10 +179,16 @@ docker__ps_a_cmd="docker ps -a"
 
 
 #---SPECIFAL FUNCTIONS
-function exit__func() {
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
+function docker__exitFunc() {
+    #Input args
+    exitCode__input=${1}
+    numOfLines__input=${2}
 
-    exit
+    #Move-down cursor
+    moveDown_and_cleanLines__func "${numOfLines__input}"
+
+    #Exit with code
+    exit ${exitCode__input}
 }
 
 function GOTO__func() {
@@ -147,10 +196,10 @@ function GOTO__func() {
     LABEL=$1
 	
 	#Define Command line
-    cmd_line=$(sed -n "/$LABEL:/{:a;n;p;ba;};" $0 | grep -v ':$')
+    cmd=$(sed -n "/$LABEL:/{:a;n;p;ba;};" $0 | grep -v ':$')
 	
 	#Execute Command line
-    eval "${cmd_line}"
+    eval "${cmd}"
 	
 	#Exit Function
     exit
@@ -161,27 +210,27 @@ function press_any_key__func() {
 	local ANYKEY_TIMEOUT=10
 
 	#Initialize variables
-	local keypressed=""
-	local tcounter=0
+	local keyPressed=""
+	local tCounter=0
 
 	#Show Press Any Key message with count-down
 	moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-	while [[ ${tcounter} -le ${ANYKEY_TIMEOUT} ]];
+	while [[ ${tCounter} -le ${ANYKEY_TIMEOUT} ]];
 	do
-		delta_tcounter=$(( ${ANYKEY_TIMEOUT} - ${tcounter} ))
+		delta_tcounter=$(( ${ANYKEY_TIMEOUT} - ${tCounter} ))
 
 		echo -e "\rPress (a)bort or any key to continue... (${delta_tcounter}) \c"
-		read -N 1 -t 1 -s -r keypressed
+		read -N 1 -t 1 -s -r keyPressed
 
-		if [[ ! -z "${keypressed}" ]]; then
-			if [[ "${keypressed}" == "a" ]] || [[ "${keypressed}" == "A" ]]; then
+		if [[ ! -z "${keyPressed}" ]]; then
+			if [[ "${keyPressed}" == "a" ]] || [[ "${keyPressed}" == "A" ]]; then
 				exit
 			else
 				break
 			fi
 		fi
 		
-		tcounter=$((tcounter+1))
+		tCounter=$((tCounter+1))
 	done
 	moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 }
@@ -210,7 +259,31 @@ function check_containerID_state__func() {
 
 
 #---FILE RELATED FUNCTIONS
-function checkIf_container_dir_exists__func() {
+function checkIf_dir_exists__func() {
+    #Input args
+    local containerID__input=${1}
+    local dir__input=${2}
+
+    #Check if dir exists
+    local ret=false
+    if [[ ! -z ${dir__input} ]]; then #contains data
+        if [[ ${dir__input} == ${DOCKER__SLASH} ]]; then
+            ret=true
+        else
+            if [[ -z ${containerID__input} ]]; then #no container-ID provided
+                ret=`lh_checkIf_dir_exists__func "${dir__input}"`
+            else    #container-ID provided
+                ret=`container_checkIf_dir_exists__func "${containerID__input}" "${dir__input}"`
+            fi
+        fi
+    else
+        ret=${dir__input}
+    fi
+
+    #Output
+    echo "${ret}"
+}
+function container_checkIf_dir_exists__func() {
 	#Input args
     local containerID__input=${1}
 	local dir__input=${2}
@@ -220,7 +293,7 @@ function checkIf_container_dir_exists__func() {
     local docker_exec_cmd="docker exec -t ${containerID__input} ${bin_bash_dir} -c"
 
     #Check if directory exists
-    local ret_raw=`${docker_exec_cmd} "[ -d "${str__input}" ] && echo true || echo false"`
+    local ret_raw=`${docker_exec_cmd} "[ -d "${dir__input}" ] && echo true || echo false"`
 
     #Remove carriage returns '\r' caused by '/bin/bash -c'
     local ret=`echo "${ret_raw}" | tr -d $'\r'`
@@ -228,37 +301,88 @@ function checkIf_container_dir_exists__func() {
     #Output
     echo ${ret}
 }
-
-function checkIf_localhost_dir_exists__func() {
+function lh_checkIf_dir_exists__func() {
 	#Input args
 	local dir__input=${1}
 
+    #Check if directory exists
+    if [[ -d ${dir__input} ]]; then
+    echo true
+    else
+    echo false
+    fi
+}
+
+function checkIf_file_exists__func() {
+    #Input args
+    local containerID__input=${1}
+    local fpath__input=${2}
+
+    #Check if dir exists
+    local ret=false
+    if [[ ! -z ${fpath__input} ]]; then #contains data
+        if [[ ${fpath__input} != ${DOCKER__SLASH} ]]; then  #input is not a slash
+            if [[ -z ${containerID__input} ]]; then #no container-ID provided
+                ret=`lh_checkIf_file_exists__func "${fpath__input}"`
+            else    #container-ID provided
+                ret=`container_checkIf_file_exists__func "${containerID__input}" "${fpath__input}"`
+            fi
+        fi
+    fi
+
+    #Output
+    echo "${ret}"
+}
+function container_checkIf_file_exists__func() {
+	#Input args
+    local containerID__input=${1}
+	local fpath__input=${2}
+
+	#Define variables
+    local bin_bash_dir=/bin/bash
+    local docker_exec_cmd="docker exec -t ${containerID__input} ${bin_bash_dir} -c"
+
+    #Check if directory exists
+    local ret_raw=`${docker_exec_cmd} "[ -f "${fpath__input}" ] && echo true || echo false"`
+
+    #Remove carriage returns '\r' caused by '/bin/bash -c'
+    local ret=`echo "${ret_raw}" | tr -d $'\r'`
+
+    #Output
+    echo ${ret}
+}
+function lh_checkIf_file_exists__func() {
+	#Input args
+	local fpath__input=${1}
+
      #Check if directory exists
-     if [[ -d ${dir__input} ]]; then
+     if [[ -f ${fpath__input} ]]; then
         echo true
      else
         echo false
      fi
 }
 
-function checkIf_dir_exists__func() {
-    #Input args
-    local containerID__input=${1}
-    local dir__input=${2}
+function checkIf_dir_has_trailing_slash() {
+	#Input args
+	local dir__input=${1}
 
-    #Check if dir exists
-    local ret=false
-    if [[ -z ${containerID__input} ]]; then
-        ret=`checkIf_localhost_dir_exists__func "${dir__input}"`
+    #Check if 'dir__input' already has a trailing slash
+    local dir_len=${#dir__input}
+    local lastChar_pos=$((dir_len - 1))
+
+    #Get the first character
+    local lastChar=${dir__input:lastChar_pos:dir_len}
+
+    #Check if 'firstChar' is a slash '/'
+    if [[ ${lastChar} == ${DOCKER__SLASH} ]]; then
+        echo "true"
     else
-        ret=`checkIf_container_dir_exists__func "${containerID__input}" "${dir__input}"`
+        echo "false"
     fi
-
-    #Output
-    echo "${ret}"
 }
 
-function checkIf__dirname_of_two_paths_are_the_same__func() {
+function checkIf_dirnames_are_the_same__func() {
     #Input args
     local fpath_new__input=${1}
     local fpath_bck__input=${2}
@@ -280,6 +404,19 @@ function checkIf_files_are_different__func() {
     local file1__input=${1}
     local file2__input=${2}
 
+    #Check if the files exist
+    if [[ ! -f ${file1__input} ]]; then
+        echo "true"
+
+        return  #exit function
+    fi
+
+    if [[ ! -f ${file2__input} ]]; then
+        echo "true"
+
+        return  #exit function
+    fi
+
     #Compare both files
     local stdOutput=`diff ${file1__input} ${file2__input}`
     if [[ -z ${stdOutput} ]]; then
@@ -287,6 +424,54 @@ function checkIf_files_are_different__func() {
     else
         echo "true"
     fi
+}
+
+function checkIf_fpaths_are_the_same__func() {
+    #---------------------------------------------------------------------
+    # Two full-paths are compared with each other to see if they are the
+    # same. Should the input values end with a slash, then that slash will
+    # be removed.
+    #---------------------------------------------------------------------
+    #Input args
+    local fpath1__input=${1}
+    local fpath2__input=${2}
+
+    #Define and initialize variables
+    local fpath1_rev=${fpath1__input}
+    local fpath2_rev=${fpath2__input}
+    local fpath1_lastChar=${DOCKER__EMPTYSTRING}
+    local fpath2_lastChar=${DOCKER__EMPTYSTRING}
+
+    local fpath1_len=${#fpath1__input}
+    local fpath2_len=${#fpath2__input}
+
+    #Get the last character
+    fpath1_lastChar=`get_theLast_xChars_ofString__func "${fpath1__input}" "${DOCKER__NUMOFCHARS_1}"`
+    if [[ ${fpath1_lastChar} == ${DOCKER__SLASH} ]]; then
+        fpath1_rev=${fpath1__input:0:(fpath1_len-1)}
+    fi
+    fpath2_lastChar=`get_theLast_xChars_ofString__func "${fpath2__input}" "${DOCKER__NUMOFCHARS_1}"`
+    if [[ ${fpath2_lastChar} == ${DOCKER__SLASH} ]]; then
+        fpath2_rev=${fpath2__input:0:(fpath2_len-1)}
+    fi
+
+    #Check if both paths are the same
+    if [[ ${fpath1_rev} == ${fpath2_rev} ]]; then
+        echo "true"
+    else
+        echo "false"
+    fi
+}
+
+function get_basename_from_specified_path__func() {
+    #Input arg
+    local fpath__input=${1}
+
+    #Get basename (which is a file or folder)
+    local ret=`echo ${fpath__input} | rev | cut -d"${DOCKER__SLASH}" -f1 | rev`
+
+    #Output
+    echo ${ret}
 }
 
 function get_dirname_from_specified_path__func() {
@@ -305,24 +490,14 @@ function get_dirname_from_specified_path__func() {
     echo ${ret}
 }
 
-function get_basename_from_specified_path__func() {
-    #Input arg
-    local fpath__input=${1}
-
-    #Get basename (which is a file or folder)
-    local ret=`echo ${fpath__input} | rev | cut -d"${DOCKER__SLASH}" -f1 | rev`
-
-    #Output
-    echo ${ret}
-}
-
 function get_output_from_file__func() {
     #Input args
     outputFpath__input=${1}
+    lineNum__input=${2}
 
     #Read from file
     if [[ -f ${outputFpath__input} ]]; then
-        ret=`cat ${outputFpath__input} | head -n1 | xargs`
+        ret=`cat ${outputFpath__input} | head -n${lineNum__input} | tail -n+${lineNum__input}`
     else
         ret=${DOCKER__EMPTYSTRING}
     fi
@@ -336,35 +511,36 @@ function get_output_from_file__func() {
 #---MOVE FUNCTIONS
 function moveUp__func() {
     #Input args
-    local numOfLines=${1}
+    local numOfLines__input=${1}
 
     #Clear lines
-    local counter=1
-    while [[ ${counter} -le ${numOfLines} ]]
+    local tCounter=1
+    while [[ ${tCounter} -le ${numOfLines__input} ]]
     do
         tput cuu1	#move UP with 1 line
 
-        counter=$((counter+1))  #increment by 1
+        tCounter=$((tCounter+1))  #increment by 1
     done
 }
 
 function moveUp_and_cleanLines__func() {
     #Input args
-    local numOfLines=${1}
+    local numOfLines__input=${1}
 
     #Clear lines
     local xPos_curr=0
 
-    if [[ ${numOfLines} != 0 ]]; then
-        local counter=1
-        while [[ ${counter} -le ${numOfLines} ]]
+    if [[ ${numOfLines__input} != 0 ]]; then
+        local tCounter=1
+        while [[ ${tCounter} -le ${numOfLines__input} ]]
         do
-            tput el1    #clear CURRENT line until BEGINNING of line
-            tput cuu1	#move-UP 1 line
-            tput el		#clear CURRENT line until END of line
+            #clean current line, Move-up 1 line and clean
+            tput el1
+            tput cuu1
+            tput el
 
-            #Increment counter by 1
-            counter=$((counter+1))
+            #Increment tCounter by 1
+            tCounter=$((tCounter+1))
         done
     else    #
         tput el1
@@ -372,35 +548,53 @@ function moveUp_and_cleanLines__func() {
 
     #Get current x-position of cursor
     xPos_curr=`tput cols`
+
     #Move to the beginning of line
     tput cub ${xPos_curr}
 }
 
-function moveDown_and_cleanLines__func() {
+function moveDown__func() {
     #Input args
-    local numOfLines=${1}
+    local numOfLines__input=${1}
 
     #Clear lines
-    local counter=1
-    while [[ ${counter} -le ${numOfLines} ]]
+    local tCounter=1
+    while [[ ${tCounter} -le ${numOfLines__input} ]]
     do
-        tput cud1	#move-DOWN 1 line
-        tput el1	 #clear CURRENT line until BEGINNING of line
+        #Move-down 1 line
+        tput cud1
 
-        #Increment counter by 1
-        counter=$((counter+1))
+        #Increment tCounter by 1
+        tCounter=$((tCounter+1))
+    done
+}
+
+function moveDown_and_cleanLines__func() {
+    #Input args
+    local numOfLines__input=${1}
+
+    #Clear lines
+    local tCounter=1
+    while [[ ${tCounter} -le ${numOfLines__input} ]]
+    do
+        #Move-down 1 line and clean
+        tput cud1
+        tput el1
+
+        #Increment tCounter by 1
+        tCounter=$((tCounter+1))
     done
 }
 
 function moveDown_oneLine_then_moveUp_and_clean__func() {
     #Input args
-    local numOfLines=${1}
+    local numOfLines__input=${1}
 
     #Move-down 1 line
     tput cud1
 
     #Move-up and clean a specified number of times
-    moveUp_and_cleanLines__func "${numOfLines}"
+    moveUp_and_cleanLines__func "${numOfLines__input}"
 }
 
 function moveUp_oneLine_then_moveRight__func() {
@@ -426,101 +620,92 @@ function moveUp_oneLine_then_moveRight__func() {
 #---SHOW FUNCTIONS
 function show_centered_string__func() {
     #Input args
-    local str_input=${1}
-    local maxStrLen_input=${2}
+    local string__input=${1}
+    local maxStrLen__input=${2}
 
     #Define one-space constant
     local ONESPACE=" "
 
     #Get string 'without visiable' color characters
-    local strInput_wo_colorChars=`echo "${str_input}" | sed "s,\x1B\[[0-9;]*m,,g"`
+    local strInput_wo_colorChars=`echo "${string__input}" | sed "s,\x1B\[[0-9;]*m,,g"`
 
     #Get string length
     local strInput_wo_colorChars_len=${#strInput_wo_colorChars}
 
     #Calculated the number of spaces to-be-added
-    local numOf_spaces=$(( (maxStrLen_input-strInput_wo_colorChars_len)/2 ))
+    local numOf_spaces=$(( (maxStrLen__input-strInput_wo_colorChars_len)/2 ))
 
     #Create a string containing only EMPTY SPACES
     local emptySpaces_string=`duplicate_char__func "${ONESPACE}" "${numOf_spaces}" `
 
     #Print text including Leading Empty Spaces
-    echo -e "${emptySpaces_string}${str_input}"
+    echo -e "${emptySpaces_string}${string__input}"
 }
 
 function show_leadingAndTrailingStrings_separatedBySpaces__func() {
     #Input args
-    local leadStr_input=${1}
-    local trailStr_input=${2}
-    local maxStrLen_input=${3}
+    local leadStr__input=${1}
+    local trailStr__input=${2}
+    local maxStrLen__input=${3}
 
     #Define local variables
     local ONESPACE=" "
 
     #Get string 'without visiable' color characters
-    local leadStr_input_wo_colorChars=`echo "${leadStr_input}" | sed "s,\x1B\[[0-9;]*m,,g"`
-    local trailStr_input_wo_colorChars=`echo "${trailStr_input}" | sed "s,\x1B\[[0-9;]*m,,g"`
+    local leadStr_input_wo_colorChars=`echo "${leadStr__input}" | sed "s,\x1B\[[0-9;]*m,,g"`
+    local trailStr_input_wo_colorChars=`echo "${trailStr__input}" | sed "s,\x1B\[[0-9;]*m,,g"`
 
     #Get string length
     local leadStr_input_wo_colorChars_len=${#leadStr_input_wo_colorChars}
     local trailStr_input_wo_colorChars_len=${#trailStr_input_wo_colorChars}
 
     #Calculated the number of spaces to-be-added
-    local numOf_spaces=$(( maxStrLen_input-(leadStr_input_wo_colorChars_len+trailStr_input_wo_colorChars_len) ))
+    local numOf_spaces=$(( maxStrLen__input-(leadStr_input_wo_colorChars_len+trailStr_input_wo_colorChars_len) ))
 
     #Create a string containing only EMPTY SPACES
     local emptySpaces_string=`printf '%*s' "${numOf_spaces}" | tr ' ' "${ONESPACE}"`
 
     #Print text including Leading Empty Spaces
-    echo -e "${leadStr_input}${emptySpaces_string}${trailStr_input}"
+    echo -e "${leadStr__input}${emptySpaces_string}${trailStr__input}"
 }
 
-function show_errMsg_plainVersion__func() {
+function show_list_w_menuTitle__func() {
     #Input args
-    local errMsg=${1}
-
-    # moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
-
-    echo -e "${errMsg}" #error message
-
-    # press_any_key__func
-}
-
-function show_list_with_menuTitle__func() {
-    #Input args
-    local menuTitle=${1}
-    local dockerCmd=${2}
+    local menuTitle__input=${1}
+    local dockerCmd__input=${2}
 
     #Show list
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-    show_centered_string__func "${menuTitle}" "${DOCKER__TABLEWIDTH}"
+    show_centered_string__func "${menuTitle__input}" "${DOCKER__TABLEWIDTH}"
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
     
-    if [[ ${dockerCmd} == ${docker__ps_a_cmd} ]]; then
+    if [[ ${dockerCmd__input} == ${docker__ps_a_cmd} ]]; then
         ${docker__containerlist_tableinfo_fpath}
     else
         ${docker__repolist_tableinfo_fpath}
     fi
 
+    #Move-down cursor
     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
+    #Print
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
     echo -e "${DOCKER__CTRL_C_QUIT}"
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
 }
 
-function show_errMsg_with_menuTitle__func() {
+function show_msg_w_menuTitle_w_pressAnyKey_w_ctrlC_func() {
     #Input args
-    local menuTitle=${1}
-    local errMsg=${2}
+    local menuTitle__input=${1}
+    local msg__input=${2}
 
     #Show error-message
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-    show_centered_string__func "${menuTitle}" "${DOCKER__TABLEWIDTH}"
+    show_centered_string__func "${menuTitle__input}" "${DOCKER__TABLEWIDTH}"
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
     
     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-    show_centered_string__func "${errMsg}" "${DOCKER__TABLEWIDTH}"
+    show_centered_string__func "${msg__input}" "${DOCKER__TABLEWIDTH}"
     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
@@ -530,14 +715,65 @@ function show_errMsg_with_menuTitle__func() {
     CTRL_C__sub
 }
 
-function show_errMsg_without_menuTitle__func() {
+function show_msg_w_menuTitle_only_func() {
     #Input args
-    local errMsg=${1}
-    local numOfLines=${2}
+    local menuTitle__input=${1}
+    local msg__input=${2}
+    local prepend__numOfLines=${3}
+    local append__numOfLines=${4}
 
-    moveDown_and_cleanLines__func "${numOfLines}"
-    echo -e "${errMsg}"
+    #Prepend empty lines
+    moveDown_and_cleanLines__func "${prepend__numOfLines}"
 
+    #Horizontal line
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+
+    #Print 'menuTitle__input'
+    show_centered_string__func "${menuTitle__input}" "${DOCKER__TABLEWIDTH}"
+
+    #Horizontal line
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    
+    #Only handle the following condition if 'msg__input' is NOT an Empty String
+    if [[ ! -z ${msg__input} ]]; then
+        #Print 'msg__input'
+        echo -e "${msg__input}"
+        
+        #Append 1 emoty line
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+        #Horizontal line
+        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    fi
+
+    #Append empty lines
+    moveDown_and_cleanLines__func "${append__numOfLines}"
+}
+
+function show_msg_only__func() {
+    #Input args
+    local msg__input=${1}
+    local numOfLines__input=${2}
+
+    #Move-down cursor
+    moveDown_and_cleanLines__func "${numOfLines__input}"
+
+    #Print
+    echo -e "${msg__input}" #error message
+}
+
+function show_msg_wo_menuTitle_w_PressAnyKey__func() {
+    #Input args
+    local msg__input=${1}
+    local numOfLines__input=${2}
+
+    #Move-down cursor
+    moveDown_and_cleanLines__func "${numOfLines__input}"
+
+    #Print
+    echo -e "${msg__input}"
+
+    #Show press-any-key dialog
     press_any_key__func
 }
 
@@ -545,6 +781,9 @@ function show_errMsg_without_menuTitle__func() {
 
 #---STRING FUNCTIONS
 function checkForMatch_keyWord_within_string__func() {
+    #Turn-off Expansion
+    set -f
+
     #Input Args
     local keyWord__input=${1}
     local string__input=${2}
@@ -556,6 +795,9 @@ function checkForMatch_keyWord_within_string__func() {
     else    #match
         echo "true"
     fi
+
+    #Turn-on Expansion
+    set +f
 }
 
 function checkIf_lastChar_ofString_isHash__func() {
@@ -580,14 +822,14 @@ function checkForMatch_dockerCmd_result__func() {
 
 function duplicate_char__func() {
     #Input args
-    local char_input=${1}
-    local numOf_times=${2}
+    local char__input=${1}
+    local numOfTimes__input=${2}
 
-    #Duplicate 'char_input'
-    local char_duplicated=`printf '%*s' "${numOf_times}" | tr ' ' "${char_input}"`
+    #Duplicate 'char__input'
+    local ret=`printf '%*s' "${numOfTimes__input}" | tr ' ' "${char__input}"`
 
     #Print text including Leading Empty Spaces
-    echo -e "${char_duplicated}"
+    echo -e "${ret}"
 }
 
 function get_endResult_ofString_with_semiColonChar__func() {
@@ -657,45 +899,46 @@ function get_endResult_ofString_with_semiColonChar__func() {
     echo ${ret}
 }
 
-function get_lastTwoChars_of_string__func() {
+function get_theLast_xChars_ofString__func() {
     #Input args
-    local str_input=${1}
+    local string__input=${1}
+    local numOfChars__input=${2}
 
     #Define local variable
-    local last2Chars=`echo ${str_input: -2}`
+    local ret=`echo ${string__input: -numOfChars__input}`
 
     #Output
-    echo ${last2Chars}
+    echo ${ret}
 }
 
 function remove_trailing_char__func() {
     #Input args
-    local str_input=${1}
-	local char_input=${2}
+    local string__input=${1}
+	local char__input=${2}
 
     #Get string without trailing specified char
 	#REMARK:
-	#	char_input: character to be removed
+	#	char__input: character to be removed
 	#	REMARK: 
 	#		Make sure to prepend escape-char '\' if needed
 	#		For example: slash '/' prepended with escape-char becomes '\/')
-	#	*: all of specified 'char_input' value
+	#	*: all of specified 'char__input' value
 	#	$: start from the end
-	local str_output=`echo "${str_input}" | sed s"/${char_input}*$//g"`
+	local ret=`echo "${string__input}" | sed s"/${char__input}*$//g"`
 
     #Output
-    echo ${str_output}
+    echo ${ret}
 }
 
 function remove_whiteSpaces__func() {
     #Input args
-    local orgstring=${1}
+    local orgString__input=${1}
     
     #Remove white spaces
-    local outputstring=`echo -e "${orgstring}" | tr -d "[:blank:]"`
+    local ret=`echo -e "${orgString__input}" | tr -d "[:blank:]"`
 
     #OUTPUT
-    echo ${outputstring}
+    echo ${ret}
 }
 
 
@@ -705,10 +948,9 @@ function remove_whiteSpaces__func() {
 trap CTRL_C__sub INT
 
 CTRL_C__sub() {
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
-
-    exit 99
+    docker__exitFunc "${DOCKER__EXITCODE_99}" "${DOCKER__NUMOFLINES_2}"
 }
+
 
 
 docker__environmental_variables__sub() {
@@ -737,20 +979,24 @@ docker__environmental_variables__sub() {
     docker__readInput_w_autocomplete_filename="docker_readInput_w_autocomplete.sh"
     docker__readInput_w_autocomplete_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__readInput_w_autocomplete_filename}
 
-    docker__tmp_dir=/tmp
-    docker__readInput_w_autocomplete_out_filename="docker__readInput_w_autocomplete.out"
-    docker__readInput_w_autocomplete_out_fpath=${docker__tmp_dir}/${docker__readInput_w_autocomplete_out_filename}
-
-    dirlist__readInput_w_autocomplete_out__filename="dirlist__readInput_w_autocomplete.out"
-    dirlist__readInput_w_autocomplete_out__fpath=${docker__tmp_dir}/${dirlist__readInput_w_autocomplete_out__filename}
-
     dirlist__readInput_w_autocomplete_filename="dirlist_readInput_w_autocomplete.sh"
     dirlist__readInput_w_autocomplete_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${dirlist__readInput_w_autocomplete_filename}
+
+    docker__tmp_dir=/tmp
+    docker__readInput_w_autocomplete_out_filename="docker_readInput_w_autocomplete.out"
+    docker__readInput_w_autocomplete_out_fpath=${docker__tmp_dir}/${docker__readInput_w_autocomplete_out_filename}
+
+    dirlist__readInput_w_autocomplete_out__filename="dirlist_readInput_w_autocomplete.out"
+    dirlist__readInput_w_autocomplete_out__fpath=${docker__tmp_dir}/${dirlist__readInput_w_autocomplete_out__filename}
     
-    dirlist_ls_raw_tmp_filename="dirlist_ls_raw.tmp"
-    dirlist_ls_raw_tmp_fpath=${docker__tmp_dir}/${dirlist_ls_raw_tmp_filename}
-    dirlist_ls_raw_bck_tmp_filename="dirlist_ls_raw_bck.tmp"
-    dirlist_ls_raw_bck_tmp_fpath=${docker__tmp_dir}/${dirlist_ls_raw_bck_tmp_filename}
+    dirlist__src_ls_1aA_output__filename="dirlist_src_ls_1aA.output"
+    dirlist__src_ls_1aA_output__fpath=${docker__tmp_dir}/${dirlist__src_ls_1aA_output__filename}
+    dirlist__src_ls_1aA_tmp__filename="dirlist_src_ls_1aA.tmp"
+    dirlist__src_ls_1aA_tmp__fpath=${docker__tmp_dir}/${dirlist__src_ls_1aA_tmp__filename}
+    dirlist__dst_ls_1aA_output__filename="dirlist_dst_ls_1aA.output"
+    dirlist__dst_ls_1aA_output__fpath=${docker__tmp_dir}/${dirlist__dst_ls_1aA_output__filename}
+    dirlist__dst_ls_1aA_tmp__filename="dirlist_dst_ls_1aA.tmp"
+    dirlist__dst_ls_1aA_tmp__fpath=${docker__tmp_dir}/${dirlist__dst_ls_1aA_tmp__filename}
 
     dclcau_lh_ls_filename="dclcau_lh_ls.sh"
     dclcau_lh_ls_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${dclcau_lh_ls_filename}

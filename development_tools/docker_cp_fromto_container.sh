@@ -1,49 +1,16 @@
 #!/bin/bash -m
 #Remark: by using '-m' the INT will NOT propagate to the PARENT scripts
-#---NUMERIC CONSTANTS
-DOCKER__LISTVIEW_NUMOFROWS=20
-DOCKER__LISTVIEW_NUMOFCOLS=0
-
-#---ENUM CONSTANTS
-DOCKER__CONTAINER_TO_HOST=1
-DOCKER__HOST_TO_CONTAINER=2
-
-
-
-# #---VARIABLES
-# docker__myContainerId_accept=${DOCKER__EMPTYSTRING}
-# docker__mySource_dir=${DOCKER__EMPTYSTRING}
-# docker__mySource_fObject=${DOCKER__EMPTYSTRING}
-# docker__mySource_fPath=${DOCKER__EMPTYSTRING}
-# docker__myDest_dir=${DOCKER__EMPTYSTRING}
-
-# docker__myDest_fpath=${DOCKER__EMPTYSTRING}
-# docker__accept_mySource_dir=${DOCKER__EMPTYSTRING}
-# docker__accept_mySource_fObject=${DOCKER__EMPTYSTRING}
-# docker__accept_mySource_fPath=${DOCKER__EMPTYSTRING}
-# docker__accept_myDest_dir=${DOCKER__EMPTYSTRING}
-# docker__accept_myDest_fPath=${DOCKER__EMPTYSTRING}
-
-# docker__myTmpSource_fPath=${DOCKER__EMPTYSTRING}
-# docker__myTmpDest_fPath=${DOCKER__EMPTYSTRING}
-
-# docker__myanswer=${DOCKER__EMPTYSTRING}
-# docker__lastTwoChar=${DOCKER__EMPTYSTRING}
-# docker__case_option=${DOCKER__EMPTYSTRING}
-
-
-
 #---SUBROUTINES
 docker__environmental_variables__sub() {
 	#---Define PATHS
 	docker__ispbooot_bin_filename="ISPBOOOT.BIN"
 
 	docker__bin_bash_dir=/bin/bash
-	docker__root_sp7xxx_out_dir=/root/SP7021/out
+	# docker__root_sp7xxx_out_dir=/root/SP7021/out
 
-	# docker__current_dir=`pwd`
-	docker__current_script_fpath="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
-    docker__current_dir=$(dirname ${docker__current_script_fpath})	#/repo/LTPP3_ROOTFS/development_tools
+	# docker__current_script_fpath="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
+    # docker__current_dir=$(dirname ${docker__current_script_fpath})	#/repo/LTPP3_ROOTFS/development_tools
+	docker__current_dir=/home/imcase//repo/LTPP3_ROOTFS/development_tools
 	docker__parent_dir=${docker__current_dir%/*}    #gets one directory up (/repo/LTPP3_ROOTFS)
     if [[ -z ${docker__parent_dir} ]]; then
         docker__parent_dir="${DOCKER__SLASH}"
@@ -71,124 +38,122 @@ docker__load_header__sub() {
 }
 
 docker__load_constants__sub() {
-	#Has to be loaded after 'docker__load_source_files__sub'
-	DOCKER__CASE_SOURCE_DIR="SOURCE DIR"
-	DOCKER__CASE_SOURCE_FOBJECT="SOURCE FILENAME"
-	DOCKER__CASE_DEST_DIR="DEST DIR"
-	DOCKER__CASE_DONE="DONE"
-	DOCKER__CONTAINER_LIST_DIRECTORY_ERROR="No such file or directory"
+	#---CASE SELECTION CONSTANTS
+	DOCKER__CASE_SRC_PATH=0
+	DOCKER__CASE_DST_PATH=1
+	DOCKER__CASE_DONE=2
 
-	DOCKER__READINPUT_H_OPTION="${DOCKER__FG_YELLOW}${DOCKER__SEMICOLON_HOME}${DOCKER__NOCOLOR}ome"
+
+
+	#---ENUM CONSTANTS
+	DOCKER__CONTAINER_TO_HOST=1
+	DOCKER__HOST_TO_CONTAINER=2
+
+
+
+	#---MESSAGE CONSTANTS
+	DOCKER__SOURCE="SRC"
+	DOCKER__DESTINATION="DST"
+
+	DOCKER__MENUTITLE="Copy {${DOCKER__FG_LIGHTGREY}from${DOCKER__NOCOLOR}|${DOCKER__FG_LIGHTGREY}to${DOCKER__NOCOLOR}} ${DOCKER__FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}"
+	DOCKER__SUMMARY_TITLE="${DOCKER__FG_REDORANGE}Summary${DOCKER__NOCOLOR}"
+
+	# DOCKER__READINPUT_H_OPTION="${DOCKER__FG_YELLOW}${DOCKER__SEMICOLON_HOME}${DOCKER__NOCOLOR}ome"
 	DOCKER__READINPUT_B_OPTION="${DOCKER__FG_YELLOW}${DOCKER__SEMICOLON_BACK}${DOCKER__NOCOLOR}ack"
 	DOCKER__READINPUT_C_OPTION="${DOCKER__FG_YELLOW}${DOCKER__SEMICOLON_CLEAR}${DOCKER__NOCOLOR}lear"
 	DOCKER__READINPUT_B_C_OPTIONS="(${DOCKER__READINPUT_B_OPTION} ${DOCKER__READINPUT_C_OPTION})"
-	DOCKER__READINPUT_H_B_C_OPTIONS="(${DOCKER__READINPUT_H_OPTION} ${DOCKER__READINPUT_B_OPTION} ${DOCKER__READINPUT_C_OPTION})"
+	# DOCKER__READINPUT_H_B_C_OPTIONS="(${DOCKER__READINPUT_H_OPTION} ${DOCKER__READINPUT_B_OPTION} ${DOCKER__READINPUT_C_OPTION})"
+	DOCKER__READINPUT_CONFIRM_OPTIONS="(${DOCKER__FG_YELLOW}y${DOCKER__NOCOLOR}${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}"
+	DOCKER__READINPUT_CONFIRM_OPTIONS+="${DOCKER__FG_YELLOW}n${DOCKER__NOCOLOR}${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}"
+	DOCKER__READINPUT_CONFIRM_OPTIONS+="${DOCKER__FG_YELLOW}p${DOCKER__NOCOLOR}${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}"
+	DOCKER__READINPUT_CONFIRM_OPTIONS+="${DOCKER__FG_YELLOW}i${DOCKER__NOCOLOR}${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}"
+	DOCKER__READINPUT_CONFIRM_OPTIONS+="${DOCKER__FG_YELLOW}h${DOCKER__NOCOLOR})"
 
-	DOCKER__READINPUT_CONTAINERID="${DOCKER__FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}:-:ID ${DOCKER__READINPUT_B_C_OPTIONS}: "
+	DOCKER__READINPUT_CONTAINERID="${DOCKER__FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}${DOCKER__FG_LIGHTGREY}:-:${DOCKER__NOCOLOR}${DOCKER__BG_BRIGHTPRUPLE}ID${DOCKER__NOCOLOR} ${DOCKER__READINPUT_B_C_OPTIONS}: "
+	DOCKER__READINPUT_CONTAINER_SRC="${DOCKER__FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}${DOCKER__FG_LIGHTGREY}:-:${DOCKER__NOCOLOR}${DOCKER__BG_BRIGHTPRUPLE}Src${DOCKER__NOCOLOR}: "
+	DOCKER__READINPUT_DO_YOU_WISH_TO_CONTINUE="Do you wish to continue ${DOCKER__READINPUT_CONFIRM_OPTIONS}?"
+	DOCKER__READINPUT_HOST_DST="${DOCKER__FG_GREEN85}Local${DOCKER__NOCOLOR}${DOCKER__FG_LIGHTGREY}:-:${DOCKER__NOCOLOR}${DOCKER__BG_GREEN85}Dst${DOCKER__NOCOLOR}: "
+	DOCKER__READINPUT_HOST_SRC="${DOCKER__FG_GREEN85}Local${DOCKER__NOCOLOR}${DOCKER__FG_LIGHTGREY}:-:${DOCKER__NOCOLOR}${DOCKER__BG_GREEN85}Src${DOCKER__NOCOLOR}: "
+	DOCKER__READINPUT_CONTAINER_DST="${DOCKER__FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}${DOCKER__FG_LIGHTGREY}:-:${DOCKER__NOCOLOR}${DOCKER__BG_BRIGHTPRUPLE}Dst${DOCKER__NOCOLOR}: "
 
-	DOCKER__READINPUT_CONTAINER_SOURCE_DIR="${DOCKER__FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}:-:SOURCE-DIR ${DOCKER__READINPUT_H_B_C_OPTIONS}: "
-	DOCKER__READINPUT_CONTAINER_SOURCE_FOBJECT="${DOCKER__FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}:-:{FILE|FOLDER} ${DOCKER__READINPUT_H_B_C_OPTIONS}: "
-	DOCKER__READINPUT_HOST_DEST_DIR="${DOCKER__FG_GREEN85}HOST${DOCKER__NOCOLOR}:-:DEST-DIR ${DOCKER__READINPUT_H_B_C_OPTIONS}: "
+	DOCKER__DIRECTION_CONTAINER_TO_LOCAL="${DOCKER__FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR} ${DOCKER__FG_LIGHTGREY}>${DOCKER__NOCOLOR} ${DOCKER__FG_GREEN85}Local${DOCKER__NOCOLOR}"
+	DOCKER__DIRECTION_LOCAL_TO_CONTAINER="${DOCKER__FG_GREEN85}Local${DOCKER__NOCOLOR} ${DOCKER__FG_LIGHTGREY}>${DOCKER__NOCOLOR} ${DOCKER__FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}"
 
-	DOCKER__READINPUT_HOST_SOURCE_DIR="${DOCKER__FG_GREEN85}HOST${DOCKER__NOCOLOR}:-:SOURCE-DIR ${DOCKER__READINPUT_H_B_C_OPTIONS}: "
-	DOCKER__READINPUT_HOST_SOURCE_FOBJECT="${DOCKER__FG_GREEN85}HOST${DOCKER__NOCOLOR}:-:{FILE|FOLDER} ${DOCKER__READINPUT_H_B_C_OPTIONS}: "
-	DOCKER__READINPUT_CONTAINER_DEST_DIR="${DOCKER__FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}:-:DEST-DIR ${DOCKER__READINPUT_H_B_C_OPTIONS}: "
+	DOCKER__CONFIRMATION_REMARKS="${DOCKER__BG_ORANGE}Remarks:${DOCKER__NOCOLOR}\n"
+	DOCKER__CONFIRMATION_REMARKS+="${DOCKER__FG_YELLOW}y${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}Yes${DOCKER__NOCOLOR}\n"
+	DOCKER__CONFIRMATION_REMARKS+="${DOCKER__FG_YELLOW}n${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}No${DOCKER__NOCOLOR}\n"
+	DOCKER__CONFIRMATION_REMARKS+="${DOCKER__FG_YELLOW}p${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}Reselect Path${DOCKER__NOCOLOR}\n"
+	DOCKER__CONFIRMATION_REMARKS+="${DOCKER__FG_YELLOW}i${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}Reselect containerID${DOCKER__NOCOLOR}\n"
+	DOCKER__CONFIRMATION_REMARKS+="${DOCKER__FG_YELLOW}h${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}Home${DOCKER__NOCOLOR}"
+
+	DOCKER__COPY_DIRECTION_REMARKS="Choose copy direction:\n"
+	DOCKER__COPY_DIRECTION_REMARKS+="${DOCKER__FOURSPACES}1. ${DOCKER__DIRECTION_CONTAINER_TO_LOCAL}\n"
+	DOCKER__COPY_DIRECTION_REMARKS+="${DOCKER__FOURSPACES}2. ${DOCKER__DIRECTION_LOCAL_TO_CONTAINER}"
+
+    DOCKER__DIRLIST_REMARKS="${DOCKER__BG_ORANGE}Remarks:${DOCKER__NOCOLOR}\n"
+    DOCKER__DIRLIST_REMARKS+="${DOCKER__DASH} append ${DOCKER__FG_YELLOW}/${DOCKER__NOCOLOR}: to list directory (e.g. /etc${DOCKER__FG_YELLOW}/${DOCKER__NOCOLOR})\n"
+	DOCKER__DIRLIST_REMARKS+="${DOCKER__DASH} ${DOCKER__FG_YELLOW}ENTER${DOCKER__NOCOLOR}: to confirm\n"
+    DOCKER__DIRLIST_REMARKS+="${DOCKER__DASH} ${DOCKER__FG_YELLOW}TAB${DOCKER__NOCOLOR}: auto-complete\n"
+    DOCKER__DIRLIST_REMARKS+="${DOCKER__DASH} ${DOCKER__FG_YELLOW};b${DOCKER__NOCOLOR}: back\n"
+    DOCKER__DIRLIST_REMARKS+="${DOCKER__DASH} ${DOCKER__FG_YELLOW};c${DOCKER__NOCOLOR}: clear\n"
+    DOCKER__DIRLIST_REMARKS+="${DOCKER__DASH} ${DOCKER__FG_YELLOW};h${DOCKER__NOCOLOR}: home"
+
+	DOCKER__ECHOMSG_PLEASE_SELECT_A_SOURCEPATH_WHICH_CONTAINS_DATA="Please select valid source folder/file..."
+	DOCKER__ECHOMSG_PLEASE_SELECT_A_VALID_DESTINATIONPATH="Please select a valid destination folder..."
+
+
+
+	#---NUMERIC CONSTANTS
+	DOCKER__LISTVIEW_NUMOFROWS=20
+	DOCKER__LISTVIEW_NUMOFCOLS=0
 }
 
 docker__init_variables__sub() {
-	#Initialize variables for 'docker__readInput_w_autocomplete_fpath'
-	docker__containerID_chosen=${DOCKER__EMPTYSTRING}
-    
-	docker__ps_a_cmd="docker ps -a"
-    
+	#Variables for 'docker__readInput_w_autocomplete_fpath'
 	docker__ps_a_containerIdColno=1
-
 	docker__onEnter_breakLoop=false
 	docker__showTable=true
 
-	#Initialize variables
-	docker__get_initial_myContainerId_dfltVal_isAlreadyDone=${DOCKER__TRUE}
 
-	docker__myContainerId_accept=${DOCKER__EMPTYSTRING}
-	docker__mySource_dir=${DOCKER__EMPTYSTRING}
-	docker__mySource_fObject=${DOCKER__EMPTYSTRING}
-	docker__mySource_fPath=${DOCKER__EMPTYSTRING}
-	docker__myDest_dir=${DOCKER__EMPTYSTRING}
+	#Case-selection variables
+	docker__case_option=${DOCKER__CASE_SRC_PATH}
 
-	docker__myDest_fpath=${DOCKER__EMPTYSTRING}
-	docker__accept_mySource_dir=${DOCKER__EMPTYSTRING}
-	docker__accept_mySource_fObject=${DOCKER__EMPTYSTRING}
-	docker__accept_mySource_fPath=${DOCKER__EMPTYSTRING}
-	docker__accept_myDest_dir=${DOCKER__EMPTYSTRING}
-	docker__accept_myDest_fPath=${DOCKER__EMPTYSTRING}
+	#Misc variables
+	docker__containerID_chosen=${DOCKER__EMPTYSTRING}
+	docker__path_output=${DOCKER__EMPTYSTRING}
 
-	docker__myTmpSource_fPath=${DOCKER__EMPTYSTRING}
-	docker__myTmpDest_fPath=${DOCKER__EMPTYSTRING}
+	docker__dst_dir=${DOCKER__EMPTYSTRING}
+	docker__src_dir=${DOCKER__EMPTYSTRING}
+	docker__src_file=${DOCKER__EMPTYSTRING}
 
-	docker__case_option=${DOCKER__EMPTYSTRING}
-	docker__lastTwoChar=${DOCKER__EMPTYSTRING}
-	docker__myanswer=${DOCKER__EMPTYSTRING}
-	docker__mycopychoice=${DOCKER__EMPTYSTRING}
+	docker__dst_dir_print=${DOCKER__EMPTYSTRING}
+	docker__src_dir_print=${DOCKER__EMPTYSTRING}
 
-	docker__accept_mySource_dir=${DOCKER__EMPTYSTRING}
-	docker__accept_mySource_fObject=${DOCKER__EMPTYSTRING}
-	docker__accept_myDest_dir=${DOCKER__EMPTYSTRING}
+	docker__numOfMatches_output=0
 
-	docker__prevDir=${DOCKER__EMPTYSTRING}
-
-	#Assign values to specified variables (as mentioned below)
-	#REMARK: these variables will be used in function 'get_source_destination_fpath__sub'
-	#IMPORTANT: this MUST be done here!
-	if [[ ${docker__mycopychoice} -eq ${DOCKER__CONTAINER_TO_HOST} ]]; then
-		docker__mySource_dir=${docker__root_sp7xxx_out_dir}
-		# if [[ -z ${docker__accept_mySource_dir} ]]; then
-		# 	docker__accept_mySource_dir=${docker__mySource_dir}
-		# fi
-
-		docker__mySource_fObject=${docker__ispbooot_bin_filename}
-		# if [[ -z ${docker__accept_mySource_fObject} ]]; then
-		# 	docker__accept_mySource_fObject=${docker__mySource_fObject}
-		# fi
-
-		docker__myDest_dir=${docker__parent_dir}
-		# if [[ -z ${docker__accept_myDest_dir} ]]; then
-		# 	docker__accept_myDest_dir=${docker__myDest_dir}
-		# fi
-
-	else
-		docker__mySource_dir=${docker__parent_dir}
-		# if [[ -z ${docker__accept_mySource_dir} ]]; then
-		# 	docker__accept_mySource_dir=${docker__mySource_dir}
-		# fi
-
-		docker__mySource_fObject=${DOCKER__EMPTYSTRING}
-		# if [[ -z ${docker__accept_mySource_fObject} ]]; then
-		# 	docker__accept_mySource_fObject=${DOCKER__EMPTYSTRING}
-		# fi
-
-		docker__myDest_dir=${docker__root_sp7xxx_out_dir}
-		# if [[ -z ${docker__accept_myDest_dir} ]]; then
-		# 	docker__accept_myDest_dir=${docker__myDest_dir}
-		# fi
-	fi
+	#Message variables
+	docker__summary_msg=${DOCKER__EMPTYSTRING}
+	docker__copy_msg=${DOCKER__EMPTYSTRING}
 }
 
 docker__choose_copy_direction__sub() {
-	#Define local message constants
-	local MENUTITLE="Copy a ${DOCKER__FG_ORANGE}File${DOCKER__NOCOLOR} {From${DOCKER__FG_LIGHTGREY}|${DOCKER__NOCOLOR}To} a ${DOCKER__FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}"
+	#Load constants
+	docker__load_constants__sub
+
+	#MANDATORY: Initialize global variables
+	docker__init_variables__sub
 
 	#Define local read variables
 	local readMsg="Your Choice: "
 
     #Show menu-title
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-    show_centered_string__func "${MENUTITLE}" "${DOCKER__TABLEWIDTH}"
+    show_centered_string__func "${DOCKER__MENUTITLE}" "${DOCKER__TABLEWIDTH}"
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
 
 	#Show menu-items
-	echo -e "Choose copy direction:"
-	echo -e "${DOCKER__FOURSPACES}1. ${DOCKER__FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR} ${DOCKER__FG_LIGHTGREY}>${DOCKER__NOCOLOR} ${DOCKER__FG_GREEN85}HOST${DOCKER__NOCOLOR}"
-	echo -e "${DOCKER__FOURSPACES}2. ${DOCKER__FG_GREEN85}HOST${DOCKER__NOCOLOR} ${DOCKER__FG_LIGHTGREY}>${DOCKER__NOCOLOR} ${DOCKER__FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}"
+	echo -e "${DOCKER__COPY_DIRECTION_REMARKS}"
+
 	moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
 	#Start loop
@@ -225,12 +190,6 @@ docker__choose_copy_direction__sub() {
 			moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 		fi
 	done
-
-	#Load constants
-	docker__load_constants__sub
-
-	#MANDATORY: Initialize global variables
-	docker__init_variables__sub
 }
 
 docker__choose_containerid__sub() {
@@ -240,29 +199,29 @@ docker__choose_containerid__sub() {
 	local ERRMSG_CHOSEN_CONTAINERID_DOESNOT_EXISTS="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Invalid input value "
 
 	#Show read-input
-		${docker__readInput_w_autocomplete_fpath} "${MENUTITLE_CURRENT_REPOSITORY_LIST}" \
-                            "${DOCKER__READINPUT_CONTAINERID}" \
-                            "${DOCKER__EMPTYSTRING}" \
-                            "${DOCKER__EMPTYSTRING}" \
-                            "${ERRMSG_NO_CONTAINERS_FOUND}" \
-                            "${ERRMSG_CHOSEN_CONTAINERID_DOESNOT_EXISTS}" \
-                            "${docker__ps_a_cmd}" \
-                            "${docker__ps_a_containerIdColno}" \
-                            "${DOCKER__EMPTYSTRING}" \
-                            "${docker__showTable}" \
-                            "${docker__onEnter_breakLoop}"
+	${docker__readInput_w_autocomplete_fpath} "${MENUTITLE_CURRENT_REPOSITORY_LIST}" \
+						"${DOCKER__READINPUT_CONTAINERID}" \
+						"${DOCKER__EMPTYSTRING}" \
+						"${DOCKER__EMPTYSTRING}" \
+						"${ERRMSG_NO_CONTAINERS_FOUND}" \
+						"${ERRMSG_CHOSEN_CONTAINERID_DOESNOT_EXISTS}" \
+						"${docker__ps_a_cmd}" \
+						"${docker__ps_a_containerIdColno}" \
+						"${DOCKER__EMPTYSTRING}" \
+						"${docker__showTable}" \
+						"${docker__onEnter_breakLoop}"
 
 	#Get the exitcode just in case a Ctrl-C was pressed in script 'docker__readInput_w_autocomplete_fpath'.
 	docker__exitCode=$?
-	if [[ ${docker__exitCode} -eq 99 ]]; then
-		exit 99
+	if [[ ${docker__exitCode} -eq ${DOCKER__EXITCODE_99} ]]; then
+		docker__exitFunc "${docker__exitCode}" "${DOCKER__NUMOFLINES_2}"
 	else
 		#Retrieve the selected container-ID from file
-		docker__myContainerId_input=`get_output_from_file__func "${docker__readInput_w_autocomplete_out_fpath}"`
+		docker__containerID_chosen=`get_output_from_file__func \
+						"${docker__readInput_w_autocomplete_out_fpath}" \
+						"${DOCKER__LINENUM_1}"`
 	fi  
 
-	#Retrieve the selected container-ID from file
-	docker__containerID_chosen=`get_output_from_file__func "${docker__readInput_w_autocomplete_out_fpath}"`
 	if [[ ${docker__containerID_chosen} == ${DOCKER__SEMICOLON_BACK} ]]; then
 		moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
@@ -274,712 +233,417 @@ docker__choose_containerid__sub() {
 	fi
 }
 
-get_source_destination_fpath__sub() {
-	#Define local variables
-	local sourceFpath_toBeShown=${DOCKER__EMPTYSTRING}
-	local destFpath_toBeShown=${DOCKER__EMPTYSTRING}
-
-	#Initial phase
-	docker__case_option=${DOCKER__CASE_SOURCE_DIR}
-	if [[ ${docker__mycopychoice} -eq ${DOCKER__CONTAINER_TO_HOST} ]]; then
-		while true
-		do
-			case ${docker__case_option} in
-				${DOCKER__CASE_SOURCE_DIR})
-					#---SOURCE: Provide the Location of the file which you want to copy (located  at the Container!)
-					docker__container2host_get_src_dir__sub
-					;;
-
-				${DOCKER__CASE_SOURCE_FOBJECT})
-					#---SOURCE: Provide the file/folder which you want to copy (located at the Container!)
-					container_get_source_fobject__func
-					;;
-
-				${DOCKER__CASE_DEST_DIR})
-					#---DESTINATION: Provide the location where you want to copy to (located at the HOST!)
-					host_get_dest_dir__func
-					;;
-
-				${DOCKER__CASE_DONE})
-					break
-					;;
-			esac
-		done
-
-
-		#Compose Source and Destination Fullpath
-		docker__compose_source_dest_fpath__sub
-
-	else	#HOST -to- Container
-		while true
-		do
-			case ${docker__case_option} in
-				${DOCKER__CASE_SOURCE_DIR})
-					#---SOURCE: Provide the location where you want to copy to (located at the HOST!)
-					host_get_source_dir__func
-					;;
-
-				${DOCKER__CASE_SOURCE_FOBJECT})			
-					#---SOURCE: Provide the file/folder which you want to copy (located  at the Container!)
-					host_get_source_fobject__func
-					;;
-
-				${DOCKER__CASE_DEST_DIR})
-					#---DESTINATION: Provide the Location of the file which you want to copy (located  at the Container!)
-					container_get_dest_dir__func
-					;;
-
-				${DOCKER__CASE_DONE})
-					break
-					;;
-					
-			esac
-		done
-
-		#Compose Source and Destination Fullpath
-		docker__compose_source_dest_fpath__sub
-
-	fi
-
-#---Summary
-	moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-	duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-	echo "Overview:"
-	duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-
-	#Update 'sourceFpath_toBeShown'
-	if [[ ${docker__accept_mySource_fObject} == ${DOCKER__ASTERISK} ]]; then
-		sourceFpath_toBeShown=${docker__accept_mySource_fPath}/*
-	else
-		sourceFpath_toBeShown=${docker__accept_mySource_fPath}
-	fi
-
-	#Update 'destFpath_toBeShown'
-	destFpath_toBeShown=${docker__accept_myDest_fPath}
-
-	echo "${DOCKER__FG_GREEN85}Source Full-path${DOCKER__NOCOLOR}: ${sourceFpath_toBeShown}"
-	echo "${DOCKER__FG_BRIGHTPRUPLE}Destination Full-path${DOCKER__NOCOLOR}: ${docker__accept_myDest_fPath}"
-
-	duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-	moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-}
-
-docker__container2host_get_src_dir__sub() {
-	#Define local variables
-	local dirExists=${DOCKER__FALSE}
-	local numOf_dirContent=0
-
-	#Initial setting
-	docker__lastTwoChar=${DOCKER__EMPTYSTRING}
-
-	while true
-	do
-		#Print an Empty Line
-		# moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-
-		if [[ -z ${docker__mySource_dir} ]]; then	#contains NO data
-			read -e -p "${DOCKER__READINPUT_CONTAINER_SOURCE_DIR}" docker__mySource_dir
-		else	#contains data
-			read -e -p "${DOCKER__READINPUT_CONTAINER_SOURCE_DIR}" -i "${docker__mySource_dir}" docker__mySource_dir
-		fi
-
-		docker__lastTwoChar=`get_lastTwoChars_of_string__func "${docker__mySource_dir}"`
-		if [[ ${docker__lastTwoChar} == ${DOCKER__SEMICOLON_HOME} ]]; then	#goto HOME
-			moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-
-			docker__mySource_dir=`echo ${docker__mySource_dir} | sed -e "s/${docker__lastTwoChar}$//"`	#remove the last 2 char
-
-			GOTO__func PHASE_CHOOSE_COPY_DIRECTION
-
-			break
-		elif [[ ${docker__lastTwoChar} == ${DOCKER__SEMICOLON_BACK} ]]; then	#goto Previous-Phase
-			docker__mySource_dir=`echo ${docker__mySource_dir} | sed -e "s/${docker__lastTwoChar}$//"`	#remove the last 2 char
-
-			GOTO__func PHASE_CHOOSE_CONTAINERID
-
-			break
-		elif [[ ${docker__lastTwoChar} == ${DOCKER__SEMICOLON_CLEAR} ]]; then
-			docker__mySource_dir=${DOCKER__EMPTYSTRING}	#reset variable
-			docker__accept_mySource_dir=${DOCKER__EMPTYSTRING}	#reset variable (maybe obsolete)
-
-			moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-			moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-		fi
-
-		#None of the above if-condition is met	
-		if [[ ! -z ${docker__mySource_dir} ]]; then
-			#Get directory contents list based on the specified directory 'docker__mySource_dir'
-			show_dirContent_handler__func "${docker__myContainerId_accept}" "${docker__mySource_dir}"
-
-			dirExists=`container_file_or_dir_exists__func "${docker__myContainerId_accept}" "${docker__mySource_dir}"`
-			if [[ ${dirExists} == ${DOCKER__TRUE} ]]; then
-
-				numOf_dirContent=`calc_numOf_dirContent__func "${docker__myContainerId_accept}" "${docker__mySource_dir}"`
-				if [[ ${numOf_dirContent} -gt 0 ]]; then
-					docker__accept_mySource_dir=${docker__mySource_dir}
-
-					docker__case_option=${DOCKER__CASE_SOURCE_FOBJECT}
-
-					break
-				fi
-			fi
-		else
-			# moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-			moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-		fi
-	done
-}
-function container_get_source_fobject__func() {
-	#Define local variables
-	local fObjectExists=${DOCKER__FALSE}
-	local sourceFpath=${DOCKER__EMPTYSTRING}
-
-	#Initial setting
-	docker__lastTwoChar=${DOCKER__EMPTYSTRING}
-
-	while true
-	do
-		# #Print an Empty Line
-		# moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-		
-		if [[ -z ${docker__mySource_fObject} ]]; then	#is an Empty String
-			read -e -p "${DOCKER__READINPUT_CONTAINER_SOURCE_FOBJECT}" docker__mySource_fObject
-		else	#is NOT an Empty String
-			read -e -p "${DOCKER__READINPUT_CONTAINER_SOURCE_FOBJECT}" -i "${docker__mySource_fObject}" docker__mySource_fObject
-		fi
-
-		docker__lastTwoChar=`get_lastTwoChars_of_string__func "${docker__mySource_fObject}"`
-		if [[ ${docker__lastTwoChar} == ${DOCKER__SEMICOLON_HOME} ]]; then	#goto HOME
-			moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-
-			docker__mySource_fObject=`echo ${docker__mySource_fObject} | sed -e "s/${docker__lastTwoChar}$//"`	#remove the last 2 char
-
-			GOTO__func PHASE_CHOOSE_COPY_DIRECTION
-
-			break
-		elif [[ ${docker__lastTwoChar} == ${DOCKER__SEMICOLON_BACK} ]]; then	#goto Previous-Phase
-			docker__mySource_fObject=`echo ${docker__mySource_fObject} | sed -e "s/${docker__lastTwoChar}$//"`	#remove the last 2 char
-
-			docker__case_option=${DOCKER__CASE_SOURCE_DIR}
-
-			break
-		elif [[ ${docker__lastTwoChar} == ${DOCKER__SEMICOLON_CLEAR} ]]; then
-			docker__mySource_fObject=${DOCKER__EMPTYSTRING}	#reset variable
-			docker__accept_mySource_fObject=${DOCKER__EMPTYSTRING}	#reset variable (maybe obsolete)
-
-			moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-			moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-		fi
-
-		#Define the full-path
-		sourceFpath="${docker__accept_mySource_dir}/${docker__mySource_fObject}"
-
-		#Validate 'sourceFpath'
-		if [[ ! -z ${docker__mySource_fObject} ]]; then	#contains data
-			#Check if 'docker__mySource_fObject = *'
-			if [[ ${docker__mySource_fObject} == ${DOCKER__ASTERISK} ]]; then
-				docker__accept_mySource_fObject=${docker__mySource_fObject}
-
-				docker__case_option=${DOCKER__CASE_DEST_DIR}
-
-				break	#exit loop
-			fi
-
-			#Check if full-path does exist (assuming that 'docker__mySource_fObject != *')
-			fObjectExists=`container_file_or_dir_exists__func "${docker__myContainerId_accept}" "${sourceFpath}"`	
-			if [[ ${fObjectExists} == ${DOCKER__TRUE} ]]; then	#full-path does exist
-				docker__accept_mySource_fObject=${docker__mySource_fObject}
-
-				docker__case_option=${DOCKER__CASE_DEST_DIR}
-
-				break
-			else	#full-path does NOT exist
-				#Reset variable
-				docker__mySource_fObject=${DOCKER__EMPTYSTRING}
-
-				#Move-up and Clean-up
-				moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-			fi
-		else	#contains NO data
-			moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-		fi
-	done
-}
-
-function host_get_dest_dir__func() {
-	#Define local variables
-	local dirExists=${DOCKER__FALSE}
-
-	#Initial setting
-	docker__lastTwoChar=${DOCKER__EMPTYSTRING}
-
-	while true
-	do
-		# #Print an Empty Line
-		# moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-
-		if [[ -z ${docker__myDest_dir} ]]; then	#is an Empty String
-			read -e -p "${DOCKER__READINPUT_HOST_DEST_DIR}" docker__myDest_dir
-		else	#is NOT an Empty String
-			read -e -p "${DOCKER__READINPUT_HOST_DEST_DIR}" -i "${docker__myDest_dir}" docker__myDest_dir
-		fi
-
-		docker__lastTwoChar=`get_lastTwoChars_of_string__func "${docker__myDest_dir}"`
-		if [[ ${docker__lastTwoChar} == ${DOCKER__SEMICOLON_HOME} ]]; then	#goto HOME
-			moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-
-			docker__myDest_dir=`echo ${docker__myDest_dir} | sed -e "s/${docker__lastTwoChar}$//"`	#remove the last 2 char
-
-			GOTO__func PHASE_CHOOSE_COPY_DIRECTION
-
-			break
-		elif [[ ${docker__lastTwoChar} == ${DOCKER__SEMICOLON_BACK} ]]; then	#goto Previous-Phase
-			docker__myDest_dir=`echo ${docker__myDest_dir} | sed -e "s/${docker__lastTwoChar}$//"`	#remove the last 2 char
-
-			docker__case_option=${DOCKER__CASE_SOURCE_FOBJECT}
-
-			break
-		elif [[ ${docker__lastTwoChar} == ${DOCKER__SEMICOLON_CLEAR} ]]; then
-			docker__myDest_dir=${DOCKER__EMPTYSTRING}	#reset variable
-			docker__accept_myDest_dir=${docker__myDest_dir}	#reset variable (maybe obsolete)
-
-			moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-			moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-		fi
-
-		#Take action based on whether directory 'docker__myDest_dir' exist or not
-		if [[ ! -z ${docker__myDest_dir} ]]; then
-			#Get directory contents list based on the specified directory 'docker__mySource_dir'
-			show_dirContent_handler__func "${DOCKER__EMPTYSTRING}" "${docker__myDest_dir}"
-
-			dirExists=`host_file_or_dir_exists__func "${docker__myDest_dir}"`
-			if [[ ${dirExists} == ${DOCKER__TRUE} ]]; then
-				docker__accept_myDest_dir=${docker__myDest_dir}
-
-				docker__case_option=${DOCKER__CASE_DONE}
-
-				break
-			fi
-		else
-			moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-		fi
-	done
-}
-function host_get_source_dir__func() {
-	#Define local variables
-	local dirExists=${DOCKER__FALSE}
-
-	#Initial setting
-	docker__lastTwoChar=${DOCKER__EMPTYSTRING}
-
-	while true
-	do
-		# #Print an Empty Line
-		# moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-
-		if [[ -z ${docker__mySource_dir} ]]; then	#is an Empty String
-			read -e -p "${DOCKER__READINPUT_HOST_SOURCE_DIR}" docker__mySource_dir
-		else	#is NOT an Empty String
-			read -e -p "${DOCKER__READINPUT_HOST_SOURCE_DIR}" -i "${docker__mySource_dir}" docker__mySource_dir
-		fi
-
-		docker__lastTwoChar=`get_lastTwoChars_of_string__func "${docker__mySource_dir}"`
-		if [[ ${docker__lastTwoChar} == ${DOCKER__SEMICOLON_HOME} ]]; then	#goto HOME
-			moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-
-			docker__mySource_dir=`echo ${docker__mySource_dir} | sed -e "s/${docker__lastTwoChar}$//"`	#remove the last 2 char
-
-			GOTO__func PHASE_CHOOSE_COPY_DIRECTION
-
-			break
-		elif [[ ${docker__lastTwoChar} == ${DOCKER__SEMICOLON_BACK} ]]; then	#goto Previous-Phase
-			docker__mySource_dir=`echo ${docker__mySource_dir} | sed -e "s/${docker__lastTwoChar}$//"`	#remove the last 2 char
-
-			GOTO__func PHASE_CHOOSE_CONTAINERID
-
-			break
-		elif [[ ${docker__lastTwoChar} == ${DOCKER__SEMICOLON_CLEAR} ]]; then
-			docker__mySource_dir=${DOCKER__EMPTYSTRING}	#reset variable
-			docker__accept_mySource_fObject=${docker__mySource_fObject}	#reset variable (maybe obsolete)
-
-			moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-			moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-		fi
-
-		#None of the above if-condition is met	
-		if [[ ! -z ${docker__mySource_dir} ]]; then
-			#Get directory contents list based on the specified directory 'docker__mySource_dir'
-			show_dirContent_handler__func "${DOCKER__EMPTYSTRING}" "${docker__mySource_dir}"
-
-			dirExists=`host_file_or_dir_exists__func "${docker__mySource_dir}"`
-			if [[ ${dirExists} == ${DOCKER__TRUE} ]]; then
-
-				numOf_dirContent=`calc_numOf_dirContent__func "${DOCKER__EMPTYSTRING}" "${docker__mySource_dir}"`
-				if [[ ${numOf_dirContent} -gt 0 ]]; then
-					docker__accept_mySource_dir=${docker__mySource_dir}
-
-					docker__case_option=${DOCKER__CASE_SOURCE_FOBJECT}
-
-					break
-				fi
-			fi
-		else
-			# moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-			moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-		fi
-	done
-}
-function host_get_source_fobject__func() {
-	#Define local variables
-	local fObjectExists=${DOCKER__FALSE}
-	local sourceFpath=${DOCKER__EMPTYSTRING}
-
-	#Initial setting
-	docker__lastTwoChar=${DOCKER__EMPTYSTRING}
-
-	while true
-	do
-		# #Print an Empty Line
-		# moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-
-		if [[ -z ${docker__mySource_fObject} ]]; then	#is an Empty String
-			read -e -p "${DOCKER__READINPUT_HOST_SOURCE_FOBJECT}" docker__mySource_fObject
-		else	#is NOT an Empty String
-			read -e -p "${DOCKER__READINPUT_HOST_SOURCE_FOBJECT}" -i "${docker__mySource_fObject}" docker__mySource_fObject
-		fi
-
-		docker__lastTwoChar=`get_lastTwoChars_of_string__func "${docker__mySource_fObject}"`
-		if [[ ${docker__lastTwoChar} == ${DOCKER__SEMICOLON_HOME} ]]; then	#goto HOME
-			moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-
-			docker__mySource_fObject=`echo ${docker__mySource_fObject} | sed -e "s/${docker__lastTwoChar}$//"`	#remove the last 2 char
-
-			GOTO__func PHASE_CHOOSE_COPY_DIRECTION
-
-			break
-		elif [[ ${docker__lastTwoChar} == ${DOCKER__SEMICOLON_BACK} ]]; then	#goto Previous-Phase
-			docker__mySource_fObject=`echo ${docker__mySource_fObject} | sed -e "s/${docker__lastTwoChar}$//"`	#remove the last 2 char
-
-			docker__case_option=${DOCKER__CASE_SOURCE_DIR}
-
-			break
-		elif [[ ${docker__lastTwoChar} == ${DOCKER__SEMICOLON_CLEAR} ]]; then
-			docker__mySource_fObject=${DOCKER__EMPTYSTRING}	#reset variable
-			docker__accept_mySource_fObject=${docker__mySource_fObject}	#reset variable (maybe obsolete)
-
-			moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-			moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-		fi
-
-		#Define the full-path
-		sourceFpath="${docker__accept_mySource_dir}/${docker__mySource_fObject}"
-
-		#Validate 'sourceFpath'
-		if [[ ! -z ${docker__mySource_fObject} ]]; then	#contains data
-			#Check if 'docker__mySource_fObject = *'
-			if [[ ${docker__mySource_fObject} == ${DOCKER__ASTERISK} ]]; then
-				docker__accept_mySource_fObject=${docker__mySource_fObject}
-
-				docker__case_option=${DOCKER__CASE_DEST_DIR}
-
-				break	#exit loop
-			fi
-
-			#Check if full-path does exist (assuming that 'docker__mySource_fObject != *')
-			fObjectExists=`host_file_or_dir_exists__func "${sourceFpath}"`	
-			if [[ ${fObjectExists} == ${DOCKER__TRUE} ]]; then	#full-path does exist
-				docker__accept_mySource_fObject=${docker__mySource_fObject}
-
-				docker__case_option=${DOCKER__CASE_DEST_DIR}
-
-				break
-			else	#full-path does NOT exist
-				#Reset variable
-				docker__mySource_fObject=${DOCKER__EMPTYSTRING}
-
-				#Move-up and Clean-up
-				moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-			fi
-		else	#contains NO data
-			moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-		fi
-	done
-}
-function container_get_dest_dir__func() {
-	#Define local variables
-	local dirExists=${DOCKER__FALSE}
-
-	#Initial setting
-	docker__lastTwoChar=${DOCKER__EMPTYSTRING}
-
-	while true
-	do
-		# #Print an Empty Line
-		# moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-
-		if [[ -z ${docker__myDest_dir} ]]; then	#is an Empty String
-			read -e -p "${DOCKER__READINPUT_CONTAINER_DEST_DIR}" docker__myDest_dir
-		else	#is NOT an Empty String
-			read -e -p "${DOCKER__READINPUT_CONTAINER_DEST_DIR}" -i "${docker__myDest_dir}" docker__myDest_dir
-		fi
-
-		docker__lastTwoChar=`get_lastTwoChars_of_string__func "${docker__myDest_dir}"`
-		if [[ ${docker__lastTwoChar} == ${DOCKER__SEMICOLON_HOME} ]]; then	#goto HOME
-			moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-
-			docker__myDest_dir=`echo ${docker__myDest_dir} | sed -e "s/${docker__lastTwoChar}$//"`	#remove the last 2 char
-
-			GOTO__func PHASE_CHOOSE_COPY_DIRECTION
-
-			break
-		elif [[ ${docker__lastTwoChar} == ${DOCKER__SEMICOLON_BACK} ]]; then	#goto Previous-Phase
-			docker__myDest_dir=`echo ${docker__myDest_dir} | sed -e "s/${docker__lastTwoChar}$//"`	#remove the last 2 char
-
-			docker__case_option=${DOCKER__CASE_SOURCE_FOBJECT}
-
-			break
-		elif [[ ${docker__lastTwoChar} == ${DOCKER__SEMICOLON_CLEAR} ]]; then
-			docker__myDest_dir=${DOCKER__EMPTYSTRING}	#reset variable
-			docker__accept_myDest_dir=${docker__myDest_dir}	#reset variable
-
-			moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-			moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-		fi
-
-		#Take action based on whether directory 'docker__myDest_dir' exist or not
-		if [[ ! -z ${docker__myDest_dir} ]]; then
-			#Get directory contents list based on the specified directory 'docker__mySource_dir'
-			show_dirContent_handler__func "${docker__myContainerId_accept}" "${docker__myDest_dir}"
-
-			dirExists=`container_file_or_dir_exists__func "${docker__myContainerId_accept}" "${docker__myDest_dir}"`
-			if [[ ${dirExists} == ${DOCKER__TRUE} ]]; then
-				docker__accept_myDest_dir=${docker__myDest_dir}
-
-				docker__case_option=${DOCKER__CASE_DONE}
-
-				break
-			fi
-		else
-			moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-		fi
-	done
-}
-function show_dirContent_handler__func() {
+docker__dirlist_show_dirContent_handler__sub() {
+	#---------------------------------------------------------------------	
+	#This subroutine is copied from the script 'dirlist_readInput_w_autocomplete.sh'
+	#---------------------------------------------------------------------
 	#Input args
-	local myContainerID=${1}
-	local dirInput=${2}
+	local containerID__input=${1}
+	local dir__input=${2}
 
-	#Define local variable
-	local keyWord=${DOCKER__EMPTYSTRING}	#no key-word (show all data in 'dirInput')
+    #Move down one line
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
-	#Get directory content of 'dirInput'
-	if [[ -z ${myContainerID} ]]; then	#LOCAL machine (aka HOST)
-		${docker__localhost_dirlist_fpath} "${dirInput}" "${DOCKER__LISTVIEW_NUMOFROWS}" "${DOCKER__LISTVIEW_NUMOFCOLS}" "${keyWord}"
+    #Show directory content
+	if [[ -z ${containerID__input} ]]; then	#LOCAL machine (aka HOST)
+		${dclcau_lh_ls_fpath} "${dir__input}" \
+						"${DOCKER__LISTVIEW_NUMOFROWS}" \
+						"${DOCKER__LISTVIEW_NUMOFCOLS}" \
+						"${DOCKER__EMPTYSTRING}" \
+						"${DOCKER__EMPTYSTRING}"
 	else	#REMOTE machine (aka Container)
-		${docker__dockercontainer_dirlist_fpath} "${myContainerID}" "${dirInput}" "${DOCKER__LISTVIEW_NUMOFROWS}" "${DOCKER__LISTVIEW_NUMOFCOLS}" "${keyWord}"
+		${dclcau_dc_ls_fpath} \
+						"${containerID__input}" \
+						"${dir__input}" \
+						"${DOCKER__LISTVIEW_NUMOFROWS}" \
+						"${DOCKER__LISTVIEW_NUMOFCOLS}" \
+						"${DOCKER__EMPTYSTRING}" \
+						"${DOCKER__EMPTYSTRING}"
 	fi
 }
-function host_file_or_dir_exists__func() {
-	#Input arg
-	local myPath=${1}
 
-	#Check if directory exists
-	if [[ ! -d ${myPath} ]]; then	#directory does NOT exist
-		#Maybe 'myPath' is a File
-		if [[ ! -f ${myPath} ]]; then	#file does NOT exist
-			echo ${DOCKER__FALSE}
-		else	#file does exist
-			echo ${DOCKER__TRUE} 
-		fi
-	else	# directory does exist
-		echo ${DOCKER__TRUE} 
-	fi
-}
-function container_file_or_dir_exists__func() {
-	#Input arg
-	local myContainerID=${1}
-	local myPath=${2}
-
+docker__path_selection_handler__sub() {
 	#Define local variables
-	local error_isFound=`docker exec -it ${myContainerID} ls ${myPath} | grep "${DOCKER__CONTAINER_LIST_DIRECTORY_ERROR}"`
-	if [[ ! -z ${error_isFound} ]]; then	#directory does NOT exist
-		echo ${DOCKER__FALSE}
-	else	#directory does exist
-		echo ${DOCKER__TRUE} 
-	fi
+	local srcFullpath_print=${DOCKER__EMPTYSTRING}
+	local dstFullpath_print=${DOCKER__EMPTYSTRING}
+
+	case "${docker__mycopychoice}" in
+		${DOCKER__CONTAINER_TO_HOST})
+			while true
+			do
+				case "${docker__case_option}" in
+					${DOCKER__CASE_SRC_PATH})
+						#---SOURCE: Provide the Location of the file which you want to copy (located  at the Container!)
+						docker__src_path_selection__sub "${docker__containerID_chosen}"
+						;;
+
+					${DOCKER__CASE_DST_PATH})
+						#---DESTINATION: Provide the location where you want to copy to (located at the HOST!)
+						docker__dst_path_selection__sub "${DOCKER__EMPTYSTRING}"
+						;;
+
+					${DOCKER__CASE_DONE})
+						break
+						;;
+				esac
+			done
+			;;
+		${DOCKER__HOST_TO_CONTAINER})
+			while true
+			do
+				case "${docker__case_option}" in
+					${DOCKER__CASE_SRC_PATH})
+						#---SOURCE: Provide the location where you want to copy to (located at the HOST!)
+						docker__src_path_selection__sub "${DOCKER__EMPTYSTRING}"
+						;;
+
+					${DOCKER__CASE_DST_PATH})
+						#---DESTINATION: Provide the Location of the file which you want to copy (located  at the Container!)
+						docker__dst_path_selection__sub "${docker__containerID_chosen}"
+						;;
+
+					${DOCKER__CASE_DONE})
+						break
+						;;
+						
+				esac
+			done
+			;;
+	esac
 }
-function calc_numOf_dirContent__func() {
+
+docker__src_path_selection__sub() {
 	#Input args
-	local myContainerID=${1}
-	local dirInput=${2}
+	local containerID__input=${1}
 
-	#Define local variables
-	local dirContent_numOfItems_max_raw=${DOCKER__EMPTYSTRING}
-	local dirContent_numOfItems_max=0
-	
-	local docker_exec_cmd="docker exec -it ${docker__containerID_chosen} ${docker__bin_bash_dir} -c"
+	#Define variables
+	local asterisk_isFound=false
+	local fileExists=false
 
-    #Get Number of Files
-    if [[ -z ${myContainerID} ]]; then
-        dirContent_numOfItems_max=`ls -1 ${dirInput} | wc -l`
-    else
-		#This result contains carriage return(s)
-        dirContent_numOfItems_max_raw=`${docker_exec_cmd} "ls -1 ${dirInput} | wc -l"`
+	#Show and select path
+	${dirlist__readInput_w_autocomplete_fpath} "${containerID__input}" \
+						"${DOCKER__READINPUT_CONTAINER_SRC}" \
+						"${DOCKER__DIRLIST_REMARKS}" \
+                        "${dirlist__src_ls_1aA_output__fpath}" \
+                        "${dirlist__src_ls_1aA_tmp__fpath}"
 
-		#Remove the carriage return(s)
-		dirContent_numOfItems_max=`echo "${dirContent_numOfItems_max_raw}" | tr -d $'\r'`
-    fi
-
-	#Output
-	echo ${dirContent_numOfItems_max}
-}
-
-docker__compose_source_dest_fpath__sub() {
-	#Remove trailing slashes
-	docker__accept_mySource_dir=`remove_trailing_char__func "${docker__accept_mySource_dir}" "${DOCKER__ESCAPE_SLASH}"`
-	docker__accept_myDest_dir=`remove_trailing_char__func "${docker__accept_myDest_dir}" "${DOCKER__ESCAPE_SLASH}"`
-
-	if [[ ${docker__accept_mySource_fObject} == ${DOCKER__ASTERISK} ]]; then
-		docker__accept_mySource_fPath=${docker__accept_mySource_dir}
-		docker__accept_myDest_fPath=${docker__accept_myDest_dir}
+	#Get the exitcode just in case a Ctrl-C was pressed in script 'docker__readInput_w_autocomplete_fpath'.
+	docker__exitCode=$?
+	if [[ ${docker__exitCode} -eq ${DOCKER__EXITCODE_99} ]]; then
+		docker__exitFunc "${docker__exitCode}" "${DOCKER__NUMOFLINES_2}"
 	else
-		docker__accept_mySource_fPath=${docker__accept_mySource_dir}/${docker__accept_mySource_fObject}
-		docker__accept_myDest_fPath=${docker__accept_myDest_dir}/${docker__accept_mySource_fObject}
+		#Retrieve the selected container-ID from file
+		docker__path_output=`get_output_from_file__func "${dirlist__readInput_w_autocomplete_out__fpath}" "${DOCKER__LINENUM_1}"`
+		docker__numOfMatches_output=`get_output_from_file__func "${dirlist__readInput_w_autocomplete_out__fpath}" "${DOCKER__LINENUM_2}"`
 	fi
+
+	#Check if 'docker__path_output' is an Empty String
+	if [[ -z ${docker__path_output} ]]; then
+		#Set case-selection
+		docker__case_option=${DOCKER__CASE_SRC_PATH}
+
+		#Print
+		show_msg_only__func "${DOCKER__ECHOMSG_PLEASE_SELECT_A_SOURCEPATH_WHICH_CONTAINS_DATA}" "${DOCKER__NUMOFLINES_2}"
+
+		return
+	fi
+
+	#Check if 'docker__numOfMatches_output' is '0' (that means no results found)
+	if [[ ${docker__numOfMatches_output} -eq 0 ]]; then
+		#Set case-selection
+		docker__case_option=${DOCKER__CASE_SRC_PATH}
+
+		#Print
+		show_msg_only__func "${DOCKER__ECHOMSG_PLEASE_SELECT_A_SOURCEPATH_WHICH_CONTAINS_DATA}" "${DOCKER__NUMOFLINES_2}"
+
+		return
+	fi
+
+	#Handle 'Back' and 'Home'
+	if [[ ${docker__path_output} == ${DOCKER__SEMICOLON_HOME} ]]; then
+		GOTO__func PHASE_CHOOSE_COPY_DIRECTION
+	elif [[ ${docker__path_output} == ${DOCKER__SEMICOLON_BACK} ]]; then
+		GOTO__func PHASE_CHOOSE_CONTAINERID
+	fi
+
+	#Update 'docker__src_dir' and 'docker__src_file'
+	#Check if 'docker__path_output' contains an 'asterisk'
+	asterisk_isFound=`checkForMatch_keyWord_within_string__func "${DOCKER__ASTERISK}" "${docker__path_output}"`
+	if [[ ${asterisk_isFound} == true ]]; then	#asterisk was found
+		docker__src_dir=`get_dirname_from_specified_path__func "${docker__path_output}"`
+
+		#Set 'docker__src_file' to 'asterisk'
+		#Remark:
+		#	This means that 'dirlist__src_ls_1aA_output__fpath', which contains the files & folders
+		#		of directory 'docker__src_dir', will be used as reference when copying from source to destination.
+		docker__src_file=`get_basename_from_specified_path__func "${docker__path_output}"`
+	else	#no asterisk found
+		#Check if 'docker__path_output' is a file
+		fileExists=`checkIf_file_exists__func "${containerID__input}" "${docker__path_output}"`
+		if [[ ${fileExists} == true ]]; then	#file exists
+			docker__src_dir=`get_dirname_from_specified_path__func "${docker__path_output}"`
+			docker__src_file=`get_basename_from_specified_path__func "${docker__path_output}"`
+		else	#file does not exist or not a file
+			#Check if 'docker__path_output' is a directory
+			dirExists=`checkIf_dir_exists__func "${containerID__input}" "${docker__path_output}"`
+			if [[ ${dirExists} == true ]]; then	#is a directory
+				docker__src_dir=${docker__path_output}
+
+				#Set 'docker__src_file' to 'asterisk'
+				#Remark:
+				#	This means that 'dirlist__src_ls_1aA_output__fpath', which contains the files & folders
+				#		of directory 'docker__src_dir', will be used as reference when copying from source to destination.
+				docker__src_file=${DOCKER__ASTERISK}
+			else	#is NOT a directory
+				#Move-up cursor to correct position
+				moveUp__func "${DOCKER__NUMOFLINES_2}"
+
+				#Show directory contents
+				docker__dirlist_show_dirContent_handler__sub "${containerID__input}" \
+						"${docker__path_output}"
+
+				#Print
+				show_msg_only__func "${DOCKER__ECHOMSG_PLEASE_SELECT_A_SOURCEPATH_WHICH_CONTAINS_DATA}" "${DOCKER__NUMOFLINES_2}"
+
+				#Reset variables
+				docker__src_dir=${DOCKER__EMPTYSTRING}
+				docker__src_file=${DOCKER__EMPTYSTRING}
+
+				#Set case-selection
+				docker__case_option=${DOCKER__CASE_SRC_PATH}
+
+				return
+			fi
+		fi
+	fi
+	
+#---Update variable
+	docker__src_dir_print=${docker__src_dir}${docker__src_file}
+
+	#Set case-selection
+	docker__case_option=${DOCKER__CASE_DST_PATH}
 }
 
-docker__copy_src_to_dst__sub() {
+docker__dst_path_selection__sub() {
+	#Input args
+	local containerID__input=${1}
+
+	#Define variables
+	local asterisk_isFound=false
+	local fileExists=false
+
+	#Show and select path
+	${dirlist__readInput_w_autocomplete_fpath} "${containerID__input}" \
+						"${DOCKER__READINPUT_HOST_DST}" \
+						"${DOCKER__DIRLIST_REMARKS}" \
+                        "${dirlist__dst_ls_1aA_output__fpath}" \
+                        "${dirlist__dst_ls_1aA_tmp__fpath}"
+
+	#Get the exitcode just in case a Ctrl-C was pressed in script 'docker__readInput_w_autocomplete_fpath'.
+	docker__exitCode=$?
+	if [[ ${docker__exitCode} -eq ${DOCKER__EXITCODE_99} ]]; then
+		docker__exitFunc "${DOCKER__EXITCODE_99}" "${DOCKER__NUMOFLINES_2}"
+	else
+		#Retrieve the selected container-ID from file
+		docker__path_output=`get_output_from_file__func "${dirlist__readInput_w_autocomplete_out__fpath}" "${DOCKER__LINENUM_1}"`
+		docker__numOfMatches_output=`get_output_from_file__func "${dirlist__readInput_w_autocomplete_out__fpath}" "${DOCKER__LINENUM_2}"`
+	fi
+
+	#Check if 'docker__path_output' is an Empty String
+	if [[ -z ${docker__path_output} ]]; then
+		#Set case-selection
+		docker__case_option=${DOCKER__CASE_DST_PATH}
+
+		#Print
+		show_msg_only__func "${DOCKER__ECHOMSG_PLEASE_SELECT_A_VALID_DESTINATIONPATH}" "${DOCKER__NUMOFLINES_2}"
+
+		return
+	fi
+
+	#Handle 'Back' and 'Home'
+	if [[ ${docker__path_output} == ${DOCKER__SEMICOLON_HOME} ]]; then
+		GOTO__func PHASE_CHOOSE_COPY_DIRECTION
+	elif [[ ${docker__path_output} == ${DOCKER__SEMICOLON_BACK} ]]; then
+		docker__case_option=${DOCKER__CASE_SRC_PATH}
+
+		return
+	fi
+
+	#Check if 'docker__path_output' is a directory
+	dirExists=`checkIf_dir_exists__func "${containerID__input}" "${docker__path_output}"`
+	if [[ ${dirExists} == true ]]; then	#is a directory
+		docker__dst_dir=${docker__path_output}
+	else	#is NOT a directory
+		#Move-up cursor to correct position
+		moveUp__func "${DOCKER__NUMOFLINES_2}"
+
+		#Show directory contents
+		docker__dirlist_show_dirContent_handler__sub "${containerID__input}" \
+				"${docker__path_output}"
+
+		#Print
+		show_msg_only__func "${DOCKER__ECHOMSG_PLEASE_SELECT_A_VALID_DESTINATIONPATH}" "${DOCKER__NUMOFLINES}"
+
+		#Reset variables
+		docker__dst_dir=${DOCKER__EMPTYSTRING}
+
+		#Set case-selection
+		docker__case_option=${DOCKER__CASE_DST_PATH}
+
+		return
+	fi
+
+#---Update variable
+	docker__dst_dir_print=${docker__dst_dir}
+
+	#Set case-selection
+	docker__case_option=${DOCKER__CASE_DONE}
+}
+
+
+docker__show_summary__sub() {
+	#Compose 'docker__summary_msg'
+	if [[ ${docker__mycopychoice} == ${DOCKER__CONTAINER_TO_HOST} ]]; then
+		docker__summary_msg="Direction:\t${DOCKER__FG_LIGHTGREY}${DOCKER__DIRECTION_CONTAINER_TO_LOCAL}${DOCKER__NOCOLOR}\n"
+	else
+		docker__summary_msg="Direction:\t${DOCKER__FG_LIGHTGREY}${DOCKER__DIRECTION_LOCAL_TO_CONTAINER}${DOCKER__NOCOLOR}\n"
+	fi
+	docker__summary_msg+="Source:\t\t${DOCKER__FG_LIGHTGREY}${docker__src_dir_print}${DOCKER__NOCOLOR}\n"
+	docker__summary_msg+="Destination:\t${DOCKER__FG_LIGHTGREY}${docker__dst_dir_print}${DOCKER__NOCOLOR}"
+	
+	#Show summary
+	show_msg_w_menuTitle_only_func "${DOCKER__SUMMARY_TITLE}" \
+						"${docker__summary_msg}" \
+						"${DOCKER__NUMOFLINES_2}" \
+						"${DOCKER__NUMOFLINES_0}"
+}
+
+docker__confirmation__sub() {
+	#Show remarks
+	show_msg_only__func "${DOCKER__CONFIRMATION_REMARKS}" "${DOCKER__NUMOFLINES_0}"
+
 	while true
 	do
-		read -N1 -p "Do you wish to continue (${DOCKER__FG_YELLOW}y${DOCKER__NOCOLOR}es/${DOCKER__FG_YELLOW}n${DOCKER__NOCOLOR}o/${DOCKER__FG_YELLOW}r${DOCKER__NOCOLOR}edo/${DOCKER__FG_YELLOW}h${DOCKER__NOCOLOR}ome)?" docker__myanswer
+		read -N1 -p "${DOCKER__READINPUT_DO_YOU_WISH_TO_CONTINUE}" docker__myanswer
 
-		docker__myanswer=`remove_whiteSpaces__func "${docker__myanswer}"`
-
-		if [[ ! -z ${docker__myanswer} ]]; then
-			if [[ ${docker__myanswer} =~ [y,n,r,h] ]]; then
-				break
-			else
-				# moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"	#add empty line (necessary to clean 'read' line)
-
+		if [[ ! -z ${docker__myanswer} ]]; then	#contains data
+			if [[ ${docker__myanswer} =~ [ynpih] ]]; then
+				#Move-down cursor
 				moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-				moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+				case "${docker__myanswer}" in
+					y)
+						GOTO__func PHASE_COPY_FROM_SRC_TO_DST
+						;;
+					n)
+						GOTO__func PHASE_EXIT
+						;;
+					p)
+						docker__case_option=${DOCKER__CASE_SRC_PATH}
+
+						GOTO__func PHASE_GET_SRC_DST_FPATH
+						;;
+					i)
+						GOTO__func PHASE_CHOOSE_CONTAINERID
+						;;
+					h)
+						GOTO__func PHASE_CHOOSE_COPY_DIRECTION
+						;;
+				esac
+			else
+				if [[ ${docker__myanswer} == ${DOCKER__ENTER} ]]; then	#ENTER was pressed
+					moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+				else	#any other keys were pressed
+					moveDown_oneLine_then_moveUp_and_clean__func "${DOCKER__NUMOFLINES_1}"
+				fi
 			fi
-		else 
+		else 	#contains no data
 			moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 		fi
 	done
-	moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-
-	#---Confirm answer and take action
-	if [[ ${docker__myanswer} == "y" ]]; then
-		moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-		echo -e "---${DOCKER__FG_ORANGE}START${DOCKER__NOCOLOR}: Copying Files/Folders"
-
-		copy_src_to_dst_handler__func
-		
-		echo -e "---${DOCKER__FG_ORANGE}COMPLETED${DOCKER__NOCOLOR}: Copying Files/Folders"
-
-		moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-	elif [[ ${docker__myanswer} == "r" ]]; then
-		moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-
-		GOTO__func PHASE_GET_SRC_DST_FPATH
-
-	elif [[ ${docker__myanswer} == "h" ]]; then
-		moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-
-		GOTO__func PHASE_CHOOSE_COPY_DIRECTION
-
-	else
-		GOTO__func PHASE_EXIT
-	fi
 }
 
-function copy_src_to_dst_handler__func() {
-	#Define local variables
-	local dirContent_list_string=${DOCKER__EMPTYSTRING}
-	local dirContent_list_array=${DOCKER__EMPTYSTRING}
-	local dirContent_list_arrayItem_raw=${DOCKER__EMPTYSTRING}
-	local dirContent_list_arrayItem_clean=${DOCKER__EMPTYSTRING}
-	local sourceFpath=${DOCKER__EMPTYSTRING}
-	local destFpath=${DOCKER__EMPTYSTRING}
+docker__copy_from_src_to_dst__sub() {
+	#Define variables
+	local asterisk_isFound=false
+	local line=${DOCKER__EMPTYSTRING}
+	local src_path=${DOCKER__EMPTYSTRING}
+	local dst_path=${DOCKER__EMPTYSTRING}
+
+	#Set message
+	docker__copy_msg="Container-ID: ${DOCKER__FG_LIGHTGREY}${docker__containerID_chosen}${DOCKER__NOCOLOR}\n"
+	docker__copy_msg+="Source: ${DOCKER__FG_LIGHTGREY}${docker__src_dir}${DOCKER__NOCOLOR}\n"
+	docker__copy_msg+="Destination: ${DOCKER__FG_LIGHTGREY}${docker__dst_dir}${DOCKER__NOCOLOR}"
+
+	#Check if 'asterisk' is found
+	asterisk_isFound=`checkForMatch_keyWord_within_string__func "${DOCKER__ASTERISK}" "${docker__src_file}"`
 
 	#Define docker exec command which inclues '/bin/bash -c'
-	local docker_exec_cmd="docker exec -it ${docker__myContainerId_accept} ${docker__bin_bash_dir} -c"
+	local docker_exec_cmd="docker exec -it ${docker__containerID_chosen} ${docker__bin_bash_dir} -c"
 
-	if [[ ${docker__mycopychoice} -eq ${DOCKER__CONTAINER_TO_HOST} ]]; then
-		if [[ ${docker__mySource_fObject} = ${DOCKER__ASTERISK} ]]; then	#an asterisk was inputted for file-/folder-name
-			#Get directory contents specified by 'docker__accept_mySource_dir'
-			dirContent_list_string=`${docker_exec_cmd} "ls -1 ${docker__accept_mySource_dir}"`	
+	if [[ ${docker__mycopychoice} -eq ${DOCKER__CONTAINER_TO_HOST} ]]; then	#Container to Local Host
+		#Show Title
+		show_msg_w_menuTitle_only_func "${DOCKER__DIRECTION_CONTAINER_TO_LOCAL}" \
+							"${docker__copy_msg}" \
+							"${DOCKER__NUMOFLINES_2}" \
+							"${DOCKER__NUMOFLINES_0}"
 
-			#Convert string to array
-			dirContent_list_array=(`echo ${dirContent_list_string}`)
+		if [[ ${asterisk_isFound} == true ]]; then	#asterisk is found
+			while read -r line
+			do
+				src_path="${docker__src_dir}/${line}"
 
-			#Cycle through array
-			for dirContent_list_arrayItem_raw in "${dirContent_list_array[@]}"; do
-				#***IMPORTANT***: Remove carriage return (\r)
-				#REMARK:
-				#   'dirContent_list_arrayItem_raw' contains a carriage returns '\r'...
-				#...due to the execution of '/bin/bash' in the command 'docker exec it'.
-				#   To remove the carriage returns the 'dirContent_list_arrayItem_raw' is PIPED thru 'tr -d $'\r'
-				dirContent_list_arrayItem_clean=`echo ${dirContent_list_arrayItem_raw} | tr -d $'\r'`
+				docker cp ${docker__containerID_chosen}:${src_path} ${docker__dst_dir}
 
-				#Print which file/folder will be copied
-				echo -e "${DOCKER__FOURSPACES}copying: ${dirContent_list_arrayItem_clean}"
+				echo "...copied ${DOCKER__FG_LIGHTGREY}${line}${DOCKER__NOCOLOR}"
+			done < ${dirlist__src_ls_1aA_output__fpath}
+		else	#asterisk is NOT found
+			src_path="${docker__src_dir}/${docker__src_file}"
 
-				#Compose Source and Destination Fullpath
-				sourceFpath="${docker__accept_mySource_dir}/${dirContent_list_arrayItem_clean}"
-				destFpath="${docker__accept_myDest_dir}/${dirContent_list_arrayItem_clean}"
+			docker cp ${docker__containerID_chosen}:${src_path} ${docker__dst_dir}
 
-				#Copy file or folder
-				docker cp ${docker__myContainerId_accept}:${sourceFpath} ${destFpath}
-			done
-		else
-			#Print which file/folder will be copied
-			echo -e "${DOCKER__FOURSPACES}copying: ${docker__accept_mySource_fObject}"
+			echo "...copied ${DOCKER__FG_LIGHTGREY}${docker__src_file}${DOCKER__NOCOLOR}"
+		fi	
+	else	#Local Host to Container
+		#Show Title
+		show_msg_w_menuTitle_only_func "${DOCKER__DIRECTION_LOCAL_TO_CONTAINER}" \
+							"${docker__copy_msg}" \
+							"${DOCKER__NUMOFLINES_2}" \
+							"${DOCKER__NUMOFLINES_0}"
 
-			docker cp ${docker__myContainerId_accept}:${docker__accept_mySource_fPath} ${docker__accept_myDest_fPath}
-		fi
-	else
-		if [[ ${docker__mySource_fObject} = ${DOCKER__ASTERISK} ]]; then	#an asterisk was inputted for file-/folder-name
-			#Get directory contents specified by 'docker__accept_mySource_dir'
-			dirContent_list_string=`ls -1 ${docker__accept_mySource_dir}`	
+		if [[ ${asterisk_isFound} == true ]]; then	#asterisk is found
+			while read -r line
+			do
+				src_path="${docker__src_dir}/${line}"
 
-			#Convert string to array
-			dirContent_list_array=(`echo ${dirContent_list_string}`)
+				docker cp ${src_path} ${docker__containerID_chosen}:${docker__dst_dir}
 
-			#Cycle through array
-			for dirContent_list_arrayItem_clean in "${dirContent_list_array[@]}"; do
-				#Print which file/folder will be copied
-				echo -e "${DOCKER__FOURSPACES}copying: ${dirContent_list_arrayItem_clean}"
+				echo "...copied ${DOCKER__FG_LIGHTGREY}${line}${DOCKER__NOCOLOR}"
+			done < ${dirlist__src_ls_1aA_output__fpath}
+		else	#asterisk is NOT found
+			src_path="${docker__src_dir}/${docker__src_file}"
 
-				#Compose Source and Destination Fullpath
-				sourceFpath="${docker__accept_mySource_dir}/${dirContent_list_arrayItem_clean}"
-				destFpath="${docker__accept_myDest_dir}/${dirContent_list_arrayItem_clean}"
+			docker cp ${src_path} ${docker__containerID_chosen}:${docker__dst_dir}
 
-				#Copy file or folder
-				docker cp ${sourceFpath} ${docker__myContainerId_accept}:${destFpath}
-			done
-		else
-			#Print which file/folder will be copied
-			echo -e "${DOCKER__FOURSPACES}copying: ${docker__accept_mySource_fObject}"
-
-			docker cp ${docker__accept_mySource_fPath} ${docker__myContainerId_accept}:${docker__accept_myDest_fPath}
-		fi
-	fi	
+			echo "...copied ${DOCKER__FG_LIGHTGREY}${docker__src_file}${DOCKER__NOCOLOR}"
+		fi	
+	fi
 }
 
-docker__exit__sub() {
-	exit 0
 
-	moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-	moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+docker__exit__sub() {
+	docker__exitFunc "${DOCKER__EXITCODE_0}" "${DOCKER__NUMOFLINES_2}"
 }
 
 
 
 #---MAIN SUBROUTINE
 main__sub() {
+	#Disable EXPANSION
+	#Remark:
+	#	This is necessary, because otherwise an asterisk '*' won't be treated as a character.
+	set -f
+
 	#Environmental variables must be defined and set first.
 	docker__environmental_variables__sub
 
@@ -1010,26 +674,48 @@ main__sub() {
 @PHASE_CHOOSE_CONTAINERID:
 	docker__choose_containerid__sub
 
+	#Set case-selection
+	docker__case_option=${DOCKER__CASE_SRC_PATH}
+
 	#Goto Next-Phase
 	GOTO__func PHASE_GET_SRC_DST_FPATH
 
 
 
 @PHASE_GET_SRC_DST_FPATH:
-	get_source_destination_fpath__sub
+	docker__path_selection_handler__sub
 	
 	#Goto Next-Phase
-	GOTO__func PHASE_COPY_FROM_SRC_TO_DST
+	GOTO__func PHASE_SHOW_SUMMARY
+
+
+
+@PHASE_SHOW_SUMMARY:
+	docker__show_summary__sub
+
+	#Goto Next-Phase
+	GOTO__func PHASE_CONFIRMATION
+
+
+
+@PHASE_CONFIRMATION:
+	docker__confirmation__sub
 
 
 
 @PHASE_COPY_FROM_SRC_TO_DST:
 	#Remark: the Next-Phase is determined in this function.
-	docker__copy_src_to_dst__sub
+	docker__copy_from_src_to_dst__sub
+
+	#Goto Next-Phase
+	GOTO__func PHASE_EXIT
 
 
 
 @PHASE_EXIT:
+	#Enable Expansion
+	set +f
+
 	docker__exit__sub
 
 }

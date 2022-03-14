@@ -232,7 +232,7 @@ docker__run_container_handler__sub() {
                                     "${docker__onEnter_breakLoop}"
 
                 #Retrieve the selected container-ID from file
-                docker__imageID_chosen=`get_output_from_file__func "${docker__readInput_w_autocomplete_out_fpath}"`
+                docker__imageID_chosen=`get_output_from_file__func "${docker__readInput_w_autocomplete_out_fpath}" "1"`
 
                 #Check if output is an Empty String
                 if [[ -z ${docker__imageID_chosen} ]]; then
@@ -291,7 +291,7 @@ docker__run_container__sub() {
         #Show Container's list
         moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
-        show_list_with_menuTitle__func "${MENUTITLE_UPDATED_CONTAINER_LIST}" "${docker__ps_a_cmd}"
+        show_list_w_menuTitle__func "${MENUTITLE_UPDATED_CONTAINER_LIST}" "${docker__ps_a_cmd}"
 
         moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
         # moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
@@ -343,14 +343,14 @@ docker__get_and_check_repoTag__sub() {
 
     #Check if any of the value is an Empty String
     if [[ -z ${docker__repo_chosen} ]] && [[ -z ${docker__tag_chosen} ]]; then
-        show_errMsg_without_menuTitle__func "${ERRMSG_NO_REPO_TAG_FOUND}" "${DOCKER__NUMOFLINES_2}"
+        show_msg_wo_menuTitle_w_PressAnyKey__func "${ERRMSG_NO_REPO_TAG_FOUND}" "${DOCKER__NUMOFLINES_2}"
     else
         if [[ -z ${docker__repo_chosen} ]]; then
-            show_errMsg_without_menuTitle__func "${ERRMSG_NO_REPO_FOUND}" "${DOCKER__NUMOFLINES_2}"
+            show_msg_wo_menuTitle_w_PressAnyKey__func "${ERRMSG_NO_REPO_FOUND}" "${DOCKER__NUMOFLINES_2}"
         fi
 
         if [[ -z ${docker__tag_chosen} ]]; then
-            show_errMsg_without_menuTitle__func "${ERRMSG_NO_TAG_FOUND}" "${DOCKER__NUMOFLINES_2}"
+            show_msg_wo_menuTitle_w_PressAnyKey__func "${ERRMSG_NO_TAG_FOUND}" "${DOCKER__NUMOFLINES_2}"
         fi
     fi
 }

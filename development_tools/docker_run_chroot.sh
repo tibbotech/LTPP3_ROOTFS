@@ -170,9 +170,9 @@ docker__choose_containerID__sub() {
     #Get number of containers
     local numof_containers=`docker ps -a | head -n -1 | wc -l`
     if [[ ${numof_containers} -eq 0 ]]; then
-        show_errMsg_with_menuTitle__func "${MENUTITLE}" "${ERRMSG_NO_CONTAINERS_FOUND}"
+        show_msg_w_menuTitle_w_pressAnyKey_w_ctrlC_func "${MENUTITLE}" "${ERRMSG_NO_CONTAINERS_FOUND}"
     else
-        show_list_with_menuTitle__func "${MENUTITLE}" "${docker_ps_a_cmd}"
+        show_list_w_menuTitle__func "${MENUTITLE}" "${docker_ps_a_cmd}"
     fi
 
     while true

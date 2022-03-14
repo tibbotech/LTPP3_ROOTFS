@@ -138,13 +138,13 @@ docker_remove_specified_containers__sub() {
                                         else  
                                             errMsg="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Could *NOT* remove container-ID: ${DOCKER__FG_BORDEAUX}${docker__myContainerId_item}${DOCKER__NOCOLOR}"
                                             
-                                            show_errMsg_plainVersion__func "${errMsg}"
+                                            show_msg_only__func "${errMsg}" "${DOCKER__NUMOFLINES_0}"
                                         fi
                                     else
                                         #Update error-message
                                         errMsg="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Invalid container-ID '${DOCKER__FG_BORDEAUX}${docker__myContainerId_item}${DOCKER__NOCOLOR}'"
 
-                                        show_errMsg_plainVersion__func "${errMsg}"
+                                        show_msg_only__func "${errMsg}" "${DOCKER__NUMOFLINES_0}"
                                     fi
                                 done
 
@@ -263,7 +263,7 @@ docker_containerId_input__sub() {
             docker__myContainerId_input=${DOCKER__EMPTYSTRING}
         else
             #Retrieve the selected container-ID from file
-            docker__myContainerId_input=`get_output_from_file__func "${docker__readInput_w_autocomplete_out__fpath}"`
+            docker__myContainerId_input=`get_output_from_file__func "${docker__readInput_w_autocomplete_out__fpath}" "1"`
         fi  
 
         #This boolean will make sure that the image-list table is only displayed once.

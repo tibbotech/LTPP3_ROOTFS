@@ -89,7 +89,7 @@ docker__start_exited_container_handler__sub() {
                         "${docker__onEnter_breakLoop}"
 
                 #Retrieve the selected container-ID from file
-                docker__containerID_chosen=`get_output_from_file__func "${docker__readInput_w_autocomplete_out_fpath}"`
+                docker__containerID_chosen=`get_output_from_file__func "${docker__readInput_w_autocomplete_out_fpath}" "1"`
 
                 #Check if output is an Empty String
                 if [[ -z ${docker__containerID_chosen} ]]; then
@@ -117,7 +117,7 @@ docker__start_exited_container__sub() {
     #Show Container's list
     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
     
-    show_list_with_menuTitle__func "${MENUTITLE_UPDATED_CONTAINER_LIST}" "${docker__ps_a_cmd}"
+    show_list_w_menuTitle__func "${MENUTITLE_UPDATED_CONTAINER_LIST}" "${docker__ps_a_cmd}"
     
     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
 }

@@ -14,29 +14,43 @@ dircontentlist_fpath__input=${5}
 
 #---COLOR CONSTANTS
 NOCOLOR=$'\e[0;0m'
-FG_LIGHTRED=$'\e[1;31m'
-FG_YELLOW=$'\e[1;33m'
-FG_ORANGE=$'\e[30;38;5;215m'
 FG_DEEPORANGE=$'\e[30;38;5;208m'
+FG_LIGHTGREY=$'\e[30;38;5;246m'
+FG_LIGHTRED=$'\e[1;31m'
+FG_ORANGE=$'\e[30;38;5;215m'
 FG_REDORANGE=$'\e[30;38;5;203m'
+FG_YELLOW=$'\e[1;33m'
 
 SED_NOCOLOR="\33[0;0m"
 SED_FG_ORANGE="\33[30;38;5;215m"
 
-#---CONSTANTS
+
+
+#---CHAR CONSTANTS
+SLASH="/"
+
+
+
+#---PATTERN CONSTANTS
+PATTERN_PAGE="Page"
+
+
+
+#---PRINTF CONSTANTS
+PRINTF_NO_RESULTS="${FOUR_SPACES}-:${FG_YELLOW}directory is Empty${NOCOLOR}:-"
+PRINTF_UNKNOWN_DIRECTORY="${FOUR_SPACES}-:${FG_LIGHTRED}Unknown directory${NOCOLOR}:-"
+PRINTF_PLEASE_NARROW_SEARCH="<${FG_DEEPORANGE}PLEASE NARROW DOWN SEARCH${NOCOLOR}...>"
+
+
+
+#---SPACE CONSTANTS
 EMPTYSTRING=""
 FOUR_SPACES="    "
 
-HASH="#"
-DOT="."
-SLASH_W_ESCCHAR="\/"
-SLASH="/"
 
-PATTERN_PAGE="Page"
 
-PRINTF_NO_RESULTS="${FOUR_SPACES}-:${FG_YELLOW}No Results${NOCOLOR}:-"
-PRINTF_UNKNOWN_DIRECTORY="${FOUR_SPACES}-:${FG_LIGHTRED}Unknown directory${NOCOLOR}:-"
-PRINTF_PLEASE_NARROW_SEARCH="<${FG_DEEPORANGE}PLEASE NARROW DOWN SEARCH${NOCOLOR}...>"
+#---STRING CONSTANTS
+HORIZONTALLINE="${FG_LIGHTGREY}---------------------------------------------------------------------${NOCOLOR}"
 
 
 
@@ -68,7 +82,7 @@ load_environmental_variables__sub() {
     dclcau_ls_raw_headed_tmp_fpath=${tmp_dir}/${dclcau_ls_raw_headed_tmp_filename}
     dclcau_ls_raw_all_tmp_filename="dclcau_ls_raw_all.tmp"
     dclcau_ls_raw_all_tmp_fpath=${tmp_dir}/${dclcau_ls_raw_all_tmp_filename}
-    dclcau_ls_tablized_tmp_filename="dclcau_ls_tablized.tm2"
+    dclcau_ls_tablized_tmp_filename="dclcau_ls_tablized.tmp"
     dclcau_ls_tablized_tmp_fpath=${tmp_dir}/${dclcau_ls_tablized_tmp_filename}
     dclcau_ls_color_tmp_filename="dclcau_ls_color.tmp"
     dclcau_ls_color_tmp_fpath=${tmp_dir}/${dclcau_ls_color_tmp_filename}    
@@ -111,6 +125,9 @@ dirContent_main__sub() {
         #Print error message
         printf '%b%s\n' "${PRINTF_UNKNOWN_DIRECTORY}"
         printf '%b%s\n' "${EMPTYSTRING}"
+        printf '%b%s\n' "${HORIZONTALLINE}"
+        # printf '%b%s\n' "${EMPTYSTRING}"
+        # printf '%b%s\n' "${EMPTYSTRING}"
 
         exit
     fi
@@ -130,6 +147,9 @@ dirContent_main__sub() {
         #Print error message
         printf '%b%s\n' "${PRINTF_NO_RESULTS}"
         printf '%b%s\n' "${EMPTYSTRING}"
+        printf '%b%s\n' "${HORIZONTALLINE}"
+        # printf '%b%s\n' "${EMPTYSTRING}"
+        # printf '%b%s\n' "${EMPTYSTRING}"
 
         exit
     fi
@@ -170,6 +190,16 @@ dirContent_get__sub() {
     fi
 }
 
+dirContent_show_header__sub() {
+    printf_numOfContents_shown="(${FG_DEEPORANGE}${dirContent_numOfItems_shown}${NOCOLOR} out-of ${FG_REDORANGE}${dirContent_numOfItems_max}${NOCOLOR})"
+
+    #Print message showing which directory's content is being shown
+    printf '%b%s\n' "${EMPTYSTRING}"
+    printf '%b%s\n' "${HORIZONTALLINE}"
+    printf '%b%s\n' "${FG_DEEPORANGE}List of${NOCOLOR} <${FG_REDORANGE}${dir__input}${NOCOLOR}> ${printf_numOfContents_shown}"
+    printf '%b%s\n' "${HORIZONTALLINE}"
+    # printf '%b%s\n' "${EMPTYSTRING}"
+}
 dirContent_show__sub() {
 #---Determine the 'word_length_max' and 'dirContent_numOfItems_shown'
     #word_length_max: maximum word-length found
@@ -255,7 +285,7 @@ dirContent_show__sub() {
             if [[ ! -d ${fpath} ]]; then  #is directory
                 word_tmp=${word}
             else
-                word_tmp=${word}${HASH}
+                word_tmp=${word}${SLASH}
             fi
 
             #Append empty spaces to 'word' by using the print-format '%-xs'
@@ -284,81 +314,21 @@ dirContent_show__sub() {
     done < ${dclcau_ls_raw_headed_tmp_fpath}
 
 
-#---Make a copy of 'dclcau_ls_tablized.tmp' and call the file 'dclcau_ls_color.tmp'
-    cp ${dclcau_ls_tablized_tmp_fpath} ${dclcau_ls_color_tmp_fpath}
-
-
-#---Differentiate folders from files by printing folders with an ORANGE color
-    local lineNum=0
-    while read -ra line
-    do
-        #Increment line-number of file
-        lineNum=$((lineNum+1))
-        
-        #Go thru each 'word' of the current 'line'
-        for word in "${line[@]}"
-        do
-            #Get length of 'word'
-            word_length=${#word}
-
-            #Calculate the index of the last character of 'word'
-            lastChar_index=$((word_length-1))
-
-            #Get the last character of 'word'
-            word_lastChar=${word:lastChar_index:1}
-
-            #Check if 'fpath' is a directory
-            if [[ ${word_lastChar} == ${HASH} ]]; then  #is directory
-                #Calculate the index of the character which is one-before the last character  of 'word'
-                word_nohash_length=$((word_length-1))
-                
-                #Strip-off hash '#'
-                word_nohash=${word:0:word_nohash_length}
-
-                #1. Add orange color
-                #2. Append slash 
-                word_colored=$(printf "${SED_FG_ORANGE}${word_nohash}${SLASH_W_ESCCHAR}${SED_NOCOLOR}")
-
-                sed -i -e "${lineNum}s/${word}/${word_colored}/" ${dclcau_ls_color_tmp_fpath}
-            fi
-        done
-    done < ${dclcau_ls_color_tmp_fpath}
-
-
 
 #---PRINT
     #Print message showing which directory's content is being shown
     dirContent_show_header__sub
 
     #Show directory contents
-    cat ${dclcau_ls_color_tmp_fpath}
+    cat ${dclcau_ls_tablized_tmp_fpath}
 
-    #Print an Empty Line
+    #Print an Empty Lines
     printf '%b%s\n' "${EMPTYSTRING}"
-
-    if [[ ${dirContent_numOfItems_shown} -lt ${dirContent_numOfItems_max} ]]; then
-        printf_numOfContents_shown=${EMPTYSTRING}"<${FG_DEEPORANGE}number of contents shown${NOCOLOR} (${FG_DEEPORANGE}${dirContent_numOfItems_shown}${NOCOLOR} out-of ${FG_REDORANGE}${dirContent_numOfItems_max}${NOCOLOR})>"
-        printf '%b%s\n' "${printf_numOfContents_shown}"
-        
-        printf '%b%s\n' "${PRINTF_PLEASE_NARROW_SEARCH}"
-    else
-        #Print 'number of contents shown '(dirContent_numOfItems_shown out-of dirContent_numOfItems_max)'
-        printf_numOfContents_shown=${EMPTYSTRING}"<${FG_DEEPORANGE}number of contents shown${NOCOLOR} (${FG_DEEPORANGE}${dirContent_numOfItems_shown}${NOCOLOR} out-of ${FG_REDORANGE}${dirContent_numOfItems_max}${NOCOLOR})>"
-        printf '%b%s\n' "${printf_numOfContents_shown}"
-    fi
-
-    #Print an Empty Line
-    printf '%b%s\n' "${EMPTYSTRING}"   
+    printf '%b%s\n' "${HORIZONTALLINE}"
+    # printf '%b%s\n' "${EMPTYSTRING}"   
+    # printf '%b%s\n' "${EMPTYSTRING}"
 }
 
-dirContent_show_header__sub() {
-    printf '%b%s\n' "${EMPTYSTRING}"
-
-    #Print message showing which directory's content is being shown
-    printf '%b%s\n' "${FG_DEEPORANGE}List of${NOCOLOR} <${FG_REDORANGE}${dir__input}${NOCOLOR}>"
-
-    printf '%b%s\n' "${EMPTYSTRING}"
-}
 
 
 #---MAIN SUBROUTINE

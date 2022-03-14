@@ -128,13 +128,13 @@ docker__remove_specified_images__sub() {
                                         else  
                                             errMsg="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Could *NOT* remove image-ID: ${DOCKER__FG_BORDEAUX}${docker__myImageId_item}${DOCKER__NOCOLOR}"
                                             
-                                            show_errMsg_plainVersion__func "${errMsg}"
+                                            show_msg_only__func "${errMsg}" "${DOCKER__NUMOFLINES_0}"
                                         fi
                                     else
                                         #Update error-message
                                         errMsg="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Invalid image-ID '${DOCKER__FG_BORDEAUX}${docker__myImageId_item}${DOCKER__NOCOLOR}'"
 
-                                        show_errMsg_plainVersion__func "${errMsg}"
+                                        show_msg_only__func "${errMsg}" "${DOCKER__NUMOFLINES_0}"
                                     fi
                                 done
 
@@ -254,7 +254,7 @@ docker_imageId_input__sub() {
             docker__myImageId_input=${DOCKER__EMPTYSTRING}
         else
             #Retrieve the selected container-ID from file
-            docker__myImageId_input=`get_output_from_file__func "${docker__readInput_w_autocomplete_out_fpath}"`
+            docker__myImageId_input=`get_output_from_file__func "${docker__readInput_w_autocomplete_out_fpath}" "1"`
         fi  
 
         #This boolean will make sure that the image-list table is only displayed once.
@@ -330,9 +330,9 @@ docker__show_infoTable__sub() {
 
     #Show Table
     if [[ ${numOf_items} -eq 0 ]]; then
-        show_errMsg_with_menuTitle__func "${menuTitle__input}" "${errorMsg__input}"
+        show_msg_w_menuTitle_w_pressAnyKey_w_ctrlC_func "${menuTitle__input}" "${errorMsg__input}"
     else
-        show_list_with_menuTitle__func "${menuTitle__input}" "${dockerCmd__input}"
+        show_list_w_menuTitle__func "${menuTitle__input}" "${dockerCmd__input}"
     fi
 }
 

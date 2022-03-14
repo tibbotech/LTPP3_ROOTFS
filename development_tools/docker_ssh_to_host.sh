@@ -93,7 +93,6 @@ get_assigned_ipv4_addresses__func() {
                     #Check if 'nic_name' value is found in the 'docker network inspect bridge' result
                     nic_belongs_toDocker=$(docker network inspect bridge | grep '${nic_name}') 
                     if [[ -z ${nic_belongs_toDocker} ]]; then   #'nic_name' does not belong to 'docker'
-
                         container_ip_isValid=`ipv4_checkIf_address_isValid__func "${ipv4Addr}"`
                         if [[ ${container_ip_isValid} == ${DOCKER__TRUE} ]]; then  #'ip4addr' is valid
                             
@@ -224,8 +223,7 @@ docker__ssh_handler__sub() {
     #Print an empty-line
     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 }
-function ipv4_checkIf_address_isValid__func()
-{
+function ipv4_checkIf_address_isValid__func() {
     #Input args
     local ipv4Addr=${1}
 
@@ -269,7 +267,7 @@ function ipv46_subst_comma_with_space__func()
     local address=${1}
 
     #Subsitute MULTIPLE SPACES with ONE SPACE
-    local address_subst=`echo ${address} | sed "s/${DOCKER__COMMA_CHAR}/${DOCKER__ONESPACE}/g"`
+    local address_subst=`echo ${address} | sed "s/${DOCKER__COMMA}/${DOCKER__ONESPACE}/g"`
 
     #Output
     echo ${address_subst}    

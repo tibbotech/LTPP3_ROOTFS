@@ -282,6 +282,8 @@ docker__readInput_w_autocomplete__sub() {
     local ret_bck=${DOCKER__EMPTYSTRING}
     local stdOutput=${DOCKER__EMPTYSTRING}
 
+    local onBackSpacePressed=false
+
     #Define messages
     local errMsg=${DOCKER__EMPTYSTRING}
  
@@ -326,14 +328,20 @@ docker__readInput_w_autocomplete__sub() {
         fi
     fi
 
-    # #Check if there is only 1 array-element.
-    # #Remark:
-    # #   If that is the case, then set 'ret' to that value.
-    # if [[ ${cachedInput_ArrLen} -eq 1 ]]; then
-    #     ret=${cachedInput_Arr[0]}
-    # fi
+    #Start automcomplete
     while true
     do
+        #Check if there is only 1 array-element.
+        #Remark:
+        #   If that is the case, then set 'ret' to that value.
+        if [[ ${onBackSpacePressed} == false ]]; then  #no backspace pressed
+            if [[ ${cachedInput_ArrLen} -eq 1 ]]; then  #only 1 result found
+                ret=${cachedInput_Arr[0]}
+            fi
+        else    #backspace was pressed
+            onBackSpacePressed=false    #set flag back to false
+        fi
+
         if [[ ! -z ${readMsgUpdate__input} ]]; then
             echo -e "${readMsgUpdate__input}"
         fi
@@ -370,7 +378,7 @@ docker__readInput_w_autocomplete__sub() {
                             errMsg="${errorMsg2__input}'${DOCKER__FG_LIGHTGREY}${ret}${DOCKER__NOCOLOR}'"
 
                             #Show error message
-                            show_errMsg_without_menuTitle__func "${errMsg}" "${DOCKER__NUMOFLINES_2}"
+                            show_msg_wo_menuTitle_w_PressAnyKey__func "${errMsg}" "${DOCKER__NUMOFLINES_2}"
 
                             #Reset return value
                             ret=${DOCKER__EMPTYSTRING}
@@ -397,6 +405,9 @@ docker__readInput_w_autocomplete__sub() {
             ${DOCKER__BACKSPACE})
                 #Update variable
                 ret=`backspace_handler__func "${ret}"`
+
+                #Set flag to 'true'
+                onBackSpacePressed=true
 
                 #First Move-down, then Move-up, after that clean line
                 moveDown_oneLine_then_moveUp_and_clean__func "${numOfLines_noError_tot}"
@@ -471,9 +482,9 @@ docker__show_infoTable__sub() {
 
     #Show Table
     if [[ ${cachedInput_ArrLen} -eq 0 ]]; then
-        show_errMsg_with_menuTitle__func "${menuTitle__input}" "${errorMsg__input}"
+        show_msg_w_menuTitle_w_pressAnyKey_w_ctrlC_func "${menuTitle__input}" "${errorMsg__input}"
     else
-        show_list_with_menuTitle__func "${menuTitle__input}" "${dockerCmd__input}"
+        show_list_w_menuTitle__func "${menuTitle__input}" "${dockerCmd__input}"
     fi
 }
 
