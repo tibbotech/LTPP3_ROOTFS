@@ -128,7 +128,7 @@ docker__create_image_handler__sub() {
         case "${phase}" in
             ${CONTAINERID_SELECT_PHASE})
                 #Run script
-                ${docker__readInput_w_autocomplete_fpath} "${MENUTITLE}" \
+                ${docker__readInput_w_autocomplete__fpath} "${MENUTITLE}" \
                         "${READMSG_CHOOSE_A_CONTAINERID}" \
                         "${DOCKER__EMPTYSTRING}" \
                         "${readmsg_remarks}" \
@@ -143,7 +143,7 @@ docker__create_image_handler__sub() {
 
 
                 #Retrieve the selected container-ID from file
-                docker__containerID_chosen=`get_output_from_file__func "${docker__readInput_w_autocomplete_out_fpath}" "1"`
+                docker__containerID_chosen=`get_output_from_file__func "${docker__readInput_w_autocomplete_out__fpath}" "1"`
 
                 #Check if output is an Empty String
                 if [[ -z ${docker__containerID_chosen} ]]; then
@@ -154,7 +154,7 @@ docker__create_image_handler__sub() {
                 ;;
             ${NEW_REPO_INPUT_PHASE})
                 #Run script
-                ${docker__readInput_w_autocomplete_fpath} "${MENUTITLE_CURRENT_IMAGE_LIST}" \
+                ${docker__readInput_w_autocomplete__fpath} "${MENUTITLE_CURRENT_IMAGE_LIST}" \
                         "${READMSG_NEW_REPOSITORY_NAME}" \
                         "${DOCKER__EMPTYSTRING}" \
                         "${readmsg_remarks}" \
@@ -168,7 +168,7 @@ docker__create_image_handler__sub() {
 
 
                 #Retrieve the selected container-ID from file
-                docker__repo_new=`get_output_from_file__func "${docker__readInput_w_autocomplete_out_fpath}" "1"`
+                docker__repo_new=`get_output_from_file__func "${docker__readInput_w_autocomplete_out__fpath}" "1"`
 
                 #Check if output is an Empty String
                 if [[ -z ${docker__repo_new} ]]; then
@@ -179,7 +179,7 @@ docker__create_image_handler__sub() {
                 ;;
             ${NEW_TAG_INPUT_PHASE})
                 #Run script
-                ${docker__readInput_w_autocomplete_fpath} "${MENUTITLE_CURRENT_IMAGE_LIST}" \
+                ${docker__readInput_w_autocomplete__fpath} "${MENUTITLE_CURRENT_IMAGE_LIST}" \
                         "${READMSG_NEW_REPOSITORY_TAG}" \
                         "${DOCKER__EMPTYSTRING}" \
                         "${readmsg_remarks}" \
@@ -192,7 +192,7 @@ docker__create_image_handler__sub() {
                         "${docker__onEnter_breakLoop}"
             
                 #Retrieve the selected container-ID from file
-                docker__tag_new=`get_output_from_file__func "${docker__readInput_w_autocomplete_out_fpath}" "1"`
+                docker__tag_new=`get_output_from_file__func "${docker__readInput_w_autocomplete_out__fpath}" "1"`
 
                 #Check if output is an Empty String
                 if [[ -z ${docker__tag_new} ]]; then

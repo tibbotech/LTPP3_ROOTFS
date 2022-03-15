@@ -26,10 +26,6 @@ docker__load_environment_variables__sub() {
     docker__global_functions_filename="docker_global_functions.sh"
     docker__global_functions_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__global_functions_filename}
 
-    docker__containerlist_tableinfo_filename="docker_containerlist_tableinfo.sh"
-    docker__containerlist_tableinfo_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__containerlist_tableinfo_filename}
-	docker__repolist_tableinfo_filename="docker_repolist_tableinfo.sh"
-	docker__repolist_tableinfo_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__repolist_tableinfo_filename}
     docker__create_an_image_from_dockerfile_filename="docker_create_an_image_from_dockerfile.sh"
     docker__create_an_image_from_dockerfile_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__create_an_image_from_dockerfile_filename}
     docker__create_images_from_dockerlist_filename="docker_create_images_from_dockerlist.sh"
@@ -170,7 +166,7 @@ docker__list_repository__sub() {
 
         press_any_key__func
     else
-        ${docker__repolist_tableinfo_fpath}
+        ${docker__repolist_tableinfo__fpath}
         moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
     fi
 }
@@ -199,7 +195,7 @@ docker__list_container__sub() {
 
         press_any_key__func
     else
-        ${docker__containerlist_tableinfo_fpath}
+        ${docker__containerlist_tableinfo__fpath}
         moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
     fi
 }

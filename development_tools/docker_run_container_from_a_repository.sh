@@ -219,7 +219,7 @@ docker__run_container_handler__sub() {
     do
         case "${phase}" in
             ${IMAGEID_SELECT_PHASE})
-                ${docker__readInput_w_autocomplete_fpath} "${MENUTITLE}" \
+                ${docker__readInput_w_autocomplete__fpath} "${MENUTITLE}" \
                                     "${READMSG_CHOOSE_IMAGEID_FROM_LIST}" \
                                     "${DOCKER__EMPTYSTRING}" \
                                     "${readmsg_remarks}" \
@@ -232,7 +232,7 @@ docker__run_container_handler__sub() {
                                     "${docker__onEnter_breakLoop}"
 
                 #Retrieve the selected container-ID from file
-                docker__imageID_chosen=`get_output_from_file__func "${docker__readInput_w_autocomplete_out_fpath}" "1"`
+                docker__imageID_chosen=`get_output_from_file__func "${docker__readInput_w_autocomplete_out__fpath}" "1"`
 
                 #Check if output is an Empty String
                 if [[ -z ${docker__imageID_chosen} ]]; then

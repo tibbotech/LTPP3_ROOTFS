@@ -45,6 +45,7 @@ PRINTF_PLEASE_NARROW_SEARCH="<${FG_DEEPORANGE}PLEASE NARROW DOWN SEARCH${NOCOLOR
 
 #---SPACE CONSTANTS
 EMPTYSTRING=""
+ONE_SPACE=" "
 FOUR_SPACES="    "
 
 
@@ -71,6 +72,31 @@ function append_trailing_emptySpaces_to_string__func() {
 
     #Output
     local str_output="${str__input}${empySpaces_string}"
+}
+
+function duplicate_char__func() {
+    #Input args
+    local char__input=${1}
+    local numOfTimes__input=${2}
+
+    #Duplicate 'char__input'
+    local ret=`printf '%*s' "${numOfTimes__input}" | tr ' ' "${char__input}"`
+
+    #Print text including Leading Empty Spaces
+    echo -e "${ret}"
+}
+
+
+function lh_checkIf_dir_exists__func() {
+	#Input args
+	local dir__input=${1}
+
+    #Check if directory exists
+    if [[ -d ${dir__input} ]]; then
+        echo true
+    else
+        echo false
+    fi
 }
 
 
@@ -204,18 +230,8 @@ dirContent_show__sub() {
 #---Determine the 'word_length_max' and 'dirContent_numOfItems_shown'
     #word_length_max: maximum word-length found
     #dirContent_numOfItems_shown: number of words found in the file 'dclcau_ls_raw.tmp'
-    local fpath=${EMPTYSTRING}
     local line=${EMPTYSTRING}
-    local line_print=${EMPTYSTRING}
     local word=${EMPTYSTRING}
-    local word_colored=${EMPTYSTRING}
-    local word_lastChar=${EMPTYSTRING}
-    local word_nohash=${EMPTYSTRING}
-    local word_print=${EMPTYSTRING}
-    local word_tmp=${EMPTYSTRING}
-
-    local lastChar_index=0
-    local word_nohash_length=0
     local word_length=0
     local word_length_max=0
 
@@ -224,9 +240,6 @@ dirContent_show__sub() {
         #Go thru each 'word' of the current 'line'
         for word in "${line[@]}"
         do
-            #Define the fullpath
-            fpath=${dir__input}/${word}
-
             #Get length of 'word'
             word_length=${#word}
 
@@ -240,80 +253,119 @@ dirContent_show__sub() {
         done
     done < ${dclcau_ls_raw_headed_tmp_fpath}
 
-    #Correction of 'word_length_max'
+#---Get 'word_length_max_corr'
     #REMARK:
     #   This means that the space between the columns are 4 characters wide
-    local word_maxLen_corr=$((word_length_max+4))
+    local word_length_max_corr=$((word_length_max+4))
 
+#---Get 'listView_numOfCols__input'
     #Calculate maximum allowed number of columns
-    local col_maxWidth=70
+    local table_width=70
     local numOfCol_max_allowed=7
-    local numOfCols_max_calculated=$((col_maxWidth/word_length_max))
-
-    #Check if the number of 'numOfCols_max_calculated > numOfCol_max_allowed'
-    if [[ ${numOfCols_max_calculated} -gt ${numOfCol_max_allowed} ]]; then
-        numOfCols_max_calculated=${numOfCol_max_allowed}    #set value to 'numOfCol_max_allowed'
+    local numOfCols_calc_max=$((table_width/word_length_max_corr))
+    line_length_max_try=$((word_length_max_corr*numOfCols_calc_max + word_length_max))
+    #Finally check if it is possible to add another word with max. length is 'word_length_max'
+    if [[ ${line_length_max_try} -le ${table_width} ]]; then #line_length_max_try
+        numOfCols_calc_max=$((numOfCols_calc_max + 1))
     fi
 
-    #Check if 'listView_numOfCols__input > numOfCols_max_calculated
+    #Check if the number of 'numOfCols_calc_max > numOfCol_max_allowed'
+    if [[ ${numOfCols_calc_max} -gt ${numOfCol_max_allowed} ]]; then
+        numOfCols_calc_max=${numOfCol_max_allowed}    #set value to 'numOfCol_max_allowed'
+    fi
+
+#---Get 'listView_numOfCols__input'
     #Or 'listView_numOfCols__input = 0 (auto)'
-    if [[ ${listView_numOfCols__input} -gt ${numOfCols_max_calculated} ]] || \
+    if [[ ${listView_numOfCols__input} -gt ${numOfCols_calc_max} ]] || \
             [[ ${listView_numOfCols__input} -eq 0 ]]; then
-        listView_numOfCols__input=${numOfCols_max_calculated}
+        listView_numOfCols__input=${numOfCols_calc_max}
     fi
 
+#---Distingish directory from files by:
+    #1. showing directories with the color deep-orange.
+    #   appending a slash.
+    local fpath=${EMPTYSTRING}
+    local line_colored=${EMPTYSTRING}
+    local isDirectory=false
 
-#---Place the files/folders in Table-form
-    #Counter which keep track of the number of words used
-    #REMARK: 
-    #   This counter will be resetted once it is equal to 'listView_numOfCols__input'
-    local counter=0
-    local lastLineOfFile=`cat ${dclcau_ls_raw_headed_tmp_fpath} | tail -1 | xargs`
+    while read -r line
+    do
+        #Define fullpath
+        fpath=${dir__input}${line}
+
+        #Check if 'fpath' is a directory
+        isDirectory=`lh_checkIf_dir_exists__func "${fpath}"`
+        if [[ ${isDirectory} == true ]]; then #is directory
+            line_colored="${FG_DEEPORANGE}${line}${NOCOLOR}${SLASH}"
+
+        else    #is file
+            line_colored="${line}"
+        fi
+
+        #Write to file
+        echo "${line_colored}" >> ${dclcau_ls_color_tmp_fpath}
+    done < ${dclcau_ls_raw_headed_tmp_fpath}
+
+#---Add spaces between each column
+    local line_print=${EMPTYSTRING}
+    local line_print_woColor=${EMPTYSTRING}
+
+    local word_counter=0
+    local line_print_woColor_length=0
+    local fileLineNum=0
+    local fileLineNum_max=`cat ${dclcau_ls_color_tmp_fpath} | wc -l`
 
     while read -ra line
     do
         #Go thru each 'word' of the current 'line'
         for word in "${line[@]}"
         do
-            #Steps:
-            #1. Define the fullpath
-            fpath=${dir__input}/${word}
+            #Increment by 1
+            fileLineNum=$((fileLineNum + 1))
+            word_counter=$((word_counter + 1))
 
-            #2. Check if 'fpath' is a directory
-            #-  If NOT a directory, then use a gap of '4'
-            #-  If a directory, then use a gap of '3'
-            if [[ ! -d ${fpath} ]]; then  #is directory
-                word_tmp=${word}
+            #Set 'word' to be printed
+            if [[ ${word_counter} -eq 1 ]]; then
+                line_print="${word}"
             else
-                word_tmp=${word}${SLASH}
+                line_print="${line_print}${word}" 
             fi
 
-            #Append empty spaces to 'word' by using the print-format '%-xs'
-            word_print=`printf "%-${word_maxLen_corr}s" "${word_tmp}"`
+            #Calculate the gap to be appended.
+            #Remark:
+            #   This is the gap between each column.
+            if [[ ${fileLineNum} -lt ${fileLineNum_max} ]]; then
+                #Retrieve the string excluding the color commands
+                line_print_woColor=$(echo -e "${word}}" | sed "s/$(echo -e "\e")[^m]*m//g");
+                #Get the length of 'line_print_woColor'
+                line_print_woColor_length=`echo ${#line_print_woColor}`
+                #Calculate the gap-length
+                gap_length=$((word_length_max_corr - line_print_woColor_length))
+                #Generate the spaces based on the specified 'gap_length'
+                gap_string=`duplicate_char__func "${ONE_SPACE}" "${gap_length}" `
 
-            #Compose 'line_print' which could contain mulitple 'word_print'
-            line_print="${line_print}${word_print}"
+                #Append the 'gap_string' to 'line_print'
+                line_print=${line_print}${gap_string}
+            fi
 
-            #Increment counter
-            counter=$((counter+1))
+            #Write to file
+            #Remarks:
+            #   Only do this when:
+            #   1. word_counter = listView_numOfCols__input
+            #   OR
+            #   2. fileLineNum = fileLineNum_max
+            if [[ ${word_counter} -eq ${listView_numOfCols__input} ]] || [[ ${fileLineNum} -eq ${fileLineNum_max} ]]; then
+                #write to file
+                echo "${line_print}" >> ${dclcau_ls_tablized_tmp_fpath}
 
-            #1. Write to file
-            #2. Reset variables
-            if [[ ${counter} -eq ${listView_numOfCols__input} ]] || \
-                    [[ ${line} == ${lastLineOfFile} ]]; then
-                #Write to file
-                echo -e "${line_print}" >> ${dclcau_ls_tablized_tmp_fpath}
+                #Reset word_counter
+                word_counter=0   
 
-                #Initialize variables
-                counter=0
-                word_tmp=${EMPTYSTRING}
-                word_print=${EMPTYSTRING}
+                #Reset string
                 line_print=${EMPTYSTRING}
             fi
         done
-    done < ${dclcau_ls_raw_headed_tmp_fpath}
-
-
+    done < ${dclcau_ls_color_tmp_fpath}
 
 #---PRINT
     #Print message showing which directory's content is being shown

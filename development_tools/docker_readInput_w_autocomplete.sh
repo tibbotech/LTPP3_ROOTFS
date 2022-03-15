@@ -288,8 +288,8 @@ docker__readInput_w_autocomplete__sub() {
     local errMsg=${DOCKER__EMPTYSTRING}
  
     #Remove file
-    if [[ -f ${docker__readInput_w_autocomplete_out_fpath} ]]; then
-        rm ${docker__readInput_w_autocomplete_out_fpath}
+    if [[ -f ${docker__readInput_w_autocomplete_out__fpath} ]]; then
+        rm ${docker__readInput_w_autocomplete_out__fpath}
     fi
 
 #---Load ContainerIDs into Array 'cachedInput_Arr'
@@ -417,7 +417,7 @@ docker__readInput_w_autocomplete__sub() {
                 arrowKeys_upDown_handler__func
 
                 #Update variable
-                if [[ ${cachedInput_ArrLen} -gt 0 ]]; then
+                if [[ ${cachedInput_ArrLen} -gt ${DOCKER__NUMOFMATCH_0} ]]; then
                     ret=${cachedInput_Arr[cachedInput_ArrIndex]}
                 else
                     ret=${DOCKER__EMPTYSTRING}
@@ -458,7 +458,7 @@ docker__readInput_w_autocomplete__sub() {
     done
 
     #Write to file
-    echo ${ret} > ${docker__readInput_w_autocomplete_out_fpath}
+    echo ${ret} > ${docker__readInput_w_autocomplete_out__fpath}
 }
 
 docker__show_infoTable__sub() {

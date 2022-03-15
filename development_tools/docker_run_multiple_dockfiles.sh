@@ -48,9 +48,6 @@ docker__load_environment_variables__sub() {
 
     docker__global_functions_filename="docker_global_functions.sh"
     docker__global_functions_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__global_functions_filename}
-
-	docker__repolist_tableinfo_filename="docker_repolist_tableinfo.sh"
-	docker__repolist_tableinfo_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__repolist_tableinfo_filename}
 }
 
 docker__load_source_files__sub() {
@@ -278,7 +275,7 @@ docker__run_dockercmd_with_error_check__sub() {
     docker__checkif_cmd_exec_was_successful__sub   #check if cmd ran successfully
 
     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-        ${docker__repolist_tableinfo_fpath}
+        ${docker__repolist_tableinfo__fpath}
     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
 }
 

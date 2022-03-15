@@ -236,7 +236,7 @@ docker_imageId_input__sub() {
         numOfLines_tot=$((readMsg_numOfLines + update_numOfLines + DOCKER__NUMOFLINES_1))
 
         #Only show the read-input message, but do not show the image-list table.
-        ${docker__readInput_w_autocomplete_fpath} "${MENUTITLE}" \
+        ${docker__readInput_w_autocomplete__fpath} "${MENUTITLE}" \
                             "${READMSG_PASTE_YOUR_INPUT}" \
                             "${readmsg_update}" \
                             "${readmsg_remarks}" \
@@ -248,13 +248,13 @@ docker_imageId_input__sub() {
                             "${docker__showTable}" \
                             "${docker__onEnter_breakLoop}"
 
-        #Get the exitcode just in case a Ctrl-C was pressed in script 'docker__readInput_w_autocomplete_fpath'.
+        #Get the exitcode just in case a Ctrl-C was pressed in script 'docker__readInput_w_autocomplete__fpath'.
         docker__exitCode=$?
         if [[ ${docker__exitCode} -eq 99 ]]; then
             docker__myImageId_input=${DOCKER__EMPTYSTRING}
         else
             #Retrieve the selected container-ID from file
-            docker__myImageId_input=`get_output_from_file__func "${docker__readInput_w_autocomplete_out_fpath}" "1"`
+            docker__myImageId_input=`get_output_from_file__func "${docker__readInput_w_autocomplete_out__fpath}" "1"`
         fi  
 
         #This boolean will make sure that the image-list table is only displayed once.

@@ -76,7 +76,7 @@ docker__start_exited_container_handler__sub() {
         case "${phase}" in
             ${CONTAINERID_SELECT_PHASE})
                 #Run script
-                ${docker__readInput_w_autocomplete_fpath} "${MENUTITLE}" \
+                ${docker__readInput_w_autocomplete__fpath} "${MENUTITLE}" \
                         "${READMSG_CHOOSE_A_CONTAINERID}" \
                         "${DOCKER__EMPTYSTRING}" \
                         "${readmsg_remarks}" \
@@ -89,7 +89,7 @@ docker__start_exited_container_handler__sub() {
                         "${docker__onEnter_breakLoop}"
 
                 #Retrieve the selected container-ID from file
-                docker__containerID_chosen=`get_output_from_file__func "${docker__readInput_w_autocomplete_out_fpath}" "1"`
+                docker__containerID_chosen=`get_output_from_file__func "${docker__readInput_w_autocomplete_out__fpath}" "1"`
 
                 #Check if output is an Empty String
                 if [[ -z ${docker__containerID_chosen} ]]; then

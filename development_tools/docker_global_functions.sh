@@ -90,7 +90,7 @@ DOCKER__TITLE="TIBBO"
 DOCKER__A_ABORT="${DOCKER__FOURSPACES}b. Back"
 DOCKER__ARROWUP="arrowUp"
 DOCKER__ARROWDOWN="arrowDown"
-DOCKER__CTRL_C_QUIT="${DOCKER__FOURSPACES}Quit (Ctrl+C)"
+DOCKER__QUIT_CTR_C="${DOCKER__FOURSPACES}Quit (Ctrl+C)"
 DOCKER__CTRL_C_COLON_QUIT="Ctrl+C: Quit"
 DOCKER__EXITING_NOW="Exiting now..."
 DOCKER__HORIZONTALLINE="---------------------------------------------------------------------"
@@ -123,6 +123,11 @@ DOCKER__NUMOFLINES_10=10
 
 DOCKER__NUMOFMATCH_0=0
 DOCKER__NUMOFMATCH_1=1
+
+
+
+#---PATTERN CONSTANTS
+DOCKER__PATTERN_DOCKER_IO="docker.io"
 
 
 
@@ -307,9 +312,9 @@ function lh_checkIf_dir_exists__func() {
 
     #Check if directory exists
     if [[ -d ${dir__input} ]]; then
-    echo true
+        echo true
     else
-    echo false
+        echo false
     fi
 }
 
@@ -680,9 +685,9 @@ function show_list_w_menuTitle__func() {
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
     
     if [[ ${dockerCmd__input} == ${docker__ps_a_cmd} ]]; then
-        ${docker__containerlist_tableinfo_fpath}
+        ${docker__containerlist_tableinfo__fpath}
     else
-        ${docker__repolist_tableinfo_fpath}
+        ${docker__repolist_tableinfo__fpath}
     fi
 
     #Move-down cursor
@@ -690,7 +695,7 @@ function show_list_w_menuTitle__func() {
 
     #Print
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-    echo -e "${DOCKER__CTRL_C_QUIT}"
+    echo -e "${DOCKER__QUIT_CTR_C}"
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
 }
 
@@ -775,6 +780,25 @@ function show_msg_wo_menuTitle_w_PressAnyKey__func() {
 
     #Show press-any-key dialog
     press_any_key__func
+}
+
+function show_errMsg_without_menuTitle_exit_func() {
+    #Input args
+    local msg__input=${1}
+    local prepend__numOfLines=${2}
+    local append__numOfLines=${3}
+
+    #Move down and clean
+    moveDown_and_cleanLines__func "${prepend__numOfLines}"
+    
+    #Print
+    echo -e "${msg__input}"
+
+    #Move down and clean
+    moveDown_and_cleanLines__func "${append__numOfLines}"
+
+    #Exit
+    docker__exitFunc "${DOCKER__EXITCODE_99}" "${DOCKER__NUMOFLINES_0}"
 }
 
 
@@ -970,21 +994,21 @@ docker__environmental_variables__sub() {
         docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}
     fi
 
-    docker__containerlist_tableinfo_filename="docker_containerlist_tableinfo.sh"
-    docker__containerlist_tableinfo_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__containerlist_tableinfo_filename}
+    docker__containerlist_tableinfo__filename="docker_containerlist_tableinfo.sh"
+    docker__containerlist_tableinfo__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__containerlist_tableinfo__filename}
 
-	docker__repolist_tableinfo_filename="docker_repolist_tableinfo.sh"
-	docker__repolist_tableinfo_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__repolist_tableinfo_filename}
+	docker__repolist_tableinfo__filename="docker_repolist_tableinfo.sh"
+	docker__repolist_tableinfo__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__repolist_tableinfo__filename}
 
-    docker__readInput_w_autocomplete_filename="docker_readInput_w_autocomplete.sh"
-    docker__readInput_w_autocomplete_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__readInput_w_autocomplete_filename}
+    docker__readInput_w_autocomplete__filename="docker_readInput_w_autocomplete.sh"
+    docker__readInput_w_autocomplete__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__readInput_w_autocomplete__filename}
 
-    dirlist__readInput_w_autocomplete_filename="dirlist_readInput_w_autocomplete.sh"
-    dirlist__readInput_w_autocomplete_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${dirlist__readInput_w_autocomplete_filename}
+    dirlist__readInput_w_autocomplete__filename="dirlist_readInput_w_autocomplete.sh"
+    dirlist__readInput_w_autocomplete__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${dirlist__readInput_w_autocomplete__filename}
 
     docker__tmp_dir=/tmp
-    docker__readInput_w_autocomplete_out_filename="docker_readInput_w_autocomplete.out"
-    docker__readInput_w_autocomplete_out_fpath=${docker__tmp_dir}/${docker__readInput_w_autocomplete_out_filename}
+    docker__readInput_w_autocomplete_out__filename="docker_readInput_w_autocomplete.out"
+    docker__readInput_w_autocomplete_out__fpath=${docker__tmp_dir}/${docker__readInput_w_autocomplete_out__filename}
 
     dirlist__readInput_w_autocomplete_out__filename="dirlist_readInput_w_autocomplete.out"
     dirlist__readInput_w_autocomplete_out__fpath=${docker__tmp_dir}/${dirlist__readInput_w_autocomplete_out__filename}
@@ -998,16 +1022,16 @@ docker__environmental_variables__sub() {
     dirlist__dst_ls_1aA_tmp__filename="dirlist_dst_ls_1aA.tmp"
     dirlist__dst_ls_1aA_tmp__fpath=${docker__tmp_dir}/${dirlist__dst_ls_1aA_tmp__filename}
 
-    dclcau_lh_ls_filename="dclcau_lh_ls.sh"
-    dclcau_lh_ls_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${dclcau_lh_ls_filename}
-    dclcau_dc_ls_filename="dclcau_dc_ls.sh"
-    dclcau_dc_ls_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${dclcau_dc_ls_filename}
+    dclcau_lh_ls__filename="dclcau_lh_ls.sh"
+    dclcau_lh_ls__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${dclcau_lh_ls__filename}
+    dclcau_dc_ls__filename="dclcau_dc_ls.sh"
+    dclcau_dc_ls__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${dclcau_dc_ls__filename}
 
     #OLD VERSION (is temporarily present for backwards compaitibility)
-	docker__dockercontainer_dirlist_filename="dockercontainer_dirlist.sh"
-	docker__dockercontainer_dirlist_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__dockercontainer_dirlist_filename}
-	docker__localhost_dirlist_filename="localhost_dirlist.sh"
-	docker__localhost_dirlist_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__localhost_dirlist_filename}
+	docker__dockercontainer_dirlist__filename="dockercontainer_dirlist.sh"
+	docker__dockercontainer_dirlist__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__dockercontainer_dirlist__filename}
+	docker__localhost_dirlist__filename="localhost_dirlist.sh"
+	docker__localhost_dirlist__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__localhost_dirlist__filename}
 }
 
 

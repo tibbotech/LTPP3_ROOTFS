@@ -109,7 +109,7 @@ docker__load_constants__sub() {
 }
 
 docker__init_variables__sub() {
-	#Variables for 'docker__readInput_w_autocomplete_fpath'
+	#Variables for 'docker__readInput_w_autocomplete__fpath'
 	docker__ps_a_containerIdColno=1
 	docker__onEnter_breakLoop=false
 	docker__showTable=true
@@ -199,7 +199,7 @@ docker__choose_containerid__sub() {
 	local ERRMSG_CHOSEN_CONTAINERID_DOESNOT_EXISTS="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Invalid input value "
 
 	#Show read-input
-	${docker__readInput_w_autocomplete_fpath} "${MENUTITLE_CURRENT_REPOSITORY_LIST}" \
+	${docker__readInput_w_autocomplete__fpath} "${MENUTITLE_CURRENT_REPOSITORY_LIST}" \
 						"${DOCKER__READINPUT_CONTAINERID}" \
 						"${DOCKER__EMPTYSTRING}" \
 						"${DOCKER__EMPTYSTRING}" \
@@ -211,14 +211,14 @@ docker__choose_containerid__sub() {
 						"${docker__showTable}" \
 						"${docker__onEnter_breakLoop}"
 
-	#Get the exitcode just in case a Ctrl-C was pressed in script 'docker__readInput_w_autocomplete_fpath'.
+	#Get the exitcode just in case a Ctrl-C was pressed in script 'docker__readInput_w_autocomplete__fpath'.
 	docker__exitCode=$?
 	if [[ ${docker__exitCode} -eq ${DOCKER__EXITCODE_99} ]]; then
 		docker__exitFunc "${docker__exitCode}" "${DOCKER__NUMOFLINES_2}"
 	else
 		#Retrieve the selected container-ID from file
 		docker__containerID_chosen=`get_output_from_file__func \
-						"${docker__readInput_w_autocomplete_out_fpath}" \
+						"${docker__readInput_w_autocomplete_out__fpath}" \
 						"${DOCKER__LINENUM_1}"`
 	fi  
 
@@ -246,13 +246,13 @@ docker__dirlist_show_dirContent_handler__sub() {
 
     #Show directory content
 	if [[ -z ${containerID__input} ]]; then	#LOCAL machine (aka HOST)
-		${dclcau_lh_ls_fpath} "${dir__input}" \
+		${dclcau_lh_ls__fpath} "${dir__input}" \
 						"${DOCKER__LISTVIEW_NUMOFROWS}" \
 						"${DOCKER__LISTVIEW_NUMOFCOLS}" \
 						"${DOCKER__EMPTYSTRING}" \
 						"${DOCKER__EMPTYSTRING}"
 	else	#REMOTE machine (aka Container)
-		${dclcau_dc_ls_fpath} \
+		${dclcau_dc_ls__fpath} \
 						"${containerID__input}" \
 						"${dir__input}" \
 						"${DOCKER__LISTVIEW_NUMOFROWS}" \
@@ -321,13 +321,13 @@ docker__src_path_selection__sub() {
 	local fileExists=false
 
 	#Show and select path
-	${dirlist__readInput_w_autocomplete_fpath} "${containerID__input}" \
+	${dirlist__readInput_w_autocomplete__fpath} "${containerID__input}" \
 						"${DOCKER__READINPUT_CONTAINER_SRC}" \
 						"${DOCKER__DIRLIST_REMARKS}" \
                         "${dirlist__src_ls_1aA_output__fpath}" \
                         "${dirlist__src_ls_1aA_tmp__fpath}"
 
-	#Get the exitcode just in case a Ctrl-C was pressed in script 'docker__readInput_w_autocomplete_fpath'.
+	#Get the exitcode just in case a Ctrl-C was pressed in script 'docker__readInput_w_autocomplete__fpath'.
 	docker__exitCode=$?
 	if [[ ${docker__exitCode} -eq ${DOCKER__EXITCODE_99} ]]; then
 		docker__exitFunc "${docker__exitCode}" "${DOCKER__NUMOFLINES_2}"
@@ -433,13 +433,13 @@ docker__dst_path_selection__sub() {
 	local fileExists=false
 
 	#Show and select path
-	${dirlist__readInput_w_autocomplete_fpath} "${containerID__input}" \
+	${dirlist__readInput_w_autocomplete__fpath} "${containerID__input}" \
 						"${DOCKER__READINPUT_HOST_DST}" \
 						"${DOCKER__DIRLIST_REMARKS}" \
                         "${dirlist__dst_ls_1aA_output__fpath}" \
                         "${dirlist__dst_ls_1aA_tmp__fpath}"
 
-	#Get the exitcode just in case a Ctrl-C was pressed in script 'docker__readInput_w_autocomplete_fpath'.
+	#Get the exitcode just in case a Ctrl-C was pressed in script 'docker__readInput_w_autocomplete__fpath'.
 	docker__exitCode=$?
 	if [[ ${docker__exitCode} -eq ${DOCKER__EXITCODE_99} ]]; then
 		docker__exitFunc "${DOCKER__EXITCODE_99}" "${DOCKER__NUMOFLINES_2}"

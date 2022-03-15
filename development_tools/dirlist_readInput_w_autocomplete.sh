@@ -381,7 +381,7 @@ function load_dirlist_into_array__func() {
     fi
 
     ##step 4:
-    if [[ ${cachedInput__ArrLen} -gt 0 ]]; then
+    if [[ ${cachedInput__ArrLen} -gt ${DOCKER__NUMOFMATCH_0} ]]; then
         printf "%s\n" "${cachedInput_Arr[@]}" > ${output_fPath__input}
 
     else
@@ -831,9 +831,9 @@ dirlist__show_dirContent_handler__sub() {
 
     #Show directory content
 	if [[ -z ${containerID__input} ]]; then	#LOCAL machine (aka HOST)
-		${dclcau_lh_ls_fpath} "${dir}" "${DOCKER__LISTVIEW_NUMOFROWS}" "${DOCKER__LISTVIEW_NUMOFCOLS}" "${keyWord}" "${dirlist_content_fpath}"
+		${dclcau_lh_ls__fpath} "${dir}" "${DOCKER__LISTVIEW_NUMOFROWS}" "${DOCKER__LISTVIEW_NUMOFCOLS}" "${keyWord}" "${dirlist_content_fpath}"
 	else	#REMOTE machine (aka Container)
-		${dclcau_dc_ls_fpath} "${containerID__input}" "${dir}" "${DOCKER__LISTVIEW_NUMOFROWS}" "${DOCKER__LISTVIEW_NUMOFCOLS}" "${keyWord}" "${dirlist_content_fpath}"
+		${dclcau_dc_ls__fpath} "${containerID__input}" "${dir}" "${DOCKER__LISTVIEW_NUMOFROWS}" "${DOCKER__LISTVIEW_NUMOFCOLS}" "${keyWord}" "${dirlist_content_fpath}"
 	fi
 }
 

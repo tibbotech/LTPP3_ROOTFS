@@ -20,16 +20,6 @@ docker__environmental_variables__sub() {
 
     docker__global_functions_filename="docker_global_functions.sh"
     docker__global_functions_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__global_functions_filename}
-
-	docker__repolist_tableinfo_filename="docker_repolist_tableinfo.sh"
-	docker__repolist_tableinfo_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__repolist_tableinfo_filename}
-
-    docker_readInput_w_autocomplete_filename="docker_readInput_w_autocomplete.sh"
-    docker_readInput_w_autocomplete_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker_readInput_w_autocomplete_filename}
-
-    docker__tmp_dir=/tmp
-    docker__readInput_w_autocomplete_out__filename="docker__readInput_w_autocomplete.out"
-    docker__readInput_w_autocomplete_out__fpath=${docker__tmp_dir}/${docker__readInput_w_autocomplete_out__filename}
 }
 
 docker__load_source_files__sub() {
@@ -82,7 +72,7 @@ docker_remove_specified_containers__sub() {
         docker_containerId_input__sub
 
         #Check previously (in subroutine 'docker_containerId_input__sub') ctrl+C was pressed.
-        if [[ ${docker__exitCode} -eq 99 ]]; then
+        if [[ ${docker__exitCode} -eq ${DOCKER__EXITCODE_99} ]]; then
             moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
             break
@@ -194,7 +184,7 @@ docker_containerId_input__sub() {
     local READMSG_PASTE_YOUR_INPUT="Paste your input (here): "
     local MENUTITLE="Remove ${DOCKER__FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}"
     local ERRMSG_NO_CONTAINERS_FOUND="=:${DOCKER__FG_LIGHTRED}NO CONTAINERS FOUND${DOCKER__NOCOLOR}:="
-    local ERRMSG_CHOSEN_CONTAINERID_DOESNOT_EXISTS="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Invalid input value "
+    local ERRMSG_INVALID_INPUT_VALUE="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Invalid input value "
 
     #Define variables
     local readmsg_remarks="${DOCKER__BG_ORANGE}Remarks:${DOCKER__NOCOLOR}\n"
@@ -245,21 +235,21 @@ docker_containerId_input__sub() {
         #Update total number of lines to be cleaned 'numOfLines_tot'
         numOfLines_tot=$((readMsg_numOfLines + update_numOfLines + DOCKER__NUMOFLINES_1))
 
-        ${docker_readInput_w_autocomplete_fpath} "${MENUTITLE}" \
+        ${docker__readInput_w_autocomplete__fpath} "${MENUTITLE}" \
                             "${READMSG_PASTE_YOUR_INPUT}" \
                             "${readmsg_update}" \
                             "${readmsg_remarks}" \
                             "${ERRMSG_NO_CONTAINERS_FOUND}" \
-                            "${ERRMSG_CHOSEN_CONTAINERID_DOESNOT_EXISTS}" \
+                            "${ERRMSG_INVALID_INPUT_VALUE}" \
                             "${docker__ps_a_cmd}" \
                             "${docker__ps_a_containerIdColno}" \
                             "${DOCKER__EMPTYSTRING}" \
                             "${docker__showTable}" \
                             "${docker__onEnter_breakLoop}"
 
-        #Get the exitcode just in case a Ctrl-C was pressed in script 'docker_readInput_w_autocomplete_fpath'.
+        #Get the exitcode just in case a Ctrl-C was pressed in script 'docker__readInput_w_autocomplete__fpath'.
         docker__exitCode=$?
-        if [[ ${docker__exitCode} -eq 99 ]]; then
+        if [[ ${docker__exitCode} -eq ${DOCKER__EXITCODE_99} ]]; then
             docker__myContainerId_input=${DOCKER__EMPTYSTRING}
         else
             #Retrieve the selected container-ID from file
