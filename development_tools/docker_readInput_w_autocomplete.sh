@@ -135,6 +135,7 @@ function autocomplete__func() {
             numOfMatch=`printf '%s\n' "${dataArr[@]}" | grep "^${keyWord}" | wc -l`
 
             #Compare the new 'numOfMatch' with the initial 'numOfMatch_init'
+            #If there is a difference, then set 'ret = keyWord_bck' and exit the loop.
             if [[ ${numOfMatch} -ne ${numOfMatch_init} ]]; then
                 ret=${keyWord_bck}
 
@@ -238,8 +239,6 @@ docker__load_source_files__sub() {
 }
 
 docker__init_variables__sub() {
-    docker__image_ls_cmd="docker image ls"
-    docker__ps_a_cmd="docker ps -a"
     docker__1stTimeUse=true
 }
 

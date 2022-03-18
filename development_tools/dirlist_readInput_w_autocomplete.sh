@@ -2,10 +2,11 @@
 #Remark: by using '-m' the INT will NOT propagate to the PARENT scripts
 #---INPUT ARGS
 containerID__input=${1}
-readMsg__input=${2}
-readMsgRemarks__input=${3}
-output_fPath__input=${4}
-tmp_fPath__input=${5}
+dir__input=${2}
+readMsg__input=${3}
+readMsgRemarks__input=${4}
+output_fPath__input=${5}
+tmp_fPath__input=${6}
 
 
 
@@ -322,7 +323,8 @@ function load_dirlist_into_array__func() {
     fi
 
     #Get directory content
-    #Explanation: 
+    #Explanation:
+    #ls:
     #   The order in which the switches (A,C,x) are applied MATTERS!!!
     #   1: List all in 1 column
     #   a: List hidden files/folders as well
@@ -331,25 +333,48 @@ function load_dirlist_into_array__func() {
     #   head -${listView_numOfRows_input}": show a specified number of rows
     #   tr -d $'\r': (IMPORTANT) trim all carriage returns which is caused by executing 'docker exec -t <containerID> /bin/bash -c'
     #REMARK: For more info see: ls manual
+    #
+    #awk:
+    #   awk '!a[$0]++': get unique values
+
+#---This part may be removed once everything works----------------------------------
+    # if [[ -z ${keyWord} ]]; then
+    #     if [[ -z ${containerID__input} ]]; then
+    #         cachedInputArr_raw_string=`ls -1aA ${dir}`
+    #     else
+    #         cachedInputArr_raw_string=`${docker__exec_cmd} "ls -1aA ${dir}" | tr -d $'\r'`
+    #     fi
+    # else
+    #     if [[ -z ${containerID__input} ]]; then
+    #         cachedInputArr_raw_string=`ls -1aA ${dir} | grep "^${keyWord}"`
+    #     else
+    #         cachedInputArr_raw_string=`${docker__exec_cmd} "ls -1aA ${dir} | grep "^${keyWord}"" | tr -d $'\r'`
+    #     fi
+    # fi
+
+    # #Get only UNIQUE values
+    # cachedInputArr_string=`echo ${cachedInputArr_raw_string} | tr ' ' '\n' | awk '!a[$0]++'`
+
+    
+    # #Convert string to array
+    # cachedInput_Arr=(`echo ${cachedInputArr_string}`)
+#---This part may be removed once everything works----------------------------------
+
+
+    #Get result and put in array
     if [[ -z ${keyWord} ]]; then
         if [[ -z ${containerID__input} ]]; then
-            cachedInputArr_raw_string=`ls -1aA ${dir}`
+            readarray -t cachedInput_Arr < <(ls -1aA ${dir} | awk '!a[$0]++')
         else
-            cachedInputArr_raw_string=`${docker__exec_cmd} "ls -1aA ${dir}" | tr -d $'\r'`
+            readarray -t cachedInput_Arr < <(${docker__exec_cmd} "ls -1aA ${dir}" | tr -d $'\r' | awk '!a[$0]++')
         fi
     else
         if [[ -z ${containerID__input} ]]; then
-            cachedInputArr_raw_string=`ls -1aA ${dir} | grep "^${keyWord}"`
+            readarray -t cachedInput_Arr < <(ls -1aA ${dir} | grep "^${keyWord}" | awk '!a[$0]++')
         else
-            cachedInputArr_raw_string=`${docker__exec_cmd} "ls -1aA ${dir} | grep "^${keyWord}"" | tr -d $'\r'`
+            readarray -t cachedInput_Arr < <(${docker__exec_cmd} "ls -1aA ${dir} | grep "^${keyWord}"" | tr -d $'\r' | awk '!a[$0]++')
         fi
     fi
-
-    #Get only UNIQUE values
-    cachedInputArr_string=`echo ${cachedInputArr_raw_string} | tr ' ' '\n' | awk '!a[$0]++'`
-
-    #Convert string to array
-    cachedInput_Arr=(`echo ${cachedInputArr_string}`)
 
     #Update array-length
     cachedInput__ArrLen=${#cachedInput_Arr[@]}
@@ -504,6 +529,9 @@ dirlist__readInput_w_autocomplete__sub() {
 
 
     #Start phase
+    if [[ ! -z ${dir__input} ]]; then
+        str=${dir__input}
+    fi
     keyInput=${DOCKER__TAB}
     phase=${PHASE_SHOW_KEYINPUT_HANDLER}
     str=${DOCKER__SLASH}

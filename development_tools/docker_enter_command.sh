@@ -1,13 +1,5 @@
 #!/bin/bash -m
 #Remark: by using '-m' the INT will NOT propagate to the PARENT scripts
-#---VARIABLES
-cachedInput_Arr=()
-cachedInput_ArrLen=0
-cachedInput_ArrIndex=0
-cachedInput_ArrIndex_max=0
-
-
-
 #---SUBROUTINES
 docker__environmental_variables__sub() {
 	# docker__current_dir=`pwd`

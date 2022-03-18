@@ -231,26 +231,21 @@ dirContent_show__sub() {
     #word_length_max: maximum word-length found
     #dirContent_numOfItems_shown: number of words found in the file 'dclcau_ls_raw.tmp'
     local line=${EMPTYSTRING}
-    local word=${EMPTYSTRING}
-    local word_length=0
+    local line_length=0
     local word_length_max=0
 
-    while read -ra line
+    while read -r line
     do
-        #Go thru each 'word' of the current 'line'
-        for word in "${line[@]}"
-        do
-            #Get length of 'word'
-            word_length=${#word}
+        #Get length of 'line'
+        line_length=${#line}
 
-            #Update max 'word' length
-            if [[ ${word_length_max} -lt ${word_length} ]]; then
-                word_length_max=${word_length}
-            fi
+        #Update max 'word' length
+        if [[ ${word_length_max} -lt ${line_length} ]]; then
+            word_length_max=${line_length}
+        fi
 
-            #Count the number of words in this file, which is equivalent to 'dirContent_numOfItems_shown'
-            dirContent_numOfItems_shown=$((dirContent_numOfItems_shown+1))
-        done
+        #Count the number of words in this file, which is equivalent to 'dirContent_numOfItems_shown'
+        dirContent_numOfItems_shown=$((dirContent_numOfItems_shown+1))
     done < ${dclcau_ls_raw_headed_tmp_fpath}
 
 #---Get 'word_length_max_corr'
@@ -310,61 +305,57 @@ dirContent_show__sub() {
     local line_print=${EMPTYSTRING}
     local line_print_woColor=${EMPTYSTRING}
 
-    local word_counter=0
+    local line_print_numOfWords=0
     local line_print_woColor_length=0
     local fileLineNum=0
     local fileLineNum_max=`cat ${dclcau_ls_color_tmp_fpath} | wc -l`
 
-    while read -ra line
+    while read -r line
     do
-        #Go thru each 'word' of the current 'line'
-        for word in "${line[@]}"
-        do
-            #Increment by 1
-            fileLineNum=$((fileLineNum + 1))
-            word_counter=$((word_counter + 1))
+        #Increment by 1
+        fileLineNum=$((fileLineNum + 1))
+        line_print_numOfWords=$((line_print_numOfWords + 1))
 
-            #Set 'word' to be printed
-            if [[ ${word_counter} -eq 1 ]]; then
-                line_print="${word}"
-            else
-                line_print="${line_print}${word}" 
-            fi
+        #Set 'line' to be printed
+        if [[ ${line_print_numOfWords} -eq 1 ]]; then
+            line_print="${line}"
+        else
+            line_print="${line_print}${line}" 
+        fi
 
-            #Calculate the gap to be appended.
-            #Remark:
-            #   This is the gap between each column.
-            if [[ ${fileLineNum} -lt ${fileLineNum_max} ]]; then
-                #Retrieve the string excluding the color commands
-                line_print_woColor=$(echo -e "${word}}" | sed "s/$(echo -e "\e")[^m]*m//g");
-                #Get the length of 'line_print_woColor'
-                line_print_woColor_length=`echo ${#line_print_woColor}`
-                #Calculate the gap-length
-                gap_length=$((word_length_max_corr - line_print_woColor_length))
-                #Generate the spaces based on the specified 'gap_length'
-                gap_string=`duplicate_char__func "${ONE_SPACE}" "${gap_length}" `
+        #Calculate the gap to be appended.
+        #Remark:
+        #   This is the gap between each column.
+        if [[ ${fileLineNum} -lt ${fileLineNum_max} ]]; then
+            #Retrieve the string excluding the color commands
+            line_print_woColor=$(echo -e "${line}}" | sed "s/$(echo -e "\e")[^m]*m//g");
+            #Get the length of 'line_print_woColor'
+            line_print_woColor_length=`echo ${#line_print_woColor}`
+            #Calculate the gap-length
+            gap_length=$((word_length_max_corr - line_print_woColor_length))
+            #Generate the spaces based on the specified 'gap_length'
+            gap_string=`duplicate_char__func "${ONE_SPACE}" "${gap_length}" `
 
-                #Append the 'gap_string' to 'line_print'
-                line_print=${line_print}${gap_string}
-            fi
+            #Append the 'gap_string' to 'line_print'
+            line_print=${line_print}${gap_string}
+        fi
 
-            #Write to file
-            #Remarks:
-            #   Only do this when:
-            #   1. word_counter = listView_numOfCols__input
-            #   OR
-            #   2. fileLineNum = fileLineNum_max
-            if [[ ${word_counter} -eq ${listView_numOfCols__input} ]] || [[ ${fileLineNum} -eq ${fileLineNum_max} ]]; then
-                #write to file
-                echo "${line_print}" >> ${dclcau_ls_tablized_tmp_fpath}
+        #Write to file
+        #Remarks:
+        #   Only do this when:
+        #   1. line_print_numOfWords = listView_numOfCols__input
+        #   OR
+        #   2. fileLineNum = fileLineNum_max
+        if [[ ${line_print_numOfWords} -eq ${listView_numOfCols__input} ]] || [[ ${fileLineNum} -eq ${fileLineNum_max} ]]; then
+            #write to file
+            echo "${line_print}" >> ${dclcau_ls_tablized_tmp_fpath}
 
-                #Reset word_counter
-                word_counter=0   
+            #Reset line_print_numOfWords
+            line_print_numOfWords=0   
 
-                #Reset string
-                line_print=${EMPTYSTRING}
-            fi
-        done
+            #Reset string
+            line_print=${EMPTYSTRING}
+        fi
     done < ${dclcau_ls_color_tmp_fpath}
 
 #---PRINT

@@ -629,7 +629,7 @@ function show_centered_string__func() {
     local maxStrLen__input=${2}
 
     #Define one-space constant
-    local ONESPACE=" "
+    local ONE_SPACE=" "
 
     #Get string 'without visiable' color characters
     local strInput_wo_colorChars=`echo "${string__input}" | sed "s,\x1B\[[0-9;]*m,,g"`
@@ -641,7 +641,7 @@ function show_centered_string__func() {
     local numOf_spaces=$(( (maxStrLen__input-strInput_wo_colorChars_len)/2 ))
 
     #Create a string containing only EMPTY SPACES
-    local emptySpaces_string=`duplicate_char__func "${ONESPACE}" "${numOf_spaces}" `
+    local emptySpaces_string=`duplicate_char__func "${ONE_SPACE}" "${numOf_spaces}" `
 
     #Print text including Leading Empty Spaces
     echo -e "${emptySpaces_string}${string__input}"
@@ -654,7 +654,7 @@ function show_leadingAndTrailingStrings_separatedBySpaces__func() {
     local maxStrLen__input=${3}
 
     #Define local variables
-    local ONESPACE=" "
+    local ONE_SPACE=" "
 
     #Get string 'without visiable' color characters
     local leadStr_input_wo_colorChars=`echo "${leadStr__input}" | sed "s,\x1B\[[0-9;]*m,,g"`
@@ -668,7 +668,7 @@ function show_leadingAndTrailingStrings_separatedBySpaces__func() {
     local numOf_spaces=$(( maxStrLen__input-(leadStr_input_wo_colorChars_len+trailStr_input_wo_colorChars_len) ))
 
     #Create a string containing only EMPTY SPACES
-    local emptySpaces_string=`printf '%*s' "${numOf_spaces}" | tr ' ' "${ONESPACE}"`
+    local emptySpaces_string=`printf '%*s' "${numOf_spaces}" | tr ' ' "${ONE_SPACE}"`
 
     #Print text including Leading Empty Spaces
     echo -e "${leadStr__input}${emptySpaces_string}${trailStr__input}"
@@ -824,11 +824,6 @@ function checkForMatch_keyWord_within_string__func() {
     set +f
 }
 
-function checkIf_lastChar_ofString_isHash__func() {
-    #Input Args
-    local string__input=${1}  
-}
-
 function checkForMatch_dockerCmd_result__func() {
     #Input Args
     local keyWord__input=${1}
@@ -854,6 +849,26 @@ function duplicate_char__func() {
 
     #Print text including Leading Empty Spaces
     echo -e "${ret}"
+}
+
+function get_char_at_specified_position__func() {
+    #Input Args
+    local string__input=${1}
+    local pos__input=${2}
+
+    #Calculate the 'index'
+    #Remark:
+    #   The 'index' starts with '0'.
+    local index=0
+    if [[ ${pos__input} -gt ${DOCKER__NUMOFMATCH_0} ]]; then
+        index=$((pos__input - 1))
+    fi
+
+    #Get the first character
+    local ret=${string__input:index:1}    
+
+    #Output
+    echo "${ret}"
 }
 
 function get_endResult_ofString_with_semiColonChar__func() {
@@ -926,10 +941,10 @@ function get_endResult_ofString_with_semiColonChar__func() {
 function get_theLast_xChars_ofString__func() {
     #Input args
     local string__input=${1}
-    local numOfChars__input=${2}
+    local numOfLastChars__input=${2}
 
     #Define local variable
-    local ret=`echo ${string__input: -numOfChars__input}`
+    local ret=`echo ${string__input: -numOfLastChars__input}`
 
     #Output
     echo ${ret}
@@ -1000,6 +1015,9 @@ docker__environmental_variables__sub() {
 	docker__repolist_tableinfo__filename="docker_repolist_tableinfo.sh"
 	docker__repolist_tableinfo__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__repolist_tableinfo__filename}
 
+    compgen__query_w_autocomplete__filename="compgen_query_w_autocomplete.sh"
+    compgen__query_w_autocomplete__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${compgen__query_w_autocomplete__filename}
+
     docker__readInput_w_autocomplete__filename="docker_readInput_w_autocomplete.sh"
     docker__readInput_w_autocomplete__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__readInput_w_autocomplete__filename}
 
@@ -1007,6 +1025,9 @@ docker__environmental_variables__sub() {
     dirlist__readInput_w_autocomplete__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${dirlist__readInput_w_autocomplete__filename}
 
     docker__tmp_dir=/tmp
+    compgen__query_w_autocomplete_out__filename="compgen_query_w_autocomplete.out"
+    compgen__query_w_autocomplete_out__fpath=${docker__tmp_dir}/${compgen__query_w_autocomplete_out__filename}
+
     docker__readInput_w_autocomplete_out__filename="docker_readInput_w_autocomplete.out"
     docker__readInput_w_autocomplete_out__fpath=${docker__tmp_dir}/${docker__readInput_w_autocomplete_out__filename}
 

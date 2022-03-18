@@ -6,11 +6,10 @@ docker__environmental_variables__sub() {
 	docker__ispbooot_bin_filename="ISPBOOOT.BIN"
 
 	docker__bin_bash_dir=/bin/bash
-	# docker__root_sp7xxx_out_dir=/root/SP7021/out
+	docker__root_sp7xxx_out_dir=/root/SP7021/out
 
-	# docker__current_script_fpath="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
-    # docker__current_dir=$(dirname ${docker__current_script_fpath})	#/repo/LTPP3_ROOTFS/development_tools
-	docker__current_dir=/home/imcase//repo/LTPP3_ROOTFS/development_tools
+	docker__current_script_fpath="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
+    docker__current_dir=$(dirname ${docker__current_script_fpath})	#/repo/LTPP3_ROOTFS/development_tools
 	docker__parent_dir=${docker__current_dir%/*}    #gets one directory up (/repo/LTPP3_ROOTFS)
     if [[ -z ${docker__parent_dir} ]]; then
         docker__parent_dir="${DOCKER__SLASH}"
@@ -91,12 +90,12 @@ docker__load_constants__sub() {
 	DOCKER__COPY_DIRECTION_REMARKS+="${DOCKER__FOURSPACES}2. ${DOCKER__DIRECTION_LOCAL_TO_CONTAINER}"
 
     DOCKER__DIRLIST_REMARKS="${DOCKER__BG_ORANGE}Remarks:${DOCKER__NOCOLOR}\n"
-    DOCKER__DIRLIST_REMARKS+="${DOCKER__DASH} append ${DOCKER__FG_YELLOW}/${DOCKER__NOCOLOR}: to list directory (e.g. /etc${DOCKER__FG_YELLOW}/${DOCKER__NOCOLOR})\n"
-	DOCKER__DIRLIST_REMARKS+="${DOCKER__DASH} ${DOCKER__FG_YELLOW}ENTER${DOCKER__NOCOLOR}: to confirm\n"
-    DOCKER__DIRLIST_REMARKS+="${DOCKER__DASH} ${DOCKER__FG_YELLOW}TAB${DOCKER__NOCOLOR}: auto-complete\n"
-    DOCKER__DIRLIST_REMARKS+="${DOCKER__DASH} ${DOCKER__FG_YELLOW};b${DOCKER__NOCOLOR}: back\n"
-    DOCKER__DIRLIST_REMARKS+="${DOCKER__DASH} ${DOCKER__FG_YELLOW};c${DOCKER__NOCOLOR}: clear\n"
-    DOCKER__DIRLIST_REMARKS+="${DOCKER__DASH} ${DOCKER__FG_YELLOW};h${DOCKER__NOCOLOR}: home"
+    DOCKER__DIRLIST_REMARKS+="${DOCKER__DASH} append ${DOCKER__FG_YELLOW}/${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}to list directory${DOCKER__NOCOLOR} (e.g. ${DOCKER__FG_LIGHTGREY}/etc${DOCKER__NOCOLOR}${DOCKER__FG_YELLOW}/${DOCKER__NOCOLOR})\n"
+	DOCKER__DIRLIST_REMARKS+="${DOCKER__DASH} ${DOCKER__FG_YELLOW}ENTER${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}to confirm${DOCKER__NOCOLOR}\n"
+    DOCKER__DIRLIST_REMARKS+="${DOCKER__DASH} ${DOCKER__FG_YELLOW}TAB${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}auto-complete${DOCKER__NOCOLOR}\n"
+    DOCKER__DIRLIST_REMARKS+="${DOCKER__DASH} ${DOCKER__FG_YELLOW};b${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}back${DOCKER__NOCOLOR}\n"
+    DOCKER__DIRLIST_REMARKS+="${DOCKER__DASH} ${DOCKER__FG_YELLOW};c${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}clear${DOCKER__NOCOLOR}\n"
+    DOCKER__DIRLIST_REMARKS+="${DOCKER__DASH} ${DOCKER__FG_YELLOW};h${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}home${DOCKER__NOCOLOR}"
 
 	DOCKER__ECHOMSG_PLEASE_SELECT_A_SOURCEPATH_WHICH_CONTAINS_DATA="Please select valid source folder/file..."
 	DOCKER__ECHOMSG_PLEASE_SELECT_A_VALID_DESTINATIONPATH="Please select a valid destination folder..."
@@ -114,9 +113,12 @@ docker__init_variables__sub() {
 	docker__onEnter_breakLoop=false
 	docker__showTable=true
 
-
 	#Case-selection variables
 	docker__case_option=${DOCKER__CASE_SRC_PATH}
+
+	#Message variables
+	docker__summary_msg=${DOCKER__EMPTYSTRING}
+	docker__copy_msg=${DOCKER__EMPTYSTRING}
 
 	#Misc variables
 	docker__containerID_chosen=${DOCKER__EMPTYSTRING}
@@ -130,10 +132,7 @@ docker__init_variables__sub() {
 	docker__src_dir_print=${DOCKER__EMPTYSTRING}
 
 	docker__numOfMatches_output=0
-
-	#Message variables
-	docker__summary_msg=${DOCKER__EMPTYSTRING}
-	docker__copy_msg=${DOCKER__EMPTYSTRING}
+	docker__exitCode=0
 }
 
 docker__choose_copy_direction__sub() {
@@ -322,6 +321,7 @@ docker__src_path_selection__sub() {
 
 	#Show and select path
 	${dirlist__readInput_w_autocomplete__fpath} "${containerID__input}" \
+						"${DOCKER__EMPTYSTRING}" \
 						"${DOCKER__READINPUT_CONTAINER_SRC}" \
 						"${DOCKER__DIRLIST_REMARKS}" \
                         "${dirlist__src_ls_1aA_output__fpath}" \
@@ -434,6 +434,7 @@ docker__dst_path_selection__sub() {
 
 	#Show and select path
 	${dirlist__readInput_w_autocomplete__fpath} "${containerID__input}" \
+						"${DOCKER__EMPTYSTRING}" \
 						"${DOCKER__READINPUT_HOST_DST}" \
 						"${DOCKER__DIRLIST_REMARKS}" \
                         "${dirlist__dst_ls_1aA_output__fpath}" \
