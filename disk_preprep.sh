@@ -74,6 +74,8 @@ sunplus_foldername="SP7021"
 profile_filename="profile"
 chroot_exec_cmd_inside_chroot_filename="chroot_exec_cmd_inside_chroot.sh"
 # daisychain_mode_filename="mode"
+daisychain_state_service_filename="daisychain_state.service"
+daisychain_state_sh_filename="daisychain_state.sh"
 enable_eth1_before_login_service_filename="enable-eth1-before-login.service"
 enable_eth1_before_login_sh_filename="enable-eth1-before-login.sh"
 create_chown_pwm_service_filename="create-chown-pwm.service"
@@ -184,6 +186,12 @@ dst_sd_detect_add_sh_fpath=${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_di
 
 src_sd_detect_remove_sh_fpath=${home_lttp3rootfs_services_automount_dir}/${sd_detect_remove_sh_filename}
 dst_sd_detect_remove_sh_fpath=${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}/${sd_detect_remove_sh_filename}
+
+src_daisychain_state_service_fpath=${home_lttp3rootfs_services_network_dir}/${daisychain_state_service_filename}
+dst_daisychain_state_service_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}/${daisychain_state_service_filename}
+
+src_daisychain_state_sh_fpath=${home_lttp3rootfs_services_network_dir}/${daisychain_state_sh_filename}
+dst_daisychain_state_sh_fpath=${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}/${daisychain_state_sh_filename}
 
 src_enable_eth1_before_login_service_fpath=${home_lttp3rootfs_services_network_dir}/${enable_eth1_before_login_service_filename}
 dst_enable_eth1_before_login_service_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}/${enable_eth1_before_login_service_filename}
@@ -597,6 +605,33 @@ if [[ ! -d ${SP7xxx_linux_rootfs_initramfs_disk_scripts_dir} ]]; then
 	mkdir ${SP7xxx_linux_rootfs_initramfs_disk_scripts_dir}
 fi
 
+echo -e "\r"
+echo -e ">Copying: ${daisychain_state_service_filename}>"
+echo -e ">from: ${home_lttp3rootfs_services_network_dir}"
+echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}"
+	cp ${src_daisychain_state_service_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}
+
+echo -e "\r"
+echo -e ">>>Change ownership to <root> for file: ${daisychain_state_service_filename}"
+	chown root:root ${dst_daisychain_state_service_fpath}
+
+echo -e "\r"
+echo -e ">>>Change permission to <-rwxr-xr-x> for file: ${daisychain_state_service_filename}"
+	chmod 644 ${dst_daisychain_state_service_fpath}
+
+echo -e "\r"
+echo -e ">Copying: ${daisychain_state_sh_filename}>"
+echo -e ">from: ${home_lttp3rootfs_services_network_dir}"
+echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}"
+	cp ${src_daisychain_state_sh_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}
+
+echo -e "\r"
+echo -e ">>>Change ownership to <root> for file: ${daisychain_state_sh_filename}"
+	chown root:root ${dst_daisychain_state_sh_fpath}
+
+echo -e "\r"
+echo -e ">>>Change permission to <-rwxr-xr-x> for file: ${daisychain_state_sh_filename}"
+	chmod 755 ${dst_daisychain_state_sh_fpath}
 
 echo -e "\r"
 echo -e ">Copying: ${enable_eth1_before_login_service_filename}>"

@@ -100,6 +100,10 @@ pinctrl-names = "default";
 &l2sw {
  pinctrl-names = "default";
  pinctrl-0 = <&ethA_pins &eth0_pins &eth1_pins>;
+ mode = < 1 >;
+	/* 0 = daisy-chain mode
+		* 1 = dual NIC mode
+		* 2 = daisy-chain mode (disable SA learning) */
 };
 
 &mmc0 {

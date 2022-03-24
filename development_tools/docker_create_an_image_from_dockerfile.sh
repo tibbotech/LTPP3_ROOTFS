@@ -18,8 +18,8 @@ function create_image__func() {
     local statusMsg="---:${DOCKER__FG_ORANGE}STATUS${DOCKER__NOCOLOR}: Creating image..."
 
     #Define local command variables
-    local docker_ps_a_cmd="docker ps -a"
-    
+    # local docker_ps_a_cmd="docker ps -a"
+    local docker__images_cmd="docker images"
 
 
     #Get REPOSITORY:TAG from dockerfile
@@ -43,7 +43,7 @@ function create_image__func() {
     #Print docker image list
     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
-    show_list_w_menuTitle__func "${MENUTITLE_UPDATED_CONTAINER_LIST}" "${docker_ps_a_cmd}"
+    show_list_w_menuTitle__func "${MENUTITLE_UPDATED_CONTAINER_LIST}" "${docker__images_cmd}"
     
     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
 }

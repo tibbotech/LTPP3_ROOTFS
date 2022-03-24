@@ -152,7 +152,7 @@ docker__init_variables__sub() {
     docker__dockerList_filename=""
     docker__flagExitLoop=false
 
-    docker__images_cmd="docker images"
+    # docker__images_cmd="docker images"
 }
 
 docker__show_dockerList_files__sub() {

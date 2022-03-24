@@ -15,8 +15,8 @@ Type=oneshot
 #User MUST BE SET TO 'root'
 User=root
 RemainAfterExit=true
-ExecStart=/usr/local/bin/enable-eth1-before-login.sh enable
-ExecStop=/usr/local/bin/enable-eth1-before-login.sh disable
+ExecStart=/usr/local/bin/daisychain_state.sh enable
+ExecStop=/usr/local/bin/daisychain_state.sh disable
 StandardInput=journal+console
 StandardOutput=journal+console
 

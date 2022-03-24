@@ -216,6 +216,34 @@ function checkIf_dir_exists__func() {
     echo "${ret}"
 }
 
+function checkIf_leadingChar_is_alphanumeric__func() {
+    #Turn-off Expansion
+    set -f
+
+    #Input Args
+    local string__input=${1}
+
+    #Check if 'string__input' is an Empty String
+    if [[ -z ${string__input} ]]; then
+        echo "false"
+    
+        return
+    fi
+
+    #Check for match
+    local stdOutput=`echo -e "${string__input}" | grep -v "^[a-zA-Z]"`
+
+    #Output
+    if [[ -z ${stdOutput} ]]; then  #no match
+        echo "true"
+    else    #match
+        echo "false"
+    fi
+
+    #Turn-on Expansion
+    set +f
+}
+
 function compgen_get_numOfMatches_forGiven_keyword__func() {
 	#Input args
     local cntnrID__input=${1}
@@ -224,8 +252,12 @@ function compgen_get_numOfMatches_forGiven_keyword__func() {
 	#Get number of matches
 	local ret=${EMPTYSTRING}
 
-    #Define command
-    local cmd="${COMPGEN_C} "${keyWord__input}" | sort | uniq | grep "^${keyWord__input}$" | wc -l"
+    #Define command to check for an exact match of the specified 'keyWord__input'
+    #Remark:
+    #   This can be achieved by using 'grep "^${cmd_part_str}$"'
+    #   ^: starting with
+    #   $: ending with
+    local cmd="eval ${COMPGEN_C} \"${keyWord__input}\" | sort | uniq | grep \"^${keyWord__input}$\" | wc -l"
 
     if [[ -z ${cntnrID__input} ]]; then
         ret=`${cmd}`
@@ -353,7 +385,7 @@ function retrieve_switches_within_string__func() {
     local ret=${EMPTSTRING}
     local word=${EMPTSTRING}
 
-    #Retrieve the switches from string (if any)
+    #Retrieve the switch_part_str from string (if any)
     for word in ${string__input}
     do
         leading_dash_isFound=`checkForMatch_keyWord_within_string__func "${word}" "${DASH}" "${CHECKFORMATCH_STARTWITH}"`
@@ -417,6 +449,7 @@ compgen__init_variables__sub() {
     compgen_in=${EMPTYSTRING}   #this is the string which on the right=side of the space (if any)
     compgen_out=${EMPTYSTRING}  #this is the result after executing 'autocomplete__func'
     leadingStr=${EMPTYSTRING}   #this is the string which is on the left-side of the space (if any)
+    trailingStr=${EMPTYSTRING}
     ret=${EMPTYSTRING} #this is in general the combination of 'leadString' and 'compgen_out' (however exceptions may apply)
 
     trailingSlash_isFound=false
@@ -497,67 +530,64 @@ compgen__prep_param_and_cmd_handler__sub() {
             #In this case it is assumed that the 1st char is NONE-OF-THE-ABOVE
             #--------------------------------------------------------------------
             #Check if string 'query__input' contains any spaces
-            local stdOutput=`printf "${query__input}" | grep "${ONE_SPACE}"`
-            if [[ ! -z ${stdOutput} ]]; then    #space found
+            local space_isFound=`checkForMatch_keyWord_within_string__func "${query__input}" "${ONE_SPACE}" "${CHECKFORMATCH_ANY}"`
+            if [[ ${space_isFound} == true ]]; then    #space found
                 #Initialization
-                local left_str=${EMPTYSTRING}
-                local switches=${EMPTYSTRING}
+                local cmd_part_str=${EMPTYSTRING}
+                local switch_part_str=${EMPTYSTRING}
                 local cut_index=1
                 local numOfMatch=0
 
-                #Check if 'leadingStr' is an executable command (e.g., cd, ls, source, etc.)
+                #Initialization
+                trailingStr=${query__input}
+
+                #Check for global executable COMMANDS (e.g., cd, ls, source, etc.)
                 while true
                 do
                     #Get the ALL the strings on the LEFT-side of the space
-                    left_str=`printf "${query__input}" | cut -d"${ONE_SPACE}" -f-${cut_index}`
+                    cmd_part_str=`printf "%s" "${trailingStr}" | cut -d"${ONE_SPACE}" -f1`
 
-                    #Check for exact match.
-                    #Remark:
-                    #   This can be achieved by using 'grep "^${left_str}$"'.
-                    #   ^: starting with
-                    #   $: ending with
-                    numOfMatch=`compgen_get_numOfMatches_forGiven_keyword__func "${containerID__input}" "${left_str}"`
-                    case "${numOfMatch}" in
-                        ${NUMOFMATCH_0})
-                            #Reset leading string
-                            leadingStr=${EMPTYSTRING}
-                            #Set trailing string
-                            compgen_in="${query__input}"
+                    #Check if leading char is alphanumeric (a-zA-Z)
+                    local leadingChar_isAlphanumeric=`checkIf_leadingChar_is_alphanumeric__func "${cmd_part_str}"`
 
-                            break                            
-                            ;;
-                        ${NUMOFMATCH_1})
-                            #Get the switches which belong to the executable command (if any)
-                            switches=`retrieve_switches_within_string__func "${query__input}"`
-
-                            #Define the 'leadingStr'
-                            if [[ -z ${switches} ]]; then
-                                leadingStr=${left_str}
+                    if [[ ${leadingChar_isAlphanumeric} == true ]]; then
+                        #Get number of matches
+                        numOfMatch=`compgen_get_numOfMatches_forGiven_keyword__func "${containerID__input}" "${cmd_part_str}"`
+                        if [[ ${numOfMatch} -eq ${NUMOFMATCH_1} ]]; then
+                            #Append 'cmd_part_str' to 'leadingStr'
+                            if [[ -z ${leadingStr} ]]; then
+                                leadingStr=${cmd_part_str}
                             else
-                                leadingStr=${left_str}${ONE_SPACE}${switches} 
+                                leadingStr=${leadingStr}${ONE_SPACE}${cmd_part_str}
                             fi
 
-                            #Get the rest of the string on the RIGHT-side of the space
-                            #Remark:
-                            #   In this case 'cut_index + 1' has to be used.
-                            compgen_in=`retrieve_string_following_after_switches__func "${query__input}"`
-
-                            break                            
-                            ;;
-                        *)  #Multiple matches were found (which is not likely)
-                            if [[ "${left_str}" != "${query__input}" ]]; then   #strings are not the same
-                                cut_index=$((cut_index + 1))    #increment index by 1
-                            else    #strings are the same (which means that 'leadingStr = leadingStr_bck = query__input')
-                                #Reset leading string
-                                leadingStr=${EMPTYSTRING}
-                                #Set trailing string
-                                compgen_in="${query__input}"
-
-                                break                        
-                            fi
-                            ;;
-                    esac
+                            #Update 'trailingStr'
+                            trailingStr=`printf "${trailingStr}" | cut -d"${ONE_SPACE}" -f2-`
+                        else
+                            break
+                        fi
+                    else
+                        break
+                    fi
                 done
+
+                #Check for command SWITCHES
+                switch_part_str=`retrieve_switches_within_string__func "${trailingStr}"`
+
+                #Append 'switch_part_str' to 'leadingStr'
+                if [[ ! -z ${switch_part_str} ]]; then
+                    #Append 'switch_part_str' to 'cmd_tot_str'
+                    if [[ -z ${leadingStr} ]]; then
+                        leadingStr=${switch_part_str}
+                    else
+                        leadingStr=${leadingStr}${ONE_SPACE}${switch_part_str}
+                    fi
+                fi
+
+                #Get the rest of the string on the RIGHT-side of the space
+                #Remark:
+                #   In this case 'cut_index + 1' has to be used.
+                compgen_in=`retrieve_string_following_after_switches__func "${trailingStr}"`
 
                 #Select compgen command-type
                 compgen_cmd="${COMPGEN_F}"
@@ -583,8 +613,8 @@ compgen__get_results__sub() {
     #Define commands
     #Remark:
     #   In order to be able to execute commands with SPACES, 'eval' must be used.
-    local cmd1="eval ${compgen_cmd} "${compgen_in}" | sort | uniq"
-    local cmd2="eval ${compgen_cmd} "${compgen_in}" | sort | uniq | grep "^${compgen_in}$""
+    local cmd1="eval ${compgen_cmd} \"${compgen_in}\" | sort | uniq"
+    local cmd2="eval ${compgen_cmd} \"${compgen_in}\" | sort | uniq | grep \"^${compgen_in}$\""
 
     #Choose the command to-be-executed based on the specified 'trailingSlash_isFound'
     if [[ ${trailingSlash_isFound} == false ]]; then
@@ -597,7 +627,7 @@ compgen__get_results__sub() {
     if [[ -z ${containerID__input} ]]; then
         readarray -t cached_Arr < <(${cmd_chosen})
     else
-        readarray -t cachedInput_Arr < <(${docker__exec_cmd} "${cmd_chosen}" | tr -d $'\r')
+        readarray -t cachedInput_Arr < <(${docker_exec_cmd} "${cmd_chosen}" | tr -d $'\r')
     fi  
 
     #Update array-length

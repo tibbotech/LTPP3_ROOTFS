@@ -476,9 +476,9 @@ echo -e "\r"
 
 press_any_key__localfunc
 echo "---Enable Services---"
-echo -e "\r"
-echo ">Create symlink for <${enable_eth1_before_login_service_filename}>"
-	ln -s ${enable_eth1_before_login_service_fpath} ${enable_eth1_before_login_service_symlink_fpath}
+# echo -e "\r"
+# echo ">Create symlink for <${enable_eth1_before_login_service_filename}>"
+# 	ln -s ${enable_eth1_before_login_service_fpath} ${enable_eth1_before_login_service_symlink_fpath}
 
 echo -e "\r"
 echo ">Create symlink for <${create_chown_pwm_service_filename}>"
