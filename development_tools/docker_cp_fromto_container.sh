@@ -579,9 +579,6 @@ docker__copy_from_src_to_dst__sub() {
 	#Check if 'asterisk' is found
 	asterisk_isFound=`checkForMatch_keyWord_within_string__func "${DOCKER__ASTERISK}" "${docker__src_file}"`
 
-	#Define docker exec command which inclues '/bin/bash -c'
-	local docker_exec_cmd="docker exec -it ${docker__containerID_chosen} ${docker__bin_bash_dir} -c"
-
 	if [[ ${docker__mycopychoice} -eq ${DOCKER__CONTAINER_TO_HOST} ]]; then	#Container to Local Host
 		#Show Title
 		show_msg_w_menuTitle_only_func "${DOCKER__DIRECTION_CONTAINER_TO_LOCAL}" \

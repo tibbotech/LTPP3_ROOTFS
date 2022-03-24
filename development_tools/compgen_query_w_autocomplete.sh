@@ -9,8 +9,10 @@ output_fPath__input=${5}
 
 
 #---CHAR CONSTANTS
+DASH="-"
 DOT="."
 DOTSLASH="./"
+PIPE="|"
 SLASH="/"
 
 
@@ -33,6 +35,14 @@ SED_FG_ORANGE="\33[30;38;5;215m"
 COMPGEN_C="compgen -c"  #find executable commands
 COMPGEN_F="compgen -f"  #find files and folders
 COMPGEN_C_F="compgen -c -f" #find files, folders, and executable commands
+
+
+
+#---ENUM CONSTANTS
+CHECKFORMATCH_ANY=0
+CHECKFORMATCH_STARTWITH=1
+CHECKFORMATCH_ENDWITH=2
+CHECKFORMATCH_EXACT=3
 
 
 
@@ -75,23 +85,30 @@ function autocomplete__func() {
     #Define and update keyWord
     local dataArr_1stItem_len=0
     local keyWord_bck=${DOCKER__EMPTYSTRING}
+    local keyWord_ends_with_slash=${DOCKER__EMPTYSTRING}
     local keyWord_len=0
-    local numOfMatch=0
     local numOfMatch_init=0
+    local numOfMatch=0
     local ret=${DOCKER__EMPTYSTRING}
 
-    #initialization
+    #Let's use the 1st array-element as reference (it does not really matter which element is used).
     dataArr_1stItem_len=${#dataArr[0]}
-    numOfMatch_init=`printf '%s\n' "${dataArr[@]}" | grep "^${keyWord}" | wc -l`
-    numOfMatch=${numOfMatch_init}
+
+    #Get the number of matches specified by 'keyWord'.
+    local trailingSlash_isPresent=`checkForMatch_keyWord_within_string__func "${keyWord}" "${SLASH}" "${CHECKFORMATCH_ENDWITH}"`
+    if [[ ${trailingSlash_isPresent} == false ]]; then  #trailing slash not found
+        numOfMatch_init=`printf '%s\n' "${dataArr[@]}" | grep "^${keyWord}" | wc -l`
+    else    #trailing slash found
+        numOfMatch_init=`printf '%s\n' "${dataArr[@]}" | grep "^${keyWord}$" | wc -l`
+    fi
 
     #Find the closest match
     while true
     do
-        if [[ ${numOfMatch_init} -eq 0 ]]; then  #no match
+        if [[ ${numOfMatch_init} -eq ${NUMOFMATCH_0} ]]; then  #no match
             #Exit loop
             break
-        elif [[ ${numOfMatch_init} -eq 1 ]]; then  #only 1 match
+        elif [[ ${numOfMatch_init} -eq ${NUMOFMATCH_1} ]]; then  #only 1 match
             #Update variable
             ret=`printf '%s\n' "${dataArr[@]}" | grep "^${keyWord}"`
 
@@ -129,8 +146,121 @@ function autocomplete__func() {
         fi
     done
 
+    #Output:
+    #   1. the closest match 'ret'
+    #   2. the number of matches 'numOfMatch_init'
+    #Remark:
+    #   The above mentioned parameter values are separated by a pipe '|'
+    echo -e "${ret}${PIPE}${numOfMatch_init}"
+}
+
+function checkForMatch_keyWord_within_string__func() {
+    #Turn-off Expansion
+    set -f
+
+    #Input Args
+    local string__input=${1}
+    local keyWord__input=${2}
+    local matchType__input=${3}
+
+    #Find match
+    local stdOutput=${EMPTYSTRING}
+    case "${matchType__input}" in
+        ${CHECKFORMATCH_ANY})
+            stdOutput=`echo ${string__input} | grep "${keyWord__input}"`
+            ;;
+        ${CHECKFORMATCH_STARTWITH})
+            stdOutput=`echo ${string__input} | grep "^${keyWord__input}"`
+            ;;
+        ${CHECKFORMATCH_ENDWITH})
+            stdOutput=`echo ${string__input} | grep "${keyWord__input}$"`
+            ;;
+        ${CHECKFORMATCH_EXACT})
+            stdOutput=`echo ${string__input} | grep "^${keyWord__input}$"`
+            ;;
+    esac
+
+    #Output
+    if [[ -z ${stdOutput} ]]; then  #no match
+        echo "false"
+    else    #match
+        echo "true"
+    fi
+
+    #Turn-on Expansion
+    set +f
+}
+
+function checkIf_dir_exists__func() {
+    #Input args
+    local containerID__input=${1}
+    local dir__input=${2}
+
+    #Check if dir exists
+    local ret=false
+    if [[ ! -z ${dir__input} ]]; then #contains data
+        if [[ ${dir__input} == ${DOCKER__SLASH} ]]; then
+            ret=true
+        else
+            if [[ -z ${containerID__input} ]]; then #no container-ID provided
+                ret=`lh_checkIf_dir_exists__func "${dir__input}"`
+            else    #container-ID provided
+                ret=`container_checkIf_dir_exists__func "${containerID__input}" "${dir__input}"`
+            fi
+        fi
+    else
+        ret=${dir__input}
+    fi
+
+    #Output
+    echo "${ret}"
+}
+
+function compgen_get_numOfMatches_forGiven_keyword__func() {
+	#Input args
+    local cntnrID__input=${1}
+	local keyWord__input=${2}
+	
+	#Get number of matches
+	local ret=${EMPTYSTRING}
+
+    #Define command
+    local cmd="${COMPGEN_C} "${keyWord__input}" | sort | uniq | grep "^${keyWord__input}$" | wc -l"
+
+    if [[ -z ${cntnrID__input} ]]; then
+        ret=`${cmd}`
+    else
+        ret=`${docker_exec_cmd} "${cmd}" | tr -d $'\r'`
+    fi
+
+	#Output
+	echo "${ret}"
+}
+
+function container_checkIf_dir_exists__func() {
+	#Input args
+    local containerID__input=${1}
+	local dir__input=${2}
+
+    #Check if directory exists
+    local ret_raw=`${docker_exec_cmd} "[ -d "${dir__input}" ] && echo true || echo false"`
+
+    #Remove carriage returns '\r' caused by '/bin/bash -c'
+    local ret=`echo "${ret_raw}" | tr -d $'\r'`
+
     #Output
     echo ${ret}
+}
+function lh_checkIf_dir_exists__func() {
+	#Input args
+	local dir__input=${1}
+
+    #Check if directory exists
+    if [[ -d ${dir__input} ]]; then
+        echo true
+    else
+        echo false
+    fi
 }
 
 function duplicate_char__func() {
@@ -170,10 +300,10 @@ function prepend_backSlash_inFrontOf_specialChars__func() {
 	local string__input=${1}
 
 	#Define excluding chars
-	local excludes="${DOT}"
+	local excludes="${DOT}${SLASH}"
 
 	#Prepend a backslash '\' in front of any special chars execpt for chars specified by 'excludes'
-	local ret=`printf "${string__input}\n" | sed "s/[^[:alnum:]${excludes}]/\\\\\&/g"`
+	local ret=`printf "${string__input}\n" | sed "s/[^[:alnum:]${excludes}]/\\\\\\&/g"`
 
 	#Output
 	echo "${ret}"
@@ -215,29 +345,46 @@ function remove_leading_spaces__func() {
     echo "${ret}"
 }
 
+function retrieve_switches_within_string__func() {
+    #Input args
+    local string__input=${1}
+
+    #Define variables
+    local ret=${EMPTSTRING}
+    local word=${EMPTSTRING}
+
+    #Retrieve the switches from string (if any)
+    for word in ${string__input}
+    do
+        leading_dash_isFound=`checkForMatch_keyWord_within_string__func "${word}" "${DASH}" "${CHECKFORMATCH_STARTWITH}"`
+        if [[ ${leading_dash_isFound} == true ]]; then
+            if [[ -z ${ret} ]]; then
+                ret="${word}"
+            else
+                ret="${ret}${ONE_SPACE}${word}"
+            fi
+        fi
+    done
+
+    #Output
+    echo -e "${ret}"
+}
+
+function retrieve_string_following_after_switches__func() {
+    #Input args
+    local string__input=${1}
+
+    #Define variables
+    local ret=`printf "%s" "${string__input}" | rev | cut -d"-" -f1 | rev | cut -d" " -f2-`
+    
+    #Output
+    echo -e "${ret}"
+}
+
 
 
 #---SUBROUTINES
 compgen__environmental_variables__sub() {
-	# # docker__current_dir=`pwd`
-	# docker__current_script_fpath="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
-    # docker__current_dir=$(dirname ${docker__current_script_fpath})	#/repo/LTPP3_ROOTFS/development_tools
-	# docker__parent_dir=${docker__current_dir%/*}    #gets one directory up (/repo/LTPP3_ROOTFS)
-    # if [[ -z ${docker__parent_dir} ]]; then
-    #     docker__parent_dir="${DOCKER__SLASH}"
-    # fi
-	# docker__current_folder=`basename ${docker__current_dir}`
-
-    # docker__development_tools_folder="development_tools"
-    # if [[ ${docker__current_folder} != ${docker__development_tools_folder} ]]; then
-    #     docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}/${docker__development_tools_folder}
-    # else
-    #     docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}
-    # fi
-
-    # docker__global_functions_filename="docker_global_functions.sh"
-    # docker__global_functions_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__global_functions_filename}
-
     tmp_dir=/tmp
     compgen__raw_headed_tmp__filename="compgen_raw_headed.tmp"
     compgen__raw_headed_tmp__fpath=${tmp_dir}/${compgen__raw_headed_tmp__filename}
@@ -256,8 +403,6 @@ compgen__init_variables__sub() {
     cached_ArrLen=0
     # cached_string=${EMPTYSTRING}
 
-    printf_numOfContents_shown=${EMPTYSTRING}
-
     dirContent_numOfItems_max=0
     dirContent_numOfItems_shown=0
     numOfCol_max_allowed=7
@@ -267,10 +412,14 @@ compgen__init_variables__sub() {
     compgen_cmd=${EMPTYSTRING}
     docker_exec_cmd="docker exec -t ${containerID__input} ${bin_bash_dir} -c"
 
+    printf_numOfContents_shown=${EMPTYSTRING}
+
     compgen_in=${EMPTYSTRING}   #this is the string which on the right=side of the space (if any)
     compgen_out=${EMPTYSTRING}  #this is the result after executing 'autocomplete__func'
     leadingStr=${EMPTYSTRING}   #this is the string which is on the left-side of the space (if any)
     ret=${EMPTYSTRING} #this is in general the combination of 'leadString' and 'compgen_out' (however exceptions may apply)
+
+    trailingSlash_isFound=false
 }
 
 compgen__create_dirs__sub() {
@@ -320,7 +469,7 @@ compgen__prep_param_and_cmd_handler__sub() {
 
             #Split 'leading' and 'trainling' string from 'query__input'
             leadingStr=${EMPTYSTRING}
-            compgen_in=${query__input}
+            compgen_in="${query__input}"
 
             #Select compgen command-type
             compgen_cmd="${COMPGEN_F}"
@@ -328,7 +477,7 @@ compgen__prep_param_and_cmd_handler__sub() {
         ${SLASH})
             #Split 'leading' and 'trainling' string from 'query__input'
             leadingStr=${EMPTYSTRING}
-            compgen_in=${query__input}
+            compgen_in="${query__input}"
 
             #Select compgen command-type
             compgen_cmd="${COMPGEN_F}"
@@ -337,7 +486,7 @@ compgen__prep_param_and_cmd_handler__sub() {
         ${ONE_SPACE})
             #Split 'leading' and 'trainling' string from 'query__input'
             leadingStr=${EMPTYSTRING}
-            compgen_in=${query__input}
+            compgen_in="${query__input}"
 
             #Select compgen command-type
             compgen_cmd="${COMPGEN_F}"
@@ -347,56 +496,109 @@ compgen__prep_param_and_cmd_handler__sub() {
             #--------------------------------------------------------------------
             #In this case it is assumed that the 1st char is NONE-OF-THE-ABOVE
             #--------------------------------------------------------------------
-            #Find the FIRST space (if any)
+            #Check if string 'query__input' contains any spaces
             local stdOutput=`printf "${query__input}" | grep "${ONE_SPACE}"`
             if [[ ! -z ${stdOutput} ]]; then    #space found
-                #Get the substring on the left-side of the space
-                leadingStr=`printf "${query__input}" | cut -d"${ONE_SPACE}" -f1`
+                #Initialization
+                local left_str=${EMPTYSTRING}
+                local switches=${EMPTYSTRING}
+                local cut_index=1
+                local numOfMatch=0
 
-                #Check if 'leadingStr' is an executable command
-                local numOfMatch=`${COMPGEN_C} "${leadingStr}" | sort | uniq | wc -l`
-                if [[ ${numOfMatch} -eq ${NUMOFMATCH_1} ]]; then  #exactly 1 match found
-                    #--------------------------------------------------------------------
-                    #Since only 1 match was found, it is assumed that 'leadingStr' is 
-                    #   an executable command, which can be called globally.
-                    #--------------------------------------------------------------------
-                    
-                    #Get the rest of the substring on the right-side of the space.
+                #Check if 'leadingStr' is an executable command (e.g., cd, ls, source, etc.)
+                while true
+                do
+                    #Get the ALL the strings on the LEFT-side of the space
+                    left_str=`printf "${query__input}" | cut -d"${ONE_SPACE}" -f-${cut_index}`
+
+                    #Check for exact match.
                     #Remark:
-                    #   It means that we are looking for a file/folder.
-                    compgen_in=`printf "${query__input}" | cut -d"${ONE_SPACE}" -f2-`             
-                else    #no match or multiple matches were found
-                    leadingStr=${EMPTYSTRING}
-                    compgen_in=${query__input}                
-                fi 
+                    #   This can be achieved by using 'grep "^${left_str}$"'.
+                    #   ^: starting with
+                    #   $: ending with
+                    numOfMatch=`compgen_get_numOfMatches_forGiven_keyword__func "${containerID__input}" "${left_str}"`
+                    case "${numOfMatch}" in
+                        ${NUMOFMATCH_0})
+                            #Reset leading string
+                            leadingStr=${EMPTYSTRING}
+                            #Set trailing string
+                            compgen_in="${query__input}"
+
+                            break                            
+                            ;;
+                        ${NUMOFMATCH_1})
+                            #Get the switches which belong to the executable command (if any)
+                            switches=`retrieve_switches_within_string__func "${query__input}"`
+
+                            #Define the 'leadingStr'
+                            if [[ -z ${switches} ]]; then
+                                leadingStr=${left_str}
+                            else
+                                leadingStr=${left_str}${ONE_SPACE}${switches} 
+                            fi
+
+                            #Get the rest of the string on the RIGHT-side of the space
+                            #Remark:
+                            #   In this case 'cut_index + 1' has to be used.
+                            compgen_in=`retrieve_string_following_after_switches__func "${query__input}"`
+
+                            break                            
+                            ;;
+                        *)  #Multiple matches were found (which is not likely)
+                            if [[ "${left_str}" != "${query__input}" ]]; then   #strings are not the same
+                                cut_index=$((cut_index + 1))    #increment index by 1
+                            else    #strings are the same (which means that 'leadingStr = leadingStr_bck = query__input')
+                                #Reset leading string
+                                leadingStr=${EMPTYSTRING}
+                                #Set trailing string
+                                compgen_in="${query__input}"
+
+                                break                        
+                            fi
+                            ;;
+                    esac
+                done
 
                 #Select compgen command-type
-                compgen_cmd="${COMPGEN_F}"       
+                compgen_cmd="${COMPGEN_F}"
             else    #no space found
                 leadingStr=${EMPTYSTRING}
-                compgen_in=${query__input}
+                compgen_in="${query__input}"
 
                 #Select compgen command-type
                 compgen_cmd="${COMPGEN_C_F}"
             fi
             ;;
     esac
+
+    #Check if 'compgen_in' ends with a slash '/'.
+    #If true, then remove the slash.
+    trailingSlash_isFound=`checkForMatch_keyWord_within_string__func "${compgen_in}" "${SLASH}" "${CHECKFORMATCH_ENDWITH}"`
+    if [[ ${trailingSlash_isFound} == true ]]; then
+        compgen_in=`printf "%s" "${compgen_in}" | rev | cut -d"${SLASH}" -f2- | rev`
+    fi
 }
 
 compgen__get_results__sub() {
-    # #Retrieve the queried results
-    # cached_string=`${compgen_cmd} "${compgen_in}" | sort | uniq`
+    #Define commands
+    #Remark:
+    #   In order to be able to execute commands with SPACES, 'eval' must be used.
+    local cmd1="eval ${compgen_cmd} "${compgen_in}" | sort | uniq"
+    local cmd2="eval ${compgen_cmd} "${compgen_in}" | sort | uniq | grep "^${compgen_in}$""
 
-    # #Get the number of matches
-    # local numOfMatch=`${compgen_cmd} "${compgen_in}" | sort | uniq | wc -l`
-    # if [[ ${numOfMatch} -eq ${NUMOFMATCH_1} ]]; then  #exactly 1 match found
-    #     cached_Arr=("${cached_string}")
-    # else
-    #     cached_Arr=(`echo ${cached_string}`)
-    # fi
+    #Choose the command to-be-executed based on the specified 'trailingSlash_isFound'
+    if [[ ${trailingSlash_isFound} == false ]]; then
+        cmd_chosen=${cmd1}
+    else
+        cmd_chosen=${cmd2}
+    fi
 
-    #Execute command and read into array
-    readarray -t cached_Arr < <(${compgen_cmd} "${compgen_in}" | sort | uniq)
+    #Execute command
+    if [[ -z ${containerID__input} ]]; then
+        readarray -t cached_Arr < <(${cmd_chosen})
+    else
+        readarray -t cachedInput_Arr < <(${docker__exec_cmd} "${cmd_chosen}" | tr -d $'\r')
+    fi  
 
     #Update array-length
     cached_ArrLen=${#cached_Arr[@]}
@@ -409,31 +611,50 @@ compgen__get_results__sub() {
 }
 
 compgen__get_closest_match__sub() {
+    #Define variables
+    local dirExists=false
+    local numOfMatch=0
+    local results=${EMPTYSTRING}
+
     #Get closest match
     if [[ ${cached_ArrLen} -gt ${NUMOFMATCH_0} ]]; then
-        compgen_out=`autocomplete__func "${compgen_in}" "${cached_Arr[@]}"`
+        results=`autocomplete__func "${compgen_in}" "${cached_Arr[@]}"`
+
+        #Get results delimited by a pipe '|'
+        compgen_out=`printf "${results}" | cut -d"${PIPE}" -f1`
+        numOfMatch=`printf "${results}" | cut -d"${PIPE}" -f2`
+
+        #Append slash (if 'compgen_out' is a directory)
+        if [[ ${numOfMatch} -eq ${NUMOFMATCH_1} ]]; then   #exactly 1 match
+            dirExists=`checkIf_dir_exists__func "${containerID__input}" "${compgen_out}"`
+            if [[ ${dirExists} == true ]]; then
+                compgen_out="${compgen_out}${SLASH}"
+            fi
+        fi
+
+        #Prepend backslash infront of special chars except for: slash, underscore
+        compgen_out=`prepend_backSlash_inFrontOf_specialChars__func "${compgen_out}"` 
     fi
 
     #Check if 'compgen_out' is an Empty String
     #Remark:
     #   If true, then set 'ret = query__input'
     #   If false, then set 'ret = leadingStr + compgen_out'
-    if [[ -z ${compgen_out} ]]; then
+    if [[ -z ${compgen_out} ]]; then    #is an Empty String
         ret=${query__input}
-    else
-        ret="${leadingStr}${compgen_out}"
+    else    #is Not an Empty String
+        if [[ -z ${leadingStr} ]]; then #is an Empty String
+            ret="${compgen_out}"
+        else    #is Not an Empty String
+            ret="${leadingStr}${ONE_SPACE}${compgen_out}"
+        fi
     fi
 
-    #Prepend backslash infront of special chars
-    ret=`prepend_backSlash_inFrontOf_specialChars__func "${ret}"` 
-
     #Write to file
-    echo ${ret} > ${output_fPath__input}
+    printf "%s\n" "${ret}" > ${output_fPath__input}
 }
 
 compgen__show_handler__sub() {
-    #Write header content to file
-    compgen__prep_header_print__sub
 
     #Write results to file
     compgen__prep_body_print__sub
@@ -442,6 +663,9 @@ compgen__show_handler__sub() {
     cat ${compgen__tablized_tmp__fpath}
 }
 compgen__prep_header_print__sub() {
+    #Get maximum number of results
+    dirContent_numOfItems_max=`cat ${compgen__raw_all_tmp__fpath} | wc -l`
+
     #Update variable
     printf_numOfContents_shown="(${FG_DEEPORANGE}${dirContent_numOfItems_shown}${NOCOLOR} out-of ${FG_REDORANGE}${dirContent_numOfItems_max}${NOCOLOR})"
 
@@ -455,6 +679,8 @@ compgen__prep_header_print__sub() {
 compgen__prep_body_print__sub() {
     case "${cached_ArrLen}" in
         ${NUMOFMATCH_0})
+            compgen__prep_header_print__sub
+
 #-----------Check if there are any results
             #Write empty line to file
             printf '%b%s\n' "${EMPTYSTRING}" >> ${compgen__tablized_tmp__fpath}
@@ -485,7 +711,7 @@ compgen__prep_body_print__sub() {
             local line_length=0
             local word_length_max=0
 
-            while read -r line
+            while IFS= read -r line
             do
                 #Get length of 'line'
                 line_length=${#line}
@@ -525,6 +751,11 @@ compgen__prep_body_print__sub() {
                 table_numOfCols__input=${numOfCols_calc_max}
             fi
 
+
+#-----------Write header to file (must be placed here)
+            compgen__prep_header_print__sub
+
+
 #-----------Add spaces between each column
             local line_print=${EMPTYSTRING}
 
@@ -532,7 +763,7 @@ compgen__prep_body_print__sub() {
             local fileLineNum_max=`cat ${compgen__raw_headed_tmp__fpath} | wc -l`
             local line_print_numOfWords=0
 
-            while read -r line
+            while IFS= read -r line
             do
                 #Increment by 1
                 fileLineNum=$((fileLineNum + 1))

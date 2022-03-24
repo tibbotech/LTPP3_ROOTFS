@@ -78,18 +78,6 @@ function dc_checkIf_dir_exists__func() {
     echo ${stdOutput}
 }
 
-function lh_checkIf_dir_exists__func() {
-	#Input args
-	local dir__input=${1}
-
-    #Check if directory exists
-    if [[ -d ${dir__input} ]]; then
-        echo true
-    else
-        echo false
-    fi
-}
-
 function duplicate_char__func() {
     #Input args
     local char__input=${1}
@@ -244,7 +232,7 @@ dirContent_show__sub() {
     local line_length=0
     local word_length_max=0
 
-    while read -r line
+    while IFS= read -r line
     do
         #Get length of 'line'
         line_length=${#line}
@@ -293,13 +281,13 @@ dirContent_show__sub() {
     local line_colored=${EMPTYSTRING}
     local isDirectory=false
 
-    while read -r line
+    while IFS= read -r line
     do
         #Define fullpath
         fpath=${dir__input}${line}
 
         #Check if 'fpath' is a directory
-        isDirectory=`lh_checkIf_dir_exists__func "${fpath}"`
+        isDirectory=`dc_checkIf_dir_exists__func "${fpath}"`
         if [[ ${isDirectory} == true ]]; then #is directory
             line_colored="${FG_DEEPORANGE}${line}${NOCOLOR}${SLASH}"
 
@@ -320,7 +308,7 @@ dirContent_show__sub() {
     local fileLineNum=0
     local fileLineNum_max=`cat ${dclcau_ls_color_tmp_fpath} | wc -l`
 
-    while read -r line
+    while IFS= read -r line
     do
         #Increment by 1
         fileLineNum=$((fileLineNum + 1))

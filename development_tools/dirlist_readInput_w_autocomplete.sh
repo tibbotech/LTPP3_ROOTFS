@@ -215,7 +215,7 @@ function autocomplete__func() {
     done
 
     #Output
-    echo ${ret}
+    echo -e "${ret}"
 }
 
 function backspace_handler__func() {
@@ -364,15 +364,15 @@ function load_dirlist_into_array__func() {
     #Get result and put in array
     if [[ -z ${keyWord} ]]; then
         if [[ -z ${containerID__input} ]]; then
-            readarray -t cachedInput_Arr < <(ls -1aA ${dir} | awk '!a[$0]++')
+            readarray -t cachedInput_Arr < <(eval ls -1aA ${dir} | awk '!a[$0]++')
         else
-            readarray -t cachedInput_Arr < <(${docker__exec_cmd} "ls -1aA ${dir}" | tr -d $'\r' | awk '!a[$0]++')
+            readarray -t cachedInput_Arr < <(${docker__exec_cmd} "eval ls -1aA ${dir}" | tr -d $'\r' | awk '!a[$0]++')
         fi
     else
         if [[ -z ${containerID__input} ]]; then
-            readarray -t cachedInput_Arr < <(ls -1aA ${dir} | grep "^${keyWord}" | awk '!a[$0]++')
+            readarray -t cachedInput_Arr < <(eval ls -1aA ${dir} | grep "^${keyWord}" | awk '!a[$0]++')
         else
-            readarray -t cachedInput_Arr < <(${docker__exec_cmd} "ls -1aA ${dir} | grep "^${keyWord}"" | tr -d $'\r' | awk '!a[$0]++')
+            readarray -t cachedInput_Arr < <(${docker__exec_cmd} "eval ls -1aA ${dir} | grep "^${keyWord}"" | tr -d $'\r' | awk '!a[$0]++')
         fi
     fi
 

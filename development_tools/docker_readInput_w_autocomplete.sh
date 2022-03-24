@@ -457,7 +457,7 @@ docker__readInput_w_autocomplete__sub() {
     done
 
     #Write to file
-    echo ${ret} > ${docker__readInput_w_autocomplete_out__fpath}
+    echo -e "${ret}" > ${docker__readInput_w_autocomplete_out__fpath}
 }
 
 docker__show_infoTable__sub() {

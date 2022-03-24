@@ -5,7 +5,7 @@ FROM ltps_rootfs_preferences:latest
 LABEL maintainer="hien@tibbo.com"
 LABEL version="0.1"
 LABEL description="Continue from image 'ltps_rootfs_preferences:latest', and run 'build_BOOOT_BIN.sh'"
-LABEL repository:tag="ltps_rootfs_ispboootbin:latest"
+LABEL repository:tag="ltps_rootfs_pref_ispboootbin:latest"
 
 #---Disable Prompt During Packages Installation
 ARG DEBIAN_FRONTEND=noninteractive

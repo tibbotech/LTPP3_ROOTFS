@@ -234,7 +234,7 @@ dirContent_show__sub() {
     local line_length=0
     local word_length_max=0
 
-    while read -r line
+    while IFS= read -r line
     do
         #Get length of 'line'
         line_length=${#line}
@@ -283,7 +283,7 @@ dirContent_show__sub() {
     local line_colored=${EMPTYSTRING}
     local isDirectory=false
 
-    while read -r line
+    while IFS= read -r line
     do
         #Define fullpath
         fpath=${dir__input}${line}
@@ -310,7 +310,7 @@ dirContent_show__sub() {
     local fileLineNum=0
     local fileLineNum_max=`cat ${dclcau_ls_color_tmp_fpath} | wc -l`
 
-    while read -r line
+    while IFS= read -r line
     do
         #Increment by 1
         fileLineNum=$((fileLineNum + 1))

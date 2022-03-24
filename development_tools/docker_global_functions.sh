@@ -35,6 +35,7 @@ DOCKER__FG_BORDEAUX=$'\e[30;38;5;198m'
 DOCKER__FG_BRIGHTPRUPLE=$'\e[30;38;5;141m'
 DOCKER__FG_BRIGHTLIGHTPURPLE=$'\e[30;38;5;147m'
 DOCKER__FG_DARKBLUE=$'\e[30;38;5;33m'
+DOCKER__FG_DEEPORANGE=$'\e[30;38;5;208m'
 DOCKER__FG_REDORANGE=$'\e[30;38;5;203m'
 DOCKER__FG_GREEN=$'\e[30;38;5;82m'
 DOCKER__FG_GREEN85=$'\e[30;38;5;85m'
@@ -1024,9 +1025,14 @@ docker__environmental_variables__sub() {
     dirlist__readInput_w_autocomplete__filename="dirlist_readInput_w_autocomplete.sh"
     dirlist__readInput_w_autocomplete__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${dirlist__readInput_w_autocomplete__filename}
 
+
+
     docker__tmp_dir=/tmp
     compgen__query_w_autocomplete_out__filename="compgen_query_w_autocomplete.out"
     compgen__query_w_autocomplete_out__fpath=${docker__tmp_dir}/${compgen__query_w_autocomplete_out__filename}
+
+    docker__enter_cmdline_out__filename="docker__enter_cmdline.out"
+    docker__enter_cmdline_out__fpath=${docker__tmp_dir}/${docker__enter_cmdline_out__filename}
 
     docker__readInput_w_autocomplete_out__filename="docker_readInput_w_autocomplete.out"
     docker__readInput_w_autocomplete_out__fpath=${docker__tmp_dir}/${docker__readInput_w_autocomplete_out__filename}
