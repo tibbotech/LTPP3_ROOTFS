@@ -287,7 +287,7 @@ function checkIf_dir_exists__func() {
     fi
 
     #Output
-    echo "${ret}"
+    echo -e "${ret}"
 }
 function container_checkIf_dir_exists__func() {
 	#Input args
@@ -305,7 +305,7 @@ function container_checkIf_dir_exists__func() {
     local ret=`echo "${ret_raw}" | tr -d $'\r'`
 
     #Output
-    echo ${ret}
+    echo -e "${ret}"
 }
 function lh_checkIf_dir_exists__func() {
 	#Input args
@@ -337,7 +337,7 @@ function checkIf_file_exists__func() {
     fi
 
     #Output
-    echo "${ret}"
+    echo -e "${ret}"
 }
 function container_checkIf_file_exists__func() {
 	#Input args
@@ -355,7 +355,7 @@ function container_checkIf_file_exists__func() {
     local ret=`echo "${ret_raw}" | tr -d $'\r'`
 
     #Output
-    echo ${ret}
+    echo -e "${ret}"
 }
 function lh_checkIf_file_exists__func() {
 	#Input args
@@ -477,7 +477,7 @@ function get_basename_from_specified_path__func() {
     local ret=`echo ${fpath__input} | rev | cut -d"${DOCKER__SLASH}" -f1 | rev`
 
     #Output
-    echo ${ret}
+    echo -e "${ret}"
 }
 
 function get_dirname_from_specified_path__func() {
@@ -493,7 +493,7 @@ function get_dirname_from_specified_path__func() {
     fi
 
     #Output
-    echo ${ret}
+    echo -e "${ret}"
 }
 
 function get_output_from_file__func() {
@@ -509,7 +509,7 @@ function get_output_from_file__func() {
     fi
 
     #Output
-    echo ${ret}
+    echo -e "${ret}"
 }
 
 
@@ -609,9 +609,9 @@ function moveUp_oneLine_then_moveRight__func() {
     local keyInput=${2}
 
     #Get lengths
-    local mainMsg_wo_regEx=$(echo -e "$mainMsg" | sed "s/$(echo -e "\e")[^m]*m//g")
+    local mainMsg_wo_regEx=$(printf "%s" "$mainMsg" | sed "s/$(echo -e "\e")[^m]*m//g")
     local mainMsg_wo_regEx_len=${#mainMsg_wo_regEx}
-    local keyInput_wo_regEx=$(echo -e "$keyInput" | sed "s/$(echo -e "\e")[^m]*m//g")
+    local keyInput_wo_regEx=$(printf "%s" "$keyInput" | sed "s/$(echo -e "\e")[^m]*m//g")
     local keyInput_wo_regEx_len=${#keyInput_wo_regEx}
     local total_len=$((mainMsg_wo_regEx_len + keyInput_wo_regEx_len))
 
@@ -869,7 +869,7 @@ function get_char_at_specified_position__func() {
     local ret=${string__input:index:1}    
 
     #Output
-    echo "${ret}"
+    echo -e "${ret}"
 }
 
 function get_endResult_ofString_with_semiColonChar__func() {
@@ -894,7 +894,7 @@ function get_endResult_ofString_with_semiColonChar__func() {
     if [[ ${homeIsFound} == true ]]; then
         ret=${DOCKER__SEMICOLON_HOME}
 
-        echo ${ret}
+        echo -e "${ret}"
         
         return
     fi
@@ -905,7 +905,7 @@ function get_endResult_ofString_with_semiColonChar__func() {
     if [[ ${backIsFound} == true ]]; then
         ret=${DOCKER__SEMICOLON_BACK}
 
-        echo ${ret}
+        echo -e "${ret}"
 
         return
     fi
@@ -916,7 +916,7 @@ function get_endResult_ofString_with_semiColonChar__func() {
     if [[ ${clearIsFound} == false ]]; then
         ret=${string__input}
 
-        echo ${ret}
+        echo -e "${ret}"
         
         return
     fi
@@ -936,7 +936,7 @@ function get_endResult_ofString_with_semiColonChar__func() {
     ret=${rightPart:1:rightPart_len}
 
     #Output
-    echo ${ret}
+    echo -e "${ret}"
 }
 
 function get_theLast_xChars_ofString__func() {
@@ -948,7 +948,7 @@ function get_theLast_xChars_ofString__func() {
     local ret=`echo ${string__input: -numOfLastChars__input}`
 
     #Output
-    echo ${ret}
+    echo -e "${ret}"
 }
 
 function remove_trailing_char__func() {
@@ -967,7 +967,7 @@ function remove_trailing_char__func() {
 	local ret=`echo "${string__input}" | sed s"/${char__input}*$//g"`
 
     #Output
-    echo ${ret}
+    echo -e "${ret}"
 }
 
 function remove_whiteSpaces__func() {
@@ -977,8 +977,8 @@ function remove_whiteSpaces__func() {
     #Remove white spaces
     local ret=`echo -e "${orgString__input}" | tr -d "[:blank:]"`
 
-    #OUTPUT
-    echo ${ret}
+    #Output
+    echo -e "${ret}"
 }
 
 
@@ -988,6 +988,9 @@ function remove_whiteSpaces__func() {
 trap CTRL_C__sub INT
 
 CTRL_C__sub() {
+    #Turn-on Expansion
+    set +f
+    
     docker__exitFunc "${DOCKER__EXITCODE_99}" "${DOCKER__NUMOFLINES_2}"
 }
 

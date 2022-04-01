@@ -9,11 +9,28 @@ output_fPath__input=${5}
 
 
 #---CHAR CONSTANTS
+CR="$'\r'"
 DASH="-"
 DOT="."
 DOTSLASH="./"
 PIPE="|"
 SLASH="/"
+
+ESC_BCKSLASH="\\"
+ESC_BCKSLASHDOT="\\."
+ESC_BCKSLASH__ESC_DOT="\\\."    #used in grep
+ESC_DOTBCKSLASH=".\\"
+
+DOCKER__BACKSPACE=$'\b'
+DOCKER__DEL=$'\x7e'
+DOCKER__ENTER=$'\x0a'
+DOCKER__ESCAPEKEY=$'\x1b'   #note: this escape key is ^[
+DOCKER__TAB=$'\t'
+
+
+
+#---CASE CONSTANTS
+OTHER="OTHER"
 
 
 
@@ -33,7 +50,9 @@ SED_FG_ORANGE="\33[30;38;5;215m"
 
 #---COMPGEN CONSTANTS
 COMPGEN_C="compgen -c"  #find executable commands
+COMPGEN_D="compgen -d"  #find folders
 COMPGEN_F="compgen -f"  #find files and folders
+COMPGEN_C_D="compgen -c -d" #find folders, and executable commands
 COMPGEN_C_F="compgen -c -f" #find files, folders, and executable commands
 
 
@@ -46,6 +65,14 @@ CHECKFORMATCH_EXACT=3
 
 
 
+#---HEX CONSTANTS
+GS=$'\x1D'
+RS=$'\x1E'
+STX=$'\x02'
+ETX=$'\x03'
+
+
+
 #---MESSAGE CONSTANTS
 PRINT_NORESULTS_FOUND="${FOUR_SPACES}-:${FG_YELLOW}No results found${NOCOLOR}:-"
 
@@ -54,15 +81,42 @@ PRINT_NORESULTS_FOUND="${FOUR_SPACES}-:${FG_YELLOW}No results found${NOCOLOR}:-"
 #---NUMERIC CONSTANTS
 NUMOFMATCH_0=0
 NUMOFMATCH_1=1
+NUMOFMATCH_2=2
 
 POS_1=1
 POS_2=2
 
 
 
+#---OUTPUT CONSTANTS
+ENDOFLINE="ENDOFLINE"
+
+
+
+
+#---SED CONSTANTS
+SED_DOT="."
+SED_BACKSLASH_T="\t"
+SED_ESCAPED_BACKSLASH="\\"
+SED_SLASH_ESCAPED="\/"
+SED_ONE_SPACE=" "
+SED_SLASH="/"
+SED_SUBST_BACKSLASHSPACE="${STX}backslashspace${ETX}"
+SED_SUBST_BACKSLASH="${STX}backslash${ETX}"
+SED_SUBST_SPACE="${STX}space${ETX}"
+SED_SUBST_BACKSLASHT="${STX}backslasht${ETX}"
+
+
+
 #---SPACE CONSTANTS
 EMPTYSTRING=""
 ONE_SPACE=" "
+BACKSLASH_ONE_SPACE="\ "
+
+
+
+#---TRIM CONSTANTS
+TRIM_CR="tr -d ${CR}"
 
 
 
@@ -72,86 +126,16 @@ HORIZONTALLINE="${FG_LIGHTGREY}-------------------------------------------------
 
 
 #---FUNCTIONS
-function autocomplete__func() {
+function add_leading_spaces__func() {
     #Input args
-    #Remark:
-    #1. non-array parameter(s) precede(s) array-parameter
-    #2. For each non-array parameter, the 'shift' operator has to be added an array-parameter
-    local keyWord=${1}
-    shift
-    local dataArr=("$@")
+    local strResult__input=${1}
+    local leadingSpaces__input=${2}
 
+    #1. Add LEADING spaces
+    local ret=${leadingSpaces__input}${strResult__input}
 
-    #Define and update keyWord
-    local dataArr_1stItem_len=0
-    local keyWord_bck=${DOCKER__EMPTYSTRING}
-    local keyWord_ends_with_slash=${DOCKER__EMPTYSTRING}
-    local keyWord_len=0
-    local numOfMatch_init=0
-    local numOfMatch=0
-    local ret=${DOCKER__EMPTYSTRING}
-
-    #Let's use the 1st array-element as reference (it does not really matter which element is used).
-    dataArr_1stItem_len=${#dataArr[0]}
-
-    #Get the number of matches specified by 'keyWord'.
-    local trailingSlash_isPresent=`checkForMatch_keyWord_within_string__func "${keyWord}" "${SLASH}" "${CHECKFORMATCH_ENDWITH}"`
-    if [[ ${trailingSlash_isPresent} == false ]]; then  #trailing slash not found
-        numOfMatch_init=`printf '%s\n' "${dataArr[@]}" | grep "^${keyWord}" | wc -l`
-    else    #trailing slash found
-        numOfMatch_init=`printf '%s\n' "${dataArr[@]}" | grep "^${keyWord}$" | wc -l`
-    fi
-
-    #Find the closest match
-    while true
-    do
-        if [[ ${numOfMatch_init} -eq ${NUMOFMATCH_0} ]]; then  #no match
-            #Exit loop
-            break
-        elif [[ ${numOfMatch_init} -eq ${NUMOFMATCH_1} ]]; then  #only 1 match
-            #Update variable
-            ret=`printf '%s\n' "${dataArr[@]}" | grep "^${keyWord}"`
-
-            #Exit loop
-            break
-        else    #multiple matches
-            #Backup keyWord
-            keyWord_bck=${keyWord}
-
-            #Get keyWord length
-            keyWord_bck_len=${#keyWord_bck}
-
-            #Increment keyWord length by 1
-            keyWord_len=$((keyWord_bck_len + 1))
-
-            #Get the next keyWord (by using the 1st array-element as base)
-            keyWord=${dataArr[0]:0:keyWord_len}
-
-            #Check if the total length of the 1st array-element has been reached
-            if [[ ${keyWord_bck_len} -eq ${dataArr_1stItem_len} ]]; then
-                ret=${keyWord_bck}
-
-                break
-            fi
-
-            #Get the new number of matches
-            numOfMatch=`printf '%s\n' "${dataArr[@]}" | grep "^${keyWord}" | wc -l`
-
-            #Compare the new 'numOfMatch' with the initial 'numOfMatch_init'
-            if [[ ${numOfMatch} -ne ${numOfMatch_init} ]]; then
-                ret=${keyWord_bck}
-
-                break
-            fi
-        fi
-    done
-
-    #Output:
-    #   1. the closest match 'ret'
-    #   2. the number of matches 'numOfMatch_init'
-    #Remark:
-    #   The above mentioned parameter values are separated by a pipe '|'
-    echo -e "${ret}${PIPE}${numOfMatch_init}"
+    #3. Output
+    echo "${ret}"
 }
 
 function checkForMatch_keyWord_within_string__func() {
@@ -162,29 +146,24 @@ function checkForMatch_keyWord_within_string__func() {
     local string__input=${1}
     local keyWord__input=${2}
     local matchType__input=${3}
+    shift
+    shift
+    shift
+    local dataArr__input=("$@")
+
+    #MUST: Prepend backslash in front of special characters
+    keyWord_escaped=`prepend_backSlash_inFrontOf_specialChars__func "${keyWord__input}" "true"`
 
     #Find match
-    local stdOutput=${EMPTYSTRING}
-    case "${matchType__input}" in
-        ${CHECKFORMATCH_ANY})
-            stdOutput=`echo ${string__input} | grep "${keyWord__input}"`
-            ;;
-        ${CHECKFORMATCH_STARTWITH})
-            stdOutput=`echo ${string__input} | grep "^${keyWord__input}"`
-            ;;
-        ${CHECKFORMATCH_ENDWITH})
-            stdOutput=`echo ${string__input} | grep "${keyWord__input}$"`
-            ;;
-        ${CHECKFORMATCH_EXACT})
-            stdOutput=`echo ${string__input} | grep "^${keyWord__input}$"`
-            ;;
-    esac
-
+    local numOfMatches=`get_numberOfOccurrences_ofKeyWord_within_stringOrArray__func "${string__input}" \
+                        "${keyWord__input}" \
+                        "${matchType__input}" \
+                        "${dataArr__input[@]}"`
     #Output
-    if [[ -z ${stdOutput} ]]; then  #no match
-        echo "false"
-    else    #match
+    if [[ ${numOfMatches} -gt ${NUMOFMATCH_0} ]]; then  #no match
         echo "true"
+    else    #match
+        echo "false"
     fi
 
     #Turn-on Expansion
@@ -215,6 +194,31 @@ function checkIf_dir_exists__func() {
     #Output
     echo "${ret}"
 }
+function container_checkIf_dir_exists__func() {
+	#Input args
+    local containerID__input=${1}
+	local dir__input=${2}
+
+    #Check if directory exists
+    local ret_raw=`${docker_exec_cmd} "[ -d "${dir__input}" ] && echo true || echo false"`
+
+    #Remove carriage returns '\r' caused by '/bin/bash -c'
+    local ret=`echo "${ret_raw}" |eval ${TRIM_CR}`
+
+    #Output
+    echo ${ret}
+}
+function lh_checkIf_dir_exists__func() {
+	#Input args
+	local dir__input=${1}
+
+    #Check if directory exists
+    if [[ -d ${dir__input} ]]; then
+        echo true
+    else
+        echo false
+    fi
+}
 
 function checkIf_leadingChar_is_alphanumeric__func() {
     #Turn-off Expansion
@@ -231,13 +235,47 @@ function checkIf_leadingChar_is_alphanumeric__func() {
     fi
 
     #Check for match
-    local stdOutput=`echo -e "${string__input}" | grep -v "^[a-zA-Z]"`
+    local stdOutput=`echo "${string__input}" | grep -v "^[a-zA-Z]"`
 
     #Output
     if [[ -z ${stdOutput} ]]; then  #no match
         echo "true"
     else    #match
         echo "false"
+    fi
+
+    #Turn-on Expansion
+    set +f
+}
+
+function checkIf_string_contains_a_leading_dash__func() {
+    #Input args
+    local string__input=${1}
+
+    #Check if 'str_astWord' contains a leading dash '-'
+    local firstChar=`get_first_nChars_ofString__func "${string__input}" "${NUMOFMATCH_1}"`
+    if [[ ${firstChar} == ${DASH} ]]; then
+        echo "true"
+    else
+        echo "false"
+    fi
+}
+
+function checkIf_string_contains_nonSpace_chars__func() {
+    #Turn-off Expansion
+    set -f
+
+    #Input Args
+    local string__input=${1}
+
+    #Remove all spaces from string
+    local str_wo_spaces="${string__input//${ONE_SPACE}}"
+
+    #Check if 'string_input' contains spaces only
+    if [[ -z "${str_wo_spaces}" ]]; then
+        echo "false"
+    else
+        echo "true"
     fi
 
     #Turn-on Expansion
@@ -257,42 +295,63 @@ function compgen_get_numOfMatches_forGiven_keyword__func() {
     #   This can be achieved by using 'grep "^${cmd_part_str}$"'
     #   ^: starting with
     #   $: ending with
-    local cmd="eval ${COMPGEN_C} \"${keyWord__input}\" | sort | uniq | grep \"^${keyWord__input}$\" | wc -l"
+    local cmd="eval ${COMPGEN_C} ${keyWord__input} | sort | uniq | grep \"${keyWord__input}\" | wc -l"
 
     if [[ -z ${cntnrID__input} ]]; then
         ret=`${cmd}`
     else
-        ret=`${docker_exec_cmd} "${cmd}" | tr -d $'\r'`
+        ret=`${docker_exec_cmd} "${cmd}" |eval ${TRIM_CR}`
     fi
 
 	#Output
 	echo "${ret}"
 }
 
-function container_checkIf_dir_exists__func() {
-	#Input args
-    local containerID__input=${1}
-	local dir__input=${2}
+function convert_escapedChar_to_humanReadable__func() {
+    #Input Args
+    local string__input=${1}
+    local convSpace__input=${2} #true or false
 
-    #Check if directory exists
-    local ret_raw=`${docker_exec_cmd} "[ -d "${dir__input}" ] && echo true || echo false"`
+    #SUBSTITUTE:
+    #1. '\ ' to |backslashspace|
+    local str_subst_backSlashSpace=`echo "${string__input}" | sed "s/${SED_ESCAPED_BACKSLASH}${SED_ESCAPED_BACKSLASH}${SED_ESCAPED_BACKSLASH}${SED_ONE_SPACE}/${SED_SUBST_BACKSLASHSPACE}/g"`
 
-    #Remove carriage returns '\r' caused by '/bin/bash -c'
-    local ret=`echo "${ret_raw}" | tr -d $'\r'`
+    #2. '\' to |backslash|
+    local str_subst_backslash=`echo "${str_subst_backSlashSpace}" | sed "s/${SED_ESCAPED_BACKSLASH}${SED_ESCAPED_BACKSLASH}/${SED_SUBST_BACKSLASH}/g"`
 
-    #Output
-    echo ${ret}
-}
-function lh_checkIf_dir_exists__func() {
-	#Input args
-	local dir__input=${1}
-
-    #Check if directory exists
-    if [[ -d ${dir__input} ]]; then
-        echo true
+    #3. ' ' to |space|
+    local ret=${EMPTYSTRING}
+    if [[ ${convSpace__input} == true ]]; then
+        ret=`echo "${str_subst_backslash}" | sed "s/${SED_ONE_SPACE}/${SED_SUBST_SPACE}/g"`
     else
-        echo false
+        ret=${str_subst_backslash}
     fi
+ 
+    #output
+    echo "${ret}"
+}
+function revert_humanReadable_to_escapedChar__func() {
+    #Input args
+    local string__input=${1}
+    local convSpace__input=${2} #true or false
+
+    #SUBSTITUTE:
+    #1. |backslash| to '\'
+    local str_subst_backslash_inv=`echo "${string__input}" | sed "s/${SED_SUBST_BACKSLASH}/${SED_ESCAPED_BACKSLASH}${SED_ESCAPED_BACKSLASH}/g"`
+
+    #2. |backslashspace| to '\ '
+    local str_subst_backSlashSpace_inv=`echo "${str_subst_backslash_inv}" | sed "s/${SED_SUBST_BACKSLASHSPACE}/${SED_ESCAPED_BACKSLASH}${SED_ESCAPED_BACKSLASH}${SED_ESCAPED_BACKSLASH}${SED_ONE_SPACE}/g"`
+
+    #3. |space| to ' '
+    local ret=${EMPTYSTRING}
+    if [[ ${convSpace__input} == true ]]; then
+        ret=`echo "${str_subst_backSlashSpace_inv}" | sed "s/${SED_SUBST_SPACE}/${SED_ONE_SPACE}/g"`
+    else
+        ret=${str_subst_backSlashSpace_inv}
+    fi
+
+    #output
+   echo "${ret}"
 }
 
 function duplicate_char__func() {
@@ -304,7 +363,7 @@ function duplicate_char__func() {
     local ret=`printf '%*s' "${numOfTimes__input}" | tr ' ' "${char__input}"`
 
     #Print text including Leading Empty Spaces
-    echo -e "${ret}"
+    echo "${ret}"
 }
 
 function get_char_at_specified_position__func() {
@@ -327,18 +386,172 @@ function get_char_at_specified_position__func() {
     echo "${ret}"
 }
 
+function get_numberOfOccurrences_ofKeyWord_within_stringOrArray__func() {
+    #Turn-off Expansion
+    set -f
+
+    #Input Args
+    local string__input=${1}
+    local keyWord__input=${2}
+    local matchType__input=${3}
+    shift
+    shift
+    shift
+    local dataArr__input=("$@")
+
+    #MUST: Prepend backslash in front of special characters
+    keyWord_escaped=`prepend_backSlash_inFrontOf_specialChars__func "${keyWord__input}" "true"`
+
+    #Find match
+    local ret=0
+    case "${matchType__input}" in
+        ${CHECKFORMATCH_ANY})
+            if [[ ${string__input} != ${EMPTYSTRING} ]]; then
+                ret=`echo "${string__input}" |  grep -oE "${keyWord_escaped}" | wc -l`
+            else
+                ret=`echo "${dataArr__input[@]}" | xargs -n1 | grep -E "${keyWord_escaped}" | wc -l`
+            fi
+            ;;
+        ${CHECKFORMATCH_STARTWITH})
+            if [[ ${string__input} != ${EMPTYSTRING} ]]; then
+                ret=`echo "${string__input}" |  grep -oE "^${keyWord_escaped}" | wc -l`
+            else
+                ret=`echo "${dataArr__input[@]}" | xargs -n1 | grep -E "^${keyWord_escaped}" | wc -l`
+            fi
+            ;;
+        ${CHECKFORMATCH_ENDWITH})
+            if [[ ${string__input} != ${EMPTYSTRING} ]]; then
+                ret=`echo "${string__input}" |  grep -oE "${keyWord_escaped}$" | wc -l`
+            else
+                ret=`echo "${dataArr__input[@]}" | xargs -n1 | grep -E "${keyWord_escaped}$" | wc -l`
+            fi
+            ;;
+        ${CHECKFORMATCH_EXACT})
+            if [[ ${string__input} != ${EMPTYSTRING} ]]; then
+                ret=`echo "${string__input}" | grep -oE "(^|[[:blank:]])${keyWord_escaped}($|[[:blank:]])" | wc -l`
+            else
+                ret=`echo "${dataArr__input[@]}"| xargs -n1 |  grep -E "(^|[[:blank:]])${keyWord_escaped}($|[[:blank:]])" | wc -l`
+            fi
+            ;;
+    esac
+
+    #Output
+    echo "${ret}"
+
+    #Turn-on Expansion
+    set +f
+}
+
+function get_last_nChars_ofString__func() {
+    #Input args
+    local string__input=${1}
+    local numOfChars__input=${2}
+
+    #Define local variable
+    local ret=`echo "${string__input: -numOfChars__input}"`
+
+    #Output
+    echo -e "${ret}"
+}
+
+function get_first_nChars_ofString__func() {
+    #Input args
+    local string__input=${1}
+    local numOfChars__input=${2}
+
+    #Define local variable
+    local ret=`echo "${string__input:0:numOfChars__input}"`
+
+    #Output
+    echo -e "${ret}"
+}
+
+function if_dir_then_append_slash__func() {
+    #Input args
+    local cntnrID__input=${1}
+    local string__input=${2}
+
+    #Define variable
+    local ret=${string__input}
+
+    #Append backslash (if 'compgen_out' is a directory) 
+    local dirExists=`checkIf_dir_exists__func "${cntnrID__input}" "${string__input}"`
+    if [[ ${dirExists} == true ]]; then
+        ret="${string__input}${SLASH}"
+    fi
+
+    #Output
+    echo "${ret}"
+}
+
 function prepend_backSlash_inFrontOf_specialChars__func() {
 	#Input args
 	local string__input=${1}
+    local enableExcludes__input=${2}
 
 	#Define excluding chars
-	local excludes="${DOT}${SLASH}"
+	local SED_EXCLUDES="${SED_DOT}${SED_SLASH}"
 
-	#Prepend a backslash '\' in front of any special chars execpt for chars specified by 'excludes'
-	local ret=`printf "${string__input}\n" | sed "s/[^[:alnum:]${excludes}]/\\\\\\&/g"`
+	#Prepend a backslash '\' in front of any special chars execpt for chars specified by 'SED_EXCLUDES'
+    local ret=${EMPTYSTRING}
+    if [[ ${enableExcludes__input} == true ]]; then
+	    ret=`echo "${string__input}" | sed "s/[^[:alnum:]${SED_EXCLUDES}]/${SED_ESCAPED_BACKSLASH}${SED_ESCAPED_BACKSLASH}&/g"`
+    else
+        ret=`echo "${string__input}" | sed "s/[^[:alnum:]]/${SED_ESCAPED_BACKSLASH}${SED_ESCAPED_BACKSLASH}&/g"`
+    fi
 
 	#Output
 	echo "${ret}"
+}
+
+function subst_bckSlash_slash_bckSlashT_with_humanReadableText__func() {
+    #Input Args
+    local string__input=${1}
+    local convSpace__input=${2} #true or false
+
+    #SUBSTITUTE:
+    #1. '\ ' to \x02backslashspace\x03
+    local str_subst_backSlashSpace=`echo "${string__input}" | sed "s/${SED_ESCAPED_BACKSLASH}${SED_ESCAPED_BACKSLASH}${SED_ESCAPED_BACKSLASH}${SED_ONE_SPACE}/${SED_SUBST_BACKSLASHSPACE}/g"`
+
+    #2. '\t' to \x02slasht\x03
+    local str_subst_backslashT=`echo "${str_subst_backSlashSpace}" | sed "s/${SED_ESCAPED_BACKSLASH}${SED_ESCAPED_BACKSLASH}${SED_BACKSLASH_T}/${SED_SUBST_BACKSLASHT}/g"`
+
+    #3. '\' to \x02backslash\x03
+    local str_subst_backslash=`echo "${str_subst_backslashT}" | sed "s/${SED_ESCAPED_BACKSLASH}${SED_ESCAPED_BACKSLASH}/${SED_SUBST_BACKSLASH}/g"`
+
+    #4. ' ' to \x02space\x03
+    local ret=${EMPTYSTRING}
+    if [[ ${convSpace__input} == true ]]; then
+        ret=`echo "${str_subst_backslash}" | sed "s/${SED_ONE_SPACE}/${SED_SUBST_SPACE}/g"`
+    else
+        ret=${str_subst_backslash}
+    fi
+ 
+    #output
+    echo "${ret}"
+}
+function revert_humanReadText_backTo_bckSlash_slash_bckSlashT__func() {
+    #Input args
+    local string__input=${1}
+    local convSpace__input=${2} #true or false
+
+    #SUBSTITUTE:
+    #1. \x02backslash\x03 to '\'
+    local str_subst_backslash_inv=`echo "${string__input}" | sed "s/${SED_SUBST_BACKSLASH}/${SED_ESCAPED_BACKSLASH}${SED_ESCAPED_BACKSLASH}/g"`
+
+    #2. \x02backslashspace\x03 to '\ '
+    local str_subst_backSlashSpace_inv=`echo "${str_subst_backslash_inv}" | sed "s/${SED_SUBST_BACKSLASHSPACE}/${SED_ESCAPED_BACKSLASH}${SED_ESCAPED_BACKSLASH}${SED_ESCAPED_BACKSLASH}${SED_ONE_SPACE}/g"`
+
+    #3. \x02space\x03 to ' '
+    local ret=${EMPTYSTRING}
+    if [[ ${convSpace__input} == true ]]; then
+        ret=`echo "${str_subst_backSlashSpace_inv}" | sed "s/${SED_SUBST_SPACE}/${SED_ONE_SPACE}/g"`
+    else
+        ret=${str_subst_backSlashSpace_inv}
+    fi
+
+    #output
+   echo "${ret}"
 }
 
 function print_centered_string__func() {
@@ -363,54 +576,132 @@ function print_centered_string__func() {
     local emptySpaces_string=`duplicate_char__func "${ONESPACE}" "${numOf_spaces}" `
 
     #Print text including Leading Empty Spaces
-    echo -e "${emptySpaces_string}${string__input}" >> ${writeToThisFile__input}
+    printf "%s" "${emptySpaces_string}${string__input}" >> ${writeToThisFile__input}
 }
 
-function remove_leading_spaces__func() {
+function remove_trailingSlash__func() {
     #Input args
     local string__input=${1}
 
-    #Remove leading spaces
-    local ret=`printf "${string__input}" | sed 's/^ *//g'`
+    #Define variables
+    local ret=${EMPTYSTRING}
+    local string_clean_len=0
+    local string_clean_wo_trailingChar_len=0
+
+    #Check if trailing slash is present
+    local trailingSlash_isPresent=`checkForMatch_keyWord_within_string__func "${string__input}" "${SLASH}" "${CHECKFORMATCH_ENDWITH}" "${EMPTYSTRING}"`
+    if [[ ${trailingSlash_isPresent} == false ]]; then  #trailing backslash not found
+        ret=${string__input}
+    else    #trailing backslash found
+        string_clean_len=${#string__input}   #get length
+        string_clean_wo_trailingChar_len=$((string_clean_len - 1))  #get length without trailing slash
+
+        ret=${string__input:0:string_clean_wo_trailingChar_len}  #get string without trailing slash
+    fi
 
     #Output
     echo "${ret}"
 }
 
-function retrieve_switches_within_string__func() {
-    #Input args
+function retrieve_leadingStr__compgen_in__and__cmd____func() {
+    #---------------------------------------------------------------------"
+    # REMARK:
+    #   This function outputs 2 values:
+    #   1.  str_leading
+    #   2.  str_lastWord
+    #   The values are separated by a GS '\x1D'
+    #---------------------------------------------------------------------"
+    #Input Args
     local string__input=${1}
 
     #Define variables
-    local ret=${EMPTSTRING}
-    local word=${EMPTSTRING}
+    local escapeChar_spaces_isEnabled=false
 
-    #Retrieve the switch_part_str from string (if any)
-    for word in ${string__input}
-    do
-        leading_dash_isFound=`checkForMatch_keyWord_within_string__func "${word}" "${DASH}" "${CHECKFORMATCH_STARTWITH}"`
-        if [[ ${leading_dash_isFound} == true ]]; then
-            if [[ -z ${ret} ]]; then
-                ret="${word}"
-            else
-                ret="${ret}${ONE_SPACE}${word}"
-            fi
+    #1. Prepend backslash in front of a backslash-space '\ ', backslash-t '\t', and backslash '\'
+    local str_conv=`subst_bckSlash_slash_bckSlashT_with_humanReadableText__func "${string__input}" "${escapeChar_spaces_isEnabled}"`
+
+    #2. Get last word and leading string
+    #Steps:
+    #   1. rev: reverse string
+    #   2. sed -e "s/ /${RS} ${RS}/": replace all spaces with <space><RS><space> '\x1E \x1E'
+    #   3. cut -d"${RS}" -f1: get results which is on the LEFT side of <RS>
+    #   4. #1. rev: reverse string back
+    #   5. sed -e "s/${RS}//": remove all <RS>
+    #2.1 Get last string
+    local str_conv_lastWord=`echo "${str_conv}" | rev | sed -e "s/ /${RS} ${RS}/" | cut -d"${RS}" -f1 | rev | sed -e "s/${RS}//"`
+
+    #2.2 Get leading string
+    local str_conv_leading=`echo "${str_conv}" | rev | sed -e "s/ /${RS} ${RS}/" | cut -d"${RS}" -f2- | rev | sed -e "s/${RS}//"`
+
+    #3. Remove the earlier prepended backslash
+    local str_lastWord=`revert_humanReadText_backTo_bckSlash_slash_bckSlashT__func "${str_conv_lastWord}" "${escapeChar_spaces_isEnabled}"`
+    local str_leading=`revert_humanReadText_backTo_bckSlash_slash_bckSlashT__func "${str_conv_leading}" "${escapeChar_spaces_isEnabled}"`
+
+    #Get length of 'str_lastWord'
+    local str_lastWord_len=${#str_lastWord}
+
+    #Check if the retrieved 'str_lastWord' is an Empty String.
+    #Remarks:
+    #   'str_lastWord' is an Empty String, then:
+    #       1. str_leading is an Empty String or contains spaces only
+    #       2. str_leading is a non-space string
+    #   'str_lastWord' is NOT an Empty String, then:
+    #       'string__input' consists of 1 word.
+    if [[ -z "${str_lastWord}" ]]; then #is an Empty string
+        #Set 'str_lastWord' to an Empty String.
+        str_lastWord=${EMPTYSTRING}
+
+        #Check if 'str_conv_leading' contains any characters which are NOT a SPACE.
+        #Remarks:
+        #   1. This function also checks whether 'str_conv_leading' is an Empty String.
+        #   2. 'str_conv_leading' is used here on purpose, because special characters like '\',
+        #       which contains a SPACE, are ignored when doing this check.
+        local leadingStr_contains_nonSpaceChars=`checkIf_string_contains_nonSpace_chars__func "${str_conv_leading}"`
+        if [[ ${leadingStr_contains_nonSpaceChars} == true ]]; then    #contains non-space characters as well
+            cmd=${COMPGEN_F}
+        else    #contains only spaces
+            cmd=${COMPGEN_C}
         fi
-    done
+    else    #not an Empty String
+        cmd=${COMPGEN_C_D}
+    fi
+
+    #4. Prep output
+    ret="${str_leading}${GS}${str_lastWord}${GS}${cmd}"
 
     #Output
-    echo -e "${ret}"
+    echo "${ret}"
 }
 
-function retrieve_string_following_after_switches__func() {
+function remove_escapeChar_from_backslashSpace_and_backSlash() {
     #Input args
     local string__input=${1}
+    local convSpace__input=${2} #true or false
 
-    #Define variables
-    local ret=`printf "%s" "${string__input}" | rev | cut -d"-" -f1 | rev | cut -d" " -f2-`
-    
-    #Output
-    echo -e "${ret}"
+    #SUBSTITUTE:
+    #1. \x02backslash\x03 to '\'
+    local str_subst_backslash_inv=`echo "${string__input}" | sed "s/${SED_SUBST_BACKSLASH}/${SED_ESCAPED_BACKSLASH}${SED_ESCAPED_BACKSLASH}/g"`
+
+    #2. \x02backslashspace\x03 to '\ '
+    local str_subst_backSlashSpace_inv=`echo "${str_subst_backslash_inv}" | sed "s/${SED_SUBST_BACKSLASHSPACE}/${SED_ESCAPED_BACKSLASH}${SED_ESCAPED_BACKSLASH}${SED_ESCAPED_BACKSLASH}${SED_ONE_SPACE}/g"`
+
+    #3. \x02space\x03 to ' '
+    local ret=${EMPTYSTRING}
+    if [[ ${convSpace__input} == true ]]; then
+        ret=`echo "${str_subst_backSlashSpace_inv}" | sed "s/${SED_SUBST_SPACE}/${SED_ONE_SPACE}/g"`
+    else
+        ret=${str_subst_backSlashSpace_inv}
+    fi
+
+    #output
+   echo "${ret}"
+}
+
+
+
+#---AUTOCOMPLETE FUNCTION
+function autocomplete__func() {
+>>>NEED TO BE ADDED
 }
 
 
@@ -435,11 +726,6 @@ compgen__init_variables__sub() {
     cached_ArrLen=0
     # cached_string=${EMPTYSTRING}
 
-    dirContent_numOfItems_max=0
-    dirContent_numOfItems_shown=0
-    numOfCol_max_allowed=7
-    table_width=70
-
     bin_bash_dir=/bin/bash
     compgen_cmd=${EMPTYSTRING}
     docker_exec_cmd="docker exec -t ${containerID__input} ${bin_bash_dir} -c"
@@ -448,10 +734,18 @@ compgen__init_variables__sub() {
 
     compgen_in=${EMPTYSTRING}   #this is the string which on the right=side of the space (if any)
     compgen_out=${EMPTYSTRING}  #this is the result after executing 'autocomplete__func'
+    leadingSpaces=${EMPTYSTRING}    #this string needs to be prepended before writing to 'output_fPath__input'
     leadingStr=${EMPTYSTRING}   #this is the string which is on the left-side of the space (if any)
-    trailingStr=${EMPTYSTRING}
+    remainingStr=${EMPTYSTRING}
     ret=${EMPTYSTRING} #this is in general the combination of 'leadString' and 'compgen_out' (however exceptions may apply)
 
+    dirContent_numOfItems_max=0
+    dirContent_numOfItems_shown=0
+    numOfCol_max_allowed=7
+    remainingStr_len=0
+    table_width=70
+
+    spaceInBetweeString_isFound=false
     trailingSlash_isFound=false
 }
 
@@ -477,158 +771,108 @@ compgen__delete_files__sub() {
 }
 
 compgen__prep_param_and_cmd_handler__sub() {
-    #Check if 'query__input' is an Empty String
-    if [[ -z ${query__input} ]]; then
-        echo ${query__input} > ${output_fPath__input}
+    #Get the LAST word within 'remainingStr'
+    local results=`retrieve_leadingStr__compgen_in__and__cmd____func "${query__input}"`
 
-        exit 0   
-    fi
+    #Get the results
+    #Remark:
+    #   This leading string part will have to be prepended to the return value 'ret' in function 'compgen__get_closest_match__sub'
+    leadingStr=`echo "${results}" | cut -d"${GS}" -f1`
 
-    #Get the 1st char from 'query__input'
-    local firstChar=`get_char_at_specified_position__func "${query__input}" "${POS_1}"`
+    #Get the string part which will be injected into 'compgen'
+    compgen_in=`echo "${results}" | cut -d"${GS}" -f2`
 
-    case "${firstChar}" in
-        ${DOT})
-            #Get length of 'query__input'
-            local query__input_len=${#query__input}
-         
-            #In case 'query__input_len = 1' 
-            if [[ ${query__input_len} -eq ${NUMOFMATCH_1} ]]; then
-                #Write to file
-                echo -e "${DOTSLASH}" > ${output_fPath__input}
+    #Get compgen command
+    compgen_cmd=`echo "${results}" | cut -d"${GS}" -f3`
+}
 
-                exit 0
-            fi
+compgen__get_results__sub() {
+    #Check 'compgen_in' for special cases
+    case "${compgen_in}" in
+        "${ESC_BCKSLASHDOT}")
+            cached_Arr=()
+            cached_ArrLen=0
 
-            #Split 'leading' and 'trainling' string from 'query__input'
             leadingStr=${EMPTYSTRING}
-            compgen_in="${query__input}"
+            compgen_out="${DOT}"
 
-            #Select compgen command-type
-            compgen_cmd="${COMPGEN_F}"
+            return
             ;;
-        ${SLASH})
-            #Split 'leading' and 'trainling' string from 'query__input'
+        "${DOT}")
+            cached_Arr=()
+            cached_ArrLen=0
+
             leadingStr=${EMPTYSTRING}
-            compgen_in="${query__input}"
+            compgen_out="${DOTSLASH}"
 
-            #Select compgen command-type
-            compgen_cmd="${COMPGEN_F}"
+            return
             ;;
+        "${ESC_DOTBCKSLASH}")
+            cached_Arr=()
+            cached_ArrLen=0
 
-        ${ONE_SPACE})
-            #Split 'leading' and 'trainling' string from 'query__input'
             leadingStr=${EMPTYSTRING}
-            compgen_in="${query__input}"
+            compgen_out="${DOT}"
 
-            #Select compgen command-type
-            compgen_cmd="${COMPGEN_F}"
+            return
             ;;
+        "${ESC_BCKSLASH}")
+            cached_Arr=()
+            cached_ArrLen=0
 
+            leadingStr=${EMPTYSTRING}
+            compgen_out="${ESC_BCKSLASH}${ESC_BCKSLASH}"
+
+            return
+            ;;
         *)
-            #--------------------------------------------------------------------
-            #In this case it is assumed that the 1st char is NONE-OF-THE-ABOVE
-            #--------------------------------------------------------------------
-            #Check if string 'query__input' contains any spaces
-            local space_isFound=`checkForMatch_keyWord_within_string__func "${query__input}" "${ONE_SPACE}" "${CHECKFORMATCH_ANY}"`
-            if [[ ${space_isFound} == true ]]; then    #space found
-                #Initialization
-                local cmd_part_str=${EMPTYSTRING}
-                local switch_part_str=${EMPTYSTRING}
-                local cut_index=1
-                local numOfMatch=0
+            #Check if 'str_lastWord' contains a leading dash '-'
+            local leadingDash_isFound=`checkIf_string_contains_a_leading_dash__func "${compgen_in}"`
+            if [[ ${leadingDash_isFound} == true ]]; then
+                cached_Arr=()
+                cached_ArrLen=0
 
-                #Initialization
-                trailingStr=${query__input}
-
-                #Check for global executable COMMANDS (e.g., cd, ls, source, etc.)
-                while true
-                do
-                    #Get the ALL the strings on the LEFT-side of the space
-                    cmd_part_str=`printf "%s" "${trailingStr}" | cut -d"${ONE_SPACE}" -f1`
-
-                    #Check if leading char is alphanumeric (a-zA-Z)
-                    local leadingChar_isAlphanumeric=`checkIf_leadingChar_is_alphanumeric__func "${cmd_part_str}"`
-
-                    if [[ ${leadingChar_isAlphanumeric} == true ]]; then
-                        #Get number of matches
-                        numOfMatch=`compgen_get_numOfMatches_forGiven_keyword__func "${containerID__input}" "${cmd_part_str}"`
-                        if [[ ${numOfMatch} -eq ${NUMOFMATCH_1} ]]; then
-                            #Append 'cmd_part_str' to 'leadingStr'
-                            if [[ -z ${leadingStr} ]]; then
-                                leadingStr=${cmd_part_str}
-                            else
-                                leadingStr=${leadingStr}${ONE_SPACE}${cmd_part_str}
-                            fi
-
-                            #Update 'trailingStr'
-                            trailingStr=`printf "${trailingStr}" | cut -d"${ONE_SPACE}" -f2-`
-                        else
-                            break
-                        fi
-                    else
-                        break
-                    fi
-                done
-
-                #Check for command SWITCHES
-                switch_part_str=`retrieve_switches_within_string__func "${trailingStr}"`
-
-                #Append 'switch_part_str' to 'leadingStr'
-                if [[ ! -z ${switch_part_str} ]]; then
-                    #Append 'switch_part_str' to 'cmd_tot_str'
-                    if [[ -z ${leadingStr} ]]; then
-                        leadingStr=${switch_part_str}
-                    else
-                        leadingStr=${leadingStr}${ONE_SPACE}${switch_part_str}
-                    fi
-                fi
-
-                #Get the rest of the string on the RIGHT-side of the space
-                #Remark:
-                #   In this case 'cut_index + 1' has to be used.
-                compgen_in=`retrieve_string_following_after_switches__func "${trailingStr}"`
-
-                #Select compgen command-type
-                compgen_cmd="${COMPGEN_F}"
-            else    #no space found
                 leadingStr=${EMPTYSTRING}
-                compgen_in="${query__input}"
+                compgen_out="${query__input}"
 
-                #Select compgen command-type
-                compgen_cmd="${COMPGEN_C_F}"
+                return
             fi
             ;;
     esac
 
-    #Check if 'compgen_in' ends with a slash '/'.
-    #If true, then remove the slash.
-    trailingSlash_isFound=`checkForMatch_keyWord_within_string__func "${compgen_in}" "${SLASH}" "${CHECKFORMATCH_ENDWITH}"`
-    if [[ ${trailingSlash_isFound} == true ]]; then
-        compgen_in=`printf "%s" "${compgen_in}" | rev | cut -d"${SLASH}" -f2- | rev`
-    fi
-}
+    #Substitute DOUBLE slashes with SINGLE slash
+    compgen_in=`echo "${compgen_in}" | sed "s/${SED_SLASH_ESCAPED}${SED_SLASH_ESCAPED}*/${SED_SLASH_ESCAPED}/g"`
 
-compgen__get_results__sub() {
+    #Remove TRAILING SLASH (if present)
+    # local str_in=`remove_trailingSlash__func "${compgen_in}"`
+
     #Define commands
-    #Remark:
-    #   In order to be able to execute commands with SPACES, 'eval' must be used.
-    local cmd1="eval ${compgen_cmd} \"${compgen_in}\" | sort | uniq"
-    local cmd2="eval ${compgen_cmd} \"${compgen_in}\" | sort | uniq | grep \"^${compgen_in}$\""
+    #Remarks:
+    #1. In order to be able to execute commands with SPACES, 'eval' must be used.
+    #2. Backslash '\' should be prepended before a quote '"', because otherwise 
+    #   the command 'cmd' will not be executed correctly.
+    #3. Exclude all results with TRAILING dot '.' and double-dots '..' from the command output by using:
+    #   - grep -v \"${ESC_BCKSLASH__ESC_DOT}${ESC_BCKSLASH__ESC_DOT}$\"
+    #   - grep -v \"${ESC_BCKSLASH__ESC_DOT}$\"
+    local cmd="eval ${compgen_cmd} ${compgen_in} | sort | uniq | grep -v \"${ESC_BCKSLASH__ESC_DOT}$\" | grep -v \"${ESC_BCKSLASH__ESC_DOT}${ESC_BCKSLASH__ESC_DOT}$\""
 
-    #Choose the command to-be-executed based on the specified 'trailingSlash_isFound'
-    if [[ ${trailingSlash_isFound} == false ]]; then
-        cmd_chosen=${cmd1}
-    else
-        cmd_chosen=${cmd2}
-    fi
+    #Define Arrays
+    local tmp_Arr=()
 
     #Execute command
     if [[ -z ${containerID__input} ]]; then
-        readarray -t cached_Arr < <(${cmd_chosen})
+        readarray -t tmp_Arr < <(${cmd})
     else
-        readarray -t cachedInput_Arr < <(${docker_exec_cmd} "${cmd_chosen}" | tr -d $'\r')
-    fi  
+        readarray -t tmp_Arr < <(${docker_exec_cmd} "${cmd}" | eval ${TRIM_CR})
+    fi
+
+    #Define 'cached_Arr'
+    #If 'compgen_in = DOT', then make sure to also include the DOTSLASH './' in 'cached_Arr'.
+    if [[ "${compgen_in}" == "${DOT}" ]]; then  #contains a DOT
+        cached_Arr=("${DOTSLASH}" "${tmp_Arr[@]}")
+    else    #contains no DOT
+        cached_Arr=("${tmp_Arr[@]}")
+    fi
 
     #Update array-length
     cached_ArrLen=${#cached_Arr[@]}
@@ -641,53 +885,12 @@ compgen__get_results__sub() {
 }
 
 compgen__get_closest_match__sub() {
-    #Define variables
-    local dirExists=false
-    local numOfMatch=0
-    local results=${EMPTYSTRING}
-
-    #Get closest match
-    if [[ ${cached_ArrLen} -gt ${NUMOFMATCH_0} ]]; then
-        results=`autocomplete__func "${compgen_in}" "${cached_Arr[@]}"`
-
-        #Get results delimited by a pipe '|'
-        compgen_out=`printf "${results}" | cut -d"${PIPE}" -f1`
-        numOfMatch=`printf "${results}" | cut -d"${PIPE}" -f2`
-
-        #Append slash (if 'compgen_out' is a directory)
-        if [[ ${numOfMatch} -eq ${NUMOFMATCH_1} ]]; then   #exactly 1 match
-            dirExists=`checkIf_dir_exists__func "${containerID__input}" "${compgen_out}"`
-            if [[ ${dirExists} == true ]]; then
-                compgen_out="${compgen_out}${SLASH}"
-            fi
-        fi
-
-        #Prepend backslash infront of special chars except for: slash, underscore
-        compgen_out=`prepend_backSlash_inFrontOf_specialChars__func "${compgen_out}"` 
-    fi
-
-    #Check if 'compgen_out' is an Empty String
-    #Remark:
-    #   If true, then set 'ret = query__input'
-    #   If false, then set 'ret = leadingStr + compgen_out'
-    if [[ -z ${compgen_out} ]]; then    #is an Empty String
-        ret=${query__input}
-    else    #is Not an Empty String
-        if [[ -z ${leadingStr} ]]; then #is an Empty String
-            ret="${compgen_out}"
-        else    #is Not an Empty String
-            ret="${leadingStr}${ONE_SPACE}${compgen_out}"
-        fi
-    fi
-
-    #Write to file
-    printf "%s\n" "${ret}" > ${output_fPath__input}
+>>>NEED TO BE ADDED
 }
 
 compgen__show_handler__sub() {
-
     #Write results to file
-    compgen__prep_body_print__sub
+    compgen__prep_print__sub
 
     #Show directory contents
     cat ${compgen__tablized_tmp__fpath}
@@ -706,7 +909,7 @@ compgen__prep_header_print__sub() {
     printf '%s\n' "${FG_DEEPORANGE}List of keyword ${NOCOLOR} <${FG_REDORANGE}${query__input}${NOCOLOR}> ${printf_numOfContents_shown}" >> ${compgen__tablized_tmp__fpath}
     printf '%s\n' "${HORIZONTALLINE}" >> ${compgen__tablized_tmp__fpath}
 }
-compgen__prep_body_print__sub() {
+compgen__prep_print__sub() {
     case "${cached_ArrLen}" in
         ${NUMOFMATCH_0})
             compgen__prep_header_print__sub
@@ -717,7 +920,8 @@ compgen__prep_body_print__sub() {
         
             print_centered_string__func "${PRINT_NORESULTS_FOUND}" "${table_width}" "${compgen__tablized_tmp__fpath}"
 
-            #Write empty line to file
+            #Write empty lines to file
+            printf '%b%s\n' "${EMPTYSTRING}" >> ${compgen__tablized_tmp__fpath}
             printf '%b%s\n' "${EMPTYSTRING}" >> ${compgen__tablized_tmp__fpath}
             #Write horizontal line to file
             printf '%b%s\n' "${HORIZONTALLINE}" >> ${compgen__tablized_tmp__fpath}

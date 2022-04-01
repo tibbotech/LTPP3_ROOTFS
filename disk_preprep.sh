@@ -1,6 +1,6 @@
 #!/bin/bash
-#---Local Functions
-press_any_key__func() {
+#---FUNCTIONS
+function press_any_key__func() {
 	#Define constants
 	local cTIMEOUT_ANYKEY=0
 
@@ -33,9 +33,28 @@ press_any_key__func() {
 	echo -e "\r"
 }
 
+function checkIf_website_exists__func() {
+    #Input args
+    local url__input=${1}
+
+    #Define constants
+    local FAILED="failed"
+
+    #Check if url exists
+    local wget_spider_result=`wget --spider "${url__input}" 2>&1 /dev/null`
+    local failed_isFound=`echo -e ${wget_spider_result} | grep "${FAILED}"`
+
+    #Output
+    if [[ -z ${failed_isFound} ]]; then #failed not found
+        echo "true"
+    else    #failed was found
+        echo "false"
+    fi
+}
 
 
-#---Define path variables
+
+#---ENVIRONMENT VARIABLES
 press_any_key__func
 echo -e "\r"
 echo -e "---Define Environmental Variables---"
@@ -243,14 +262,38 @@ fi
 
 #---Download armhf-image (if needed)
 if [[ ! -f ${armhf_fpath} ]]; then
-	echo -e "\r"
-	echo -e ">Navigate to <~/Downloads>"
-	cd ${home_downloads_dir}
+	#Define url variables
+	#Remark:
+	#	Change these values if needed
+	ubuntu_releases_weblink="http://cdimage.ubuntu.com/cdimage/ubuntu-base/releases"
+	ubuntu_version_webfolder="20.04"
+	ubuntu_release_webfolder="release"
 
-	echo -e "\r"
-	echo -e ">Downloading ${armhf_filename}"
-	press_any_key__func
-	wget http://cdimage.ubuntu.com/cdimage/ubuntu-base/releases/20.04/release/${armhf_filename}
+	#Compose weblink
+	ubuntu_download_weblink="${ubuntu_releases_weblink}/"
+	ubuntu_download_weblink+="${ubuntu_version_webfolder}/"
+	ubuntu_download_weblink+="${ubuntu_release_webfolder}/"
+	ubuntu_download_weblink+="${armhf_filename}"
+
+	#Check if weblink exists
+	url_isFound=`checkIf_website_exists__func "${ubuntu_download_weblink}"`
+	if [[ ${url_isFound} == true ]]; then
+		echo -e "\r"
+		echo -e ">Navigate to <~/Downloads>"
+		cd ${home_downloads_dir}
+
+		echo -e "\r"
+		echo -e ">Downloading ${armhf_filename}"
+		press_any_key__func
+		wget ${ubuntu_download_weblink}
+	else
+		errmsg_url_does_not_exist="The specified url '${ubuntu_releases_weblink}' does NOT exist.\n"
+		errmsg_url_does_not_exist+="Exiting now..."
+
+		echo -e "\r"
+		echo -e "${errmsg_url_does_not_exist}"
+		echo -e "\r"
+	fi
 fi
 
 
