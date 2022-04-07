@@ -47,13 +47,13 @@ docker__load_environment_variables__sub() {
     #Define paths
     docker__current_script_fpath="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
     docker__current_dir=$(dirname ${docker__current_script_fpath})
-    docker__parent_dir=${docker__current_dir%/*}    #go one directory up (e.g. <home-dir>/repo/LTPP3_ROOTFS)
+    docker__parent_dir=${docker__current_dir%/*}    #go one directory up (LTPP3_ROOTFS/)
     if [[ -z ${docker__parent_dir} ]]; then
         docker__parent_dir="${DOCKER__SLASH_CHAR}"
     fi
     docker__current_folder=`basename ${docker__current_dir}`
 
-    docker__xxx_repo_dir=${docker__parent_dir%/*}    #go one directory up (e.g. <home-dir>/repo)
+    docker__xxx_repo_dir=${docker__parent_dir%/*}    #go one directory up (e.g. repo/)
     docker__xxx_docker_dockerfiles_dir=${docker__xxx_repo_dir}/docker/dockerfiles
     docker__dockerfile_auto_filename="dockerfile_auto"
     docker__dockerfile_autogen_fpath=${DOCKER__EMPTYSTRING}

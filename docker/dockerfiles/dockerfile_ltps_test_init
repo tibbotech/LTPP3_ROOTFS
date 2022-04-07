@@ -1,0 +1,14 @@
+#---Continue from REPOSITORY:TAG=ubuntu:20.04
+FROM ltps_init:latest
+
+#---LABEL about the custom image
+LABEL maintainer="hien@tibbo.com"
+LABEL version="0.1"
+LABEL description="Continue from 'ubuntu:20.04' image; test ENVIRONMENT VARIABLES"
+LABEL repository:tag="ltps_test:init"
+
+#---Disable Prompt During Packages Installation
+ARG DEBIAN_FRONTEND=noninteractive
+
+#---Set Environment variables
+# RUN export env_var_passed="this is a test"

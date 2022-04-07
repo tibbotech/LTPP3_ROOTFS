@@ -6,15 +6,26 @@ DOCKER__FALSE=false
 
 
 #---CHARACTER CHONSTANTS
-DOCKER__BACKSLASH_ASTERISK="\*"
 DOCKER__ASTERISK="*"
-DOCKER__BACKSLASH="\\"
+DOCKER__CARET="^"
+DOCKER__COLON=":"
 DOCKER__COMMA=","
 DOCKER__DASH="-"
 DOCKER__DOT="."
-DOCKER__ESCAPE_SLASH="\/"
+DOCKER__HASH="#"
+DOCKER__HOOKLEFT="<"
+DOCKER__HOOKRIGHT=">"
+DOCKER__MINUS="-"
+DOCKER__PLUS="+"
 DOCKER__SEMICOLON=";"
 DOCKER__SLASH="/"
+
+DOCKER__ESCAPE_ASTERISK="\*"
+DOCKER__ESCAPE_BACKSLASH="\\"
+DOCKER__ESCAPE_HOOKLEFT="\<"
+DOCKER__ESCAPE_HOOKRIGHT="\>"
+DOCKER__ESCAPE_QUOTE="\""
+DOCKER__ESCAPE_SLASH="\/"
 
 DOCKER__EMPTYSTRING=""
 
@@ -24,7 +35,7 @@ DOCKER__ENTER=$'\x0a'
 DOCKER__ESCAPEKEY=$'\x1b'   #note: this escape key is ^[
 DOCKER__TAB=$'\t'
 
-DOCKER__EXIT="exit"
+DOCKER__STX=$'\x02'
 
 
 
@@ -68,6 +79,7 @@ DOCKER__BG_WHITE=$'\e[30;48;5;15m'
 #---DIMENSION CONSTANTS
 DOCKER__NINE=9
 DOCKER__TABLEWIDTH=70
+DOCKER__TABLEROWS=10
 
 
 
@@ -80,24 +92,14 @@ DOCKER__STATE_NOTFOUND="NotFound"
 
 
 
-#---EXIT-CODE CONSTANTS
-DOCKER__EXITCODE_0=0
-DOCKER__EXITCODE_99=99
+#---EXIT CONSTANTS
+DOCKER__EXITCODE_0=0    #no error
+DOCKER__EXITCODE_99=99  #an error which tells the device to exit
 
 
 
-#---MENU CONSTANTS
-DOCKER__TITLE="TIBBO"
-DOCKER__A_ABORT="${DOCKER__FOURSPACES}b. Back"
-DOCKER__ARROWUP="arrowUp"
-DOCKER__ARROWDOWN="arrowDown"
-DOCKER__QUIT_CTR_C="${DOCKER__FOURSPACES}Quit (Ctrl+C)"
-DOCKER__CTRL_C_COLON_QUIT="Ctrl+C: Quit"
-DOCKER__EXITING_NOW="Exiting now..."
-DOCKER__HORIZONTALLINE="---------------------------------------------------------------------"
-DOCKER__LATEST="latest"
-DOCKER__Q_QUIT="${DOCKER__FOURSPACES}q. Quit (Ctrl+C)"
-DOCKER__QUIT_CTRL_C="Quit (Ctrl+C)"
+#---GIT CONSTANTS
+DOCKER__GITLINK_CACHE_MAX=50
 
 
 
@@ -121,14 +123,18 @@ DOCKER__NUMOFLINES_7=7
 DOCKER__NUMOFLINES_8=8
 DOCKER__NUMOFLINES_9=9
 DOCKER__NUMOFLINES_10=10
+DOCKER__NUMOFLINES_12=12
 
 DOCKER__NUMOFMATCH_0=0
 DOCKER__NUMOFMATCH_1=1
+DOCKER__NUMOFMATCH_10=10
+DOCKER__NUMOFMATCH_20=20
 
 
 
 #---PATTERN CONSTANTS
 DOCKER__PATTERN_DOCKER_IO="docker.io"
+DOCKER__PATTERN_REPOSITORY_TAG="repository:tag"
 
 
 
@@ -136,6 +142,12 @@ DOCKER__PATTERN_DOCKER_IO="docker.io"
 PHASE_SHOW_REMARKS=0
 PHASE_SHOW_READINPUT=1
 PHASE_SHOW_KEYINPUT_HANDLER=2
+
+
+
+#---PRINT CONSTANTS
+DOCKER__PREV="prev"
+DOCKER__NEXT="next"
 
 
 
@@ -150,6 +162,7 @@ DOCKER__YES="y"
 
 DOCKER__SEMICOLON_BACK=";b"
 DOCKER__SEMICOLON_CLEAR=";c"
+DOCKER__SEMICOLON_DELETE=";d"
 DOCKER__SEMICOLON_HOME=";h"
 
 
@@ -173,8 +186,34 @@ DOCKER__REMOVE_ALL="REMOVE-ALL"
 #---SPACE CONSTANTS
 DOCKER__ONESPACE=" "
 DOCKER__TWOSPACES=${DOCKER__ONESPACE}${DOCKER__ONESPACE}
+DOCKER__THREESPACES=${DOCKER__TWOSPACES}${DOCKER__ONESPACE}
 DOCKER__FOURSPACES=${DOCKER__TWOSPACES}${DOCKER__TWOSPACES}
 DOCKER__FIVE_SPACES=${DOCKER__FOURSPACES}${DOCKER__ONESPACE}
+
+
+
+#---CONSTANTS THAT MUST BE LOADED HERE!
+#---MENU CONSTANTS
+DOCKER__TITLE="TIBBO"
+DOCKER__ARROWUP="arrowUp"
+DOCKER__ARROWDOWN="arrowDown"
+DOCKER__CTRL_C_COLON_QUIT="Ctrl+C: Quit"
+DOCKER__EXITING_NOW="Exiting now..."
+DOCKER__HORIZONTALLINE="---------------------------------------------------------------------"
+DOCKER__LATEST="latest"
+DOCKER__QUIT_CTRL_C="Quit (Ctrl+C)"
+
+DOCKER__FOURSPACES_CARET_QUIT="${DOCKER__FOURSPACES}${DOCKER__CARET}: ${DOCKER__FG_LIGHTGREY}Quit${DOCKER__NOCOLOR} (${DOCKER__FG_LIGHTGREY}Ctrl+C${DOCKER__NOCOLOR})"
+DOCKER__FOURSPACES_HASH_CHOOSE="${DOCKER__FOURSPACES}${DOCKER__HASH}: ${DOCKER__FG_LIGHTGREY}Choose${DOCKER__NOCOLOR}"
+DOCKER__FOURSPACES_PLUS_ADD="${DOCKER__FOURSPACES}${DOCKER__PLUS}: ${DOCKER__FG_LIGHTGREY}Add${DOCKER__NOCOLOR}"
+DOCKER__FOURSPACES_MINUS_DEL="${DOCKER__FOURSPACES}${DOCKER__MINUS}: ${DOCKER__FG_LIGHTGREY}Del${DOCKER__NOCOLOR}"
+DOCKER__FOURSPACES_B_BACK="${DOCKER__FOURSPACES}b. ${DOCKER__FG_LIGHTGREY}Back${DOCKER__NOCOLOR}"
+DOCKER__FOURSPACES_C_CHOOSE="${DOCKER__FOURSPACES}c. ${DOCKER__FG_LIGHTGREY}Choose${DOCKER__NOCOLOR}"
+DOCKER__FOURSPACES_Q_QUIT="${DOCKER__FOURSPACES}q. ${DOCKER__FG_LIGHTGREY}Quit${DOCKER__NOCOLOR} (${DOCKER__FG_LIGHTGREY}Ctrl+C${DOCKER__NOCOLOR})"
+DOCKER__FOURSPACES_QUIT_CTRL_C="${DOCKER__FOURSPACES}${DOCKER__FG_LIGHTGREY}Quit${DOCKER__NOCOLOR} (${DOCKER__FG_LIGHTGREY}Ctrl+C${DOCKER__NOCOLOR})"
+
+DOCKER__ONESPACE_PREV="${DOCKER__ONESPACE}${DOCKER__HOOKLEFT} ${DOCKER__FG_LIGHTGREY}${DOCKER__PREV}${DOCKER__NOCOLOR}"
+DOCKER__ONESPACE_NEXT="${DOCKER__FG_LIGHTGREY}${DOCKER__NEXT}${DOCKER__NOCOLOR} ${DOCKER__HOOKRIGHT}${DOCKER__ONESPACE}"
 
 
 
@@ -536,7 +575,7 @@ function moveUp_and_cleanLines__func() {
     #Clear lines
     local xPos_curr=0
 
-    if [[ ${numOfLines__input} != 0 ]]; then
+    if [[ ${numOfLines__input} -ne ${DOCKER__NUMOFMATCH_0} ]]; then
         local tCounter=1
         while [[ ${tCounter} -le ${numOfLines__input} ]]
         do
@@ -548,9 +587,20 @@ function moveUp_and_cleanLines__func() {
             #Increment tCounter by 1
             tCounter=$((tCounter+1))
         done
-    else    #
+    else
         tput el1
     fi
+
+    #Get current x-position of cursor
+    xPos_curr=`tput cols`
+
+    #Move to the beginning of line
+    tput cub ${xPos_curr}
+}
+
+function moveToBeginning_and_cleanLine__func() {
+    #Clean to begining of line
+    tput el1
 
     #Get current x-position of cursor
     xPos_curr=`tput cols`
@@ -696,7 +746,7 @@ function show_list_w_menuTitle__func() {
 
     #Print
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-    echo -e "${DOCKER__QUIT_CTR_C}"
+    echo -e "${DOCKER__FOURSPACES_QUIT_CTRL_C}"
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
 }
 
@@ -939,6 +989,20 @@ function get_endResult_ofString_with_semiColonChar__func() {
     echo -e "${ret}"
 }
 
+function get_stringlen_wo_regEx__func() {
+    #Input args
+    local string__input=${1} 
+
+    #Get string without color regex. 
+    local string_wo_regEx=$(printf "%s" "${string__input}" | sed "s/$(echo -e "\e")[^m]*m//g")
+
+    #Get length
+    local string_wo_regEx_len=${#string_wo_regEx}
+
+    #Output
+    echo "${string_wo_regEx_len}"
+}
+
 function get_theLast_xChars_ofString__func() {
     #Input args
     local string__input=${1}
@@ -949,6 +1013,21 @@ function get_theLast_xChars_ofString__func() {
 
     #Output
     echo -e "${ret}"
+}
+
+function isNumeric__func() {
+    #Input args
+    local string__input=${1}
+
+    #Define variables
+    local re='^[0-9]+$'
+
+    #Check if 'string__input' is numeric
+    if [[ $string__input =~ $re ]] ; then
+        echo true
+    else
+        echo false
+    fi
 }
 
 function remove_trailing_char__func() {
@@ -981,6 +1060,35 @@ function remove_whiteSpaces__func() {
     echo -e "${ret}"
 }
 
+#---SUNPLUS-RELATED
+function retrieve_sunplus_gitCheckout_from_file__func() {
+    #Input args
+    local dockerfile_fpath__input=${1}
+    local exported_env_var_fpath__input=${2}
+
+    #Get the repository:tag from 'dockerfile_fpath__input'
+    local repository_tag=`egrep -w "${DOCKER__PATTERN_REPOSITORY_TAG}" ${dockerfile_fpath__input} | cut -d"\"" -f2`
+
+    #Get the Sunplus git-checkout from file 'exported_env_var_fpath__input'
+    local ret=`cat ${exported_env_var_fpath__input} | grep -w "${repository_tag}" | awk '{print $3}'`
+
+    #Output
+    echo "${ret}"
+}
+function retrieve_sunplus_gitLink_from_file__func() {
+    #Input args
+    local dockerfile_fpath__input=${1}
+    local exported_env_var_fpath__input=${2}
+
+    #Get the repository:tag from 'dockerfile_fpath__input'
+    local repository_tag=`egrep -w "${DOCKER__PATTERN_REPOSITORY_TAG}" ${dockerfile_fpath__input} | cut -d"\"" -f2`
+
+    #Get the Sunplus git-link from file 'exported_env_var_fpath__input'
+    local ret=`cat ${exported_env_var_fpath__input} | grep -w "${repository_tag}" | awk '{print $2}'`
+
+    #Output
+    echo "${ret}"
+}
 
 
 
@@ -991,6 +1099,7 @@ CTRL_C__sub() {
     #Turn-on Expansion
     set +f
     
+    #Exit with exit-code 99
     docker__exitFunc "${DOCKER__EXITCODE_99}" "${DOCKER__NUMOFLINES_2}"
 }
 
@@ -998,47 +1107,62 @@ CTRL_C__sub() {
 
 docker__environmental_variables__sub() {
     #---Define PATHS
-    docker__current_script_fpath="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
-    docker__current_dir=$(dirname ${docker__current_script_fpath})
-    docker__parent_dir=${docker__current_dir%/*}    #gets one directory up
-    if [[ -z ${docker__parent_dir} ]]; then
-        docker__parent_dir="${DOCKER__SLASH_CHAR}"
+    docker__LTPP3_ROOTFS_development_tools__fpath="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
+    docker__LTPP3_ROOTFS_development_tools__dir=$(dirname ${docker__LTPP3_ROOTFS_development_tools__fpath})
+    docker__LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS_development_tools__dir%/*}    #move one directory up: LTPP3_ROOTFS/
+    docker__parentDir_of_LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS__dir%/*}    #move two directories up. This directory is the one-level higher than LTPP3_ROOTFS/
+    if [[ -z ${docker__parentDir_of_LTPP3_ROOTFS__dir} ]]; then
+        docker__parentDir_of_LTPP3_ROOTFS__dir="${DOCKER__SLASH_CHAR}"
     fi
-    docker__current_folder=`basename ${docker__current_dir}`
+    docker__docker__dir=${docker__parentDir_of_LTPP3_ROOTFS__dir}/docker
+    docker__docker_cache__dir=${docker__docker__dir}/cache
 
-    docker__development_tools_folder="development_tools"
-    if [[ ${docker__current_folder} != ${docker__development_tools_folder} ]]; then
-        docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}/${docker__development_tools_folder}
-    else
-        docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}
-    fi
+    docker__gitcheckout_cache__filename="docker__git_checkout.cache"
+    docker__gitcheckout_cache__fpath=${docker__docker_cache__dir}/${docker__gitcheckout_cache__filename}
 
-    docker__containerlist_tableinfo__filename="docker_containerlist_tableinfo.sh"
-    docker__containerlist_tableinfo__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__containerlist_tableinfo__filename}
+    docker__gitlink_cache__filename="docker__gitlink.cache"
+    docker__gitlink_cache__fpath=${docker__docker_cache__dir}/${docker__gitlink_cache__filename}
 
-	docker__repolist_tableinfo__filename="docker_repolist_tableinfo.sh"
-	docker__repolist_tableinfo__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__repolist_tableinfo__filename}
+
 
     compgen__query_w_autocomplete__filename="compgen_query_w_autocomplete.sh"
-    compgen__query_w_autocomplete__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${compgen__query_w_autocomplete__filename}
-
-    docker__readInput_w_autocomplete__filename="docker_readInput_w_autocomplete.sh"
-    docker__readInput_w_autocomplete__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__readInput_w_autocomplete__filename}
+    compgen__query_w_autocomplete__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${compgen__query_w_autocomplete__filename}
 
     dirlist__readInput_w_autocomplete__filename="dirlist_readInput_w_autocomplete.sh"
-    dirlist__readInput_w_autocomplete__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${dirlist__readInput_w_autocomplete__filename}
+    dirlist__readInput_w_autocomplete__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${dirlist__readInput_w_autocomplete__filename}
+
+    docker__containerlist_tableinfo__filename="docker_containerlist_tableinfo.sh"
+    docker__containerlist_tableinfo__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__containerlist_tableinfo__filename}
+
+	docker__repolist_tableinfo__filename="docker_repolist_tableinfo.sh"
+	docker__repolist_tableinfo__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__repolist_tableinfo__filename}
+
+    docker__readInput_w_autocomplete__filename="docker_readInput_w_autocomplete.sh"
+    docker__readInput_w_autocomplete__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__readInput_w_autocomplete__filename}
+
+    docker_show_choose_add_del_from_cache__filename="docker_show_choose_add_del_from_cache.sh"
+    docker_show_choose_add_del_from_cache__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker_show_choose_add_del_from_cache__filename}
+
+
+
+    docker__LTPP3_ROOTFS_docker__dir=${docker__LTPP3_ROOTFS__dir}/docker
+    docker__LTPP3_ROOTFS_docker_dockerfiles__dir=${docker__LTPP3_ROOTFS_docker__dir}/dockerfiles
+    docker__dockerfile_ltps_sunplus_filename="dockerfile_ltps_sunplus"
+    docker__dockerfile_ltps_sunplus_fpath=${docker__LTPP3_ROOTFS_docker_dockerfiles__dir}/${docker__dockerfile_ltps_sunplus_filename}
+
+    docker__LTPP3_ROOTFS_docker_environment_dir=${docker__LTPP3_ROOTFS_docker__dir}/environment
+    docker__exported_env_var_filename="exported_env_var.txt"
+    docker__exported_env_var_fpath=${docker__LTPP3_ROOTFS_docker_environment_dir}/${docker__exported_env_var_filename}
+
+    docker__LTPP3_ROOTFS_docker_environment_dir=${docker__LTPP3_ROOTFS_docker__dir}/environment
+    docker__exported_env_var_default_filename="exported_env_var_default.txt"
+    docker__exported_env_var_default_fpath=${docker__LTPP3_ROOTFS_docker_environment_dir}/${docker__exported_env_var_default_filename}
 
 
 
     docker__tmp_dir=/tmp
     compgen__query_w_autocomplete_out__filename="compgen_query_w_autocomplete.out"
     compgen__query_w_autocomplete_out__fpath=${docker__tmp_dir}/${compgen__query_w_autocomplete_out__filename}
-
-    docker__enter_cmdline_out__filename="docker__enter_cmdline.out"
-    docker__enter_cmdline_out__fpath=${docker__tmp_dir}/${docker__enter_cmdline_out__filename}
-
-    docker__readInput_w_autocomplete_out__filename="docker_readInput_w_autocomplete.out"
-    docker__readInput_w_autocomplete_out__fpath=${docker__tmp_dir}/${docker__readInput_w_autocomplete_out__filename}
 
     dirlist__readInput_w_autocomplete_out__filename="dirlist_readInput_w_autocomplete.out"
     dirlist__readInput_w_autocomplete_out__fpath=${docker__tmp_dir}/${dirlist__readInput_w_autocomplete_out__filename}
@@ -1053,15 +1177,26 @@ docker__environmental_variables__sub() {
     dirlist__dst_ls_1aA_tmp__fpath=${docker__tmp_dir}/${dirlist__dst_ls_1aA_tmp__filename}
 
     dclcau_lh_ls__filename="dclcau_lh_ls.sh"
-    dclcau_lh_ls__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${dclcau_lh_ls__filename}
+    dclcau_lh_ls__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${dclcau_lh_ls__filename}
     dclcau_dc_ls__filename="dclcau_dc_ls.sh"
-    dclcau_dc_ls__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${dclcau_dc_ls__filename}
+    dclcau_dc_ls__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${dclcau_dc_ls__filename}
+
+    docker__enter_cmdline_out__filename="docker__enter_cmdline.out"
+    docker__enter_cmdline_out__fpath=${docker__tmp_dir}/${docker__enter_cmdline_out__filename}
+
+    docker__readInput_w_autocomplete_out__filename="docker_readInput_w_autocomplete.out"
+    docker__readInput_w_autocomplete_out__fpath=${docker__tmp_dir}/${docker__readInput_w_autocomplete_out__filename}
+
+    docker__show_choose_add_del_from_cache_out__filename="docker_show_choose_add_del_from_cache.out"
+    docker__show_choose_add_del_from_cache_out__fpath=${docker__tmp_dir}/${docker__show_choose_add_del_from_cache_out__filename}
+
+
 
     #OLD VERSION (is temporarily present for backwards compaitibility)
 	docker__dockercontainer_dirlist__filename="dockercontainer_dirlist.sh"
-	docker__dockercontainer_dirlist__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__dockercontainer_dirlist__filename}
+	docker__dockercontainer_dirlist__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__dockercontainer_dirlist__filename}
 	docker__localhost_dirlist__filename="localhost_dirlist.sh"
-	docker__localhost_dirlist__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__localhost_dirlist__filename}
+	docker__localhost_dirlist__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__localhost_dirlist__filename}
 }
 
 

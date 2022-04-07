@@ -19,6 +19,8 @@ function create_image__func() {
 
     #Define local command variables
     local docker_image_ls_cmd="docker image ls"
+    local exported_env_var1=${DOCKER__EMPTYSTRING}
+    local exported_env_var2=${DOCKER__EMPTYSTRING}
 
     #Get REPOSITORY:TAG from dockerfile
     local dockerfile_repository_tag=`egrep -w "${GREP_PATTERN}" ${dockerfile_fpath} | cut -d"\"" -f2`
@@ -28,12 +30,27 @@ function create_image__func() {
         dockerfile_repository_tag="${dockerfile}:${DOCKER__LATEST}"
     fi
 
-    #Execute Docker command
+    #Check if 'dockerfile_repository_tag' is an EMPTY STRING
+    if [[ -z ${dockerfile_repository_tag} ]]; then  #is an Empty String
+        #Set a value for 'dockerfile_repository_tag'
+        dockerfile_repository_tag="${dockerfile}:${DOCKER__LATEST}"
+    else    #is Not an Empty String
+        #Retrieve to-be-exported Environment variables
+        exported_env_var1=`cat ${docker__exported_env_var_fpath} | grep -w "${dockerfile_repository_tag}" | awk '{print $2}'`
+        exported_env_var2=`cat ${docker__exported_env_var_fpath} | grep -w "${dockerfile_repository_tag}" | awk '{print $3}'`
+    fi
+
+    #Print
     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
     echo -e "${statusMsg}"
     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
-    docker build --tag ${dockerfile_repository_tag} - < ${dockerfile_fpath}
+    # docker build --tag ${dockerfile_repository_tag} - < ${dockerfile_fpath} #with REPOSITORY:TAG
+    
+    #Remark:
+    #   DOCKER_ARG1: argument defined in the dockerfile(s) (e.g. sunplus_inst.sh)
+    #   HOST_EXPORTED_ARG1: exported variable in defined in the HOST device (e.g. sunplus git clone link)
+    docker build --build-arg DOCKER_ARG1=${exported_env_var1} --build-arg DOCKER_ARG2=${exported_env_var2} --tag ${dockerfile_repository_tag} - < ${dockerfile_fpath} #with REPOSITORY:TAG
 
     #Validate executed command
     validate_exitCode__func
@@ -46,19 +63,35 @@ function create_image__func() {
     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
 }
 
-
 function repo_exists__func() {
 	#Input args
 	local repoName__input=${1}
 	local tag__input=${2}
 
-	#Check if imageID is found in container's list
-	local stdOutput=`docker images | grep "${repoName__input}" | grep "${tag__input}"`
-	if [[ ! -z ${stdOutput} ]]; then
-		echo "true"
-	else
-		echo "false"
-	fi
+    #Read Docker image-info to Array
+    local tmp_arr=()
+    readarray -t tmp_arr < <(docker images)
+
+    #Loop through Array
+    local tmp_arrItem=${DOCKER__EMPTYSTRING}
+    local tmp_arrItem_repoName=${DOCKER__EMPTYSTRING}
+    local tmp_arrItem_tag=${DOCKER__EMPTYSTRING}
+    for tmp_arrItem in "${tmp_arr[@]}"
+    do
+        tmp_arrItem_repoName=`echo "${tmp_arrItem}" | awk '{print $1}'`
+        tmp_arrItem_tag=`echo "${tmp_arrItem}" | awk '{print $3}'`
+
+        if [[ "${repoName__input}" == "${tmp_arrItem_repoName}" ]]; then
+            if [[ "${tag__input}" == "${tmp_arrItem_tag}" ]]; then
+                echo "true"
+
+                return
+            fi            
+        fi
+    done
+
+    #No match
+    echo "false"
 }
 
 function validate_exitCode__func() {
@@ -134,12 +167,12 @@ docker__load_environment_variables__sub() {
         docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}
     fi
 
-    docker__global_functions_filename="docker_global_functions.sh"
-    docker__global_functions_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__global_functions_filename}
+    docker__global_functions__filename="docker_global_functions.sh"
+    docker__global_functions__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__global_functions__filename}
 }
 
 docker__load_source_files__sub() {
-    source ${docker__global_functions_fpath}
+    source ${docker__global_functions__fpath}
 }
 
 docker__load_header__sub() {
@@ -221,7 +254,7 @@ docker__show_dockerList_files__sub() {
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
         echo -e "${locationMsg_dockerList}"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-        echo -e "${DOCKER__Q_QUIT}"
+        echo -e "${DOCKER__FOURSPACES_Q_QUIT}"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
 
         #Read-input handler
@@ -286,7 +319,7 @@ docker__show_dockerList_files__sub() {
         echo -e "${locationMsg_dockerfiles}"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
         echo -e "${DOCKER__A_ABORT}"
-        echo -e "${DOCKER__Q_QUIT}"
+        echo -e "${DOCKER__FOURSPACES_Q_QUIT}"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
 
         #Read-input handler
@@ -345,7 +378,7 @@ docker__create_image_handler__sub() {
                 #Get repository-name
                 local repoName=`cat ${dockerfile_fpath} | awk '{print $2}'| grep "${DOCKER__PATTERN1}" | cut -d"\"" -f2 | cut -d":" -f1`
                 #Get tag belonging to the previously retrieved repository-name
-                local tag=`cat ${dockerfile_fpath} | awk '{print $3}'| grep "${DOCKER__PATTERN1}" | cut -d"\"" -f2 | cut -d":" -f2`
+                local tag=`cat ${dockerfile_fpath} | awk '{print $2}'| grep "${DOCKER__PATTERN1}" | cut -d"\"" -f2 | cut -d":" -f2`
                 #Check if the repository-name & tag pair is already created
                 local isFound=`repo_exists__func "${repoName}" "${tag}"`
                 if [[ ${isFound} == true ]]; then

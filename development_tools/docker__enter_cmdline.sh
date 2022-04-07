@@ -26,17 +26,19 @@ docker__environmental_variables__sub() {
 docker__my_LTPP3_ROOTFS_development_tools_dir=/home/imcase/repo/LTPP3_ROOTFS/development_tools/
 #-----------REMOVE THIS PART!!!!
 
-    docker__global_functions_filename="docker_global_functions.sh"
-    docker__global_functions_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__global_functions_filename}
+    docker__global_functions__filename="docker_global_functions.sh"
+    docker__global_functions__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__global_functions__filename}
 }
 
 docker__load_source_files__sub() {
-    source ${docker__global_functions_fpath}
+    source ${docker__global_functions__fpath}
 }
 
 docker__load_constants__sub() {
     DOCKER__ENTER_CMD_REMARKS="${DOCKER__BG_ORANGE}Remarks:${DOCKER__NOCOLOR}\n"
-	DOCKER__ENTER_CMD_REMARKS+="${DOCKER__DASH} ${DOCKER__FG_YELLOW}ENTER${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}to confirm${DOCKER__NOCOLOR}\n"
+    DOCKER__ENTER_CMD_REMARKS+="${DOCKER__DASH} ${DOCKER__FG_YELLOW}\\${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}each special character within a command, file, or folder,...\n"
+    DOCKER__ENTER_CMD_REMARKS+="     ...MUST to be prepended with backslash.\n"
+	DOCKER__ENTER_CMD_REMARKS+="${DOCKER__DASH} ${DOCKER__FG_YELLOW}ENTER${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}to execute${DOCKER__NOCOLOR}\n"
     DOCKER__ENTER_CMD_REMARKS+="${DOCKER__DASH} ${DOCKER__FG_YELLOW}TAB${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}auto-complete${DOCKER__NOCOLOR}\n"
     DOCKER__ENTER_CMD_REMARKS+="${DOCKER__DASH} ${DOCKER__FG_YELLOW};c${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}clear${DOCKER__NOCOLOR}"
 
@@ -44,10 +46,12 @@ docker__load_constants__sub() {
 }
 
 docker__init_variables__sub() {
-    docker__cachedInput_Arr=()
-    docker__cachedInput_ArrLen=0
-    docker__cachedInput_ArrIndex=0
-    docker__cachedInput_ArrIndex_max=0
+    docker__cachedInput_arr=()
+    docker__cachedInput_arrLen=0
+    docker__cachedInput_arrIndex=0
+    docker__cachedInput_arrIndex_max=0
+
+    docker__output_arr=()
 
     docker__cmd=${DOCKER__EMPTYSTRING}
     docker__keyInput=${DOCKER__EMPTYSTRING}
@@ -60,6 +64,11 @@ docker__init_variables__sub() {
 	docker__exitCode=0
 }
 
+docker__delete_files__sub() {
+    if [[ -f ${docker__enter_cmdline_out__fpath} ]]; then
+        rm ${docker__enter_cmdline_out__fpath}
+    fi
+}
 
 docker__cmd_readinput_handler__sub() {
     #Define local variables
@@ -82,7 +91,6 @@ docker__cmd_readinput_handler__sub() {
 
         #Prepare message 'docker__echoMsg' 
         docker__echoMsg="${docker__currDir_colored} (${DOCKER__FG_LIGHTGREY}${DOCKER__CTRL_C_COLON_QUIT}${DOCKER__NOCOLOR})${DOCKER__FG_LIGHTBLUE}>${DOCKER__NOCOLOR}"
-
 
         #Show remarks:
         echo -e "${DOCKER__ENTER_CMD_REMARKS}"
@@ -121,6 +129,7 @@ docker__cmd_readinput_handler__sub() {
         esac
     done
 }
+
 docker__append_keyInput_handler__sub() {
     #wait for another 0.5 seconds to capture additional characters.
     #Remark:
@@ -136,8 +145,9 @@ docker__append_keyInput_handler__sub() {
     fi
 
     #Move-up and clean
-    moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_5}"
+    moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_7}"
 }
+
 docker__backspace_handler__sub() {
     #Define variables
     local cmd_len=0
@@ -161,8 +171,9 @@ docker__backspace_handler__sub() {
     fi
 
     #Move-up and clean
-    moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_5}"
+    moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_7}"
 }
+
 docker__currDir_color_handler__sub() {
     #Define variables
     local objStr=${DOCKER__EMPTYSTRING}
@@ -199,6 +210,7 @@ docker__currDir_color_handler__sub() {
         fi
     done
 }
+
 docker__enter_handler__sub() {
     #Define local variables
     local cmd_tmp=${DOCKER__EMPTYSTRING}
@@ -215,43 +227,70 @@ docker__enter_handler__sub() {
             docker__cmd=${DOCKER__EMPTYSTRING}
             
             #First Move-down, then Move-up, after that clean line
-            moveDown_oneLine_then_moveUp_and_clean__func "${DOCKER__NUMOFLINES_6}"
+            moveDown_oneLine_then_moveUp_and_clean__func "${DOCKER__NUMOFLINES_8}"
             ;;
         *)
             if [[ ! -z ${docker__cmd} ]]; then  #command provided
-                #Move-down
-                moveDown__func "${DOCKER__NUMOFLINES_1}"
+                #Execute command and write result to file
+                docker__exec_cmd_and_write_output_toFile__sub
 
-                ${docker__cmd}  #execute command
-                exitCode=$? #get exitCode of the last executed command
-
-                #Validate exitCode
-                if [[ ${exitCode} -eq 0 ]]; then    #no errors found
-                    #add command to array
-                    docker__cachedInput_Arr+=("${docker__cmd}")
-
-                    #Update array-length
-                    docker__cachedInput_ArrLen=${#docker__cachedInput_Arr[@]}
-
-                    #Index starts with 0, therefore deduct array-length by 1
-                    docker__cachedInput_ArrIndex_max=$((docker__cachedInput_ArrLen-1))
-
-                    #Update current array-index
-                    docker__cachedInput_ArrIndex=${docker__cachedInput_ArrIndex_max}
+                #Print Command Output
+                if [[ -f ${docker__enter_cmdline_out__fpath} ]]; then
+                    cat ${docker__enter_cmdline_out__fpath}
                 fi
 
                 #Reset variable
                 docker__cmd=${DOCKER__EMTPYSTRING}
 
                 #Move-down
-                moveDown__func "${DOCKER__NUMOFLINES_1}"
+                # moveDown__func "${DOCKER__NUMOFLINES_1}"
             else    #no command provided
                 #Move-up one line
-                moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_5}"
+                moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_7}"
             fi
             ;;
     esac
 }
+docker__exec_cmd_and_write_output_toFile__sub() {
+    #Define header to-be-printed
+    docker__output_arr="${DOCKER__EMPTYSTRING}\n"
+    docker__output_arr+="${DOCKER__EMPTYSTRING}\n"
+    docker__output_arr+="${DOCKER__FG_LIGHTGREY}${DOCKER__HORIZONTALLINE}${DOCKER__NOCOLOR}\n"
+    docker__output_arr+="${DOCKER__FG_DEEPORANGE}Results of command ${DOCKER__NOCOLOR} <${DOCKER__FG_REDORANGE}${docker__cmd}${DOCKER__NOCOLOR}>\n"
+    docker__output_arr+="${DOCKER__FG_LIGHTGREY}${DOCKER__HORIZONTALLINE}${DOCKER__NOCOLOR}\n"
+
+    #Execute command
+    #Remark:
+    #   In order to be able to execute commands with SPACES, 'eval' must be used.
+    docker__output_arr+=$(eval ${docker__cmd})
+
+    #Get the exit-code of the previously executed command.
+    exitCode=$?
+
+    #Validate exitCode
+    if [[ ${exitCode} -eq 0 ]]; then    #no errors found
+        #add command to array
+        docker__cachedInput_arr+=("${docker__cmd}")
+
+        #Update array-length
+        docker__cachedInput_arrLen=${#docker__cachedInput_arr[@]}
+
+        #Index starts with 0, therefore deduct array-length by 1
+        docker__cachedInput_arrIndex_max=$((docker__cachedInput_arrLen-1))
+
+        #Update current array-index
+        docker__cachedInput_arrIndex=${docker__cachedInput_arrIndex_max}
+    fi
+
+    #Append horizontal line to array
+    docker__output_arr+="${DOCKER__EMPTYSTRING}\n"
+    docker__output_arr+="${DOCKER__EMPTYSTRING}\n"
+    docker__output_arr+="${DOCKER__FG_LIGHTGREY}${DOCKER__HORIZONTALLINE}${DOCKER__NOCOLOR}"
+    
+    #Write to file
+    echo -e "${docker__output_arr[@]}" > ${docker__enter_cmdline_out__fpath}
+}
+
 docker__escapekey_handler__sub() {
     # Flush "stdin" with 0.1  sec timeout.
     read -rsn1 -t 0.1 tmp
@@ -276,46 +315,36 @@ docker__escapekey_handler__sub() {
     #This part MUST be executed after the 'Arrow-key handling'
     #*********************************************************
     if [[ ${arrow_direction} == ${DOCKER__ARROWUP} ]]; then
-        if [[ ${docker__cachedInput_ArrIndex} -eq 0 ]]; then    #index is already leveled to 0
-            docker__cachedInput_ArrIndex=${docker__cachedInput_ArrIndex_max}    #set index to the max. value
+        if [[ ${docker__cachedInput_arrIndex} -eq 0 ]]; then    #index is already leveled to 0
+            docker__cachedInput_arrIndex=${docker__cachedInput_arrIndex_max}    #set index to the max. value
         else    #for all other indexes
-            docker__cachedInput_ArrIndex=$((docker__cachedInput_ArrIndex-1))
+            docker__cachedInput_arrIndex=$((docker__cachedInput_arrIndex-1))
         fi
     else    #arrow_direction = DOCKER__ARROWDOWN
-        if [[ ${docker__cachedInput_ArrIndex} -eq ${docker__cachedInput_ArrIndex_max} ]]; then  #index is already maxed out
-            docker__cachedInput_ArrIndex=0
+        if [[ ${docker__cachedInput_arrIndex} -eq ${docker__cachedInput_arrIndex_max} ]]; then  #index is already maxed out
+            docker__cachedInput_arrIndex=0
         else    #for all other indexes
-            docker__cachedInput_ArrIndex=$((docker__cachedInput_ArrIndex+1))
+            docker__cachedInput_arrIndex=$((docker__cachedInput_arrIndex+1))
         fi
     fi
 
     #Update variable
-    docker__cmd=${docker__cachedInput_Arr[docker__cachedInput_ArrIndex]}
+    docker__cmd=${docker__cachedInput_arr[docker__cachedInput_arrIndex]}
 
     #Move-up and clean
-    moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_5}"
+    moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_7}"
 }
+
 docker__tab_handler__sub() {
     #Get the length of 'docker__cmd'
     local strLen=${#docker__cmd}
 
     #Check if 'docker__cmd' iS an Empty String
     if [[ ${strLen} -eq ${DOCKER__NUMOFMATCH_0} ]]; then
-        moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_5}"
+        moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_7}"
         
         return
     fi
-
-
-
-    #Check if the last char is a space...
-    #...AND if there is a leading string (before this space)
-echo "maybe use 'printf "$a\n" | grep " ""
-echo "but in the end the LAST CHAR has to be checked if it is a SPACE"
-echo "if space is found then check if the left of that space is a string"
-echo "if true, then..."
-echo "dirlist_readInput_w_autocomplete.sh should be called here"
-
 
     #If none of the above...
     ${compgen__query_w_autocomplete__fpath} "${containerID__input}" \
@@ -349,6 +378,8 @@ main__sub() {
     docker__load_constants__sub
 
     docker__init_variables__sub
+
+    docker__delete_files__sub
 
     docker__cmd_readinput_handler__sub
 }

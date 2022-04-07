@@ -11,7 +11,7 @@ DOCKER__VERSION="v21.03.17-0.0.1"
 docker__load_environment_variables__sub() {
     #---Define PATHS
     docker__current_script_fpath="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
-    docker__current_dir=$(dirname ${docker__current_script_fpath})
+    docker__current_dir=$(dirname ${docker__current_script_fpath})  #this is the directory: LTPP3_ROOTFS/
     if [[ ${docker__current_dir} == ${DOCKER__DOT} ]]; then
         docker__current_dir=$(pwd)
     fi
@@ -20,8 +20,8 @@ docker__load_environment_variables__sub() {
 
     docker__containerlist_tableinfo__filename="docker_containerlist_tableinfo.sh"
     docker__containerlist_tableinfo__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__containerlist_tableinfo__filename}
-    docker__global_functions_filename="docker_global_functions.sh"
-    docker__global_functions_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__global_functions_filename}
+    docker__global_functions__filename="docker_global_functions.sh"
+    docker__global_functions__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__global_functions__filename}
     docker__repolist_tableinfo__filename="docker_repolist_tableinfo.sh"
     docker__repolist_tableinfo__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__repolist_tableinfo__filename}
     docker__create_an_image_from_dockerfile_filename="docker_create_an_image_from_dockerfile.sh"
@@ -66,7 +66,7 @@ docker__load_environment_variables__sub() {
 }
 
 docker__load_source_files__sub() {
-    source ${docker__global_functions_fpath}
+    source ${docker__global_functions__fpath}
 }
 
 docker__load_header__sub() {
@@ -92,6 +92,16 @@ docker__checkIf_user_is_root__sub()
 
 docker__init_variables__sub() {
     docker__myChoice=""
+}
+
+docker__checkIf_exported_env_var_isPresent__sub() {
+    #Check if 'docker__exported_env_var.txt' is present
+    if [[ ! -f ${docker__exported_env_var_fpath} ]]; then
+        #Copy from 'docker__exported_env_var_default_fpath' to 'docker__exported_env_var_fpath'
+        #Remark:
+        #   Both paths are defined in 'docker__global_functions__fpath'
+        cp ${docker__exported_env_var_default_fpath} ${docker__exported_env_var_fpath}
+    fi
 }
 
 docker__mainmenu__sub() {
@@ -282,7 +292,6 @@ docker__list_container__sub() {
     fi
 }
 
-
 main_sub() {
     docker__load_environment_variables__sub
 
@@ -293,6 +302,8 @@ main_sub() {
     docker__checkIf_user_is_root__sub
 
     docker__init_variables__sub
+
+    docker__checkIf_exported_env_var_isPresent__sub
 
     docker__mainmenu__sub
 }

@@ -23,13 +23,17 @@ docker__load_environment_variables__sub() {
         docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}
     fi
 
-    docker__global_functions_filename="docker_global_functions.sh"
-    docker__global_functions_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__global_functions_filename}
+    docker__global_functions__filename="docker_global_functions.sh"
+    docker__global_functions__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__global_functions__filename}
 
     docker__create_an_image_from_dockerfile_filename="docker_create_an_image_from_dockerfile.sh"
     docker__create_an_image_from_dockerfile_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__create_an_image_from_dockerfile_filename}
     docker__create_images_from_dockerlist_filename="docker_create_images_from_dockerlist.sh"
     docker__create_images_from_dockerlist_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__create_images_from_dockerlist_filename}
+    docker__sunplus_git_link_assignment_filename="docker_sunplus_git_link_assignment.sh"
+    docker__sunplus_git_link_assignment_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__sunplus_git_link_assignment_filename}
+    docker__sunplus_git_checkout_assignment_filename="docker_sunplus_git_link_assignment.sh"
+    docker__sunplus_git_checkout_assignment_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__sunplus_git_checkout_assignment_filename}
     docker__ssh_to_host_filename="docker_ssh_to_host.sh"
     docker__ssh_to_host_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__ssh_to_host_filename}
     docker__save_filename="docker_save.sh"
@@ -42,7 +46,7 @@ docker__load_environment_variables__sub() {
 }
 
 docker__load_source_files__sub() {
-    source ${docker__global_functions_fpath}
+    source ${docker__global_functions__fpath}
 }
 
 docker__load_header__sub() {

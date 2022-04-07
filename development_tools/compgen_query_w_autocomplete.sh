@@ -737,6 +737,7 @@ compgen__init_variables__sub() {
     leadingSpaces=${EMPTYSTRING}    #this string needs to be prepended before writing to 'output_fPath__input'
     leadingStr=${EMPTYSTRING}   #this is the string which is on the left-side of the space (if any)
     remainingStr=${EMPTYSTRING}
+    query_numOfWords=0
     ret=${EMPTYSTRING} #this is in general the combination of 'leadString' and 'compgen_out' (however exceptions may apply)
 
     dirContent_numOfItems_max=0
