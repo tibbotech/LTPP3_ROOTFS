@@ -64,17 +64,24 @@ docker__verify_sunplus_gitlink__sub() {
 docker__show_input_write_toFile__sub() {
     #Define constants
     MENUTITLE="${DOCKER__FG_YELLOW}Select${DOCKER__NOCOLOR}/${DOCKER__FG_YELLOW}Input${DOCKER__NOCOLOR} Sunplus ${DOCKER__FG_LIGHTBLUE}Git${DOCKER__NOCOLOR} Link"
-    LOCATIONMSG="${DOCKER__FOURSPACES}${DOCKER__FG_VERYLIGHTORANGE}Location${DOCKER__NOCOLOR}: ${docker__gitlink_cache__fpath}"
-    READMSG_CHOOSE_GITLINK="Choose Git-link: "
-    READMSG_DELETE_LINENUM="Delete Line-num:"
-    READMSG_INPUT_GITLINK="Input Git-link (${DOCKER__FG_YELLOW};c${DOCKER__NOCOLOR}lear): "
+    LOCATION_INFO_MSG="${DOCKER__FOURSPACES}${DOCKER__FG_VERYLIGHTORANGE}Location${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}${docker__gitlink_cache__fpath}${DOCKER__NOCOLOR}"
+    MENUOPTIONS_MSG="${DOCKER__FOURSPACES_HASH_CHOOSE}\n"
+    MENUOPTIONS_MSG+="${DOCKER__FOURSPACES_PLUS_ADD}\n"
+    MENUOPTIONS_MSG+="${DOCKER__FOURSPACES_MINUS_DEL}\n"
+    MENUOPTIONS_MSG+="${DOCKER__FOURSPACES_CARET_QUIT}"
+    READINPUTDIALOG_CHOOSE_GITLINK="Choose link: "
+    READINPUTDIALOG_DELETE_LINENUM="Delete link:"
+    READINPUTDIALOG_INPUT_GITLINK="Input link (${DOCKER__FG_YELLOW};c${DOCKER__NOCOLOR}lear): "
 
     ${docker_show_choose_add_del_from_cache__fpath} "${MENUTITLE}" \
-                        "${LOCATIONMSG}" \
-                        "${READMSG_CHOOSE_GITLINK}" \
-                        "${READMSG_INPUT_GITLINK}" \
-                        "${READMSG_DELETE_LINENUM}" \
-                        "${docker__gitlink_cache__fpath}"
+                        "${LOCATION_INFO_MSG}" \
+                        "${MENUOPTIONS_MSG}" \
+                        "${READINPUTDIALOG_CHOOSE_GITLINK}" \
+                        "${READINPUTDIALOG_INPUT_GITLINK}" \
+                        "${READINPUTDIALOG_DELETE_LINENUM}" \
+                        "${docker__exported_env_var_fpath}" \
+                        "${docker__gitlink_cache__fpath}" \
+                        "${docker__show_choose_add_del_from_cache_out__fpath}"
     #Get the exitcode just in case a Ctrl-C was pressed in script 'docker_show_choose_add_del_from_cache__fpath'.
     docker__exitCode=$?
     if [[ ${docker__exitCode} -eq ${DOCKER__EXITCODE_99} ]]; then

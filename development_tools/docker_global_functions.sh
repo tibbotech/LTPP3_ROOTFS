@@ -99,11 +99,12 @@ DOCKER__EXITCODE_99=99  #an error which tells the device to exit
 
 
 #---GIT CONSTANTS
-DOCKER__GITLINK_CACHE_MAX=50
+DOCKER__GIT_CACHE_MAX=50    #maximum number of entries for Git-Link and Git-Checkout
 
 
 
 #---NUMERIC CONSTANTS
+DOCKER__LINENUM_0=0
 DOCKER__LINENUM_1=1
 DOCKER__LINENUM_2=2
 
@@ -176,6 +177,9 @@ SED__SLASH="\\/"
 SED__DOUBLE_BACKSLASH=${SED__BACKSLASH}${SED__BACKSLASH}
 SED__BACKSLASH_DOT="${SED__BACKSLASH}${SED__DOT}"
 
+SED__HTTP="http"
+SED__HXXP="hxxp"
+
 
 
 #---SET CONSTANTS
@@ -203,18 +207,21 @@ DOCKER__HORIZONTALLINE="--------------------------------------------------------
 DOCKER__LATEST="latest"
 DOCKER__QUIT_CTRL_C="Quit (Ctrl+C)"
 
-DOCKER__FOURSPACES_CARET_QUIT="${DOCKER__FOURSPACES}${DOCKER__CARET}: ${DOCKER__FG_LIGHTGREY}Quit${DOCKER__NOCOLOR} (${DOCKER__FG_LIGHTGREY}Ctrl+C${DOCKER__NOCOLOR})"
-DOCKER__FOURSPACES_HASH_CHOOSE="${DOCKER__FOURSPACES}${DOCKER__HASH}: ${DOCKER__FG_LIGHTGREY}Choose${DOCKER__NOCOLOR}"
-DOCKER__FOURSPACES_PLUS_ADD="${DOCKER__FOURSPACES}${DOCKER__PLUS}: ${DOCKER__FG_LIGHTGREY}Add${DOCKER__NOCOLOR}"
-DOCKER__FOURSPACES_MINUS_DEL="${DOCKER__FOURSPACES}${DOCKER__MINUS}: ${DOCKER__FG_LIGHTGREY}Del${DOCKER__NOCOLOR}"
 DOCKER__FOURSPACES_B_BACK="${DOCKER__FOURSPACES}b. ${DOCKER__FG_LIGHTGREY}Back${DOCKER__NOCOLOR}"
 DOCKER__FOURSPACES_C_CHOOSE="${DOCKER__FOURSPACES}c. ${DOCKER__FG_LIGHTGREY}Choose${DOCKER__NOCOLOR}"
 DOCKER__FOURSPACES_Q_QUIT="${DOCKER__FOURSPACES}q. ${DOCKER__FG_LIGHTGREY}Quit${DOCKER__NOCOLOR} (${DOCKER__FG_LIGHTGREY}Ctrl+C${DOCKER__NOCOLOR})"
 DOCKER__FOURSPACES_QUIT_CTRL_C="${DOCKER__FOURSPACES}${DOCKER__FG_LIGHTGREY}Quit${DOCKER__NOCOLOR} (${DOCKER__FG_LIGHTGREY}Ctrl+C${DOCKER__NOCOLOR})"
 
+DOCKER__FOURSPACES_HASH_CHOOSE="${DOCKER__FOURSPACES}${DOCKER__HASH}: ${DOCKER__FG_LIGHTGREY}Choose${DOCKER__NOCOLOR}"
+DOCKER__FOURSPACES_PLUS_ADD="${DOCKER__FOURSPACES}${DOCKER__PLUS}: ${DOCKER__FG_LIGHTGREY}Add${DOCKER__NOCOLOR}"
+DOCKER__FOURSPACES_MINUS_DEL="${DOCKER__FOURSPACES}${DOCKER__MINUS}: ${DOCKER__FG_LIGHTGREY}Del${DOCKER__NOCOLOR}"
+DOCKER__FOURSPACES_MINUS_DEL+=" (${DOCKER__FG_LIGHTGREY}e.g.${DOCKER__NOCOLOR}, ${DOCKER__FG_LIGHTGREY}1,3,4${DOCKER__NOCOLOR}, ${DOCKER__FG_LIGHTGREY}2${DOCKER__NOCOLOR}, ${DOCKER__FG_LIGHTGREY}5-0${DOCKER__NOCOLOR})"
+DOCKER__FOURSPACES_CARET_QUIT="${DOCKER__FOURSPACES}${DOCKER__CARET}: ${DOCKER__FG_LIGHTGREY}Quit${DOCKER__NOCOLOR} (${DOCKER__FG_LIGHTGREY}Ctrl+C${DOCKER__NOCOLOR})"
+
 DOCKER__ONESPACE_PREV="${DOCKER__ONESPACE}${DOCKER__HOOKLEFT} ${DOCKER__FG_LIGHTGREY}${DOCKER__PREV}${DOCKER__NOCOLOR}"
 DOCKER__ONESPACE_NEXT="${DOCKER__FG_LIGHTGREY}${DOCKER__NEXT}${DOCKER__NOCOLOR} ${DOCKER__HOOKRIGHT}${DOCKER__ONESPACE}"
 
+DOCKER__INUSE="(${DOCKER__FG_LIGHTGREY}in-use${DOCKER__NOCOLOR})"
 
 
 #---VARIABLES
@@ -224,6 +231,13 @@ docker__ps_a_cmd="docker ps -a"
 
 
 #---SPECIFAL FUNCTIONS
+function cursor__hide() {
+    printf '\e[?25l'
+}
+function cursor__show() {
+    printf '\e[?25h'
+}
+
 function docker__exitFunc() {
     #Input args
     exitCode__input=${1}
@@ -875,6 +889,26 @@ function checkForMatch_keyWord_within_string__func() {
     set +f
 }
 
+function checkForMatch_keyWord_within_file__func() {
+    #Turn-off Expansion
+    set -f
+
+    #Input Args
+    local keyWord__input=${1}
+    local dataFpath__input=${2}
+
+    #Find any match (not exact)
+    local stdOutput=`cat ${dataFpath__input} | grep "${keyWord__input}"`
+    if [[ -z ${stdOutput} ]]; then  #no match
+        echo "false"
+    else    #match
+        echo "true"
+    fi
+
+    #Turn-on Expansion
+    set +f
+}
+
 function checkForMatch_dockerCmd_result__func() {
     #Input Args
     local keyWord__input=${1}
@@ -888,6 +922,15 @@ function checkForMatch_dockerCmd_result__func() {
     else    #match
         echo "true"
     fi
+}
+
+function delete_lineNum_from_file__func() {
+    #Input args
+    local lineNum__input=${1}
+    local targetFpath__input=${2}
+
+    #Delete line-number
+    sed -i "${lineNum__input}d" ${targetFpath__input}
 }
 
 function duplicate_char__func() {
@@ -1015,6 +1058,16 @@ function get_theLast_xChars_ofString__func() {
     echo -e "${ret}"
 }
 
+function insert_string_into_file__func() {
+    #Input args
+    local string__input=${1}
+    local lineNum__input=${2}
+    local targetFpath__input=${3}
+
+    #Insert
+    sed -i "${lineNum__input}i${string__input}" ${targetFpath__input}
+}
+
 function isNumeric__func() {
     #Input args
     local string__input=${1}
@@ -1060,6 +1113,20 @@ function remove_whiteSpaces__func() {
     echo -e "${ret}"
 }
 
+function retrieve_line_from_file__func() {
+    #Input args
+    local lineNum__input=${1}
+    local targetFpath__input=${2}
+
+    #Retrieve line based on the specified 'lineNum__input'
+    local ret=`sed "${lineNum__input}q;d" ${targetFpath__input}`
+
+    #Output
+    echo "${ret}"
+}
+
+
+
 #---SUNPLUS-RELATED
 function retrieve_sunplus_gitCheckout_from_file__func() {
     #Input args
@@ -1085,6 +1152,19 @@ function retrieve_sunplus_gitLink_from_file__func() {
 
     #Get the Sunplus git-link from file 'exported_env_var_fpath__input'
     local ret=`cat ${exported_env_var_fpath__input} | grep -w "${repository_tag}" | awk '{print $2}'`
+
+    #Output
+    echo "${ret}"
+}
+
+function subst_string_with_another_string__func() {
+    #Input args
+    local string__input=${1}
+    local oldSubString__input=${2}
+    local newSubString__input=${3}
+
+    #Substitute
+    local ret=`echo "${string__input}" | sed "s/${oldSubString__input}/${newSubString__input}/g"`
 
     #Output
     echo "${ret}"
