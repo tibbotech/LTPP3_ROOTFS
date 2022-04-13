@@ -16,8 +16,8 @@ docker__environmental_variables__sub() {
         docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}
     fi
 
-    docker__global_functions_filename="docker_global_functions.sh"
-    docker__global_functions_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__global_functions_filename}
+    docker__global__filename="docker_global.sh"
+    docker__global__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__global__filename}
 
     docker__tmp_dir="/tmp"
     docker__docker_containerList_tmp__filename="docker__docker_containerList.tmp"
@@ -25,7 +25,7 @@ docker__environmental_variables__sub() {
 }
 
 docker__load_source_files__sub() {
-    source ${docker__global_functions_fpath}
+    source ${docker__global__fpath}
 }
 
 docker__get_docker_containerList__sub() {

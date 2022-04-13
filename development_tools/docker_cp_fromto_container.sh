@@ -23,12 +23,12 @@ docker__environmental_variables__sub() {
         docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}
     fi
 
-    docker__global_functions_filename="docker_global_functions.sh"
-    docker__global_functions_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__global_functions_filename}
+    docker__global__filename="docker_global.sh"
+    docker__global__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__global__filename}
 }
 
 docker__load_source_files__sub() {
-    source ${docker__global_functions_fpath}
+    source ${docker__global__fpath}
 }
 
 docker__load_header__sub() {
@@ -213,7 +213,7 @@ docker__choose_containerid__sub() {
 	#Get the exitcode just in case a Ctrl-C was pressed in script 'docker__readInput_w_autocomplete__fpath'.
 	docker__exitCode=$?
 	if [[ ${docker__exitCode} -eq ${DOCKER__EXITCODE_99} ]]; then
-		docker__exitFunc "${docker__exitCode}" "${DOCKER__NUMOFLINES_2}"
+		exit__func "${docker__exitCode}" "${DOCKER__NUMOFLINES_2}"
 	else
 		#Retrieve the selected container-ID from file
 		docker__containerID_chosen=`get_output_from_file__func \
@@ -228,7 +228,7 @@ docker__choose_containerid__sub() {
 		docker__containerID_chosen=${DOCKER__EMPTYSTRING}
 
 		#Set next-phase
-		GOTO__func CHOOSE_COPY_DIRECTION
+		goto__func CHOOSE_COPY_DIRECTION
 	fi
 }
 
@@ -249,7 +249,8 @@ docker__dirlist_show_dirContent_handler__sub() {
 						"${DOCKER__LISTVIEW_NUMOFROWS}" \
 						"${DOCKER__LISTVIEW_NUMOFCOLS}" \
 						"${DOCKER__EMPTYSTRING}" \
-						"${DOCKER__EMPTYSTRING}"
+						"${DOCKER__EMPTYSTRING}" \
+						"${DOCKER__TRUE}"
 	else	#REMOTE machine (aka Container)
 		${dclcau_dc_ls__fpath} \
 						"${containerID__input}" \
@@ -257,7 +258,8 @@ docker__dirlist_show_dirContent_handler__sub() {
 						"${DOCKER__LISTVIEW_NUMOFROWS}" \
 						"${DOCKER__LISTVIEW_NUMOFCOLS}" \
 						"${DOCKER__EMPTYSTRING}" \
-						"${DOCKER__EMPTYSTRING}"
+						"${DOCKER__EMPTYSTRING}" \
+						"${DOCKER__TRUE}"
 	fi
 }
 
@@ -325,12 +327,14 @@ docker__src_path_selection__sub() {
 						"${DOCKER__READINPUT_CONTAINER_SRC}" \
 						"${DOCKER__DIRLIST_REMARKS}" \
                         "${dirlist__src_ls_1aA_output__fpath}" \
-                        "${dirlist__src_ls_1aA_tmp__fpath}"
+                        "${dirlist__src_ls_1aA_tmp__fpath}" \
+						"${DOCKER__EMPTYSTRING}" \
+						"${DOCKER__TRUE}"
 
 	#Get the exitcode just in case a Ctrl-C was pressed in script 'docker__readInput_w_autocomplete__fpath'.
 	docker__exitCode=$?
 	if [[ ${docker__exitCode} -eq ${DOCKER__EXITCODE_99} ]]; then
-		docker__exitFunc "${docker__exitCode}" "${DOCKER__NUMOFLINES_2}"
+		exit__func "${docker__exitCode}" "${DOCKER__NUMOFLINES_2}"
 	else
 		#Retrieve the selected container-ID from file
 		docker__path_output=`get_output_from_file__func "${dirlist__readInput_w_autocomplete_out__fpath}" "${DOCKER__LINENUM_1}"`
@@ -361,9 +365,9 @@ docker__src_path_selection__sub() {
 
 	#Handle 'Back' and 'Home'
 	if [[ ${docker__path_output} == ${DOCKER__SEMICOLON_HOME} ]]; then
-		GOTO__func PHASE_CHOOSE_COPY_DIRECTION
+		goto__func PHASE_CHOOSE_COPY_DIRECTION
 	elif [[ ${docker__path_output} == ${DOCKER__SEMICOLON_BACK} ]]; then
-		GOTO__func PHASE_CHOOSE_CONTAINERID
+		goto__func PHASE_CHOOSE_CONTAINERID
 	fi
 
 	#Update 'docker__src_dir' and 'docker__src_file'
@@ -438,12 +442,15 @@ docker__dst_path_selection__sub() {
 						"${DOCKER__READINPUT_HOST_DST}" \
 						"${DOCKER__DIRLIST_REMARKS}" \
                         "${dirlist__dst_ls_1aA_output__fpath}" \
-                        "${dirlist__dst_ls_1aA_tmp__fpath}"
+                        "${dirlist__dst_ls_1aA_tmp__fpath}" \
+						"${DOCKER__EMPTYSTRING}" \
+						"${DOCKER__TRUE}"
+
 
 	#Get the exitcode just in case a Ctrl-C was pressed in script 'docker__readInput_w_autocomplete__fpath'.
 	docker__exitCode=$?
 	if [[ ${docker__exitCode} -eq ${DOCKER__EXITCODE_99} ]]; then
-		docker__exitFunc "${DOCKER__EXITCODE_99}" "${DOCKER__NUMOFLINES_2}"
+		exit__func "${DOCKER__EXITCODE_99}" "${DOCKER__NUMOFLINES_2}"
 	else
 		#Retrieve the selected container-ID from file
 		docker__path_output=`get_output_from_file__func "${dirlist__readInput_w_autocomplete_out__fpath}" "${DOCKER__LINENUM_1}"`
@@ -463,7 +470,7 @@ docker__dst_path_selection__sub() {
 
 	#Handle 'Back' and 'Home'
 	if [[ ${docker__path_output} == ${DOCKER__SEMICOLON_HOME} ]]; then
-		GOTO__func PHASE_CHOOSE_COPY_DIRECTION
+		goto__func PHASE_CHOOSE_COPY_DIRECTION
 	elif [[ ${docker__path_output} == ${DOCKER__SEMICOLON_BACK} ]]; then
 		docker__case_option=${DOCKER__CASE_SRC_PATH}
 
@@ -479,8 +486,7 @@ docker__dst_path_selection__sub() {
 		moveUp__func "${DOCKER__NUMOFLINES_2}"
 
 		#Show directory contents
-		docker__dirlist_show_dirContent_handler__sub "${containerID__input}" \
-				"${docker__path_output}"
+		docker__dirlist_show_dirContent_handler__sub "${containerID__input}" "${docker__path_output}"
 
 		#Print
 		show_msg_only__func "${DOCKER__ECHOMSG_PLEASE_SELECT_A_VALID_DESTINATIONPATH}" "${DOCKER__NUMOFLINES}"
@@ -534,21 +540,21 @@ docker__confirmation__sub() {
 
 				case "${docker__myanswer}" in
 					y)
-						GOTO__func PHASE_COPY_FROM_SRC_TO_DST
+						goto__func PHASE_COPY_FROM_SRC_TO_DST
 						;;
 					n)
-						GOTO__func PHASE_EXIT
+						goto__func PHASE_EXIT
 						;;
 					p)
 						docker__case_option=${DOCKER__CASE_SRC_PATH}
 
-						GOTO__func PHASE_GET_SRC_DST_FPATH
+						goto__func PHASE_GET_SRC_DST_FPATH
 						;;
 					i)
-						GOTO__func PHASE_CHOOSE_CONTAINERID
+						goto__func PHASE_CHOOSE_CONTAINERID
 						;;
 					h)
-						GOTO__func PHASE_CHOOSE_COPY_DIRECTION
+						goto__func PHASE_CHOOSE_COPY_DIRECTION
 						;;
 				esac
 			else
@@ -630,7 +636,7 @@ docker__copy_from_src_to_dst__sub() {
 
 
 docker__exit__sub() {
-	docker__exitFunc "${DOCKER__EXITCODE_0}" "${DOCKER__NUMOFLINES_2}"
+	exit__func "${DOCKER__EXITCODE_0}" "${DOCKER__NUMOFLINES_2}"
 }
 
 
@@ -649,7 +655,7 @@ main__sub() {
 	docker__load_source_files__sub
 
 	#Goto FIRST-Phase
-	GOTO__func PHASE_LOAD_HEADER
+	goto__func PHASE_LOAD_HEADER
 
 
 
@@ -657,7 +663,7 @@ main__sub() {
     docker__load_header__sub
 
 	#Goto Next-Phase
-	GOTO__func PHASE_CHOOSE_COPY_DIRECTION
+	goto__func PHASE_CHOOSE_COPY_DIRECTION
 
 
 
@@ -665,7 +671,7 @@ main__sub() {
 	docker__choose_copy_direction__sub
 
 	#Goto Next-Phase
-	GOTO__func PHASE_CHOOSE_CONTAINERID
+	goto__func PHASE_CHOOSE_CONTAINERID
 
 
 
@@ -676,7 +682,7 @@ main__sub() {
 	docker__case_option=${DOCKER__CASE_SRC_PATH}
 
 	#Goto Next-Phase
-	GOTO__func PHASE_GET_SRC_DST_FPATH
+	goto__func PHASE_GET_SRC_DST_FPATH
 
 
 
@@ -684,7 +690,7 @@ main__sub() {
 	docker__path_selection_handler__sub
 	
 	#Goto Next-Phase
-	GOTO__func PHASE_SHOW_SUMMARY
+	goto__func PHASE_SHOW_SUMMARY
 
 
 
@@ -692,7 +698,7 @@ main__sub() {
 	docker__show_summary__sub
 
 	#Goto Next-Phase
-	GOTO__func PHASE_CONFIRMATION
+	goto__func PHASE_CONFIRMATION
 
 
 
@@ -706,7 +712,7 @@ main__sub() {
 	docker__copy_from_src_to_dst__sub
 
 	#Goto Next-Phase
-	GOTO__func PHASE_EXIT
+	goto__func PHASE_EXIT
 
 
 

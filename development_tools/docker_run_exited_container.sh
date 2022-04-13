@@ -21,12 +21,12 @@ docker__environmental_variables__sub() {
         docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}
     fi
 
-    docker__global_functions_filename="docker_global_functions.sh"
-    docker__global_functions_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__global_functions_filename}
+    docker__global__filename="docker_global.sh"
+    docker__global__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__global__filename}
 }
 
 docker__load_source_files__sub() {
-    source ${docker__global_functions_fpath}
+    source ${docker__global__fpath}
 }
 
 docker__load_header__sub() {
@@ -117,7 +117,7 @@ docker__start_exited_container__sub() {
     #Show Container's list
     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
     
-    show_list_w_menuTitle__func "${MENUTITLE_UPDATED_CONTAINER_LIST}" "${docker__ps_a_cmd}"
+    show_cmdOutput_w_menuTitle__func "${MENUTITLE_UPDATED_CONTAINER_LIST}" "${docker__ps_a_cmd}"
     
     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
 }

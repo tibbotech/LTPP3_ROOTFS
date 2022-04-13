@@ -4,12 +4,14 @@
 menuTitle__input=${1}
 info__input=${2}
 menuOptions__input=${3}
-readInputDialog1__input=${4}
-readInputDialog2__input=${5}
-readInputDialog3__input=${6}
-dataFpath__input=${7}   #e.g. exported_env_var.txt
+readInputDialog1__input=${4}    #read dialog for 'Choose'
+readInputDialog2__input=${5}    #read dialog for 'Add'
+readInputDialog3__input=${6}    #read dialog for 'Del'
+exportedEnvVarFpath__input=${7}   #e.g. exported_env_var.txt
 cacheFpath__input=${8} #e.g. docker__gitlink.cache, docker__git_checkout.cache
 outFpath__input=${9}    #e.g. docker_show_choose_add_del_from_cache.out
+dockerfile_fpath__input=${10}    #e.g. repository:tag
+argType__input=${11}
 
 
 
@@ -20,12 +22,12 @@ docker__load_environment_variables__sub() {
     docker__LTPP3_ROOTFS_development_tools__dir=$(dirname ${docker__LTPP3_ROOTFS_development_tools__fpath})
     docker__LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS_development_tools__dir%/*}    #move one directory up: LTPP3_ROOTFS/
 
-    docker__global_functions__filename="docker_global_functions.sh"
-    docker__global_functions__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__global_functions__filename}
+    docker__global__filename="docker_global.sh"
+    docker__global__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__global__filename}
 }
 
 docker__load_source_files__sub() {
-    source ${docker__global_functions__fpath}
+    source ${docker__global__fpath}
 }
 
 docker__init_variables__sub() {
@@ -34,34 +36,46 @@ docker__init_variables__sub() {
     docker__cachedInput_arrIndex=0
     docker__cachedInput_arrIndex_max=0
 
-    docker__keyInput=${DOCKER__EMPTYSTRING}
-    docker__keyInput_add=${DOCKER__EMPTYSTRING}
-    docker__readInputDialog=${DOCKER__EMPTYSTRING}
-    docker__totInput=${DOCKER__EMPTYSTRING}
-
+    docker__line=${DOCKER__EMPTYSTRING}
     docker__lineNum=0
     docker__lineNum_base=0
     docker__lineNum_min=0
     docker__lineNum_min_bck=0
     docker__lineNum_max=0
-    docker__tableIndex=0
-    docker__turnPage_isAllowed=false
-    docker__whatToDo_flag=${DOCKER__EMPTYSTRING}
 
-    docker__menuTitle_numOfLines=0
+    docker__table_index=0
+
+    docker__dataFpath_numOfLines=0
+    docker__fixed_numOfLines=0
     docker__info_numOfLines=0
     docker__menuOptions_numOfLines=0
+    docker__menuTitle_numOfLines=0
     docker__readInputDialog1_numOfLines=0
     docker__readInputDialog2_numOfLines=0
     docker__readInputDialog3_numOfLines=0
-    docker__fixed_numOfLines=0
     docker__subTot_numOfLines=0
     docker__tot1_numOfLines=0
     docker__tot2_numOfLines=0
     docker__tot3_numOfLines=0
     docker__tot_numOfLines=0
 
-    docker__dataFpath_numOfLines=0
+ 
+    docker__keyInput=${DOCKER__EMPTYSTRING}
+    docker__keyInput_add=${DOCKER__EMPTYSTRING}
+    docker__readInputDialog=${DOCKER__EMPTYSTRING}
+    docker__totInput=${DOCKER__EMPTYSTRING}
+
+    docker__repositoryTag=${DOCKER__EMPTYSTRING}
+
+    docker__flag_break_menuOption_handler=false
+    docker__flag_turnPage_isAllowed=false
+}
+
+docker__remove_files__sub() {
+    #Remove file if present
+    if [[ -f ${outFpath__input} ]]; then
+        rm ${outFpath__input}
+    fi
 }
 
 docker__calc_numOfLines_of_inputArgs__sub() {
@@ -111,15 +125,14 @@ docker_show_mainMenu_handler__sub() {
     docker__lineNum_min_bck=0
     docker__lineNum_min=0
     docker__lineNum_max=0
-    docker__turnPage_isAllowed=false
-    docker__whatToDo_flag=${DOCKER__HASH}
+    docker__flag_turnPage_isAllowed=false
 
     #Update sequence-related values
     #1. docker__lineNum_base
     #2. docker__lineNum_min_bck
     #3. docker__lineNum_min
     #4. docker__lineNum_max
-    #5. docker__turnPage_isAllowed
+    #5. docker__flag_turnPage_isAllowed
     docker__seqNum_handler__sub "${docker__lineNum_base}" \
                         "${docker__lineNum_min}" \
                         "${DOCKER__TABLEROWS}" \
@@ -128,7 +141,7 @@ docker_show_mainMenu_handler__sub() {
     while true
     do
         #Check if 'docker__lineNum_min' has changed by comparing the current value with the backup'ed value.
-        if [[ ${docker__turnPage_isAllowed} == true ]]; then
+        if [[ ${docker__flag_turnPage_isAllowed} == true ]]; then
             #Print a horizontal line
             echo -e "${DOCKER__HORIZONTALLINE}"
             #Show menu-title
@@ -167,12 +180,14 @@ docker_show_mainMenu_handler__sub() {
 }
 docker__show_fileContent__sub() {
     #Show cursor
-    cursor__hide
+    cursor_hide__func
 
     #Initialization
     docker__lineNum=0
-    docker__tableIndex=0
+    docker__table_index=0
     local line_subst=${DOCKER__EMPTYSTRING}
+    local line_print=${DOCKER__EMPTYSTRING}
+    local webLink_isAccessible=false
     local match_isFound=false
 
 #---List file-content
@@ -185,34 +200,53 @@ docker__show_fileContent__sub() {
         if [[ ${docker__lineNum} -ge ${docker__lineNum_min} ]]; then
             if [[ ! -z ${line} ]]; then
                 #Increment table index-number
-                docker__tableIndex=$((docker__tableIndex + 1))
+                docker__table_index=$((docker__table_index + 1))
 
                 #Substitute 'http' with 'hxxp'
                 #Remark:
                 #   This substitution is required in order to eliminate the underlines for hyperlinks
                 line_subst=`subst_string_with_another_string__func "${line}" "${SED__HTTP}" "${SED__HXXP}"`
 
-                #Check if 'dataFpath__input' exists
-                if [[ -f ${dataFpath__input} ]]; then
-                    #Check if 'line' is currently used by 'dataFpath__input'                  
-                    match_isFound=`checkForMatch_keyWord_within_file__func "${line}" "${dataFpath__input}"`
-                    if [[ ${match_isFound} == true ]]; then #match is found
-                        #Append '(In-Use)' behind 'line_subst' value
-                        line_subst="${line_subst}${DOCKER__ONESPACE}${DOCKER__INUSE}"
+                #Redefine 'docker__table_index' in case its '10'
+                if [[ ${docker__table_index} -eq ${DOCKER__NUMOFMATCH_10} ]]; then
+                    docker__table_index=${DOCKER__NUMOFMATCH_0}
+                fi
+
+                #Only do this check if 'argType__input = DOCKER__ENUM_DOCKER_ARG1'
+                if [[ ${argType__input} == ${DOCKER__ENUM_DOCKER_ARG1}  ]]; then
+                    #Check if web-link is reachable
+                    webLink_isAccessible=`checkIf_webLink_isAccessible__func ${line} ${DOCKER__TIMEOUT_3}`
+
+                    #Define and set 'line_colored'
+                    if [[ ${webLink_isAccessible} == true ]]; then
+                        line_subst=${DOCKER__FG_GREEN85}${DOCKER__STX}${line_subst}${DOCKER__NOCOLOR}
+                    # else
+                    #     line_subst=${DOCKER__FG_SOFTLIGHTRED}${DOCKER__STX}${line_subst}${DOCKER__NOCOLOR}
                     fi
                 fi
 
-                #Correct table index-number if 'docker__tableIndex = 10'
-                if [[ ${docker__tableIndex} -lt ${DOCKER__NUMOFMATCH_10} ]]; then   #docker__tableIndex < 10
-                    #Print file-content with table index-number
-                    echo "${DOCKER__FOURSPACES}${docker__tableIndex}. ${DOCKER__STX}${line_subst}"
-                else    #docker__tableIndex >=10
-                    #Redefine 'docker__tableIndex'
-                    docker__tableIndex=${DOCKER__FG_LIGHTGREY}${DOCKER__LINENUM_1}${DOCKER__NOCOLOR}${DOCKER__LINENUM_0}
-
-                    #Print file-content with table index-number
-                    echo "${DOCKER__THREESPACES}${docker__tableIndex}. ${DOCKER__STX}${line_subst}"
+                #Define and set 'line_print'
+                if [[ ${docker__table_index} -ne ${DOCKER__NUMOFMATCH_0} ]]; then
+                    line_print="${DOCKER__FOURSPACES}${docker__table_index}. ${line_subst}"
+                else
+                    line_print="${DOCKER__THREESPACES}${DOCKER__FG_LIGHTGREY}${DOCKER__LINENUM_1}${DOCKER__NOCOLOR}${docker__table_index}. ${line_subst}"
                 fi
+
+                #Check if 'exported_env_var.txt' exists
+                if [[ -f ${exportedEnvVarFpath__input} ]]; then
+                    #Get the repository:tag from 'dockerfile_fpath__input'
+                    docker__repositoryTag=`retrieve_repositoryTag_from_dockerfile__func "${dockerfile_fpath__input}"`
+
+                    #Check if 'line' is found in 'exported_env_var.txt'                  
+                    match_isFound=`checkForMatch_keyWord_within_file__func "${docker__repositoryTag}" "${line}" "${exportedEnvVarFpath__input}"`
+                    if [[ ${match_isFound} == true ]]; then #match is found
+                        #Append '(In-Use)' behind 'line_subst' value
+                        line_print="${line_print}${DOCKER__ONESPACE}${DOCKER__CONFIGURED}"
+                    fi
+                fi
+
+                #Print file-content with table index-number
+                echo "${line_print}"
             fi
         fi
 
@@ -234,7 +268,7 @@ docker__show_fileContent__sub() {
     done
 
     #Show cursor
-    cursor__show
+    cursor_show__func
 }
 
 docker__show_prev_next_handler__sub() {
@@ -265,8 +299,11 @@ docker__show_lineNumRange_between_prev_and_next__sub() {
         #Reprep 'lineNum_range_msg', use 'docker__dataFpath_numOfLines' instead of 'docker__lineNum_max'
         lineNum_max=${docker__dataFpath_numOfLines}
     fi
+
     #Prepare the line-number range message
-    local lineNum_range_msg="(${DOCKER__FG_LIGHTGREY}${docker__lineNum_min}${DOCKER__NOCOLOR} to ${DOCKER__FG_LIGHTGREY}${lineNum_max}${DOCKER__NOCOLOR})"
+    local lineNum_range_msg="${DOCKER__FG_LIGHTGREY}${docker__lineNum_min}${DOCKER__NOCOLOR} "
+    lineNum_range_msg+="to ${DOCKER__FG_LIGHTGREY}${lineNum_max}${DOCKER__NOCOLOR} "
+    lineNum_range_msg+="(${DOCKER__FG_SOFTLIGHTRED}${docker__dataFpath_numOfLines}${DOCKER__NOCOLOR})"
 
     #Caclulate the length of 'lineNum_range_msg' without regEx
     local lineNum_range_msg_wo_regEx_len=`get_stringlen_wo_regEx__func "${lineNum_range_msg}"`
@@ -287,7 +324,7 @@ docker__seqNum_handler__sub() {
     #2. docker__lineNum_min_bck
     #3. docker__lineNum_min
     #4. docker__lineNum_max
-    #5. docker__turnPage_isAllowed
+    #5. docker__flag_turnPage_isAllowed
 
     #Input args
     local seqNum_base__input=${1}
@@ -341,21 +378,15 @@ docker__seqNum_handler__sub() {
     #Get the maximum value
     docker__lineNum_max=$((docker__lineNum_min + seqNum_range__input - 1))
     
-    # #Check if 'docker__lineNum_max > docker__dataFpath_numOfLines'
-    # if [[ ${docker__lineNum_max} -gt ${docker__dataFpath_numOfLines} ]]; then
-    #     #Set 'docker__lineNum_max' equal to 'docker__dataFpath_numOfLines'
-    #     docker__lineNum_max=${docker__dataFpath_numOfLines}
-    # fi
-
-    #Set 'docker__turnPage_isAllowed'
+    #Set 'docker__flag_turnPage_isAllowed'
     #Remark:
     #   Compare 'docker__lineNum_min' with 'docker__lineNum_min_bck'. 
-    #   1. Both values are not equal, then set 'docker__turnPage_isAllowed = true'.
-    #   2. Both values are the same, then set 'docker__turnPage_isAllowed = false'.
+    #   1. Both values are not equal, then set 'docker__flag_turnPage_isAllowed = true'.
+    #   2. Both values are the same, then set 'docker__flag_turnPage_isAllowed = false'.
     if [[ ${docker__lineNum_min} -ne ${docker__lineNum_min_bck} ]]; then
-        docker__turnPage_isAllowed=true
+        docker__flag_turnPage_isAllowed=true
     else
-        docker__turnPage_isAllowed=false
+        docker__flag_turnPage_isAllowed=false
     fi
 }
 
@@ -385,13 +416,13 @@ docker__menuOption_handler__sub() {
                 docker__tab_handler__Sub    
                 ;;
             ${DOCKER__HASH})
-                docker__choose_handler__sub
+                docker__hash_handler__sub
                 ;;
-            ${DOCKER__PLUS})  
-                docker__add_handler__sub
+            ${DOCKER__PLUS})
+                docker__plus_handler__sub
                 ;;
-            ${DOCKER__MINUS})  
-                docker__del_handler__sub
+            ${DOCKER__MINUS})
+                docker__minus_handler__sub
                 ;;
             ${DOCKER__ESCAPE_HOOKLEFT})  
                 docker__prev_handler__sub
@@ -410,6 +441,19 @@ docker__menuOption_handler__sub() {
                 docker__any_handler__sub
                 ;;
         esac
+
+        #Check if 'docker__flag_break_menuOption_handler = true'.
+        #If true, then break this loop.
+        if [[ ${docker__flag_break_menuOption_handler} == true ]]; then
+            #Reset flag to 'false'
+            docker__flag_break_menuOption_handler=false
+
+            #Move down and clean
+            moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+            #Break loop
+            break
+        fi
     done
 }
 
@@ -440,43 +484,132 @@ docker__backspace_handler__sub() {
 }
 
 docker__enter_handler__sub() {
-    # if [[ ${docker__lineNum} -ge ${DOCKER__NUMOFMATCH_10} ]]; then
-        echo "docker__choose_handler__sub:::DO SOMETHING2"                      
-    # fi
+    #Process 'docker__keyInput' based on 'docker__readInputDialog'
+    case "${docker__readInputDialog}" in
+        ${readInputDialog2__input})
+            docker__enter_add_handler__sub
+            ;;
+        ${readInputDialog3__input})
+            echo "ENTER:::readInputDialog3__input::: In progress"
+            ;;
+    esac
 
-    moveToBeginning_and_cleanLine__func
-    # #Define local variables
-    # local totInput_tmp=${DOCKER__EMPTYSTRING}
+    #Clean and Move to the beginning of line
+    moveToBeginning_and_cleanLine__func     
+}
 
-    # #Check if there were any ';c' issued.
-    # #In other words, whether 'docker__totInput' contains any of the above semi-colon chars.
-    # #If that's the case then function 'get_endResult_ofString_with_semiColonChar__func'
-    # #   will handle and return the result 'ret'.
-    # totInput_tmp=`get_endResult_ofString_with_semiColonChar__func ${docker__totInput}`
+docker__enter_add_handler__sub() {
+    #Check if 'docker__totInput' is an Empty String?
+    if [[ -z ${docker__totInput} ]]; then   #true
+        return
+    fi
 
-    # case "${totInput_tmp}" in
-    #     ${DOCKER__EMPTYSTRING})
-    #         #Reset variable
-    #         docker__totInput=${DOCKER__EMPTYSTRING}
+    #Check if the clear-command ';c' was executed
+    local totInput_tmp=`get_endResult_ofString_with_semiColonChar__func "${docker__totInput}"`
+    case "${totInput_tmp}" in
+        ${DOCKER__EMPTYSTRING})
+            docker__totInput=${DOCKER__EMPTYSTRING}
+
+            return
+            ;;
+        *)
+            #Check if 'docker__totInput' is already added to 'cacheFpath__input'?
+            local isFound=`checkForMatch_keyWord_within_file__func "${docker__totInput}" "${DOCKER__EMPTYSTRING}" "${cacheFpath__input}"`
+            if [[ ${isFound} == true ]]; then
+                local ERRMSG_GITLINK_ALREADY_ADDED="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: (git-)link already added"
+                show_msg_wo_menuTitle_w_PressAnyKey__func "${ERRMSG_GITLINK_ALREADY_ADDED}" \
+                            "${DOCKER__NUMOFLINES_2}" \
+                            "${DOCKER__TIMEOUT_10}" \
+                            "${DOCKER__NUMOFLINES_1}" \
+                            "${DOCKER__NUMOFLINES_1}"
+
+                #Move-up and clean
+                moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_5}"
+
+                return
+            fi
+
+            #Check current number of entries
+            if [[ ${docker__dataFpath_numOfLines} -ge ${DOCKER__GIT_CACHE_MAX} ]]; then
+                local ERRMSG_MAX_NUMOFENTRIES_REACHED="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: maximum number of entries reached "
+                 ERRMSG_MAX_NUMOFENTRIES_REACHED+="(${DOCKER__FG_SOFTLIGHTRED}${docker__dataFpath_numOfLines}${DOCKER__NOCOLOR})\n"
+                ERRMSG_MAX_NUMOFENTRIES_REACHED+="***${DOCKER__FG_YELLOW}ADVICE${DOCKER__NOCOLOR}: please remove unused entries"
             
-    #         #Clean and Move to the beginning of line
-    #         moveToBeginning_and_cleanLine__func
-    #         ;;
-    #     *)
-    #         if [[ ! -z ${docker__totInput} ]]; then  #command provided
-    #             echo ">>>>DO SOMETHING HERE"
+                show_msg_wo_menuTitle_w_PressAnyKey__func "${ERRMSG_MAX_NUMOFENTRIES_REACHED}" \
+                            "${DOCKER__NUMOFLINES_2}" \
+                            "${DOCKER__TIMEOUT_10}" \
+                            "${DOCKER__NUMOFLINES_1}" \
+                            "${DOCKER__NUMOFLINES_1}"
 
-    #             #Reset variable
-    #             docker__totInput=${DOCKER__EMTPYSTRING}
+                #Move-up and clean
+                moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_6}"
 
-    #             #Move-down
-    #             # moveDown__func "${DOCKER__NUMOFLINES_1}"
-    #         else    #no input provided
-    #             #Clean and Move to the beginning of line
-    #             moveToBeginning_and_cleanLine__func
-    #         fi
-    #         ;;
-    # esac
+                return
+            fi
+
+            #Only do this check if 'argType__input = DOCKER__ENUM_DOCKER_ARG1'
+            if [[ ${argType__input} == ${DOCKER__ENUM_DOCKER_ARG1} ]]; then
+                local ERRMSG_CHOSEN_WEBLINK_IS_NOTACCESSIBLE="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: (git-)link is NOT accessable"
+
+                #Check if 'docker__totInput' is accessible
+                webLink_isAccessible=`checkIf_webLink_isAccessible__func ${docker__totInput} ${DOCKER__TIMEOUT_3}`
+                if [[ ${webLink_isAccessible} == false ]]; then #not accessible
+                    #Show error message
+                    show_msg_wo_menuTitle_w_confirmation__func "${ERRMSG_CHOSEN_WEBLINK_IS_NOTACCESSIBLE}" \
+                            "${DOCKER__NUMOFLINES_2}" \
+                            "${DOCKER__TIMEOUT_10}" \
+                            "${DOCKER__NUMOFLINES_1}" \
+                            "${DOCKER__NUMOFLINES_1}"
+
+                    #Move-up and clean
+                    moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_5}"
+
+                    #If 'extern__ret = n', then exit function
+                    if [[ ${extern__ret} == "${DOCKER__N}" ]]; then
+                        return
+                    fi
+                fi
+            fi
+
+            #Insert 'line' at the top of the file.
+            insert_string_into_file__func "${docker__totInput}" "${DOCKER__LINENUM_1}" "${cacheFpath__input}"
+
+            #Update 'docker__dataFpath_numOfLines'
+            docker__dataFpath_numOfLines=`cat ${cacheFpath__input} | wc -l`
+
+            #Write to file"
+            write_data_to_file__func "${docker__totInput}" "${outFpath__input}"
+
+            #Update 'exported_env_var.txt'
+            local docker_arg1=${DOCKER__EMPTYSTRING}
+            local docker_arg2=${DOCKER__EMPTYSTRING}
+            if [[ ${argType__input} == ${DOCKER__ENUM_DOCKER_ARG1} ]]; then
+                docker_arg1=${docker__totInput}
+            else    #argType__input = DOCKER__ENUM_DOCKER_ARG2
+                docker_arg2=${docker__totInput}
+            fi
+            update_exported_env_var__func "${docker_arg1}" \
+                        "${docker_arg2}" \
+                        "${dockerfile_fpath__input}" \
+                        "${exportedEnvVarFpath__input}"
+
+            #Reset 'docker__totInput'
+            docker__totInput=${DOCKER__EMPTYSTRING}
+
+            #Break the loop of subroutine 'docker__menuOption_handler__sub'
+            docker__flag_break_menuOption_handler=true
+            ;;
+    esac
+}
+docker__enter_add_update_cachePath__sub() {
+    #Check if 'docker__totInput' is already added to 'cacheFpath__input'?
+    local isFound=`checkForMatch_keyWord_within_file__func "${docker__totInput}" "${DOCKER__EMPTYSTRING}" "${cacheFpath__input}"`
+    if [[ ${isFound} == true ]]; then
+        return
+    fi
+
+    #Insert 'line' at the top of the file.
+    insert_string_into_file__func "${docker__totInput}" "${DOCKER__LINENUM_1}" "${cacheFpath__input}"
 }
 
 docker__escapekey_flush_handler__sub() {
@@ -490,64 +623,88 @@ docker__escapekey_flush_handler__sub() {
 }
 
 docker__tab_handler__Sub() {
-    moveToBeginning_and_cleanLine__func
+    #Clean and Move to the beginning of line
+    moveToBeginning_and_cleanLine__func     
 }
 
-docker__choose_handler__sub() {
+docker__hash_handler__sub() {
+    #Reset variables
+    #Remark:
+    #   Only if a switch has taken place.
+    #   For example from '+' to '#'
+    if [[ ${docker__readInputDialog} != ${readInputDialog1__input} ]]; then
+        docker__keyInput=${DOCKER__EMPTYSTRING}
+        docker__totInput=${DOCKER__EMPTYSTRING}
+    fi
+
     #Set 'docker__readInputDialog'
     docker__readInputDialog=${readInputDialog1__input}
 
     #Move-up and clean lines
     moveToBeginning_and_cleanLine__func
-
-    echo "docker__add_handler__sub::: IN PROGRESS..."
 }
 
-docker__add_handler__sub() {
+docker__plus_handler__sub() {
+    #Reset variables
+    #Remark:
+    #   Only if a switch has taken place.
+    #   For example from '#' to '+'
+    if [[ ${docker__readInputDialog} != ${readInputDialog2__input} ]]; then
+        docker__keyInput=${DOCKER__EMPTYSTRING}
+        docker__totInput=${DOCKER__EMPTYSTRING}
+    fi
+
     #Set 'docker__readInputDialog'
     docker__readInputDialog=${readInputDialog2__input}
 
     #Move-up and clean lines
     moveToBeginning_and_cleanLine__func
-
-    echo "docker__add_handler__sub::: IN PROGRESS..."
 }
 
-docker__del_handler__sub() {
+docker__minus_handler__sub() {
+    #Reset variables
+    #Remark:
+    #   Only if a switch has taken place.
+    #   For example from '+' to '-'
+    if [[ ${docker__readInputDialog} != ${readInputDialog3__input} ]]; then
+        docker__keyInput=${DOCKER__EMPTYSTRING}
+        docker__totInput=${DOCKER__EMPTYSTRING}
+    fi
+
     #Set 'docker__readInputDialog'
     docker__readInputDialog=${readInputDialog3__input}
 
     #Move-up and clean lines
     moveToBeginning_and_cleanLine__func
     
-    echo "docker__del_handler__sub::: IN PROGRESS..."
+    echo "docker__minus_handler__sub::: IN PROGRESS..."
 }
 
 docker__next_handler__sub() {
     #Hide cursor
-    cursor__hide
+    cursor_hide__func
 
     #Update sequence-related values
     #1. docker__lineNum_base
     #2. docker__lineNum_min_bck
     #3. docker__lineNum_min
     #4. docker__lineNum_max
-    #5. docker__turnPage_isAllowed
+    #5. docker__flag_turnPage_isAllowed
     docker__seqNum_handler__sub "${docker__lineNum_base}" \
                         "${docker__lineNum_min}" \
                         "${DOCKER__TABLEROWS}" \
                         "${DOCKER__NEXT}"
 
     #Select the appropriate 'number of lines'
-    if [[ ${docker__turnPage_isAllowed} == true ]]; then
-        case "${docker__whatToDo_flag}" in
-            ${DOCKER__HASH})    #hash (e.g. Choose)
+    if [[ ${docker__flag_turnPage_isAllowed} == true ]]; then
+        case "${docker__readInputDialog}" in
+            ${readInputDialog1__input})    #hash (e.g. Choose)
                 docker__tot_numOfLines=${docker__tot1_numOfLines}
                 ;;
-            ${DOCKER__PLUS})    #hash (e.g. Choose)
+            ${readInputDialog2__input})    #hash (e.g. Add)
                 docker__tot_numOfLines=${docker__tot2_numOfLines}
                 ;;
-            ${DOCKER__MINUS})    #hash (e.g. Choose)
+            ${readInputDialog3__input})    #hash (e.g. Del)
                 docker__tot_numOfLines=${docker__tot3_numOfLines}
                 ;;
         esac
@@ -558,115 +715,153 @@ docker__next_handler__sub() {
     fi
 
     #Show cursor
-    cursor__show
+    cursor_show__func
 }
 
 docker__prev_handler__sub() {
     #Hide cursor
-    cursor__hide
+    cursor_hide__func
 
     #Update sequence-related values
     #1. docker__lineNum_base
     #2. docker__lineNum_min_bck
     #3. docker__lineNum_min
     #4. docker__lineNum_max
-    #5. docker__turnPage_isAllowed
+    #5. docker__flag_turnPage_isAllowed
     docker__seqNum_handler__sub "${docker__lineNum_base}" \
                         "${docker__lineNum_min}" \
                         "${DOCKER__TABLEROWS}" \
                         "${DOCKER__PREV}"
 
     #Select the appropriate 'number of lines'
-    if [[ ${docker__turnPage_isAllowed} == true ]]; then
-        case "${docker__whatToDo_flag}" in
-            ${DOCKER__HASH})    #hash (e.g. Choose)
+    if [[ ${docker__flag_turnPage_isAllowed} == true ]]; then
+        case "${docker__readInputDialog}" in
+            ${readInputDialog1__input})    #hash (e.g. Choose)
                 docker__tot_numOfLines=${docker__tot1_numOfLines}
                 ;;
-            ${DOCKER__PLUS})    #hash (e.g. Choose)
+            ${readInputDialog2__input})    #hash (e.g. Choose)
                 docker__tot_numOfLines=${docker__tot2_numOfLines}
                 ;;
-            ${DOCKER__MINUS})    #hash (e.g. Choose)
+            ${readInputDialog3__input})    #hash (e.g. Choose)
                 docker__tot_numOfLines=${docker__tot3_numOfLines}
                 ;;
         esac
 
         moveUp_and_cleanLines__func "${docker__tot_numOfLines}"
     else
-        moveToBeginning_and_cleanLine__func   
+        #Clean and Move to the beginning of line
+        moveToBeginning_and_cleanLine__func
     fi
 
     #Show cursor
-    cursor__show
+    cursor_show__func
 }
 
 docker__exit_handler__sub() {
     #Clean and Move to the beginning of line
-    moveToBeginning_and_cleanLine__func   
+    moveToBeginning_and_cleanLine__func
 
     #Show last key-input
     echo "${readInputDialog1__input}${docker__keyInput}" 
 
     #Exit this file
-    docker__exitFunc "${DOCKER__EXITCODE_0}" "${DOCKER__NUMOFLINES_2}"
+    exit__func "${DOCKER__EXITCODE_0}" "${DOCKER__NUMOFLINES_2}"
 }
 
 docker__any_handler__sub() {
     #Number of Lines of file 'cacheFpath__input'
-    if [[ ${docker__dataFpath_numOfLines} -eq ${DOCKER__NUMOFMATCH_0} ]]; then    #contains no data
-        moveToBeginning_and_cleanLine__func
+    if [[ ${docker__dataFpath_numOfLines} -ne ${DOCKER__NUMOFMATCH_0} ]]; then    #contains no data
+        #Process 'docker__keyInput' based on 'docker__readInputDialog'
+        case "${docker__readInputDialog}" in
+            ${readInputDialog1__input})
+                docker__any_choose_handler__sub
+                ;;
+            ${readInputDialog2__input})
+                docker__any_add_handler__sub
+                ;;
+            ${readInputDialog3__input})
 
-        return
+                ;;
+        esac
     fi
-
-    #Check if 'docker__keyInput' is a number
-    local isNumeric=`isNumeric__func ${docker__keyInput}`
-    if [[ ${isNumeric} == false ]]; then #is a number
-        moveToBeginning_and_cleanLine__func
-        
-        return
-    fi
-
-    #Process the selected 'docker__keyInput'
-    docker__process_selected_item__sub "${docker__keyInput}"
 
     #Clean and Move to the beginning of line
     moveToBeginning_and_cleanLine__func
 }
-docker__process_selected_item__sub() {
-    #Input args
-    local lineNum_rel__input=${1}
 
-    #IMPORTANT: set 'lineNum_rel__input' to 'DOCKER__TABLEROWS' if 'lineNum_rel__input = 0'
-    if [[ ${lineNum_rel__input} -eq ${DOCKER__NUMOFMATCH_0} ]]; then
-        lineNum_rel__input=${DOCKER__TABLEROWS}
+docker__any_choose_handler__sub() {
+    #Check if 'docker__keyInput' is a number
+    local isNumeric=`isNumeric__func ${docker__keyInput}`
+    case "${isNumeric}" in
+        false)
+            return
+            ;;
+        true)    
+            #Move selected item to the top of 'cacheFpath__input'
+            #Output:
+            #   docker__line
+            docker__selItem_moveToTop_of_cacheFpath__sub
+         
+            #Write to output file"
+            write_data_to_file__func "${docker__line}" "${outFpath__input}"
+
+            #Update 'exported_env_var.txt'
+            local docker_arg1=${DOCKER__EMPTYSTRING}
+            local docker_arg2=${DOCKER__EMPTYSTRING}
+            if [[ ${argType__input} == ${DOCKER__ENUM_DOCKER_ARG1} ]]; then
+                docker_arg1=${docker__line}
+            else    #argType__input = DOCKER__ENUM_DOCKER_ARG2
+                docker_arg2=${docker__line}
+            fi
+            update_exported_env_var__func "${docker_arg1}" \
+                        "${docker_arg2}" \
+                        "${dockerfile_fpath__input}" \
+                        "${exportedEnvVarFpath__input}"
+
+            #Break the loop of subroutine 'docker__menuOption_handler__sub'
+            docker__flag_break_menuOption_handler=true
+            ;;
+    esac
+}
+docker__selItem_moveToTop_of_cacheFpath__sub() {
+    #Define and set the relative linenumber 'lineNum_rel'
+    local lineNum_rel=${docker__keyInput}
+
+    #IMPORTANT: set 'lineNum_rel' to 'DOCKER__TABLEROWS' if 'lineNum_rel = 0'
+    if [[ ${lineNum_rel} -eq ${DOCKER__NUMOFMATCH_0} ]]; then
+        lineNum_rel=${DOCKER__TABLEROWS}
     fi
 
     #Get the absolute line-number
-    local lineNum_abs=$((docker__lineNum_base + lineNum_rel__input))
+    local lineNum_abs=$((docker__lineNum_base + lineNum_rel))
 
     #Retrieve 'string' from file based on the specified 'lineNum__input'
-    local line=`retrieve_line_from_file__func "${lineNum_abs}" "${cacheFpath__input}"`
+    docker__line=`retrieve_line_from_file__func "${lineNum_abs}" "${cacheFpath__input}"`
 
     #Delete line specified by 'lineNum_abs'
     delete_lineNum_from_file__func "${lineNum_abs}" "${cacheFpath__input}"
 
     #Insert 'line' at the top of the file.
-    insert_string_into_file__func "${line}" "${DOCKER__LINENUM_1}" "${cacheFpath__input}"
-
-    #Update 'dataFpath__input'
-    echo ">>>>STILL NEED TO UPDATE 'exported_env_var.txt"
-
-    #Remove file if present
-    if [[ -f ${outFpath__input} ]]; then
-        rm ${outFpath__input}
-    fi
-
-    #Write to file"
-    echo "${line}" > ${outFpath__input}
-    
-    #Exit
-    docker__exit_handler__sub
+    insert_string_into_file__func "${docker__line}" "${DOCKER__LINENUM_1}" "${cacheFpath__input}"
 }
+
+docker__any_add_handler__sub() {
+    #wait for another 0.5 seconds to capture additional characters.
+    #Remark:
+    #   This part has been implemented just in case long text has been copied/pasted.
+    read -rs -t0.01 docker__keyInput_add
+
+    #Append 'docker__keyInput_add' to 'docker__keyInput'
+    docker__keyInput="${docker__keyInput}${docker__keyInput_add}"
+
+    #Append key-input
+    docker__totInput="${docker__totInput}${docker__keyInput}"
+
+    #Clean and Move to the beginning of line
+    moveToBeginning_and_cleanLine__func
+}
+
+
 
 
 
@@ -715,22 +910,9 @@ docker__escapekey_handler__sub() {
     moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_0}"
 }
 
-docker__append_keyInput_handler__sub() {
-    #wait for another 0.5 seconds to capture additional characters.
-    #Remark:
-    #   This part has been implemented just in case long text has been copied/pasted.
-    read -rs -t0.01 docker__keyInput_add
-
-    #Append 'docker__keyInput_add' to 'docker__keyInput'
-    docker__keyInput="${docker__keyInput}${docker__keyInput_add}"
-
-    #Append key-input
-    docker__totInput="${docker__totInput}${docker__keyInput}"
-
-    #Clean and Move to the beginning of line
-    moveToBeginning_and_cleanLine__func
-}
 #---NOT IN USE YET
+
+
 
 
 
@@ -741,6 +923,8 @@ main_sub() {
     docker__load_source_files__sub
 
     docker__init_variables__sub
+
+    docker__remove_files__sub
 
     docker__calc_numOfLines_of_inputArgs__sub
 

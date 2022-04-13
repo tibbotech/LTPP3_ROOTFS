@@ -1,14 +1,88 @@
 #---Continue from REPOSITORY:TAG=ubuntu:20.04
-FROM ltps_init:latest
+FROM ubuntu:20.04
 
 #---LABEL about the custom image
 LABEL maintainer="hien@tibbo.com"
 LABEL version="0.1"
-LABEL description="Continue from 'ubuntu:20.04' image; test ENVIRONMENT VARIABLES"
-LABEL repository:tag="ltps_test:init"
+LABEL description="Continue from 'ubuntu:20.04' image, and install updates, upgrades, and required apps"
+LABEL repository:tag="ltps_init:gcctest"
 
 #---Disable Prompt During Packages Installation
 ARG DEBIAN_FRONTEND=noninteractive
 
-#---Set Environment variables
-# RUN export env_var_passed="this is a test"
+#---Update and Upgrade
+RUN apt-get -y update
+RUN apt-get -y upgrade
+
+#---Install mandatory apps
+RUN apt -y install	bison			        \
+                    flex			        \ 
+                    git			            \
+                    libncurses5-dev         \
+                    libssl-dev		        \
+                    openssl			        \ 
+                    qemu			        \ 
+                    qemu-user-static        \ 
+                    sshfs			        \
+                    u-boot-tools	        \
+                    wget                    \
+                    bc                      \
+                    nano                    \
+                    vim                     \
+                    curl                    \
+                    apt-utils		        \
+                    dbus			        \ 
+                    networkd-dispatcher 
+
+#---Fixing ERROR regarding dpkg
+RUN apt-get -y reinstall gconf2 && dpkg-reconfigure gconf2 && dpkg --configure -a && apt-get -y install -f
+
+#---Installing device & module related apps:
+RUN apt-get -y install udev			        \
+                    kmod
+
+#---Installing network-related apps:
+RUN apt-get -y install net-tools            \
+                    iputils-ping            \ 
+                    iproute2                \
+                    iproute2-doc            \ 
+                    netplan.io              \ 
+                    openssh-server	    
+
+#---Installing development-related apps:
+RUN apt-get -y install cmake                \
+                    doxygen                 \ 
+                    graphviz                \
+                    g++-arm-linux-gnueabihf \ 
+                    build-essential	        \
+                    gdb-multiarch           \
+                    cppcheck                \
+                    python3-pip             \
+                    sshpass                 \
+                    gcc-arm-none-eabi       \
+                    libc6-armel-cross       \
+                    libc6-dev-armel-cross   \
+                    gcc-aarch64-linux-gnu   \
+                    libc6-arm64-cross       \
+                    libc6-dev-arm64-cross   \
+                    gcc-riscv64-linux-gnu   \
+                    libc6-dev-riscv64-cross
+
+#---Installing development-related apps with pip3:
+RUN pip3 install flawfinder
+RUN pip3 install lizard
+RUN pip3 install cpplint
+
+#---Configure SSH
+RUN mkdir /var/run/sshd
+RUN echo 'root:root' | chpasswd
+RUN sed -i 's/#*PermitRootLogin prohibit-password/PermitRootLogin yes/g' /etc/ssh/sshd_config
+ENV NOTVISIBLE="in users profile"
+RUN echo "export VISIBLE=now" >> /etc/profile
+
+EXPOSE 22
+CMD ["/usr/sbin/sshd", "-D"]
+
+#---Update and Upgrade
+RUN apt-get -y update
+RUN apt-get -y upgrade

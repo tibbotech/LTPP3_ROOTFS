@@ -58,7 +58,15 @@ RUN apt-get -y install cmake                \
                     gdb-multiarch           \
                     cppcheck                \
                     python3-pip             \
-                    sshpass
+                    sshpass                 \
+                    gcc-arm-none-eabi       \
+                    libc6-armel-cross       \
+                    libc6-dev-armel-cross   \
+                    gcc-aarch64-linux-gnu   \
+                    libc6-arm64-cross       \
+                    libc6-dev-arm64-cross   \
+                    gcc-riscv64-linux-gnu   \
+                    libc6-dev-riscv64-cross
 
 #---Installing development-related apps with pip3:
 RUN pip3 install flawfinder

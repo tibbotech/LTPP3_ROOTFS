@@ -718,7 +718,7 @@ compgen__environmental_variables__sub() {
 }
 
 # compgen__load_source_files__sub() {
-#     source ${docker__global_functions_fpath}
+#     source ${docker__global__fpath}
 # }
 
 compgen__init_variables__sub() {

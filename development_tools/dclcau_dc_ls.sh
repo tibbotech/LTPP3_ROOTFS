@@ -10,6 +10,7 @@ listView_numOfRows__input=${3}
 listView_numOfCols__input=${4}      #0: auto-set-column, 1: 1-column, 2: 2-columns, 3: 3-columns (MAX)
 keyWord__input=${5}
 dircontentlist_fpath__input=${6}
+prepend_emptyLine__input=${7}
 
 
 
@@ -218,7 +219,9 @@ dirContent_show_header__sub() {
     printf_numOfContents_shown="(${FG_DEEPORANGE}${dirContent_numOfItems_shown}${NOCOLOR} out-of ${FG_REDORANGE}${dirContent_numOfItems_max}${NOCOLOR})"
 
     #Print message showing which directory's content is being shown
-    printf '%b%s\n' "${EMPTYSTRING}"
+    if [[ ${prepend_emptyLine__input} == true ]]; then
+        printf '%b%s\n' "${EMPTYSTRING}"
+    fi
     printf '%b%s\n' "${HORIZONTALLINE}"
     printf '%b%s\n' "${FG_DEEPORANGE}List of${NOCOLOR} <${FG_REDORANGE}${dir__input}${NOCOLOR}> ${printf_numOfContents_shown}"
     printf '%b%s\n' "${HORIZONTALLINE}"

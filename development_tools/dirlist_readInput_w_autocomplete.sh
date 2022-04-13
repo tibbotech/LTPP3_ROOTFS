@@ -7,6 +7,9 @@ readMsg__input=${3}
 readMsgRemarks__input=${4}
 output_fPath__input=${5}
 tmp_fPath__input=${6}
+dir_menuTitle__input=${7}
+prepend_emptyLine__input=${8}
+
 
 
 
@@ -432,12 +435,12 @@ dirlist__environmental_variables__sub() {
         docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}
     fi
 
-    docker__global_functions_filename="docker_global_functions.sh"
-    docker__global_functions_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__global_functions_filename}
+    docker__global__filename="docker_global.sh"
+    docker__global__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__global__filename}
 }
 
 dirlist__load_source_files__sub() {
-    source ${docker__global_functions_fpath}
+    source ${docker__global__fpath}
 }
 
 dirlist__initial_file_cleanup__sub() {
@@ -531,10 +534,11 @@ dirlist__readInput_w_autocomplete__sub() {
     #Start phase
     if [[ ! -z ${dir__input} ]]; then
         str=${dir__input}
+    else
+        str=${DOCKER__SLASH}
     fi
     keyInput=${DOCKER__TAB}
     phase=${PHASE_SHOW_KEYINPUT_HANDLER}
-    str=${DOCKER__SLASH}
 
     while true
     do
@@ -692,7 +696,9 @@ dirlist__readInput_w_autocomplete__sub() {
                                 if [[ ${files_areDifferent} == true ]]; then   #file contents are different
                                     dirlist__show_dirContent_handler__sub "${containerID__input}" \
                                             "${str_autocompleted}" \
-                                            "${output_fPath__input}"
+                                            "${output_fPath__input}" \
+                                            "${dir_menuTitle__input}" \
+                                            "${prepend_emptyLine__input}"
 
                                     #Update 'str_shown'
                                     str_shown=${str_autocompleted}
@@ -705,7 +711,9 @@ dirlist__readInput_w_autocomplete__sub() {
                                     if [[ ${fpaths_areSame} == false ]]; then #fullpaths are not the same
                                         dirlist__show_dirContent_handler__sub "${containerID__input}" \
                                                 "${str_autocompleted}" \
-                                                "${output_fPath__input}"
+                                                "${output_fPath__input}" \
+                                                "${dir_menuTitle__input}" \
+                                                "${prepend_emptyLine__input}"
 
                                         #Update 'str_shown'
                                         str_shown=${str_autocompleted}
@@ -848,20 +856,26 @@ dirlist__show_dirContent_handler__sub() {
 	#Input args
 	local containerID__input=${1}
 	local fpath__input=${2}
-    local dirlist_content_fpath=${3}
+    local dirlistContentFpath__input=${3}
+    local menuTitle__input=${4}
+    local prependEmptyLine__input=${5}
 
     #Split directory from file/folder
     local dir=`get_dirname_from_specified_path__func "${fpath__input}"`
     local keyWord=`get_basename_from_specified_path__func "${fpath__input}"`
 
     #Move down one line
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+    if [[ ! -z ${menuTitle__input} ]]; then
+        show_menuTitle_only__func "${menuTitle__input}"
+    else
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+    fi
 
     #Show directory content
 	if [[ -z ${containerID__input} ]]; then	#LOCAL machine (aka HOST)
-		${dclcau_lh_ls__fpath} "${dir}" "${DOCKER__LISTVIEW_NUMOFROWS}" "${DOCKER__LISTVIEW_NUMOFCOLS}" "${keyWord}" "${dirlist_content_fpath}"
+		${dclcau_lh_ls__fpath} "${dir}" "${DOCKER__LISTVIEW_NUMOFROWS}" "${DOCKER__LISTVIEW_NUMOFCOLS}" "${keyWord}" "${dirlistContentFpath__input}" "${prependEmptyLine__input}"
 	else	#REMOTE machine (aka Container)
-		${dclcau_dc_ls__fpath} "${containerID__input}" "${dir}" "${DOCKER__LISTVIEW_NUMOFROWS}" "${DOCKER__LISTVIEW_NUMOFCOLS}" "${keyWord}" "${dirlist_content_fpath}"
+		${dclcau_dc_ls__fpath} "${containerID__input}" "${dir}" "${DOCKER__LISTVIEW_NUMOFROWS}" "${DOCKER__LISTVIEW_NUMOFCOLS}" "${keyWord}" "${dirlistContentFpath__input}" "${prependEmptyLine__input}"
 	fi
 }
 
