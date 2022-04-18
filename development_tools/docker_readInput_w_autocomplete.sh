@@ -333,11 +333,12 @@ docker__readInput_w_autocomplete__sub() {
         #Check if there is only 1 array-element.
         #Remark:
         #   If that is the case, then set 'ret' to that value.
-        if [[ ${onBackSpacePressed} == false ]]; then  #no backspace pressed
-            if [[ ${cachedInput_ArrLen} -eq 1 ]]; then  #only 1 result found
-                ret=${cachedInput_Arr[0]}
-            fi
-        else    #backspace was pressed
+        # if [[ ${onBackSpacePressed} == false ]]; then  #no backspace pressed
+            # if [[ ${cachedInput_ArrLen} -eq 1 ]]; then  #only 1 result found
+            #     ret=${cachedInput_Arr[0]}
+            # fi
+        # else    #backspace was pressed
+        if [[ ${onBackSpacePressed} == true ]]; then  #no backspace pressed
             onBackSpacePressed=false    #set flag back to false
         fi
 

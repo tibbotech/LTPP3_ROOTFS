@@ -204,7 +204,7 @@ function docker__show_list_with_menuTitle__func() {
     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-    echo -e "${DOCKER__QUIT_CTR_C}"
+    echo -e "${DOCKER__FOURSPACES_QUIT_CTRL_C}"
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
 }
 

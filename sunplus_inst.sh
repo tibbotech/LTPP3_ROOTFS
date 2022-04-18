@@ -83,7 +83,7 @@ press_any_key__func
 echo -e "\r"
 echo "---Cloning Sunplus Image (in other words: writing data to local disk)---"
 echo -e "\r"
-git clone https://github.com/sunplus-plus1/SP7021.git
+git clone ${CONTAINER_ENV1}
 
 echo -e "\r"
 echo ">Navigating to ${sunplus_dir}"
@@ -141,7 +141,7 @@ echo -e "\r"
 # 	HEAD detached at a649d0cc1	<--- This is the commit
 # 	nothing to commit, working tree clean
 #-------------------------------------------------------------------
-git checkout 03645855a9a533cda7c4324072ef51d1fcfb8f7f
+git checkout ${CONTAINER_ENV2}
 git submodule update --init --recursive
 
 echo -e "\r"

@@ -280,7 +280,7 @@ docker_containerId_input__sub() {
                 if [[ -z ${docker__myContainerId} ]]; then  #'docker__myContainerId' is an Empty String (this is the start)
                     docker__myContainerId="${docker__myContainerId_input}"
                 else    #'docker__myContainerId' contains data
-                    #Check if 'docker__myContainerId_input' was already added
+                    Check if 'docker__myContainerId_input' was already added
                     isFound=`checkForMatch_keyWord_within_string__func "${docker__myContainerId_input}" "${docker__myContainerId}"`
 
                     #If false, then add 'docker__myContainerId_input' to 'docker__myContainerId'

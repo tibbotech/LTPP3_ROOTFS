@@ -32,8 +32,8 @@ function create_image__func() {
         dockerfile_repository_tag="${dockerfile}:${DOCKER__LATEST}"
     else    #is Not an Empty String
         #Retrieve to-be-exported Environment variables
-        exported_env_var1=`retrieve_sunplus_gitLink_from_file__func "${dockerfile_fpath}" "${docker__exported_env_var_fpath}"`
-        exported_env_var2=`retrieve_sunplus_gitCheckout_from_file__func "${dockerfile_fpath}" "${docker__exported_env_var_fpath}"`
+        exported_env_var1=`retrieve_env_var_link_from_file__func "${dockerfile_fpath}" "${docker__exported_env_var_fpath}"`
+        exported_env_var2=`retrieve_env_var_checkout_from_file__func "${dockerfile_fpath}" "${docker__exported_env_var_fpath}"`
     fi
 
     #Print

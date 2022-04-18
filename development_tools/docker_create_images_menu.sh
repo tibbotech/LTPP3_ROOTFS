@@ -25,24 +25,6 @@ docker__load_environment_variables__sub() {
 
     docker__global__filename="docker_global.sh"
     docker__global__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__global__filename}
-
-    docker__create_an_image_from_dockerfile_filename="docker_create_an_image_from_dockerfile.sh"
-    docker__create_an_image_from_dockerfile_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__create_an_image_from_dockerfile_filename}
-    docker__create_images_from_dockerlist_filename="docker_create_images_from_dockerlist.sh"
-    docker__create_images_from_dockerlist_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__create_images_from_dockerlist_filename}
-    docker__sunplus_git_link_assignment_filename="docker_sunplus_git_link_assignment.sh"
-    docker__sunplus_git_link_assignment_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__sunplus_git_link_assignment_filename}
-    docker__sunplus_git_checkout_assignment_filename="docker_sunplus_git_link_assignment.sh"
-    docker__sunplus_git_checkout_assignment_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__sunplus_git_checkout_assignment_filename}
-    docker__ssh_to_host_filename="docker_ssh_to_host.sh"
-    docker__ssh_to_host_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__ssh_to_host_filename}
-    docker__save_filename="docker_save.sh"
-    docker__save_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__save_filename}
-    docker__load_filename="docker_load.sh"
-    docker__load_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__load_filename}
-
-    docker__git_menu_filename="git_menu.sh"
-    docker__git_menu_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__git_menu_filename}
 }
 
 docker__load_source_files__sub() {
@@ -66,6 +48,9 @@ docker__create_images_menu__sub() {
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
         echo -e "${DOCKER__FOURSPACES}1. Create an ${DOCKER__FG_BORDEAUX}image${DOCKER__NOCOLOR} using a ${DOCKER__FG_DARKBLUE}docker-file${DOCKER__NOCOLOR}"
         echo -e "${DOCKER__FOURSPACES}2. Create ${DOCKER__FG_BORDEAUX}images${DOCKER__NOCOLOR} using a ${DOCKER__FG_LIGHTBLUE}docker-list${DOCKER__NOCOLOR}"
+        echo -e "${DOCKER__FOURSPACES}3. Choose${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}Add${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}Del env-variable ${DOCKER__FG_GREEN114}Link${DOCKER__NOCOLOR}"
+        echo -e "${DOCKER__FOURSPACES}4. Choose${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}Add${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}Del env-variable ${DOCKER__FG_GREEN155}Checkout${DOCKER__NOCOLOR}"
+        echo -e "${DOCKER__FOURSPACES}5. Choose${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}Add${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}Del env-variable ${DOCKER__FG_GREEN114}link${DOCKER__FG_GREEN}-${DOCKER__FG_GREEN155}checkout${DOCKER__FG_GREEN} ${DOCKER__FG_GREEN}Profile${DOCKER__NOCOLOR}"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
         echo -e "${DOCKER__FOURSPACES}r. ${DOCKER__FG_PURPLE}Repository${DOCKER__NOCOLOR}-list"
         echo -e "${DOCKER__FOURSPACES}c. ${DOCKER__FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}-list"
@@ -89,7 +74,7 @@ docker__create_images_menu__sub() {
 
             #Only continue if a valid option is selected
             if [[ ! -z ${docker__myChoice} ]]; then
-                if [[ ${docker__myChoice} =~ [1-2rcsiegq] ]]; then
+                if [[ ${docker__myChoice} =~ [1-5rcsiegq] ]]; then
                     break
                 else
                     if [[ ${docker__myChoice} == ${DOCKER__ENTER} ]]; then
@@ -106,11 +91,24 @@ docker__create_images_menu__sub() {
         #Goto the selected option
         case ${docker__myChoice} in
             1)
-                ${docker__create_an_image_from_dockerfile_fpath}
+                ${docker__create_an_image_from_dockerfile__fpath}
                 ;;
 
             2)
-                ${docker__create_images_from_dockerlist_fpath}
+                ${docker__create_images_from_dockerlist__fpath}
+                ;;
+
+            3)
+                ${docker__repo_link_checkout_menu_select__fpath} "${DOCKER__FILE_LINK}"
+                ;;
+
+            4)
+                ${docker__repo_link_checkout_menu_select__fpath} "${DOCKER__FILE_CHECKOUT}"
+                ;;
+
+            5)
+                echo "docker__repo_linkCheckout_profile_menu_select__fpath: IN PROGRESS"
+                ${docker__repo_linkCheckout_profile_menu_select__fpath}
                 ;;
 
             c)
@@ -122,19 +120,19 @@ docker__create_images_menu__sub() {
                 ;;
 
             s)
-                ${docker__ssh_to_host_fpath}
+                ${docker__ssh_to_host__fpath}
                 ;;
 
             e)
-                ${docker__save_fpath}
+                ${docker__save__fpath}
                 ;;
 
             i)
-                ${docker__load_fpath}
+                ${docker__load__fpath}
                 ;;
 
             g)  
-                ${docker__git_menu_fpath}
+                ${docker__git_menu__fpath}
                 ;;
 
             q)

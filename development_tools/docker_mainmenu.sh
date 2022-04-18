@@ -208,7 +208,7 @@ docker__mainmenu__sub() {
                 ;;
 
             g)  
-                ${docker__git_menu__fpath}
+                ${show_cmdOutput_w_menuTitle__func}
                 ;;
 
             q)
