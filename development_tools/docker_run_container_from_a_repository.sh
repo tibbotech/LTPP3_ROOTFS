@@ -248,7 +248,17 @@ docker__run_container_handler__sub() {
                 #Remark:
                 #   If variable 'docker__repo_chosen' or 'docker__tag_chosen' is an Empty String, then exit this function.
                 docker__get_and_check_repoTag__sub
-                if [[ -z ${docker__repo_chosen} ]] || [[ -z ${docker__tag_chosen} ]]; then
+                if [[ -z ${docker__repo_chosen} ]] || \
+                            [[ -z ${docker__tag_chosen} ]]; then
+                    return
+                elif [[ ${docker__repo_chosen} == ${DOCKER__NONE} ]] || \
+                            [[ ${docker__tag_chosen} == ${DOCKER__NONE} ]]; then
+                    errMsg="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Incomplete image '${docker__imageID_chosen}'"
+                    show_msg_wo_menuTitle_w_PressAnyKey__func "${errMsg}" \
+                                "${DOCKER__NUMOFLINES_0}" \
+                                "${DOCKER__TIMEOUT_10}" \
+                                "${DOCKER__NUMOFLINES_1}" \
+                                "${DOCKER__NUMOFLINES_3}"
                     return
                 else
                     phase=${RUN_CONTAINER_PHASE}
@@ -324,8 +334,8 @@ docker__run_container__sub() {
         # moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
         
         exit
-    else
-        break
+    # else
+    #     break
     fi
 }
 

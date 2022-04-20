@@ -171,7 +171,7 @@ docker__preCheck__sub() {
 
     #In case one or more failed check-items were found
     if [[ ${docker__numOf_errors_found} -gt ${DOCKER__NUMOFMATCH_0} ]]; then
-        show_errMsg_without_menuTitle_exit_func "${ERRMSG_ONE_OR_MORE_CHECKITEMS_FAILED}" \
+        show_errMsg_wo_menuTitle_and_exit_func "${ERRMSG_ONE_OR_MORE_CHECKITEMS_FAILED}" \
                         ${DOCKER__NUMOFLINES_1} \
                         ${DOCKER__NUMOFLINES_2}
     fi

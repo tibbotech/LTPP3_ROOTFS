@@ -33,29 +33,40 @@ docker__load_constants__sub() {
 	DOCKER__DIRLIST_READ_DIALOG="Choose a file: "
     DOCKER__DIRLIST_ERRMSG="${DOCKER__FOURSPACES}-:${DOCKER__FG_LIGHTRED}directory is Empty${DOCKER__NOCOLOR}:-"
 
-    DOCKER__LINK_MENUTITLE="Choose${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}Add${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}Del env-variable ${DOCKER__FG_GREEN155}Checkout${DOCKER__NOCOLOR}"
-    DOCKER__LINK_LOCATION_INFO_MSG="${DOCKER__FOURSPACES}${DOCKER__FG_VERYLIGHTORANGE}Location${DOCKER__NOCOLOR}:"
+    DOCKER__LINK_MENUTITLE="Choose${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}Add${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}Del env-variable ${DOCKER__FG_GREEN41}Link${DOCKER__NOCOLOR}"
+    DOCKER__LINK_LOCATION_INFO_MSG="${DOCKER__FOURSPACES}${DOCKER__FG_VERYLIGHTORANGE}Location${DOCKER__NOCOLOR}: "
     DOCKER__LINK_MENUOPTIONS_MSG="${DOCKER__FOURSPACES_F6_CHOOSE}\n"
     DOCKER__LINK_MENUOPTIONS_MSG+="${DOCKER__FOURSPACES_F7_ADD}\n"
     DOCKER__LINK_MENUOPTIONS_MSG+="${DOCKER__FOURSPACES_F8_DEL}\n"
     DOCKER__LINK_MENUOPTIONS_MSG+="${DOCKER__FOURSPACES_F12_QUIT}"
     DOCKER__LINK_CHOOSE_LINK="Choose link: "
-    DOCKER__LINK_DELETE_LINK="Del link: "
     DOCKER__LINK_ADD_LINK="Add link (${DOCKER__FG_YELLOW};c${DOCKER__NOCOLOR}lear): "
+    DOCKER__LINK_DELETE_LINK="Del link: "
 
-    DOCKER__CHECKOUT_MENUTITLE="Choose${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}Add${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}Del env-variable ${DOCKER__FG_GREEN114}Link${DOCKER__NOCOLOR}"
-    DOCKER__CHECKOUT_LOCATION_INFO_MSG="${DOCKER__FOURSPACES}${DOCKER__FG_VERYLIGHTORANGE}Location${DOCKER__NOCOLOR}:"
+    DOCKER__CHECKOUT_MENUTITLE="Choose${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}Add${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}Del env-variable ${DOCKER__FG_GREEN119}Checkout${DOCKER__NOCOLOR}"
+    DOCKER__CHECKOUT_LOCATION_INFO_MSG="${DOCKER__FOURSPACES}${DOCKER__FG_VERYLIGHTORANGE}Location${DOCKER__NOCOLOR}: "
     DOCKER__CHECKOUT_MENUOPTIONS_MSG="${DOCKER__FOURSPACES_F6_CHOOSE}\n"
     DOCKER__CHECKOUT_MENUOPTIONS_MSG+="${DOCKER__FOURSPACES_F7_ADD}\n"
     DOCKER__CHECKOUT_MENUOPTIONS_MSG+="${DOCKER__FOURSPACES_F8_DEL}\n"
     DOCKER__CHECKOUT_MENUOPTIONS_MSG+="${DOCKER__FOURSPACES_F12_QUIT}"
     DOCKER__CHECKOUT_CHOOSE_CHECKOUT="Choose checkout: "
-    DOCKER__CHECKOUT_DELETE_CHECKOUT="Del checkout: "
     DOCKER__CHECKOUT_ADD_CHECKOUT="Add checkout (${DOCKER__FG_YELLOW};c${DOCKER__NOCOLOR}lear): "
+    DOCKER__CHECKOUT_DELETE_CHECKOUT="Del checkout: "
+
+    DOCKER__PROFILE_MENUTITLE="Choose${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}Add${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}Del "
+    DOCKER__PROFILE_MENUTITLE+="env-variable ${DOCKER__FG_GREEN41}link${DOCKER__FG_GREEN}-${DOCKER__FG_GREEN119}checkout${DOCKER__NOCOLOR} ${DOCKER__FG_GREEN}Profile${DOCKER__NOCOLOR}"
+    DOCKER__PROFILE_LOCATION_INFO_MSG="${DOCKER__FOURSPACES}${DOCKER__FG_VERYLIGHTORANGE}Location${DOCKER__NOCOLOR}: "
+    DOCKER__PROFILE_MENUOPTIONS_MSG="${DOCKER__FOURSPACES_F6_CHOOSE}\n"
+    DOCKER__PROFILE_MENUOPTIONS_MSG+="${DOCKER__FOURSPACES_F7_ADD}\n"
+    DOCKER__PROFILE_MENUOPTIONS_MSG+="${DOCKER__FOURSPACES_F8_DEL}\n"
+    DOCKER__PROFILE_MENUOPTIONS_MSG+="${DOCKER__FOURSPACES_F12_QUIT}"
+    DOCKER__PROFILE_CHOOSE_PROFILE="Choose profile: "
+    DOCKER__PROFILE_ADD_PROFILE="Add profile: "
+    DOCKER__PROFILE_DELETE_PROFILE="Del profile: "
 }
 
 docker__init_variables__sub() {
-    docker__dockerFileFpath=${DOCKER__EMPTYSTRING}
+    docker__dockerFile_fpath=${DOCKER__EMPTYSTRING}
     docker__cacheFpath=${DOCKER__EMPTYSTRING}
     docker__linkCacheFpath=${DOCKER__EMPTYSTRING}
     docker__checkoutCacheFpath=${DOCKER__EMPTYSTRING}
@@ -83,7 +94,7 @@ docker__show_dockerList_files__sub() {
                         "${DOCKER__DIRLIST_READ_DIALOG}" \
                         "${DOCKER__CONTAINER_ENV1}" \
                         "${DOCKER__CONTAINER_ENV2}" \
-                        "${docker__repo_link_checkout_menu_select_tmp__fpath}" \
+                        "${docker__repo_link_checkout_menu_select_out__fpath}" \
                         "${DOCKER__TABLEROWS}"
 
     #Get the exitcode just in case a Ctrl-C was pressed in function 'show_dirContent__func' (in script 'docker_global.sh')
@@ -93,8 +104,8 @@ docker__show_dockerList_files__sub() {
     fi
 
     #Get result from file.
-    docker__dockerFileFpath=`get_output_from_file__func \
-                        "${docker__repo_link_checkout_menu_select_tmp__fpath}" \
+    docker__dockerFile_fpath=`get_output_from_file__func \
+                        "${docker__repo_link_checkout_menu_select_out__fpath}" \
                         "${DOCKER__LINENUM_1}"`
 }
 
@@ -105,7 +116,7 @@ docker__generate_and_create_cache_filenames__sub() {
     #   1. 'link_cache_fpath'
     #   2. 'checkout_cache_fpath'
     #   3. 'linkCheckoutProfile_cache_fpath'  
-    local outputResult=`generate_cache_filenames_basedOn_specified_repositoryTag__func "${docker__docker_cache__dir}" "${docker__dockerFileFpath}"`
+    local outputResult=`generate_cache_filenames_basedOn_specified_repositoryTag__func "${docker__docker_cache__dir}" "${docker__dockerFile_fpath}"`
     docker__linkCacheFpath=`echo "${outputResult}" | cut -d"${SED__RS}" -f1`
     docker__checkoutCacheFpath=`echo "${outputResult}" | cut -d"${SED__RS}" -f2`
     docker__linkCheckoutProfileCacheFpath=`echo "${outputResult}" | cut -d"${SED__RS}" -f3`
@@ -114,13 +125,13 @@ docker__generate_and_create_cache_filenames__sub() {
     createAndWrite_data_to_cacheFiles_ifNotExist__func "${docker__linkCacheFpath}" \
                         "${docker__checkoutCacheFpath}" \
                         "${docker__linkCheckoutProfileCacheFpath}" \
-                        "${docker__dockerFileFpath}" \
+                        "${docker__dockerFile_fpath}" \
                         "${docker__exported_env_var_fpath}"
 }
 
 docker__prep_input_args__sub() {
     case "${exp_env_var_type__input}" in
-        ${DOCKER__FILE_LINK})
+        ${DOCKER__LINK})
             docker__exp_env_var_menuTitle=${DOCKER__LINK_MENUTITLE}
             docker__exp_env_var_locationInfo_fpath="${DOCKER__FG_LIGHTGREY}${docker__linkCacheFpath}${DOCKER__NOCOLOR}"
             docker__exp_env_var_locationInfo="${DOCKER__LINK_LOCATION_INFO_MSG}"
@@ -132,7 +143,7 @@ docker__prep_input_args__sub() {
 
             docker__cacheFpath=${docker__linkCacheFpath}
             ;;
-        ${DOCKER__FILE_CHECKOUT})
+        ${DOCKER__CHECKOUT})
             docker__exp_env_var_menuTitle=${DOCKER__CHECKOUT_MENUTITLE}
             docker__exp_env_var_locationInfo_fpath="${DOCKER__FG_LIGHTGREY}${docker__checkoutCacheFpath}${DOCKER__NOCOLOR}"
             docker__exp_env_var_locationInfo="${DOCKER__CHECKOUT_LOCATION_INFO_MSG}"
@@ -144,10 +155,22 @@ docker__prep_input_args__sub() {
 
             docker__cacheFpath=${docker__checkoutCacheFpath}
             ;;
+        ${DOCKER__LINKCHECKOUT_PROFILE})
+            docker__exp_env_var_menuTitle=${DOCKER__PROFILE_MENUTITLE}
+            docker__exp_env_var_locationInfo_fpath="${DOCKER__FG_LIGHTGREY}${docker__linkCheckoutProfileCacheFpath}${DOCKER__NOCOLOR}"
+            docker__exp_env_var_locationInfo="${DOCKER__PROFILE_LOCATION_INFO_MSG}"
+            docker__exp_env_var_locationInfo+="${docker__exp_env_var_locationInfo_fpath}"
+            docker__exp_env_var_menuOptions=${DOCKER__PROFILE_MENUOPTIONS_MSG}
+            docker__exp_env_var_option_choose=${DOCKER__PROFILE_CHOOSE_PROFILE}
+            docker__exp_env_var_option_add=${DOCKER__PROFILE_ADD_PROFILE}
+            docker__exp_env_var_option_del=${DOCKER__PROFILE_DELETE_PROFILE}
+
+            docker__cacheFpath=${docker__linkCheckoutProfileCacheFpath}
+            ;;
     esac
 }
 
-docker__show_input_write_toFile__sub() {
+docker__show_choose_add_del_handler__sub() {
     #Execute script show/choose/add/del git-link(s)
     ${docker__show_choose_add_del_from_cache__fpath} "${docker__exp_env_var_menuTitle}" \
                         "${docker__exp_env_var_locationInfo}" \
@@ -158,7 +181,7 @@ docker__show_input_write_toFile__sub() {
                         "${docker__exported_env_var_fpath}" \
                         "${docker__cacheFpath}" \
                         "${docker__show_choose_add_del_from_cache_out__fpath}" \
-                        "${docker__dockerFileFpath}" \
+                        "${docker__dockerFile_fpath}" \
                         "${exp_env_var_type__input}" \
                         "${DOCKER__TIMEOUT_5}"
 
@@ -189,7 +212,7 @@ main_sub() {
 
     docker__prep_input_args__sub
 
-    docker__show_input_write_toFile__sub
+    docker__show_choose_add_del_handler__sub
 }
 
 

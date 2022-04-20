@@ -53,12 +53,14 @@ DOCKER__FG_DARKBLUE=$'\e[30;38;5;33m'
 DOCKER__FG_DEEPORANGE=$'\e[30;38;5;208m'
 DOCKER__FG_REDORANGE=$'\e[30;38;5;203m'
 DOCKER__FG_GREEN=$'\e[30;38;5;82m'
+DOCKER__FG_GREEN41=$'\e[30;38;5;41m'
+DOCKER__FG_GREEN48=$'\e[30;38;5;48m'
+DOCKER__FG_GREEN71=$'\e[30;38;5;71m'
 DOCKER__FG_GREEN85=$'\e[30;38;5;85m'
-DOCKER__FG_GREEN114=$'\e[30;38;5;114m'
+DOCKER__FG_GREEN119=$'\e[30;38;5;119m'
 DOCKER__FG_GREEN155=$'\e[30;38;5;155m'
 DOCKER__FG_LIGHTBLUE=$'\e[30;38;5;45m'
 DOCKER__FG_LIGHTGREEN=$'\e[1;32m'
-DOCKER__FG_LIGHTGREEN_71=$'\e[30;38;5;71m'
 DOCKER__FG_LIGHTGREY=$'\e[30;38;5;246m'
 DOCKER__FG_LIGHTPINK=$'\e[30;38;5;218m'
 DOCKER__FG_LIGHTRED=$'\e[1;31m'
@@ -78,18 +80,22 @@ DOCKER__BG_GREEN85=$'\e[30;48;5;85m'
 DOCKER__BG_ORANGE=$'\e[30;48;5;215m'
 DOCKER__BG_LIGHTBLUE=$'\e[30;48;5;45m'
 DOCKER__BG_LIGHTGREY=$'\e[30;48;5;246m'
+DOCKER__BG_LIGHTSOFTYELLOW=$'\e[30;48;5;229m'
 DOCKER__BG_WHITE=$'\e[30;48;5;15m'
 
 
 
 #---DIMENSION CONSTANTS
+DOCKER__TEN=10
 DOCKER__NINE=9
+
 DOCKER__TABLEWIDTH=70
 DOCKER__TABLEROWS=10
 
 
 
 #---DOCKER RELATED CONSTANTS
+DOCKER__NONE="<none>"
 DOCKER__PATTERN_EXITED="Exited"
 
 DOCKER__STATE_RUNNING="Running"
@@ -111,10 +117,11 @@ DOCKER__EXITCODE_99=99  #an error which tells the device to exit
 
 
 #---FILE-RELATED CONSTANTS
-DOCKER__FILE_LINK="link"
-DOCKER__FILE_CHECKOUT="checkout"
-DOCKER__FILE_LINKCHECKOUT_PROFILE="link_checkout_profile"
-DOCKER__FILE_CACHE="cache"
+DOCKER__CHECKOUT="checkout"
+DOCKER__CACHE="cache"
+DOCKER__LINK="link"
+DOCKER__LINKCHECKOUT_PROFILE="linkcheckout_profile"
+
 
 
 
@@ -176,12 +183,24 @@ DOCKER__NUMOFLINES_12=12
 
 DOCKER__NUMOFMATCH_0=0
 DOCKER__NUMOFMATCH_1=1
+DOCKER__NUMOFMATCH_2=2
+DOCKER__NUMOFMATCH_3=3
+DOCKER__NUMOFMATCH_4=4
 DOCKER__NUMOFMATCH_10=10
 DOCKER__NUMOFMATCH_20=20
 
 DOCKER__TIMEOUT_3=3
 DOCKER__TIMEOUT_5=5
 DOCKER__TIMEOUT_10=10
+
+
+
+#---PATH CONSTANTS
+DOCKER__COLOR_SLASH=${DOCKER__FG_LIGHTGREY}${DOCKER__SLASH}${DOCKER__NOCOLOR}
+DOCKER__COLOR_DOTDOT="${DOCKER__FG_LIGHTRED}${DOCKER__DOT}${DOCKER__DOT}${DOCKER__NOCOLOR}"
+DOCKER__COLOR_SLASH_DOTDOT="${DOCKER__COLOR_SLASH}${DOCKER__COLOR_DOTDOT}"
+DOCKER__COLOR_SLASH_DOTDOT_SLASH="${DOCKER__COLOR_SLASH}${DOCKER__COLOR_DOTDOT}${DOCKER__COLOR_SLASH}"
+DOCKER__COLOR_SLASH_DOTDOT_SLASH_DOTDOT="${DOCKER__COLOR_SLASH}${DOCKER__COLOR_DOTDOT}${DOCKER__COLOR_SLASH}${DOCKER__COLOR_DOTDOT}"
 
 
 
@@ -212,6 +231,9 @@ DOCKER__NO="n"
 DOCKER__QUIT="q"
 DOCKER__REDO="r"
 DOCKER__YES="y"
+
+DOCKER__Y_SLASH_N="${DOCKER__Y}/${DOCKER__N}"
+DOCKER__Y_SLASH_N_SLASH_B="${DOCKER__Y}/${DOCKER__N}/${DOCKER__BACK}"
 
 DOCKER__SEMICOLON_BACK=";b"
 DOCKER__SEMICOLON_CLEAR=";c"
@@ -272,6 +294,8 @@ DOCKER__LATEST="latest"
 
 DOCKER__QUIT_CTRL_C="${DOCKER__FG_LIGHTGREY}Quit${DOCKER__NOCOLOR} (${DOCKER__FG_LIGHTGREY}Ctrl+C${DOCKER__NOCOLOR})"
 
+DOCKER__FOURSPACES_Y_YES="${DOCKER__FOURSPACES}y. ${DOCKER__FG_LIGHTGREY}Yes${DOCKER__NOCOLOR}"
+DOCKER__FOURSPACES_N_NO="${DOCKER__FOURSPACES}n. ${DOCKER__FG_LIGHTGREY}No${DOCKER__NOCOLOR}"
 DOCKER__FOURSPACES_B_BACK="${DOCKER__FOURSPACES}b. ${DOCKER__FG_LIGHTGREY}Back${DOCKER__NOCOLOR}"
 DOCKER__FOURSPACES_C_CHOOSE="${DOCKER__FOURSPACES}c. ${DOCKER__FG_LIGHTGREY}Choose${DOCKER__NOCOLOR}"
 DOCKER__FOURSPACES_F12_QUIT="${DOCKER__FOURSPACES}${DOCKER__ENUM_FUNC_F12}. ${DOCKER__FG_LIGHTGREY}Quit${DOCKER__NOCOLOR} (${DOCKER__FG_LIGHTGREY}Ctrl+C${DOCKER__NOCOLOR})"
@@ -286,7 +310,7 @@ DOCKER__FOURSPACES_F8_DEL+=" (${DOCKER__FG_LIGHTGREY}e.g.${DOCKER__NOCOLOR}, ${D
 DOCKER__ONESPACE_PREV="${DOCKER__ONESPACE}${DOCKER__HOOKLEFT} ${DOCKER__FG_LIGHTGREY}${DOCKER__PREV}${DOCKER__NOCOLOR}"
 DOCKER__ONESPACE_NEXT="${DOCKER__FG_LIGHTGREY}${DOCKER__NEXT}${DOCKER__NOCOLOR} ${DOCKER__HOOKRIGHT}${DOCKER__ONESPACE}"
 
-DOCKER__CONFIGURED="(${DOCKER__FG_LIGHTGREY}configured${DOCKER__NOCOLOR})"
+DOCKER__CONFIGURED="(cfg)"
 
 
 
@@ -414,22 +438,31 @@ function press_any_key__func() {
 
 function confirmation_w_timer__func() {
     #Input args
-    local timeout__input=${1}
-    local prepend_numOfLines__input=${2}
-    local append_numOfLines__input=${3}
+    local confirmation_choices__input=${1}
+    local timeout__input=${2}
+    local prepend_numOfLines__input=${3}
+    local append_numOfLines__input=${4}
 
     #Define constants
     local ECHOMSG_DO_YOU_WISH_TO_CONTINUE="Do you wish to continue"
-    local ECHOMSG_Y_SLASH_N="${DOCKER__Y}/${DOCKER__N}"
 
 
 	#Initialize variables
+    local regEx=${DOCKER__EMPTYSTRING}
+    if [[ ${confirmation_choices__input} == ${DOCKER__Y_SLASH_N} ]]; then
+        regEx="[yn]"
+    else   #confirmation_choices__input =  DOCKER__Y_SLASH_N_SLASH_B_SLASH_Q
+        regEx="[ynbq]"
+    fi
+
 	local ret=${DOCKER__EMPTYSTRING}
 	local tCounter=0
+
     local timeout=${timeout__input}
     if [[ -z ${timeout} ]]; then
         timeout=${DOCKER__TIMEOUT_10}
     fi
+
     local prepend_numOfLines=${prepend_numOfLines__input}
     if [[ -z ${prepend_numOfLines} ]]; then
         prepend_numOfLines=${DOCKER__NUMOFLINES_1}
@@ -441,8 +474,9 @@ function confirmation_w_timer__func() {
     local after_confirmation_append_numOfLines=$((append_numOfLines - 1))
 
 
+
     #Hide cursor
-    cursor_hide__func
+    # cursor_hide__func
 
 	#Show Press Any Key message with count-down
 	moveDown_and_cleanLines__func "${prepend_numOfLines}"
@@ -450,10 +484,10 @@ function confirmation_w_timer__func() {
 	do
 		delta_tcounter=$(( ${timeout} - ${tCounter} ))
 
-		read -N1 -t1 -r -p "${ECHOMSG_DO_YOU_WISH_TO_CONTINUE} (${delta_tcounter}) (${ECHOMSG_Y_SLASH_N})? " ret
+		read -N1 -t1 -r -p "${ECHOMSG_DO_YOU_WISH_TO_CONTINUE} (${delta_tcounter}) (${confirmation_choices__input})? " ret
 
 		if [[ ! -z "${ret}" ]]; then
-			if [[ "${ret}" =~ [yn] ]]; then
+			if [[ "${ret}" =~ ${regEx} ]]; then
                 moveDown_and_cleanLines__func "${after_confirmation_append_numOfLines}"
 
 				break
@@ -479,7 +513,7 @@ function confirmation_w_timer__func() {
     fi
 
     #Hide cursor
-    cursor_show__func
+    # cursor_show__func
 
     #Update 'extern__ret'
     #Remark:
@@ -527,7 +561,9 @@ function createAndWrite_data_to_cacheFiles_ifNotExist__func() {
     #   If not present, then:
     #       Write the retrieved git-link to cache 'dockerfile_fpath__input'
     if [[ ! -f ${link_cache_fpath__input} ]]; then
-        echo ${git_link} > ${link_cache_fpath__input}
+        if [[ ! -z ${git_link} ]]; then
+            echo ${git_link} > ${link_cache_fpath__input}
+        fi
     fi
 
     #Check if file 'checkout_cache_fpath__input' is exists
@@ -535,7 +571,9 @@ function createAndWrite_data_to_cacheFiles_ifNotExist__func() {
     #   If not present, then:
     #       Write the retrieved git-checkout to cache 'dockerfile_fpath__input'
     if [[ ! -f ${checkout_cache_fpath__input} ]]; then
-        echo ${git_checkout} > ${checkout_cache_fpath__input}
+        if [[ ! -z ${git_checkout} ]]; then
+            echo ${git_checkout} > ${checkout_cache_fpath__input}
+        fi
     fi
 
     #Check if file 'checkout_cache_fpath__input' is exists
@@ -543,7 +581,9 @@ function createAndWrite_data_to_cacheFiles_ifNotExist__func() {
     #   If not present, then:
     #       Write the retrieved git-link & checkout to cache 'dockerfile_fpath__input'
     if [[ ! -f ${linkCheckoutProfile_cache_Fpath} ]]; then
-        echo "${git_link}${DOCKER__ONESPACE}${git_checkout}" > ${linkCheckoutProfile_cache_Fpath}
+        if [[ ! -z ${git_link} ]] && [[ ! -z ${git_checkout} ]]; then
+            echo "${git_link}${DOCKER__COLON}${git_checkout}" > ${linkCheckoutProfile_cache_Fpath}
+        fi
     fi
 }
 
@@ -570,9 +610,9 @@ function generate_cache_filenames_basedOn_specified_repositoryTag__func() {
     local repositoryTag_subst=`echo "${dockerfile_fpath_repositoryTag}" | sed "s/${DOCKER__COLON}/${DOCKER__DOUBLE_UNDERSCORE}/g"`
 
     #Create cache-filenames
-    local link_cache_filename="${repositoryTag_subst}${DOCKER__DOUBLE_UNDERSCORE}${DOCKER__FILE_LINK}.${DOCKER__FILE_CACHE}"
-    local checkout_cache_filename="${repositoryTag_subst}${DOCKER__DOUBLE_UNDERSCORE}${DOCKER__FILE_CHECKOUT}.${DOCKER__FILE_CACHE}"
-    local linkCheckoutProfile_cache_filename="${repositoryTag_subst}${DOCKER__DOUBLE_UNDERSCORE}${DOCKER__FILE_LINKCHECKOUT_PROFILE}.${DOCKER__FILE_CACHE}"
+    local link_cache_filename="${repositoryTag_subst}${DOCKER__DOUBLE_UNDERSCORE}${DOCKER__LINK}.${DOCKER__CACHE}"
+    local checkout_cache_filename="${repositoryTag_subst}${DOCKER__DOUBLE_UNDERSCORE}${DOCKER__CHECKOUT}.${DOCKER__CACHE}"
+    local linkCheckoutProfile_cache_filename="${repositoryTag_subst}${DOCKER__DOUBLE_UNDERSCORE}${DOCKER__LINKCHECKOUT_PROFILE}.${DOCKER__CACHE}"
 
     #Create cache-fullpaths
     local link_cache_fpath=${cache_dir__input}/${link_cache_filename}
@@ -1118,6 +1158,11 @@ function show_dirContent__func() {
 
 
 
+#---Trim message to fit within the specified terminal window-size 'DOCKER__TABLEWIDTH'
+    trim_string_toFit_specified_windowSize__func "${info__input}" "${DOCKER__TABLEWIDTH}"
+
+
+
 #---Calculate num-of-lines of input-args
     #Each input-args
     menuTitle_numOfLines=`echo -e "${menuTitle__input}" | sed '/^\s*$/d' | wc -l`
@@ -1380,7 +1425,7 @@ function show_dirContent__func() {
                 ${DOCKER__ESCAPEKEY})
                     moveToBeginning_and_cleanLine__func
 
-                    keyOutput=`functionKey_detection__func "${docker__keyInput}"`
+                    keyOutput=`functionKey_detection__func "${table_index_chosen}"`
                     if [[ ${keyOutput} == ${DOCKER__ENUM_FUNC_F12} ]]; then
                         #Print read-input dialog
                         echo "${readDialog__input}"
@@ -1444,6 +1489,303 @@ function show_dirContent__func() {
     echo "${ret}" > ${outputFpath__input}
 }
 
+function show_fileContent__sub() {
+#---Input args
+    local fpath__input=${1}
+    local menuTitle__input=${2}
+    local remark__input=${3}
+    local info__input=${4}
+    local menuOptions__input=${5}
+    local errMsg__input=${6}
+    local readDialog__input=${7}
+    local outputFpath__input=${8}
+    local table_index_max__input=${9}
+
+
+
+#---Define variables
+    local fpath_arr=()
+    local fpath_arrIndex=0
+    local fpath_arrLen=0
+    local fpath_arrItem=${DOCKER__EMPTYSTRING}
+
+    local keyInput=${DOCKER__EMPTYSTRING}
+    local keyOutput=${DOCKER__EMPTYSTRING}
+
+    local table_index=0
+    local table_index_base=0
+    local table_index_base_try_next=0
+
+    local flag_main_whileLoop_setTo_break=false
+    local flag_forLoop_setTo_break=false
+
+
+
+#---Remove file (if present)
+    if [[ -f ${outputFpath__input} ]]; then
+        rm ${outputFpath__input}
+    fi
+
+
+
+#---Trim message to fit within the specified terminal window-size 'DOCKER__TABLEWIDTH'
+    trim_string_toFit_specified_windowSize__func "${info__input}" "${DOCKER__TABLEWIDTH}"
+
+
+
+#---Calculate num-of-lines of input-args
+    #Each input-args
+    menuTitle_numOfLines=`echo -e "${menuTitle__input}" | sed '/^\s*$/d' | wc -l`
+    remark_numOfLines=`echo -e "${remark__input}" | sed '/^\s*$/d' | wc -l`
+    info_numOfLines=`echo -e "${info__input}" | sed '/^\s*$/d' | wc -l`
+    menuOptions_numOfLines=`echo -e "${menuOptions__input}" | sed '/^\s*$/d' | wc -l`
+    readDialog_numOfLines=`echo -e "${readDialog__input}" | sed '/^\s*$/d' | wc -l`
+
+    #fixed objects
+    fixed_numOfLines=${DOCKER__NUMOFLINES_4}    #due to a fixed number of horizontal and empty lines
+    if [[ ${remark_numOfLines} -gt ${DOCKER__NUMOFMATCH_0} ]]; then
+        fixed_numOfLines=$((fixed_numOfLines + 1))  #due to the preceding horizontal line
+    fi
+    if [[ ${info_numOfLines} -gt ${DOCKER__NUMOFMATCH_0} ]]; then
+        fixed_numOfLines=$((fixed_numOfLines + 1))  #due to the preceding horizontal line
+    fi
+    if [[ ${menuOptions_numOfLines} -gt ${DOCKER__NUMOFMATCH_0} ]]; then
+        fixed_numOfLines=$((fixed_numOfLines + 1))  #due to the preceding horizontal line
+    fi
+
+    #total
+    tot_numOfLines=$((menuTitle_numOfLines + remark_numOfLines + info_numOfLines + menuOptions_numOfLines + readDialog_numOfLines + fixed_numOfLines + table_index_max__input))
+
+
+
+#---Define 'prev' and 'next' variables
+    local prev_only_print="${DOCKER__ONESPACE_PREV}"
+
+    local oneSpacePrev_len=`get_stringlen_wo_regEx__func "${DOCKER__ONESPACE_PREV}"`
+    local oneSpaceNext_len=`get_stringlen_wo_regEx__func "${DOCKER__ONESPACE_NEXT}"`
+    local space_between_prev_and_next_len=$(( DOCKER__TABLEWIDTH - (oneSpacePrev_len + oneSpaceNext_len) - 1 ))
+    local space_between_prev_and_next=`duplicate_char__func "${DOCKER__ONESPACE}" "${space_between_prev_and_next_len}"`
+    local prev_spaces_next_print="${DOCKER__ONESPACE_PREV}${space_between_prev_and_next}${DOCKER__ONESPACE_NEXT}"
+
+    local docker_space_between_leftBoundary_and_next_len=$(( DOCKER__TABLEWIDTH - oneSpacePrev_len - 1 ))
+    local docker_space_between_leftBoundary_and_next=`duplicate_char__func "${DOCKER__ONESPACE}" "${docker_space_between_leftBoundary_and_next_len}"`
+    local next_only_print="${docker_space_between_leftBoundary_and_next}${DOCKER__ONESPACE_NEXT}"
+
+
+
+#---Store directory content in array'
+    #Remark: 
+    #   Also make sure to substitute '<space>' with '${STX}space${ETX}'
+    readarray -t fpath_arr < ${fpath__input}
+
+    #Get 'fpath_arrLen'
+    fpath_arrLen=${#fpath_arr[@]}
+
+#---Show directory content
+    while true
+    do
+#-------Show cursor
+        cursor_hide__func
+
+#-------Disable keyboard-input
+        disable_keyboard_input__func
+        
+#-------Show menu-title
+        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+        show_centered_string__func "${menuTitle__input}" "${DOCKER__TABLEWIDTH}"
+        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+
+        if [[ ! -z ${fpath_arr[@]} ]]; then
+            #Initialization
+            flag_forLoop_setTo_break=false
+            fpath_arrIndex=0
+            keyInput=0
+            table_index=0
+
+            #Loop thru array
+            for fpath_arrItem in "${fpath_arr[@]}"
+            do
+                #Increment array-index
+                fpath_arrIndex=$((fpath_arrIndex + 1))
+
+                #Turn
+                if [[ ${fpath_arrIndex} -gt ${table_index_base} ]]; then
+                    #increment table-index
+                    table_index=$((table_index + 1))
+
+                    #Check if 'table_index = table_index_max__input'
+                    #Remark:
+                    #   If true, set 'table_index = 0'
+                    if [[ ${table_index} -eq ${table_index_max__input} ]]; then
+                        table_index=${DOCKER__NUMOFMATCH_0}
+
+                        flag_forLoop_setTo_break=true
+                    fi
+
+                    #Print filename
+                    echo -e "${DOCKER__FOURSPACES}${fpath_arrItem}"
+                fi
+
+                #Prevously 'table_index' was set to '0'.
+                #This means that the maximum number of items allowed to-be-shown has been reached.
+                #In this case, break the for-loop.
+                if [[ ${flag_forLoop_setTo_break} == true ]]; then
+                    break
+                fi
+            done    #end of for
+        else
+            moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+            show_centered_string__func "${errMsg__input}" "${DOCKER__TABLEWIDTH}"
+        fi
+
+
+
+#-------Fill up table with Empty Lines (if needed)
+        #Check if 'flag_forLoop_setTo_break = false'
+        #Remark:
+        #   Remember that if 'flag_forLoop_setTo_break = true', then...
+        #   ...the for-loop was broken due to 'table_index = table_index_max__input'.
+        if [[ ${flag_forLoop_setTo_break} == false ]]; then
+            while [[ ${table_index} -lt ${table_index_max__input} ]]
+            do
+                #increment line-number
+                table_index=$((table_index + 1))
+
+                #Print an Empty Line
+                echo "${DOCKER__EMPTYSTRING}"
+            done
+        fi
+
+
+
+#------Show 'prev' and 'next'
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+        #Calculate the 'table_index_base_try_next'
+        #Remark:
+        #   By doing this it can be determined whether the last-page has been reached or not.
+        table_index_base_try_next=$((table_index_base + table_index_max__input))
+
+        #Check if the specified file contains less than or equal to 10 lines
+        if [[ ${fpath_arrLen} -le ${table_index_max__input} ]]; then #less than 10 lines
+            #Don't show anything
+            echo -e "${EMPTYSTRING}"
+        else    #file contains more than 10 lines
+            if [[ ${table_index_base} -eq ${DOCKER__NUMOFMATCH_0} ]]; then   #range 1-10
+                echo -e "${next_only_print}"
+            else    #all other ranges
+                if [[ ${table_index_base_try_next} -ge ${fpath_arrLen} ]]; then  #last range value (e.g. 40-50), assuming 50 is the last-index
+                    echo -e "${prev_only_print}"
+                else   #range 10-20, 20-30, 30-40, etc.
+                    echo -e "${prev_spaces_next_print}"
+                fi
+            fi
+        fi
+
+
+
+#-------Show info & menu-options
+        # moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+        if [[ ! -z ${info__input} ]]; then
+            duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+            echo -e "${info__input}"
+        fi
+        if [[ ! -z ${remark__input} ]]; then
+            duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+            echo -e "${remark__input}"
+        fi
+        if [[ ! -z ${menuOptions__input} ]]; then
+            duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+            echo -e "${menuOptions__input}"
+        fi
+        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+
+
+#-------Enable keyboard-input
+        enable_keyboard_input__func
+
+#-------Show cursor
+        cursor_show__func
+
+#-------Read-input
+        while true
+        do
+            #Show read-input
+            read -N1 -r -p "${readDialog__input}" keyInput
+
+            #Check if 'keyInput' is a numeric value
+            case "${keyInput}" in
+                ${DOCKER__ENTER})
+                    moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+                    ;;
+                ${DOCKER__ESCAPE_HOOKLEFT})
+                    #Only decrement if 'table_index_base > table_index_max__input'
+                    #Remark:
+                    #   Notice that 'table_index_base_try_next' is used here and NOT 'table_index_base'
+                    if [[ ${table_index_base_try_next} -gt ${table_index_max__input} ]]; then
+                        table_index_base=$((table_index_base - table_index_max__input))
+
+                        moveUp_and_cleanLines__func "${tot_numOfLines}"
+
+                        break
+                    else
+                        moveToBeginning_and_cleanLine__func
+                    fi
+
+                    ;;
+                ${DOCKER__ESCAPE_HOOKRIGHT})
+                    #Only decrement if 'table_index_base_try_next < fpath_arrLen'
+                    #Remark:
+                    #   Notice that 'table_index_base_try_next' is used here and NOT 'table_index_base'
+                    if [[ ${table_index_base_try_next} -lt ${fpath_arrLen} ]]; then
+                        table_index_base=$((table_index_base + table_index_max__input))
+
+                        moveUp_and_cleanLines__func "${tot_numOfLines}"
+
+                        break
+                    else
+                        moveToBeginning_and_cleanLine__func
+                    fi
+                    ;;
+                ${DOCKER__ESCAPEKEY})
+                    moveToBeginning_and_cleanLine__func
+
+                    keyOutput=`functionKey_detection__func "${keyInput}"`
+                    if [[ ${keyOutput} == ${DOCKER__ENUM_FUNC_F12} ]]; then
+                        #Print read-input dialog
+                        echo "${readDialog__input}"
+
+                        #Exit
+                        exit__func "${DOCKER__EXITCODE_0}" "${DOCKER__NUMOFLINES_2}"
+                    fi
+                    ;;
+                *)
+                    if [[ ${keyInput} =~ [ynb] ]]; then
+                            moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_3}"
+
+                            flag_main_whileLoop_setTo_break=true
+
+                            break           
+                    else
+                        moveToBeginning_and_cleanLine__func
+                    fi
+                    ;;
+            esac
+        done    #end of while
+
+        #Check if 'flag_main_whileLoop_setTo_break = true'
+        if [[ ${flag_main_whileLoop_setTo_break} == true ]]; then
+            break
+        fi
+    done    #end of main while
+
+
+
+#---Output
+    #Write to file
+    echo "${keyInput}" > ${outputFpath__input}  
+}
+
 function show_leadingAndTrailingStrings_separatedBySpaces__func() {
     #Input args
     local leadStr__input=${1}
@@ -1496,7 +1838,7 @@ function show_cmdOutput_w_menuTitle__func() {
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
 }
 
-function show_errMsg_without_menuTitle_exit_func() {
+function show_errMsg_wo_menuTitle_and_exit_func() {
     #Input args
     local msg__input=${1}
     local prepend_numOfLines__input=${2}
@@ -1515,25 +1857,52 @@ function show_errMsg_without_menuTitle_exit_func() {
     exit__func "${DOCKER__EXITCODE_99}" "${DOCKER__NUMOFLINES_0}"
 }
 
+function show_msg_only__func() {
+    #Input args
+    local msg__input=${1}
+    local numOfLines__input=${2}
+
+    #Move-down and clean
+    moveDown_and_cleanLines__func "${numOfLines__input}"
+
+    #Print
+    echo -e "${msg__input}" #error message
+}
+
 function show_msg_w_menuTitle_w_pressAnyKey_w_ctrlC_func() {
     #Input args
     local menuTitle__input=${1}
     local msg__input=${2}
 
-    #Show error-message
+    #Horizontal line
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+
+    #Print 'menuTitle__input'
     show_centered_string__func "${menuTitle__input}" "${DOCKER__TABLEWIDTH}"
+
+    #Horizontal line
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
     
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-    show_centered_string__func "${msg__input}" "${DOCKER__TABLEWIDTH}"
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    #Move-down and clean 1 line
     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
+    #Print message
+    show_centered_string__func "${msg__input}" "${DOCKER__TABLEWIDTH}"
+    
+    #Move-down and clean 1 line
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+    #Horizontal line
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+
+    #Move-down and clean 1 line
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+    #Show press any key
     press_any_key__func
 
-    docker__ctrl_c__sub
+    #Exit
+    exit__func "${DOCKER__EXITCODE_0}" "${DOCKER__NUMOFLINES_2}"
 }
 
 function show_msg_w_menuTitle_only_func() {
@@ -1571,17 +1940,7 @@ function show_msg_w_menuTitle_only_func() {
     moveDown_and_cleanLines__func "${append_numOfLines__input}"
 }
 
-function show_msg_only__func() {
-    #Input args
-    local msg__input=${1}
-    local numOfLines__input=${2}
 
-    #Move-down cursor
-    moveDown_and_cleanLines__func "${numOfLines__input}"
-
-    #Print
-    echo -e "${msg__input}" #error message
-}
 
 function show_msg_wo_menuTitle_w_PressAnyKey__func() {
     #Input args
@@ -1606,10 +1965,11 @@ function show_msg_wo_menuTitle_w_PressAnyKey__func() {
 function show_msg_wo_menuTitle_w_confirmation__func() {
     #Input args
     local msg__input=${1}
-    local prepend_numOfLines__input=${2}
-    local confirmation_timeout__input=${3}
-    local confirmation_prepend_numOfLines__input=${4}
-    local confirmation_append_numOfLines__input=${5}
+    local confirmation_choices__input=${2}
+    local prepend_numOfLines__input=${3}
+    local confirmation_timeout__input=${4}
+    local confirmation_prepend_numOfLines__input=${5}
+    local confirmation_append_numOfLines__input=${6}
 
     #Move-down cursor
     moveDown_and_cleanLines__func "${prepend_numOfLines__input}"
@@ -1618,7 +1978,8 @@ function show_msg_wo_menuTitle_w_confirmation__func() {
     echo -e "${msg__input}"
 
     #Show press-any-key dialog
-    confirmation_w_timer__func "${confirmation_timeout__input}" \
+    confirmation_w_timer__func "${confirmation_choices__input}" \
+                        "${confirmation_timeout__input}" \
                         "${confirmation_prepend_numOfLines__input}" \
                         "${confirmation_append_numOfLines__input}"
 }
@@ -1699,6 +2060,19 @@ function checkForMatch_dockerCmd_result__func() {
     else    #match
         echo "true"
     fi
+}
+
+function count_numOfChar_within_string__func() {
+    #Input Args
+    local string__input=${1}
+    local pattern__input=${2}
+
+    #Count
+    local ret=`echo "${string__input}" | grep -o "${pattern__input}" | wc -l`
+
+    #Output
+    echo "${ret}"
+
 }
 
 function delete_lineNum_from_file__func() {
@@ -1829,13 +2203,25 @@ function get_stringlen_wo_regEx__func() {
     echo "${string_wo_regEx_len}"
 }
 
+function get_theFirst_xChars_ofString__func() {
+    #Input args
+    local string__input=${1}
+    local numOfChars__input=${2}
+
+    #Define local variable
+    local ret=`echo ${string__input:0:numOfChars__input}`
+
+    #Output
+    echo -e "${ret}"
+}
+
 function get_theLast_xChars_ofString__func() {
     #Input args
     local string__input=${1}
-    local numOfLastChars__input=${2}
+    local numOfChars__input=${2}
 
     #Define local variable
-    local ret=`echo ${string__input: -numOfLastChars__input}`
+    local ret=`echo ${string__input: -numOfChars__input}`
 
     #Output
     echo -e "${ret}"
@@ -2001,6 +2387,109 @@ function retrieve_subStrings_delimited_by_trailing_specified_char__func() {
     #2. ret_right
     #Both results are delimited by 'SED__RS'
     echo "${ret_left}${SED__RS}${ret_right}"
+}
+
+function trim_string_toFit_specified_windowSize__func() {
+    #Input args
+    local string__input=${1}
+    local windowsSize__input=${2}
+
+    #Define variables
+    local constStr=${DOCKER__EMPTYSTRING}
+    local leadingStr=${DOCKER__EMPTYSTRING}
+    local leadingStr_lastChar=${DOCKER__EMPTYSTRING}
+    local leadingStr_left=${DOCKER__EMPTYSTRING}
+    local leadingStr_right=${DOCKER__EMPTYSTRING}
+    local ret=${DOCKER__EMPTYSTRING}
+    local trailingStr=${DOCKER__EMPTYSTRING}
+    local trailingStr_left=${DOCKER__EMPTYSTRING}
+    local trailingStr_right=${DOCKER__EMPTYSTRING}
+
+    local leadingStr_len=0
+    local numOfTrailingChars=0
+    local numOfSlashes=0
+    local string_len=0
+    local trailingStr_len=0
+    local trailingStr_left_len=0
+    local trailingStr_right_len=0
+    local totStr_len=0
+
+    local isDirectory=false
+    local isFile=false
+
+    #Get length of 'string__input'
+    string_len=${#string__input}
+
+    #Check if 'string_len <= windowsSize__input'
+    if [[ ${string_len} -le ${windowsSize__input} ]]; then
+        echo "${string__input}"
+
+        return
+    fi
+
+    #Retrieve the number of slashes '/''
+    numOfSlashes=`count_numOfChar_within_string__func "${string__input}" "${DOCKER__SLASH}"`
+
+    #Select case based on the number of slashes
+    case "${numOfSlashes}" in
+        ${DOCKER__NUMOFMATCH_0})
+            leadingStr=${DOCKER__EMPTYSTRING}
+            ;;
+        ${DOCKER__NUMOFMATCH_1})
+            leadingStr_left=`echo "${string__input}" | cut -d"${DOCKER__SLASH}" -f1`
+            leadingStr=${leadingStr_left}${DOCKER__COLOR_SLASH}
+            ;;
+        ${DOCKER__NUMOFMATCH_2})
+            leadingStr_left=`echo "${string__input}" | cut -d"${DOCKER__SLASH}" -f1`
+            leadingStr_right=`echo "${string__input}" | cut -d"${DOCKER__SLASH}" -f2`
+            leadingStr=${leadingStr_left}${DOCKER__COLOR_SLASH}${leadingStr_right}${DOCKER__COLOR_SLASH}
+            ;;
+        *)
+            leadingStr_left=`echo "${string__input}" | cut -d"${DOCKER__SLASH}" -f1`
+            leadingStr_right=`echo ${string__input} | rev | cut -d"/" -f2- | cut -d"/" -f1 | rev`
+            leadingStr="${leadingStr_left}${DOCKER__COLOR_SLASH_DOTDOT_SLASH}${leadingStr_right}${DOCKER__COLOR_SLASH}"
+            ;;   
+    esac
+
+    #Get string on the right-side of the last slash
+    trailingStr=`echo ${string__input} | rev | cut -d"${DOCKER__SLASH}" -f1 | rev`
+
+    #Get lengths
+    trailingStr_len=`get_stringlen_wo_regEx__func "${trailingStr}"`
+    leadingStr_len=`get_stringlen_wo_regEx__func "${leadingStr}"`
+
+    #Calculate the total length
+    totStr_len=$((leadingStr_len + trailingStr_len))
+
+    #Check if 'totStr_len > windowsSize__input'
+    if [[ ${totStr_len} -gt ${windowsSize__input} ]]; then
+        #Recalculate 'trailingStr_len'
+        trailingStr_len=$((windowsSize__input - leadingStr_len))
+
+        #Calculate the lenght of 'trailingStr_left'
+        #Note: -1 due to 1 dot which will replace the trailing char of 'trailingStr_left'
+        trailingStr_left_len=$(( (trailingStr_len/2) - 2 )) 
+
+        #Calculate the lenght of 'trailingStr_right'
+        #Note: -1 due to 1 dot which will replace the leading char of 'trailingStr_right'
+        trailingStr_right_len=$(( (trailingStr_len/2) - 1 )) 
+
+        #Get 'trailingStr_left'
+        trailingStr_left=`get_theFirst_xChars_ofString__func "${trailingStr}" "${trailingStr_left_len}"`
+
+        #Get 'trailingStr_right'
+        trailingStr_right=`get_theLast_xChars_ofString__func "${trailingStr}" "${trailingStr_right_len}"`
+
+        #Get 'trailingStr'
+        trailingStr="${trailingStr_left}${DOCKER__COLOR_DOTDOT}${trailingStr_right}"
+
+    fi
+
+    #Compose the output string
+    ret="${leadingStr}${trailingStr}"
+
+    #Output
+    echo "${ret}"
 }
 
 function skip_and_correct_unwanted_chars__func() {
@@ -2325,14 +2814,14 @@ function checkIf_webLink_isAccessible__func() {
 trap docker__ctrl_c__sub INT
 
 docker__ctrl_c__sub() {
-    #Turn-on Expansion
-    enable_expansion__func
+    # #Turn-on Expansion
+    # enable_expansion__func
     
-    #Show mouse cursor
-    cursor_show__func
+    # #Show mouse cursor
+    # cursor_show__func
 
-    #Enable keyboard-input
-    enable_keyboard_input__func
+    # #Enable keyboard-input
+    # enable_keyboard_input__func
 
     #Exit with exit-code 99
     exit__func "${DOCKER__EXITCODE_99}" "${DOCKER__NUMOFLINES_2}"
@@ -2363,6 +2852,7 @@ docker__environmental_variables__sub() {
 
     docker__create_an_image_from_dockerfile__filename="docker_create_an_image_from_dockerfile.sh"
     docker__create_an_image_from_dockerfile__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__create_an_image_from_dockerfile__filename}
+
     docker__create_images_from_dockerlist__filename="docker_create_images_from_dockerlist.sh"
     docker__create_images_from_dockerlist__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__create_images_from_dockerlist__filename}
 
@@ -2378,8 +2868,8 @@ docker__environmental_variables__sub() {
     docker__repo_link_checkout_menu_select__filename="docker_repo_link_checkout_menu_select.sh"
     docker__repo_link_checkout_menu_select__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__repo_link_checkout_menu_select__filename}
 
-    docker__repo_linkCheckout_profile_menu_select__filename="docker_repo_linkCheckout_profile_menu_selec.sh"
-    docker__repo_linkCheckout_profile_menu_select__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__repo_linkCheckout_profile_menu_select__filename}
+    docker__repo_linkcheckout_profile_menu_select__filename="docker_repo_linkcheckout_profile_menu_select.sh"
+    docker__repo_linkcheckout_profile_menu_select__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__repo_linkcheckout_profile_menu_select__filename}
 
 	docker__repolist_tableinfo__filename="docker_repolist_tableinfo.sh"
 	docker__repolist_tableinfo__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__repolist_tableinfo__filename}
@@ -2431,6 +2921,12 @@ docker__environmental_variables__sub() {
     dclcau_dc_ls__filename="dclcau_dc_ls.sh"
     dclcau_dc_ls__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${dclcau_dc_ls__filename}
 
+    docker__create_an_image_from_dockerfile_out__filename="docker_create_an_image_from_dockerfile.out"
+    docker__create_an_image_from_dockerfile_out__fpath=${docker__tmp_dir}/${docker__create_an_image_from_dockerfile_out__filename}
+
+    docker__create_images_from_dockerlist_out__filename="docker_create_images_from_dockerlist.out"
+    docker__create_images_from_dockerlist_out__fpath=${docker__tmp_dir}/${docker__create_images_from_dockerlist_out__filename}
+
     docker__enter_cmdline_out__filename="docker__enter_cmdline.out"
     docker__enter_cmdline_out__fpath=${docker__tmp_dir}/${docker__enter_cmdline_out__filename}
 
@@ -2440,8 +2936,11 @@ docker__environmental_variables__sub() {
     docker__show_choose_add_del_from_cache_out__filename="docker_show_choose_add_del_from_cache.out"
     docker__show_choose_add_del_from_cache_out__fpath=${docker__tmp_dir}/${docker__show_choose_add_del_from_cache_out__filename}
 
-    docker__repo_link_checkout_menu_select_tmp__filname="docker_repo_link_checkout_menu_select.tmp"
-    docker__repo_link_checkout_menu_select_tmp__fpath=${docker__tmp_dir}/${docker__repo_link_checkout_menu_select_tmp__filname}
+    docker__repo_link_checkout_menu_select_out__filname="docker_repo_link_checkout_menu_select.out"
+    docker__repo_link_checkout_menu_select_out__fpath=${docker__tmp_dir}/${docker__repo_link_checkout_menu_select_out__filname}
+
+    docker__repo_linkcheckout_profile_menu_select_out__filename="docker_repo_linkcheckout_profile_menu_select.out"
+    docker__repo_linkcheckout_profile_menu_select_out__fpath=${docker__tmp_dir}/${docker__repo_linkcheckout_profile_menu_select_out__filename}
 
 
 

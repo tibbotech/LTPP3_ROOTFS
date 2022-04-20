@@ -150,6 +150,14 @@ docker__load_header__sub() {
     echo -e "${DOCKER__BG_ORANGE}                                 ${DOCKER__TITLE}${DOCKER__BG_ORANGE}                                ${DOCKER__NOCOLOR}"
 }
 
+docker__load_constants__sub() {
+    DOCKER__MENUTITLE="${DOCKER__FG_YELLOW}Create${DOCKER__NOCOLOR} an ${DOCKER__FG_BORDEAUX}Image${DOCKER__NOCOLOR} using a ${DOCKER__FG_DARKBLUE}docker-file${DOCKER__NOCOLOR}"
+    DOCKER__REMARK=${DOCKER__EMPTYSTRING}
+    DOCKER__LOCATION_INFO="${DOCKER__FOURSPACES}${DOCKER__FG_VERYLIGHTORANGE}Location${DOCKER__NOCOLOR}: ${docker__LTPP3_ROOTFS_docker_dockerfiles__dir}"
+    DOCKER__ERRMSG="${DOCKER__FOURSPACES}-:${DOCKER__FG_LIGHTRED}directory is Empty${DOCKER__NOCOLOR}:-"
+    DOCKER__READ_DIALOG="Choose a file: "
+}
+
 docker__init_variables__sub() {
     docker__dockerFile_fpath=""
     docker__dockerFile_filename=""
@@ -157,108 +165,29 @@ docker__init_variables__sub() {
 }
 
 docker__show_dockerList_files__sub() {
-    #Define local constants
-    local MENUTITLE="${DOCKER__FG_YELLOW}Create${DOCKER__NOCOLOR} an ${DOCKER__FG_BORDEAUX}Image${DOCKER__NOCOLOR} using a ${DOCKER__FG_DARKBLUE}docker-file${DOCKER__NOCOLOR}"
+    #Show directory content
+    show_dirContent__func "${docker__LTPP3_ROOTFS_docker_dockerfiles__dir}" \
+                        "${DOCKER__MENUTITLE}" \
+                        "${DOCKER__REMARK}" \
+                        "${DOCKER__LOCATION_INFO}" \
+                        "${DOCKER__FOURSPACES_F12_QUIT}" \
+                        "${DOCKER__ERRMSG}" \
+                        "${DOCKER__READ_DIALOG}" \
+                        "${DOCKER__EMPTYSTRING}" \
+                        "${DOCKER__EMPTYSTRING}" \
+                        "${docker__create_an_image_from_dockerfile_out__fpath}" \
+                        "${DOCKER__TABLEROWS}"
 
-    #Define local variables
-    local listOf_dockerFileFpaths_string=""
-    local listOf_dockerFileFpaths_arr=()
-    local listOf_dockerFileFpaths_arrItem=""
-    local extract_filename=""
-    local seqnum=0
-
-    #Define local message variables
-    local errMsg1="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: No files found at location:"
-    local errMsg2="${DOCKER__FOURSPACES}${DOCKER__FG_VERYLIGHTORANGE}${docker__LTPP3_ROOTFS_docker_dockerfiles__dir}${DOCKER__NOCOLOR}"
-    local errMsg3="***${DOCKER__FG_PURPLERED}MANDATORY${DOCKER__NOCOLOR}: All ${DOCKER__FG_YELLOW}dockerfile${DOCKER__NOCOLOR} files should be put in this directory"
-    local locationMsg_dockerfiles="${DOCKER__FOURSPACES}${DOCKER__FG_VERYLIGHTORANGE}Location${DOCKER__NOCOLOR}: ${docker__LTPP3_ROOTFS_docker_dockerfiles__dir}"
-
-    #Define local read-input variables
-    local readInput_msg="Choose a file: "
-
-
-    #Get all files at the specified location
-    listOf_dockerFileFpaths_string=`find ${docker__LTPP3_ROOTFS_docker_dockerfiles__dir} -maxdepth 1 -type f | sort`
-    if [[ -z ${listOf_dockerFileFpaths_string} ]]; then
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-        echo -e "${errMsg1}"
-        echo -e "${errMsg2}"
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-        echo -e "${errMsg3}"
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-
-        exit 99
+    #Get the exitcode just in case a Ctrl-C was pressed in function 'show_dirContent__func' (in script 'docker_global.sh')
+    docker__exitCode=$?
+    if [[ ${docker__exitCode} -eq ${DOCKER__EXITCODE_99} ]]; then
+        exit__func "${docker__exitCode}" "${DOCKER__NUMOFLINES_2}"
     fi
 
-    #Convert string to array (with space delimiter)
-    listOf_dockerFileFpaths_arr=(${listOf_dockerFileFpaths_string})
-
-
-    #Show menu-title
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-    show_centered_string__func "${MENUTITLE}" "${DOCKER__TABLEWIDTH}"
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-
-    for listOf_dockerFileFpaths_arrItem in "${listOf_dockerFileFpaths_arr[@]}"
-    do
-        #increment sequence-number
-        seqnum=$((seqnum+1))
-
-        #Get filename only
-        extract_filename=`basename ${listOf_dockerFileFpaths_arrItem}`  
-    
-        #Show filename
-        echo -e "${DOCKER__FOURSPACES}${seqnum}. ${extract_filename}"
-    done
-
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-    echo -e "${locationMsg_dockerfiles}"
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-    echo -e "${DOCKER__FOURSPACES_Q_QUIT}"
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-
-    #Read-input handler
-    while true
-    do
-        #Show read-input
-        if [[ ${seqnum} -le ${DOCKER__NINE} ]]; then    #seqnum <= 9
-            read -N1 -p "${readInput_msg} " mychoice
-        else    #seqnum > 9
-            read -p "${readInput_msg} " mychoice
-        fi
-
-        #Check if 'mychoice' is a numeric value
-        if [[ ${mychoice} =~ [1-90q] ]]; then
-            #check if 'mychoice' is one of the numbers shown in the overview...
-            #... AND 'mychoice' is NOT '0'
-            if [[ ${mychoice} == ${DOCKER__QUIT} ]]; then
-                moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
-
-                exit 90
-            elif [[ ${mychoice} -le ${seqnum} ]] && [[ ${mychoice} -ne 0 ]]; then
-                moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"    #print an empty line
-
-                break   #exit loop
-            else
-                moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-                moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"    
-            fi
-        else
-            if [[ ${mychoice} != "${DOCKER__ENTER}" ]]; then
-                moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-                moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"   
-            else
-                moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"             
-            fi
-        fi
-    done
-
-    #Since arrays start with index=0, deduct 'mychoice' value by '1'
-    index=$((mychoice-1))
-
-    #Extract the chosen file from array and assign to the GLOBAL variable 'docker__dockerFile_fpath'
-    docker__dockerFile_fpath=${listOf_dockerFileFpaths_arr[index]}
+    #Get result from file.
+    docker__dockerFile_fpath=`get_output_from_file__func \
+                        "${docker__create_an_image_from_dockerfile_out__fpath}" \
+                        "${DOCKER__LINENUM_1}"`
 }
 
 docker__create_image_handler__sub() {
@@ -298,6 +227,8 @@ main_sub() {
     docker__load_source_files__sub
 
     docker__load_header__sub
+
+    docker__load_constants__sub
 
     docker__init_variables__sub
 

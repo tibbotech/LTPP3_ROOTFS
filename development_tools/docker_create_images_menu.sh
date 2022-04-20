@@ -48,9 +48,9 @@ docker__create_images_menu__sub() {
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
         echo -e "${DOCKER__FOURSPACES}1. Create an ${DOCKER__FG_BORDEAUX}image${DOCKER__NOCOLOR} using a ${DOCKER__FG_DARKBLUE}docker-file${DOCKER__NOCOLOR}"
         echo -e "${DOCKER__FOURSPACES}2. Create ${DOCKER__FG_BORDEAUX}images${DOCKER__NOCOLOR} using a ${DOCKER__FG_LIGHTBLUE}docker-list${DOCKER__NOCOLOR}"
-        echo -e "${DOCKER__FOURSPACES}3. Choose${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}Add${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}Del env-variable ${DOCKER__FG_GREEN114}Link${DOCKER__NOCOLOR}"
-        echo -e "${DOCKER__FOURSPACES}4. Choose${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}Add${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}Del env-variable ${DOCKER__FG_GREEN155}Checkout${DOCKER__NOCOLOR}"
-        echo -e "${DOCKER__FOURSPACES}5. Choose${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}Add${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}Del env-variable ${DOCKER__FG_GREEN114}link${DOCKER__FG_GREEN}-${DOCKER__FG_GREEN155}checkout${DOCKER__FG_GREEN} ${DOCKER__FG_GREEN}Profile${DOCKER__NOCOLOR}"
+        echo -e "${DOCKER__FOURSPACES}3. Choose${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}Add${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}Del env-variable ${DOCKER__FG_GREEN41}Link${DOCKER__NOCOLOR}"
+        echo -e "${DOCKER__FOURSPACES}4. Choose${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}Add${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}Del env-variable ${DOCKER__FG_GREEN119}Checkout${DOCKER__NOCOLOR}"
+        echo -e "${DOCKER__FOURSPACES}5. Choose${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}Add${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}Del env-variable ${DOCKER__FG_GREEN41}link${DOCKER__FG_GREEN}-${DOCKER__FG_GREEN119}checkout${DOCKER__NOCOLOR} ${DOCKER__FG_GREEN}Profile${DOCKER__NOCOLOR}"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
         echo -e "${DOCKER__FOURSPACES}r. ${DOCKER__FG_PURPLE}Repository${DOCKER__NOCOLOR}-list"
         echo -e "${DOCKER__FOURSPACES}c. ${DOCKER__FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}-list"
@@ -99,16 +99,15 @@ docker__create_images_menu__sub() {
                 ;;
 
             3)
-                ${docker__repo_link_checkout_menu_select__fpath} "${DOCKER__FILE_LINK}"
+                ${docker__repo_link_checkout_menu_select__fpath} "${DOCKER__LINK}"
                 ;;
 
             4)
-                ${docker__repo_link_checkout_menu_select__fpath} "${DOCKER__FILE_CHECKOUT}"
+                ${docker__repo_link_checkout_menu_select__fpath} "${DOCKER__CHECKOUT}"
                 ;;
 
             5)
-                echo "docker__repo_linkCheckout_profile_menu_select__fpath: IN PROGRESS"
-                ${docker__repo_linkCheckout_profile_menu_select__fpath}
+                ${docker__repo_link_checkout_menu_select__fpath} "${DOCKER__LINKCHECKOUT_PROFILE}"
                 ;;
 
             c)

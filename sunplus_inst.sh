@@ -40,8 +40,7 @@ home_dir=~
 etc_dir=/etc
 home_scripts_dir=${home_dir}/scripts
 Downloads_dir=${home_dir}/Downloads
-sunplus_foldername="SP7021"
-sunplus_dir=${home_dir}/${sunplus_foldername}
+SP7021_dir=${home_dir}/SP7021
 
 #---Check if current working directory
 echo -e "\r"
@@ -64,11 +63,11 @@ fi
 
 
 #---Check if Sunplus is already installed
-if [[ -d ${sunplus_dir} ]]; then
+if [[ -d ${SP7021_dir} ]]; then
 	echo -e "\r"
-	echo "---Removing existing directory: ${sunplus_dir}---"
+	echo "---Removing existing directory: ${SP7021_dir}---"
 	echo -e "\r"
-	rm -rf ${sunplus_dir}
+	rm -rf ${SP7021_dir}
 fi
 
 
@@ -81,19 +80,21 @@ apt-get install openssl libssl-dev bison flex -y
 
 press_any_key__func
 echo -e "\r"
-echo "---Cloning Sunplus Image (in other words: writing data to local disk)---"
+echo "---Cloning Sunplus Image---"
+echo -e "\r"
+echo ">Git-link: ${CONTAINER_ENV1}"
 echo -e "\r"
 git clone ${CONTAINER_ENV1}
 
 echo -e "\r"
-echo ">Navigating to ${sunplus_dir}"
+echo ">Navigating to ${SP7021_dir}"
 echo -e "\r"
-cd ${sunplus_dir}
+cd ${SP7021_dir}
 
 echo -e "\r"
-echo ">Adding <${sunplus_dir}/boot/uboot/tools> to <PATH>"
+echo ">Adding <${SP7021_dir}/boot/uboot/tools> to <PATH>"
 echo -e "\r"
-echo "export PATH=\$PATH:"${sunplus_dir}/boot/uboot/tools >>  ${home_dir}/.bashrc
+echo "export PATH=\$PATH:"${SP7021_dir}/boot/uboot/tools >>  ${home_dir}/.bashrc
 
 #Remove DOUBLE ENTRIES in
 echo -e "\r"
@@ -141,13 +142,18 @@ echo -e "\r"
 # 	HEAD detached at a649d0cc1	<--- This is the commit
 # 	nothing to commit, working tree clean
 #-------------------------------------------------------------------
+echo ">Git-checkout: ${CONTAINER_ENV2}"
+echo -e "\r"
 git checkout ${CONTAINER_ENV2}
+echo ">git submodule update --init --recursive"
+echo -e "\r"
 git submodule update --init --recursive
+echo -e "\r"
 
 echo -e "\r"
-echo ">Navigating to ${sunplus_dir}"
+echo ">Navigating to ${SP7021_dir}"
 echo -e "\r"
-cd ${sunplus_dir}
+cd ${SP7021_dir}
 
 press_any_key__func
 echo -e "\r"

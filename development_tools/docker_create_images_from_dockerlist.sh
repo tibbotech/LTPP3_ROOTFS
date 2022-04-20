@@ -180,178 +180,105 @@ docker__load_header__sub() {
     echo -e "${DOCKER__BG_ORANGE}                                 ${DOCKER__TITLE}${DOCKER__BG_ORANGE}                                ${DOCKER__NOCOLOR}"
 }
 
-docker__init_variables__sub() {
-    docker__dockerList_fpath=""
-    docker__dockerList_filename=""
-    docker__flagExitLoop=false
+docker__load_constants__sub() {
+    DOCKER__DIR_MENUTITLE="${DOCKER__FG_YELLOW}Create${DOCKER__NOCOLOR} multiple ${DOCKER__FG_BORDEAUX}IMAGES${DOCKER__NOCOLOR} using a ${DOCKER__FG_LIGHTBLUE}docker-list${DOCKER__NOCOLOR}"
+    DOCKER__DIR_REMARK=${DOCKER__EMPTYSTRING}
+    DOCKER__DIR_LOCATIONINFO="${DOCKER__FOURSPACES}${DOCKER__FG_VERYLIGHTORANGE}Location${DOCKER__NOCOLOR}: ${docker__LTPP3_ROOTFS_docker_dockerfiles__dir}"
+    DOCKER__DIR_ERRMSG="${DOCKER__FOURSPACES}-:${DOCKER__FG_LIGHTRED}Directory is Empty${DOCKER__NOCOLOR}:-"
+    DOCKER__DIR_READDIALOG="Choose a file: "
 
-    # docker__images_cmd="docker images"
+    DOCKER__FILE_MENUTITLE="Show ${DOCKER__FG_VERYLIGHTORANGE}file${DOCKER__NOCOLOR}${DOCKER__FG_LIGHTGREY}-${DOCKER__NOCOLOR}content"
+    DOCKER__FILE_READDIALOG="Do you wish to continue (y/n/b): "
+    DOCKER__FILE_REMARK=${DOCKER__EMPTYSTRING}
+    DOCKER__FILE_MENUOPTIONS="${DOCKER__FOURSPACES_Y_YES}\n"
+    DOCKER__FILE_MENUOPTIONS+="${DOCKER__FOURSPACES_N_NO}\n"
+    DOCKER__FILE_MENUOPTIONS+="${DOCKER__FOURSPACES_B_BACK}\n"
+    DOCKER__FILE_MENUOPTIONS+="${DOCKER__FOURSPACES_F12_QUIT}"
+    DOCKER__FILE_ERRMSG="${DOCKER__FOURSPACES}-:${DOCKER__FG_LIGHTRED}File is Empty${DOCKER__NOCOLOR}:-"
 }
 
-docker__show_dockerList_files__sub() {
-    #Define local constants
-    local MENUTITLE="${DOCKER__FG_YELLOW}Create${DOCKER__NOCOLOR} multiple ${DOCKER__FG_BORDEAUX}IMAGES${DOCKER__NOCOLOR} using a ${DOCKER__FG_LIGHTBLUE}docker-list${DOCKER__NOCOLOR}"
+docker__init_variables__sub() {
+    docker__dockerList_fpath=${DOCKER__EMPTYSTRING}
+    docker__dockerList_filename=${DOCKER__EMPTYSTRING}
+    docker__file_locationInfo=${DOCKER__EMPTYSTRING}
+    docker__myAnswer=${DOCKER__NO}
+    docker__submenuTitle=${DOCKER__EMPTYSTRING}
+    docker__flagExitLoop=false
+}
 
-    #Define local variables
-    local dockerlist_filename=""
-    local listOf_dockerListFpaths_string=""
-    local listOf_dockerListFpaths_arr=()
-    local listOf_dockerListFpaths_arrItem=""
-
-    #Define local message variables
-    local errMsg1="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: No files found in directory:"
-    local errMsg2="${DOCKER__FOURSPACES}${DOCKER__FG_VERYLIGHTORANGE}${docker__my_LTPP3_ROOTFS_docker_list_dir}${DOCKER__NOCOLOR}"
-    local errMsg3="***${DOCKER__FG_PURPLERED}MANDATORY${DOCKER__NOCOLOR}: All ${DOCKER__FG_YELLOW}dockerfile${DOCKER__NOCOLOR} files should be put in this directory"
-
-    local locationMsg_dockerList="${DOCKER__FOURSPACES}${DOCKER__FG_VERYLIGHTORANGE}Location${DOCKER__NOCOLOR}: ${docker__my_LTPP3_ROOTFS_docker_list_dir}"
-    local locationMsg_dockerfiles="${DOCKER__FOURSPACES}${DOCKER__FG_VERYLIGHTORANGE}Location${DOCKER__NOCOLOR}: ${docker__my_LTPP3_ROOTFS_docker_dockerfiles_dir}"
-
-    #Define local read-input variables
-    local readInput_msg1="Choose a file: "
-    local readInput_msg2="Do you wish to continue (y/n): "
-
-    #Get all files at the specified location
-    listOf_dockerListFpaths_string=`find ${docker__my_LTPP3_ROOTFS_docker_list_dir} -maxdepth 1 -type f | LC_ALL=C sort`
-    if [[ -z ${listOf_dockerListFpaths_string} ]]; then
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-        echo -e "${errMsg1}"
-        echo -e "${errMsg2}"
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-        echo -e "${errMsg3}"
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-
-        exit 99
-    fi
-
-
-    #Convert string to array (with space delimiter)
-    listOf_dockerListFpaths_arr=(${listOf_dockerListFpaths_string})
-
+docker__show_dockerList_files_handler__sub() {
     #Start loop
     while true
     do
-        #Initial sequence number
-        local seqnum=0
+        #Show dockerList files
+        docker__show_dockerList_files__sub
 
-        #Show all 'dockerfile-list' files
-        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-        show_centered_string__func "${MENUTITLE}" "${DOCKER__TABLEWIDTH}"
-        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-
-        for listOf_dockerListFpaths_arrItem in "${listOf_dockerListFpaths_arr[@]}"
-        do
-            #increment sequence-number
-            seqnum=$((seqnum+1))
-
-            #Get filename only
-            dockerlist_filename=`basename ${listOf_dockerListFpaths_arrItem}`  
-        
-            #Show filename
-            echo -e "${DOCKER__FOURSPACES}${seqnum}. ${dockerlist_filename}"
-        done
-
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-        echo -e "${locationMsg_dockerList}"
-        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-        echo -e "${DOCKER__FOURSPACES_Q_QUIT}"
-        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-
-        #Read-input handler
-        while true
-        do
-            #Show read-input
-            if [[ ${seqnum} -le ${DOCKER__NINE} ]]; then    #seqnum <= 9
-                read -N1 -p "${readInput_msg1}" mychoice
-            else    #seqnum > 9
-                read -p "${readInput_msg1}" mychoice
-            fi
-
-            #Check if 'mychoice' is a numeric value
-            if [[ ${mychoice} =~ [1-90q] ]]; then
-                #check if 'mychoice' is one of the numbers shown in the overview...
-                #... AND 'mychoice' is NOT '0'
-                if [[ ${mychoice} -le ${seqnum} ]] && [[ ${mychoice} -ne 0 ]]; then
-                    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"    #print an empty line
-
-                    break   #exit loop
-                elif [[ ${mychoice} == ${DOCKER__QUIT} ]]; then
-                    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
-
-                    exit
-                else
-                    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-                    moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-                fi
-            else
-                if [[ ${mychoice} != "${DOCKER__ENTER}" ]]; then
-                    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-                    moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-                else
-                    moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"           
-                fi
-            fi
-        done
-
-        #Since arrays start with index=0, deduct 'mychoice' value by '1'
-        index=$((mychoice-1))
-
-        #Extract the chosen file from array and assign to the GLOBAL variable 'docker__dockerList_fpath'
-        docker__dockerList_fpath=${listOf_dockerListFpaths_arr[index]}
+        #Get filename 'docker__dockerList_filename' from fullpath 'docker__dockerList_fpath'
         docker__dockerList_filename=`basename ${docker__dockerList_fpath}`
 
-        #Show chosen file contents
-        local subMenuTitle="Contents of File ${DOCKER__FG_ORANGE}${docker__dockerList_filename}${DOCKER__NOCOLOR}"
+        #Update variables
+        docker__file_locationInfo="${DOCKER__FOURSPACES}${DOCKER__FG_VERYLIGHTORANGE}File${DOCKER__NOCOLOR}: ${docker__dockerList_filename}"
 
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-        show_centered_string__func "${subMenuTitle}" "${DOCKER__TABLEWIDTH}"
-        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+        #Move-down and clean lines
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
 
-        while read file_line
-        do
-            echo -e "${DOCKER__FOURSPACES}${file_line}"
+        #Show file content
+        show_fileContent__sub "${docker__dockerList_fpath}" \
+                        "${DOCKER__FILE_MENUTITLE}" \
+                        "${DOCKER__FILE_REMARK}" \
+                        "${docker__file_locationInfo}" \
+                        "${DOCKER__FILE_MENUOPTIONS}" \
+                        "${DOCKER__FILE_ERRMSG}" \
+                        "${DOCKER__FILE_READDIALOG}" \
+                        "${docker__create_images_from_dockerlist_out__fpath}" \
+                        "${DOCKER__TABLEROWS}"
 
-        done < ${docker__dockerList_fpath}
-        
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-        echo -e "${locationMsg_dockerfiles}"
-        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-        echo -e "${DOCKER__A_ABORT}"
-        echo -e "${DOCKER__FOURSPACES_Q_QUIT}"
-        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+        #Get the exitcode just in case a Ctrl-C was pressed in function 'show_dirContent__func' (in script 'docker_global.sh')
+        docker__exitCode=$?
+        if [[ ${docker__exitCode} -eq ${DOCKER__EXITCODE_99} ]]; then
+            exit__func "${docker__exitCode}" "${DOCKER__NUMOFLINES_2}"
+        fi
 
-        #Read-input handler
-        while true
-        do
-            #Show read-input
-            read -N1 -p "${readInput_msg2}" mychoice
+        #Get result from file.
+        docker__myAnswer=`get_output_from_file__func \
+                            "${docker__create_images_from_dockerlist_out__fpath}" \
+                            "${DOCKER__LINENUM_1}"`
 
-            #Check if 'mychoice' is a numeric value
-            if [[ ${mychoice} =~ [ynbq] ]]; then
-                #print 2 empty lines
-                moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
+        #Check if 'docker__myAnswer' is a numeric value
+        case "${docker__myAnswer}" in
+            ${DOCKER__YES})
+                return
+                ;;
+            ${DOCKER__NO})
+                exit__func "${DOCKER__EXITCODE_0}" "${DOCKER__NUMOFLINES_0}"
+                ;;
+        esac
+    done
+}
+docker__show_dockerList_files__sub() {
+    #Show directory content
+    show_dirContent__func "${docker__my_LTPP3_ROOTFS_docker_list_dir}" \
+                        "${DOCKER__DIR_MENUTITLE}" \
+                        "${DOCKER__DIR_REMARK}" \
+                        "${DOCKER__DIR_LOCATIONINFO}" \
+                        "${DOCKER__FOURSPACES_F12_QUIT}" \
+                        "${DOCKER__DIR_ERRMSG}" \
+                        "${DOCKER__DIR_READDIALOG}" \
+                        "${DOCKER__EMPTYSTRING}" \
+                        "${DOCKER__EMPTYSTRING}" \
+                        "${docker__create_images_from_dockerlist_out__fpath}" \
+                        "${DOCKER__TABLEROWS}"
 
-                if [[ ${mychoice} == ${DOCKER__YES} ]]; then
-                    return  #exit function
-                elif [[ ${mychoice} == ${DOCKER__NO} ]] || [[ ${mychoice} == ${DOCKER__QUIT} ]]; then
-                    CTRL_C__sub #same as Ctrl+C
-                elif [[ ${mychoice} == ${DOCKER__BACK} ]]; then
-                    break
-                else
-                    break   #exit THIS loop
-                fi
-            else
-                if [[ ${mychoice} != "${DOCKER__ENTER}" ]]; then
-                    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-                    moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"    
-                else
-                    moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"              
-                fi
-            fi
-        done
-    done   
+    #Get the exitcode just in case a Ctrl-C was pressed in function 'show_dirContent__func' (in script 'docker_global.sh')
+    docker__exitCode=$?
+    if [[ ${docker__exitCode} -eq ${DOCKER__EXITCODE_99} ]]; then
+        exit__func "${docker__exitCode}" "${DOCKER__NUMOFLINES_2}"
+    fi
+
+    #Get result from file.
+    docker__dockerList_fpath=`get_output_from_file__func \
+                        "${docker__create_images_from_dockerlist_out__fpath}" \
+                        "${DOCKER__LINENUM_1}"`
 }
 
 docker__create_image_handler__sub() {
@@ -360,12 +287,12 @@ docker__create_image_handler__sub() {
     
     #Define local variables
     local linenum=1
-    local dockerfile_fpath=""
+    local dockerfile_fpath=${DOCKER__EMPTYSTRING}
 
     #Initialization
     docker__flagExitLoop=true
 
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_0}"
 
     while IFS='' read file_line
     do
@@ -414,13 +341,15 @@ main_sub() {
 
     docker__load_header__sub
 
+    docker__load_constants__sub
+
     docker__init_variables__sub
 
     docker__mandatory_apps_check__sub
 
     while true
     do
-        docker__show_dockerList_files__sub
+        docker__show_dockerList_files_handler__sub
 
         docker__create_image_handler__sub
 
