@@ -59,9 +59,8 @@ git__load_source_files__sub() {
     source ${docker__global__fpath}
 }
 
-git__load_header__sub() {
-    echo -e "\r"
-    echo -e "${DOCKER__BG_ORANGE}                                 ${DOCKER__TITLE}${DOCKER__BG_ORANGE}                                ${DOCKER__NOCOLOR}"
+docker__load_header__sub() {
+    show_header__func "${DOCKER__TITLE}" "${DOCKER__TABLEWIDTH}" "${DOCKER__BG_ORANGE}" "${DOCKER__NUMOFLINES_2}" "${DOCKER__NUMOFLINES_0}"
 }
 
 git__init_variables__sub() {
@@ -82,7 +81,7 @@ git__menu_sub() {
         echo -e "${DOCKER__FOURSPACES}1. Git ${DOCKER__BG_LIGHTGREY}${DOCKER__FG_WHITE}Push${DOCKER__NOCOLOR}"
         echo -e "${DOCKER__FOURSPACES}2. Git ${DOCKER__BG_WHITE}${DOCKER__FG_LIGHTGREY}Pull${DOCKER__NOCOLOR}"
         echo -e "${DOCKER__FOURSPACES}3. Git ${DOCKER__BG_WHITE}${DOCKER__FG_LIGHTGREY}Pull${DOCKER__NOCOLOR} origin other-branch"
-        echo -e "${DOCKER__FOURSPACES}4. Git ${DOCKER__FG_GREEN71}create${DOCKER__NOCOLOR}/${DOCKER__FG_LIGHTSOFTYELLOW}checkout${DOCKER__NOCOLOR} ${DOCKER__FG_LIGHTGREY}local${DOCKER__NOCOLOR} branch"
+        echo -e "${DOCKER__FOURSPACES}4. Git ${DOCKER__MENUTITLE_CONTAINERLIST}create${DOCKER__NOCOLOR}/${DOCKER__FG_LIGHTSOFTYELLOW}checkout${DOCKER__NOCOLOR} ${DOCKER__FG_LIGHTGREY}local${DOCKER__NOCOLOR} branch"
         echo -e "${DOCKER__FOURSPACES}5. Git ${DOCKER__FG_SOFTLIGHTRED}delete${DOCKER__NOCOLOR} ${DOCKER__FG_LIGHTGREY}local${DOCKER__NOCOLOR} branch"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
         echo -e "${DOCKER__FOURSPACES}q. $DOCKER__QUIT_CTRL_C"
@@ -151,7 +150,7 @@ main__sub() {
 
     git__load_source_files__sub
 
-    git__load_header__sub
+    docker__load_header__sub
 
     git__init_variables__sub
 

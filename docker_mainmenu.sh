@@ -15,51 +15,10 @@ docker__load_environment_variables__sub() {
     if [[ ${docker__current_dir} == ${DOCKER__DOT} ]]; then
         docker__current_dir=$(pwd)
     fi
-
     docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}/development_tools
 
-    docker__containerlist_tableinfo__filename="docker_containerlist_tableinfo.sh"
-    docker__containerlist_tableinfo__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__containerlist_tableinfo__filename}
     docker__global__filename="docker_global.sh"
     docker__global__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__global__filename}
-    docker__repolist_tableinfo__filename="docker_repolist_tableinfo.sh"
-    docker__repolist_tableinfo__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__repolist_tableinfo__filename}
-    docker__create_an_image_from_dockerfile_filename="docker_create_an_image_from_dockerfile.sh"
-    docker__create_an_image_from_dockerfile_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__create_an_image_from_dockerfile_filename}
-    docker__create_images_from_dockerlist_filename="docker_create_images_from_dockerlist.sh"
-    docker__create_images_from_dockerlist_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__create_images_from_dockerlist_filename}
-    docker__create_image_from_existing_repository_filename="docker_create_image_from_existing_repository.sh"
-    docker__create_image_from_existing_repository_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__create_image_from_existing_repository_filename}
-    docker__create_image_from_container_filename="docker_create_image_from_container.sh"
-    docker__create_image_from_container_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__create_image_from_container_filename}
-    docker__run_container_from_a_repository_filename="docker_run_container_from_a_repository.sh"
-    docker__run_container_from_a_repository_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__run_container_from_a_repository_filename}
-    docker__run_exited_container_filename="docker_run_exited_container.sh"
-    docker__run_exited_container_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__run_exited_container_filename}
-    docker__remove_image_filename="docker_remove_image.sh"
-    docker__remove_image_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__remove_image_filename}
-    docker__remove_container_filename="docker_remove_container.sh"
-    docker__remove_container_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__remove_container_filename}
-    docker__cp_fromto_container_filename="docker_cp_fromto_container.sh"
-    docker__cp_fromto_container_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__cp_fromto_container_filename}
-    docker__create_dockerfile_filename="docker_create_dockerfile_filename.sh"
-    docker__create_dockerfile_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__create_dockerfile_filename}
-    docker__ssh_to_host_filename="docker_ssh_to_host.sh"
-    docker__ssh_to_host_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__ssh_to_host_filename}
-
-    docker__save_filename="docker_save.sh"
-    docker__save_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__save_filename}
-    docker__load_filename="docker_load.sh"
-    docker__load_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__load_filename}
-
-    docker__run_chroot_filename="docker_run_chroot.sh"
-    docker__run_chroot_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__run_chroot_filename}
-
-    docker__enter_command_filename="docker_enter_command.sh"
-    docker__enter_command_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__enter_command_filename}
-
-    docker__create_images_menu_filename="docker_create_images_menu.sh"
-    docker__create_images_menu_fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__create_images_menu_filename}
 }
 
 docker__load_source_files__sub() {
@@ -67,9 +26,7 @@ docker__load_source_files__sub() {
 }
 
 docker__load_header__sub() {
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-
-    echo -e "${DOCKER__BG_ORANGE}                                 ${DOCKER__TITLE}${DOCKER__BG_ORANGE}                                ${DOCKER__NOCOLOR}"
+    show_header__func "${DOCKER__TITLE}" "${DOCKER__TABLEWIDTH}" "${DOCKER__BG_ORANGE}" "${DOCKER__NUMOFLINES_2}" "${DOCKER__NUMOFLINES_0}"
 }
 
 docker__checkIf_user_is_root__sub()
@@ -131,6 +88,8 @@ docker__mainmenu__sub() {
             #Only continue if a valid option is selected
             if [[ ! -z ${docker__myChoice} ]]; then
                 if [[ ${docker__myChoice} =~ [1-90rcseipgq] ]]; then
+                    # moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
                     break
                 else
                     if [[ ${docker__myChoice} == ${DOCKER__ENTER} ]]; then
@@ -147,64 +106,64 @@ docker__mainmenu__sub() {
         #Goto the selected option
         case ${docker__myChoice} in
             1)
-                ${docker__create_images_menu_fpath}
+                ${docker__create_images_menu__fpath}
 
                 ;;
 
             2)
-                ${docker__create_image_from_existing_repository_fpath}
+                ${docker__create_image_from_existing_repository__fpath}
                 ;;
 
             3)
-                ${docker__create_image_from_container_fpath}
+                ${docker__create_image_from_container__fpath}
                 ;;
 
             4)
-                ${docker__run_container_from_a_repository_fpath}
+                ${docker__run_container_from_a_repository__fpath}
                 ;;
 
             5)
-                ${docker__run_exited_container_fpath}
+                ${docker__run_exited_container__fpath}
                 ;;
 
             6)
-                ${docker__remove_image_fpath}
+                ${docker__remove_image__fpath}
                 ;;
 
             7)
-                ${docker__remove_container_fpath}
+                ${docker__remove_container__fpath}
                 ;;
 
             8)
-                ${docker__cp_fromto_container_fpath}
+                ${docker__cp_fromto_container__fpath}
                 ;;
 
             9)
-                ${docker__run_chroot_fpath}
+                ${docker__run_chroot__fpath}
                 ;;
 
             0)
-                ${docker__enter_command_fpath}
+                ${docker__enter_command__fpath}
                 ;;
 
             c)
-                docker__list_container__sub
+                docker__show_containerList_handler__sub
                 ;;
 
             r)
-                docker__list_repository__sub
+                docker__show_repositoryList_handler__sub
                 ;;
 
             s)
-                ${docker__ssh_to_host_fpath}
+                ${docker__ssh_to_host__fpath}
                 ;;
 
             i)
-                ${docker__load_fpath}
+                ${docker__load__fpath}
                 ;;
 
             e)
-                ${docker__save_fpath}
+                ${docker__save__fpath}
                 ;;
 
             g)  
@@ -218,68 +177,34 @@ docker__mainmenu__sub() {
     done
 }
 
-
-docker__list_repository__sub() {
+docker__show_repositoryList_handler__sub() {
     #Load header
     docker__load_header__sub
 
-    #Define local constants
-    local MENUTITLE_REPOSITORYLIST="${DOCKER__FG_PURPLE}Repository${DOCKER__NOCOLOR}-list"
-
-    local ERRMSG_NO_IMAGES_FOUND="=:${DOCKER__FG_LIGHTRED}NO IMAGES FOUND${DOCKER__NOCOLOR}:="
-
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-        show_centered_string__func "${MENUTITLE_REPOSITORYLIST}" "${DOCKER__TABLEWIDTH}"
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-
-    #Get number of containers
-    local numOf_repositories=`docker image ls | head -n -1 | wc -l`
-    if [[ ${numOf_repositories} -eq 0 ]]; then
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-            show_centered_string__func "${ERRMSG_NO_IMAGES_FOUND}" "${DOCKER__TABLEWIDTH}"
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-
-        press_any_key__func
-    else
-        ${docker__repolist_tableinfo__fpath}
-
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
-    fi
+    #Show container-list
+    show_repository_or_container_list__func "${DOCKER__MENUTITLE_REPOSITORYLIST}" \
+                        "${DOCKER__ERRMSG_NO_IMAGES_FOUND}" \
+                        "${docker__images_cmd}" \
+                        "${DOCKER__NUMOFLINES_1}" \
+                        "${DOCKER__NUMOFLINES_2}"
 }
 
-docker__list_container__sub() {
+docker__show_containerList_handler__sub() {
     #Load header
     docker__load_header__sub
 
-    #Define local constants
-    local MENUTITLE_CONTAINERLIST="${DOCKER__FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}-list"
-    
-    local ERRMSG_NO_CONTAINERS_FOUND="=:${DOCKER__FG_LIGHTRED}NO CONTAINERS FOUND${DOCKER__NOCOLOR}:="
-
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-        show_centered_string__func "${MENUTITLE_CONTAINERLIST}" "${DOCKER__TABLEWIDTH}"
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-
-    #Get number of containers
-    local numOf_containers=`docker ps -a | head -n -1 | wc -l`
-    if [[ ${numOf_containers} -eq 0 ]]; then
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-            show_centered_string__func "${ERRMSG_NO_CONTAINERS_FOUND}" "${DOCKER__TABLEWIDTH}"
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-
-        press_any_key__func
-    else
-        ${docker__containerlist_tableinfo__fpath}
-
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
-    fi
+    #Show container-list
+    show_repository_or_container_list__func "${DOCKER__MENUTITLE_CONTAINERLIST}" \
+                        "${DOCKER__ERRMSG_NO_CONTAINERS_FOUND}" \
+                        "${docker__ps_a_cmd}" \
+                        "${DOCKER__NUMOFLINES_1}" \
+                        "${DOCKER__NUMOFLINES_2}"
 }
 
-main_sub() {
+
+
+#---MAIN SUBROUTINE
+main__sub() {
     docker__load_environment_variables__sub
 
     docker__load_source_files__sub
@@ -294,4 +219,4 @@ main_sub() {
 }
 
 #Execute main subroutine
-main_sub
+main__sub

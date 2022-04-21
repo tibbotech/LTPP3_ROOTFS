@@ -27,8 +27,7 @@ docker__load_source_files__sub() {
 }
 
 docker__load_header__sub() {
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-    echo -e "${DOCKER__BG_ORANGE}                                 ${DOCKER__TITLE}${DOCKER__BG_ORANGE}                                ${DOCKER__NOCOLOR}"
+    show_header__func "${DOCKER__TITLE}" "${DOCKER__TABLEWIDTH}" "${DOCKER__BG_ORANGE}" "${DOCKER__NUMOFLINES_2}" "${DOCKER__NUMOFLINES_0}"
 }
 
 docker__init_variables__sub() {
@@ -183,8 +182,6 @@ docker_imageId_input__sub() {
     #Define message constants
     local READMSG_PASTE_YOUR_INPUT="Paste your input (here): "
     local MENUTITLE="Remove ${DOCKER__FG_BORDEAUX}image${DOCKER__NOCOLOR}/${DOCKER__FG_PURPLE}repository${DOCKER__NOCOLOR}"
-    local ERRMSG_NO_IMAGES_FOUND="=:${DOCKER__FG_LIGHTRED}NO IMAGES FOUND${DOCKER__NOCOLOR}:="
-    local ERRMSG_CHOSEN_IMAGEID_DOESNOT_EXISTS="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Invalid input value "
 
     #Define variables
     local readmsg_remarks="${DOCKER__BG_ORANGE}Remarks:${DOCKER__NOCOLOR}\n"
@@ -240,8 +237,8 @@ docker_imageId_input__sub() {
                             "${READMSG_PASTE_YOUR_INPUT}" \
                             "${readmsg_update}" \
                             "${readmsg_remarks}" \
-                            "${ERRMSG_NO_IMAGES_FOUND}" \
-                            "${ERRMSG_CHOSEN_IMAGEID_DOESNOT_EXISTS}" \
+                            "${DOCKER__ERRMSG_NO_IMAGES_FOUND}" \
+                            "${DOCKER__ERRMSG_CHOSEN_IMAGEID_DOESNOT_EXISTS}" \
                             "${docker__images_cmd}" \
                             "${docker__images_IDColNo}" \
                             "${DOCKER__EMPTYSTRING}" \

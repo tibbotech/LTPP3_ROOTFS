@@ -30,8 +30,7 @@ docker__load_source_files__sub() {
 }
 
 docker__load_header__sub() {
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-    echo -e "${DOCKER__BG_ORANGE}                                 ${DOCKER__TITLE}${DOCKER__BG_ORANGE}                                ${DOCKER__NOCOLOR}"
+    show_header__func "${DOCKER__TITLE}" "${DOCKER__TABLEWIDTH}" "${DOCKER__BG_ORANGE}" "${DOCKER__NUMOFLINES_2}" "${DOCKER__NUMOFLINES_0}"
 }
 
 docker__init_variables__sub() {
@@ -52,11 +51,7 @@ docker__start_exited_container_handler__sub() {
 
     #Define local constants
     local MENUTITLE="${DOCKER__FG_YELLOW}Start${DOCKER__NOCOLOR} an ${DOCKER__FG_LIGHTGREY}Exited${DOCKER__NOCOLOR} ${DOCKER__FG_BRIGHTPRUPLE}Container-ID${DOCKER__NOCOLOR}"
-
     local READMSG_CHOOSE_A_CONTAINERID="Choose a ${DOCKER__FG_BRIGHTPRUPLE}Container-ID${DOCKER__NOCOLOR} (e.g. dfc5e2f3f7ee): "
-
-    local ERRMSG_CHOSEN_CONTAINERID_DOESNOT_EXISTS="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: chosen ${DOCKER__FG_BRIGHTPRUPLE}Container-ID${DOCKER__NOCOLOR} does NOT exist"
-    local ERRMSG_NO_EXITED_CONTAINERS_FOUND="=:${DOCKER__FG_LIGHTRED}NO *EXITED* CONTAINERS FOUND${DOCKER__NOCOLOR}:="
 
     #Define variables
     local errMsg=${DOCKER__EMPTYSTRING}
@@ -80,8 +75,8 @@ docker__start_exited_container_handler__sub() {
                         "${READMSG_CHOOSE_A_CONTAINERID}" \
                         "${DOCKER__EMPTYSTRING}" \
                         "${readmsg_remarks}" \
-                        "${ERRMSG_NO_EXITED_CONTAINERS_FOUND}" \
-                        "${ERRMSG_CHOSEN_CONTAINERID_DOESNOT_EXISTS}" \
+                        "${DOCKER__ERRMSG_NO_EXITED_CONTAINERS_FOUND}" \
+                        "${DOCKER__ERRMSG_CHOSEN_CONTAINERID_DOESNOT_EXISTS}" \
                         "${docker__ps_a_cmd}" \
                         "${docker__ps_a_containerIdColno}" \
                         "${DOCKER__PATTERN1}" \

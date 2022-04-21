@@ -32,8 +32,7 @@ docker__load_source_files__sub() {
 }
 
 docker__load_header__sub() {
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-    echo -e "${DOCKER__BG_ORANGE}                                 ${DOCKER__TITLE}${DOCKER__BG_ORANGE}                                ${DOCKER__NOCOLOR}"
+    show_header__func "${DOCKER__TITLE}" "${DOCKER__TABLEWIDTH}" "${DOCKER__BG_ORANGE}" "${DOCKER__NUMOFLINES_2}" "${DOCKER__NUMOFLINES_0}"
 }
 
 docker__init_variables__sub() {
@@ -48,9 +47,7 @@ docker__create_images_menu__sub() {
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
         echo -e "${DOCKER__FOURSPACES}1. Create an ${DOCKER__FG_BORDEAUX}image${DOCKER__NOCOLOR} using a ${DOCKER__FG_DARKBLUE}docker-file${DOCKER__NOCOLOR}"
         echo -e "${DOCKER__FOURSPACES}2. Create ${DOCKER__FG_BORDEAUX}images${DOCKER__NOCOLOR} using a ${DOCKER__FG_LIGHTBLUE}docker-list${DOCKER__NOCOLOR}"
-        echo -e "${DOCKER__FOURSPACES}3. Choose${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}Add${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}Del env-variable ${DOCKER__FG_GREEN41}Link${DOCKER__NOCOLOR}"
-        echo -e "${DOCKER__FOURSPACES}4. Choose${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}Add${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}Del env-variable ${DOCKER__FG_GREEN119}Checkout${DOCKER__NOCOLOR}"
-        echo -e "${DOCKER__FOURSPACES}5. Choose${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}Add${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}Del env-variable ${DOCKER__FG_GREEN41}link${DOCKER__FG_GREEN}-${DOCKER__FG_GREEN119}checkout${DOCKER__NOCOLOR} ${DOCKER__FG_GREEN}Profile${DOCKER__NOCOLOR}"
+        echo -e "${DOCKER__FOURSPACES}3. Export environment variables"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
         echo -e "${DOCKER__FOURSPACES}r. ${DOCKER__FG_PURPLE}Repository${DOCKER__NOCOLOR}-list"
         echo -e "${DOCKER__FOURSPACES}c. ${DOCKER__FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}-list"
@@ -74,7 +71,7 @@ docker__create_images_menu__sub() {
 
             #Only continue if a valid option is selected
             if [[ ! -z ${docker__myChoice} ]]; then
-                if [[ ${docker__myChoice} =~ [1-5rcsiegq] ]]; then
+                if [[ ${docker__myChoice} =~ [1-3rcsiegq] ]]; then
                     break
                 else
                     if [[ ${docker__myChoice} == ${DOCKER__ENTER} ]]; then
@@ -99,23 +96,15 @@ docker__create_images_menu__sub() {
                 ;;
 
             3)
-                ${docker__repo_link_checkout_menu_select__fpath} "${DOCKER__LINK}"
-                ;;
-
-            4)
-                ${docker__repo_link_checkout_menu_select__fpath} "${DOCKER__CHECKOUT}"
-                ;;
-
-            5)
-                ${docker__repo_link_checkout_menu_select__fpath} "${DOCKER__LINKCHECKOUT_PROFILE}"
+                ${docker__export_env_var_menu__fpath}
                 ;;
 
             c)
-                docker__list_container__sub
+                docker__show_containerList_handler__sub
                 ;;
 
             r)
-                docker__list_repository__sub
+                docker__show_repositoryList_handler__sub
                 ;;
 
             s)
@@ -135,70 +124,34 @@ docker__create_images_menu__sub() {
                 ;;
 
             q)
-                moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
-
-                exit 0
+                exit__func "${DOCKER__EXITCODE_99}" "${DOCKER__NUMOFLINES_2}"
                 ;;
         esac
     done
 }
 
-docker__list_repository__sub() {
+docker__show_repositoryList_handler__sub() {
     #Load header
     docker__load_header__sub
 
-    #Define local constants
-    local MENUTITLE_REPOSITORYLIST="${DOCKER__FG_PURPLE}Repository${DOCKER__NOCOLOR}-list"
-
-    local ERRMSG_NO_IMAGES_FOUND="=:${DOCKER__FG_LIGHTRED}NO IMAGES FOUND${DOCKER__NOCOLOR}:="
-
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-        show_centered_string__func "${MENUTITLE_REPOSITORYLIST}" "${DOCKER__TABLEWIDTH}"
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-
-    #Get number of containers
-    local numOf_repositories=`docker image ls | head -n -1 | wc -l`
-    if [[ ${numOf_repositories} -eq 0 ]]; then
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-            show_centered_string__func "${ERRMSG_NO_IMAGES_FOUND}" "${DOCKER__TABLEWIDTH}"
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-
-        press_any_key__func
-    else
-        ${docker__repolist_tableinfo__fpath}
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-    fi
+    #Show container-list
+    show_repository_or_container_list__func "${DOCKER__MENUTITLE_REPOSITORYLIST}" \
+                        "${DOCKER__ERRMSG_NO_IMAGES_FOUND}" \
+                        "${docker__images_cmd}" \
+                        "${DOCKER__NUMOFLINES_1}" \
+                        "${DOCKER__NUMOFLINES_2}"
 }
 
-docker__list_container__sub() {
+docker__show_containerList_handler__sub() {
     #Load header
     docker__load_header__sub
 
-    #Define local constants
-    local MENUTITLE_CONTAINERLIST="${DOCKER__FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}-list"
-    
-    local ERRMSG_NO_CONTAINERS_FOUND="=:${DOCKER__FG_LIGHTRED}NO CONTAINERS FOUND${DOCKER__NOCOLOR}:="
-
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-        show_centered_string__func "${MENUTITLE_CONTAINERLIST}" "${DOCKER__TABLEWIDTH}"
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-
-    #Get number of containers
-    local numOf_containers=`docker ps -a | head -n -1 | wc -l`
-    if [[ ${numOf_containers} -eq 0 ]]; then
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-            show_centered_string__func "${ERRMSG_NO_CONTAINERS_FOUND}" "${DOCKER__TABLEWIDTH}"
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-
-        press_any_key__func
-    else
-        ${docker__containerlist_tableinfo__fpath}
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
-    fi
+    #Show container-list
+    show_repository_or_container_list__func "${DOCKER__MENUTITLE_CONTAINERLIST}" \
+                        "${DOCKER__ERRMSG_NO_CONTAINERS_FOUND}" \
+                        "${docker__ps_a_cmd}" \
+                        "${DOCKER__NUMOFLINES_1}" \
+                        "${DOCKER__NUMOFLINES_2}"
 }
 
 

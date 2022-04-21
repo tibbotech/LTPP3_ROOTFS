@@ -64,8 +64,7 @@ docker__load_source_files__sub() {
 }
 
 docker__load_header__sub() {
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-    echo -e "${DOCKER__BG_ORANGE}                                 ${DOCKER__TITLE}${DOCKER__BG_ORANGE}                                ${DOCKER__NOCOLOR}"
+    show_header__func "${DOCKER__TITLE}" "${DOCKER__TABLEWIDTH}" "${DOCKER__BG_ORANGE}" "${DOCKER__NUMOFLINES_2}" "${DOCKER__NUMOFLINES_0}"
 }
 
 docker__init_variables__sub() {
@@ -102,8 +101,6 @@ docker__choose_containerID__sub() {
     # local MENUTITLE="Current ${DOCKER__FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}-list"
     local MENUTITLE="Run ${DOCKER__FG_GREEN}Chroot${DOCKER__NOCOLOR} from *within* a ${DOCKER__FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}"
     local READMSG_CHOOSE_A_CONTAINERID="Choose a ${DOCKER__FG_BRIGHTPRUPLE}Container-ID${DOCKER__NOCOLOR} (e.g. dfc5e2f3f7ee): "
-
-    local ERRMSG_NO_CONTAINERS_FOUND="=:${DOCKER__FG_LIGHTRED}NO CONTAINERS FOUND${DOCKER__NOCOLOR}:="
     local ERRMSG_INVALID_INPUT_VALUE="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Invalid input value "
 
 
@@ -118,7 +115,7 @@ docker__choose_containerID__sub() {
                         "${READMSG_CHOOSE_A_CONTAINERID}" \
                         "${DOCKER__EMPTYSTRING}" \
                         "${DOCKER__EMPTYSTRING}" \
-                        "${ERRMSG_NO_CONTAINERS_FOUND}" \
+                        "${DOCKER__ERRMSG_NO_CONTAINERS_FOUND}" \
                         "${ERRMSG_INVALID_INPUT_VALUE}" \
                         "${docker__ps_a_cmd}" \
                         "${docker__ps_a_containerIdColno}" \

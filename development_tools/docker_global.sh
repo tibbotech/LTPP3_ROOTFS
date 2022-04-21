@@ -89,7 +89,7 @@ DOCKER__BG_WHITE=$'\e[30;48;5;15m'
 DOCKER__TEN=10
 DOCKER__NINE=9
 
-DOCKER__TABLEWIDTH=70
+DOCKER__TABLEWIDTH=100
 DOCKER__TABLEROWS=10
 
 
@@ -101,6 +101,15 @@ DOCKER__PATTERN_EXITED="Exited"
 DOCKER__STATE_RUNNING="Running"
 DOCKER__STATE_EXITED="Exited"
 DOCKER__STATE_NOTFOUND="NotFound"
+
+DOCKER__MENUTITLE_CONTAINERLIST="${DOCKER__FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}-list"
+DOCKER__MENUTITLE_REPOSITORYLIST="${DOCKER__FG_PURPLE}Repository${DOCKER__NOCOLOR}-list"
+
+DOCKER__ERRMSG_CHOSEN_CONTAINERID_DOESNOT_EXISTS="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Invalid input value "
+DOCKER__ERRMSG_CHOSEN_IMAGEID_DOESNOT_EXISTS="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Invalid input value "
+DOCKER__ERRMSG_NO_CONTAINERS_FOUND="=:${DOCKER__FG_LIGHTRED}NO CONTAINERS FOUND${DOCKER__NOCOLOR}:="
+DOCKER__ERRMSG_NO_EXITED_CONTAINERS_FOUND="=:${DOCKER__FG_LIGHTRED}NO *EXITED* CONTAINERS FOUND${DOCKER__NOCOLOR}:="
+DOCKER__ERRMSG_NO_IMAGES_FOUND="=:${DOCKER__FG_LIGHTRED}NO IMAGES FOUND${DOCKER__NOCOLOR}:="
 
 
 
@@ -159,6 +168,9 @@ DOCKER__GIT_CACHE_MAX=50    #maximum number of entries for Git-Link and Git-Chec
 
 
 #---NUMERIC CONSTANTS
+DOCKER__COLNUM_2=2
+DOCKER__COLNUM_3=3
+
 DOCKER__LINENUM_0=0
 DOCKER__LINENUM_1=1
 DOCKER__LINENUM_2=2
@@ -196,6 +208,8 @@ DOCKER__TIMEOUT_10=10
 
 
 #---PATH CONSTANTS
+DOCKER__DOTDOT="${DOCKER__DOT}${DOCKER__DOT}"
+DOCKER__SLASH_DOTDOT_SLASH="${DOCKER__SLASH}${DOCKER__DOTDOT}${DOCKER__SLASH}"
 DOCKER__COLOR_SLASH=${DOCKER__FG_LIGHTGREY}${DOCKER__SLASH}${DOCKER__NOCOLOR}
 DOCKER__COLOR_DOTDOT="${DOCKER__FG_LIGHTRED}${DOCKER__DOT}${DOCKER__DOT}${DOCKER__NOCOLOR}"
 DOCKER__COLOR_SLASH_DOTDOT="${DOCKER__COLOR_SLASH}${DOCKER__COLOR_DOTDOT}"
@@ -298,7 +312,6 @@ DOCKER__FOURSPACES_Y_YES="${DOCKER__FOURSPACES}y. ${DOCKER__FG_LIGHTGREY}Yes${DO
 DOCKER__FOURSPACES_N_NO="${DOCKER__FOURSPACES}n. ${DOCKER__FG_LIGHTGREY}No${DOCKER__NOCOLOR}"
 DOCKER__FOURSPACES_B_BACK="${DOCKER__FOURSPACES}b. ${DOCKER__FG_LIGHTGREY}Back${DOCKER__NOCOLOR}"
 DOCKER__FOURSPACES_C_CHOOSE="${DOCKER__FOURSPACES}c. ${DOCKER__FG_LIGHTGREY}Choose${DOCKER__NOCOLOR}"
-DOCKER__FOURSPACES_F12_QUIT="${DOCKER__FOURSPACES}${DOCKER__ENUM_FUNC_F12}. ${DOCKER__FG_LIGHTGREY}Quit${DOCKER__NOCOLOR} (${DOCKER__FG_LIGHTGREY}Ctrl+C${DOCKER__NOCOLOR})"
 DOCKER__FOURSPACES_Q_QUIT="${DOCKER__FOURSPACES}q. ${DOCKER__FG_LIGHTGREY}Quit${DOCKER__NOCOLOR} (${DOCKER__FG_LIGHTGREY}Ctrl+C${DOCKER__NOCOLOR})"
 DOCKER__FOURSPACES_QUIT_CTRL_C="${DOCKER__FOURSPACES}${DOCKER__FG_LIGHTGREY}Quit${DOCKER__NOCOLOR} (${DOCKER__FG_LIGHTGREY}Ctrl+C${DOCKER__NOCOLOR})"
 
@@ -306,6 +319,7 @@ DOCKER__FOURSPACES_F6_CHOOSE="${DOCKER__FOURSPACES}${DOCKER__ENUM_FUNC_F6}: ${DO
 DOCKER__FOURSPACES_F7_ADD="${DOCKER__FOURSPACES}${DOCKER__ENUM_FUNC_F7}: ${DOCKER__FG_LIGHTGREY}Add${DOCKER__NOCOLOR}"
 DOCKER__FOURSPACES_F8_DEL="${DOCKER__FOURSPACES}${DOCKER__ENUM_FUNC_F8}: ${DOCKER__FG_LIGHTGREY}Del${DOCKER__NOCOLOR}"
 DOCKER__FOURSPACES_F8_DEL+=" (${DOCKER__FG_LIGHTGREY}e.g.${DOCKER__NOCOLOR}, ${DOCKER__FG_LIGHTGREY}1,3,4${DOCKER__NOCOLOR}, ${DOCKER__FG_LIGHTGREY}2${DOCKER__NOCOLOR}, ${DOCKER__FG_LIGHTGREY}5-0${DOCKER__NOCOLOR})"
+DOCKER__FOURSPACES_F12_QUIT="${DOCKER__FOURSPACES}${DOCKER__ENUM_FUNC_F12}: ${DOCKER__FG_LIGHTGREY}Quit${DOCKER__NOCOLOR} (${DOCKER__FG_LIGHTGREY}Ctrl+C${DOCKER__NOCOLOR})"
 
 DOCKER__ONESPACE_PREV="${DOCKER__ONESPACE}${DOCKER__HOOKLEFT} ${DOCKER__FG_LIGHTGREY}${DOCKER__PREV}${DOCKER__NOCOLOR}"
 DOCKER__ONESPACE_NEXT="${DOCKER__FG_LIGHTGREY}${DOCKER__NEXT}${DOCKER__NOCOLOR} ${DOCKER__HOOKRIGHT}${DOCKER__ONESPACE}"
@@ -1082,28 +1096,85 @@ function moveUp_oneLine_then_moveRight__func() {
 
 
 #---SHOW FUNCTIONS
+function show_cmdOutput_w_menuTitle__func() {
+    #Input args
+    local menuTitle__input=${1}
+    local dockerCmd__input=${2}
+
+    #Show list
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    show_centered_string__func "${menuTitle__input}" "${DOCKER__TABLEWIDTH}"
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    
+    if [[ ${dockerCmd__input} == ${docker__ps_a_cmd} ]]; then
+        ${docker__containerlist_tableinfo__fpath}
+    else
+        ${docker__repolist_tableinfo__fpath}
+    fi
+
+    #Move-down cursor
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+    #Print
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    echo -e "${DOCKER__FOURSPACES_QUIT_CTRL_C}"
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+}
+
 function show_centered_string__func() {
     #Input args
     local string__input=${1}
-    local maxStrLen__input=${2}
+    local tableWidth__input=${2}
+    local bg_color__input=${3}
 
-    #Define one-space constant
-    local ONE_SPACE=" "
+    #Set 'bg_color__input' to 'DOCKER__NOCOLOR'
+    if [[ -z ${bg_color__input} ]]; then
+        bg_color__input=${DOCKER__NOCOLOR}
+    fi
 
     #Get string 'without visiable' color characters
     local strInput_wo_colorChars=`echo "${string__input}" | sed "s,\x1B\[[0-9;]*m,,g"`
 
-    #Get string length
+    #Get string-length
     local strInput_wo_colorChars_len=${#strInput_wo_colorChars}
 
-    #Calculated the number of spaces to-be-added
-    local numOf_spaces=$(( (maxStrLen__input-strInput_wo_colorChars_len)/2 ))
+    #Create string containing only empty spaces
+    local emptySpaces=`duplicate_char__func "${DOCKER__ONESPACE}" "${tableWidth__input}"`
 
-    #Create a string containing only EMPTY SPACES
-    local emptySpaces_string=`duplicate_char__func "${ONE_SPACE}" "${numOf_spaces}" `
+    #Calculated the number of spaces to-be-prepended
+    local string_startPos=$(( (tableWidth__input - strInput_wo_colorChars_len)/2 ))
+
 
     #Print text including Leading Empty Spaces
-    echo -e "${emptySpaces_string}${string__input}"
+    echo -e "${bg_color__input}${emptySpaces}${DOCKER__NOCOLOR}"
+
+    #Move cursor up
+    tput cuu1
+
+    #cursor to the right specified by 'string_startPos'
+    tput cuf ${string_startPos}
+
+    #Print string
+    echo -e "${bg_color__input}${string__input}${DOCKER__NOCOLOR}"
+}
+
+function show_errMsg_wo_menuTitle_and_exit_func() {
+    #Input args
+    local msg__input=${1}
+    local prepend_numOfLines__input=${2}
+    local append_numOfLines__input=${3}
+
+    #Move down and clean
+    moveDown_and_cleanLines__func "${prepend_numOfLines__input}"
+    
+    #Print
+    echo -e "${msg__input}"
+
+    #Move down and clean
+    moveDown_and_cleanLines__func "${append_numOfLines__input}"
+
+    #Exit
+    exit__func "${DOCKER__EXITCODE_99}" "${DOCKER__NUMOFLINES_0}"
 }
 
 function show_dirContent__func() {
@@ -1159,7 +1230,7 @@ function show_dirContent__func() {
 
 
 #---Trim message to fit within the specified terminal window-size 'DOCKER__TABLEWIDTH'
-    trim_string_toFit_specified_windowSize__func "${info__input}" "${DOCKER__TABLEWIDTH}"
+    info__input=`trim_string_toFit_specified_windowSize__func "${info__input}" "${DOCKER__TABLEWIDTH}" "${DOCKER__TRUE}"`
 
 
 
@@ -1529,7 +1600,7 @@ function show_fileContent__sub() {
 
 
 #---Trim message to fit within the specified terminal window-size 'DOCKER__TABLEWIDTH'
-    trim_string_toFit_specified_windowSize__func "${info__input}" "${DOCKER__TABLEWIDTH}"
+    info__input=`trim_string_toFit_specified_windowSize__func "${info__input}" "${DOCKER__TABLEWIDTH}" "${DOCKER__TRUE}"`
 
 
 
@@ -1786,14 +1857,29 @@ function show_fileContent__sub() {
     echo "${keyInput}" > ${outputFpath__input}  
 }
 
+function show_header__func() {
+    #Input args
+    local menuTitle__input=${1}
+    local tableWidth__input=${2}
+    local bg_color__input=${3}
+    local prepend_numOfLines__input=${4}
+    local append_numOfLines__input=${5}
+
+    #Move-down and clean
+    moveDown_and_cleanLines__func "${prepend_numOfLines__input}"
+
+    #Print title
+    show_centered_string__func "${menuTitle__input}" "${tableWidth__input}" "${bg_color__input}"
+
+    #Move-down and clean
+    moveDown_and_cleanLines__func "${append_numOfLines__input}"
+}
+
 function show_leadingAndTrailingStrings_separatedBySpaces__func() {
     #Input args
     local leadStr__input=${1}
     local trailStr__input=${2}
-    local maxStrLen__input=${3}
-
-    #Define local variables
-    local ONE_SPACE=" "
+    local tableWidth__input=${3}
 
     #Get string 'without visiable' color characters
     local leadStr_input_wo_colorChars=`echo "${leadStr__input}" | sed "s,\x1B\[[0-9;]*m,,g"`
@@ -1804,57 +1890,13 @@ function show_leadingAndTrailingStrings_separatedBySpaces__func() {
     local trailStr_input_wo_colorChars_len=${#trailStr_input_wo_colorChars}
 
     #Calculated the number of spaces to-be-added
-    local numOf_spaces=$(( maxStrLen__input-(leadStr_input_wo_colorChars_len+trailStr_input_wo_colorChars_len) ))
+    local numOf_spaces=$(( tableWidth__input-(leadStr_input_wo_colorChars_len+trailStr_input_wo_colorChars_len) ))
 
     #Create a string containing only EMPTY SPACES
-    local emptySpaces_string=`printf '%*s' "${numOf_spaces}" | tr ' ' "${ONE_SPACE}"`
+    local spaces_leading=`duplicate_char__func "${DOCKER__ONESPACE}" "${numOf_spaces}"`
 
     #Print text including Leading Empty Spaces
-    echo -e "${leadStr__input}${emptySpaces_string}${trailStr__input}"
-}
-
-function show_cmdOutput_w_menuTitle__func() {
-    #Input args
-    local menuTitle__input=${1}
-    local dockerCmd__input=${2}
-
-    #Show list
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-    show_centered_string__func "${menuTitle__input}" "${DOCKER__TABLEWIDTH}"
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-    
-    if [[ ${dockerCmd__input} == ${docker__ps_a_cmd} ]]; then
-        ${docker__containerlist_tableinfo__fpath}
-    else
-        ${docker__repolist_tableinfo__fpath}
-    fi
-
-    #Move-down cursor
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-
-    #Print
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-    echo -e "${DOCKER__FOURSPACES_QUIT_CTRL_C}"
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-}
-
-function show_errMsg_wo_menuTitle_and_exit_func() {
-    #Input args
-    local msg__input=${1}
-    local prepend_numOfLines__input=${2}
-    local append_numOfLines__input=${3}
-
-    #Move down and clean
-    moveDown_and_cleanLines__func "${prepend_numOfLines__input}"
-    
-    #Print
-    echo -e "${msg__input}"
-
-    #Move down and clean
-    moveDown_and_cleanLines__func "${append_numOfLines__input}"
-
-    #Exit
-    exit__func "${DOCKER__EXITCODE_99}" "${DOCKER__NUMOFLINES_0}"
+    echo -e "${leadStr__input}${spaces_leading}${trailStr__input}"
 }
 
 function show_msg_only__func() {
@@ -1940,8 +1982,6 @@ function show_msg_w_menuTitle_only_func() {
     moveDown_and_cleanLines__func "${append_numOfLines__input}"
 }
 
-
-
 function show_msg_wo_menuTitle_w_PressAnyKey__func() {
     #Input args
     local msg__input=${1}
@@ -1961,6 +2001,63 @@ function show_msg_wo_menuTitle_w_PressAnyKey__func() {
                         "${confirmation_prepend_numOfLines__input}" \
                         "${confirmation_append_numOfLines__input}"
 }
+
+function show_repository_or_container_list__func() {
+    #Input args
+    local menuTitle__input=${1}
+    local msg__input=${2}
+    local docker_cmd__input=${3}
+    local prepend_numOfLines__input=${4}
+    local append_numOfLines__input=${5}
+
+    #Move-down cursor
+    moveDown_and_cleanLines__func "${prepend_numOfLines__input}"
+
+    #Horizontal line
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+
+    #Print title    
+    show_centered_string__func "${menuTitle__input}" "${DOCKER__TABLEWIDTH}"
+
+    #Horizontal line
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+
+
+    #Get number of containers
+    local numOfElements=`${docker_cmd__input} | head -n -1 | wc -l`
+    if [[ ${numOfElements} -gt 0 ]]; then    #containers were found
+        #Show list of repository/container elements
+        if [[ ${docker_cmd__input} == ${docker__images_cmd} ]]; then
+            ${docker__repolist_tableinfo__fpath}
+        else
+            ${docker__containerlist_tableinfo__fpath}
+        fi
+
+        #Move-down cursor
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
+    else    #no containers found
+        #Move-down cursor
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+        #Print message
+        show_centered_string__func "${msg__input}" "${DOCKER__TABLEWIDTH}"
+
+        #Move-down cursor
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+        #Horizontal line
+        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+
+        #Move-down cursor
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+        #Show press-any-key dialog
+        press_any_key__func "${confirmation_timeout__input}" \
+                            "${confirmation_prepend_numOfLines__input}" \
+                            "${confirmation_append_numOfLines__input}"
+    fi
+}
+
 
 function show_msg_wo_menuTitle_w_confirmation__func() {
     #Input args
@@ -2041,6 +2138,30 @@ function checkForMatch_of_patterns_within_file__func() {
         echo "false"
     else    #match
         echo "true"
+    fi
+
+    #Turn-on Expansion
+    enable_expansion__func
+}
+
+function checkForMatch_of_pattern_for_a_column_within_file__func() {
+    #Turn-off Expansion
+    disable_expansion__func
+
+    #Input Args
+    local matchString__input=${1}
+    local pattern__input=${2}
+    local col__input=${3}
+    local dataFpath__input=${4}
+
+    #Compose command line
+    local col3_string=`cat "${dataFpath__input}" | grep -w "${pattern__input}" | awk -v COLNUM="${col__input}" '{print $COLNUM}'`
+    
+    #Check if 'col3_string = matchString__input' 
+    if [[ ${col3_string} == ${matchString__input} ]]; then  #no match
+        echo "true"
+    else    #match
+        echo "false"
     fi
 
     #Turn-on Expansion
@@ -2392,15 +2513,19 @@ function retrieve_subStrings_delimited_by_trailing_specified_char__func() {
 function trim_string_toFit_specified_windowSize__func() {
     #Input args
     local string__input=${1}
-    local windowsSize__input=${2}
+    local tableSize__input=${2}
+    local flag_enableColor__input=${3}
 
     #Define variables
     local constStr=${DOCKER__EMPTYSTRING}
+    local dotdot_print=${DOCKER__DOTDOT}
     local leadingStr=${DOCKER__EMPTYSTRING}
     local leadingStr_lastChar=${DOCKER__EMPTYSTRING}
     local leadingStr_left=${DOCKER__EMPTYSTRING}
     local leadingStr_right=${DOCKER__EMPTYSTRING}
     local ret=${DOCKER__EMPTYSTRING}
+    local slash_print=${DOCKER__SLASH}
+    local slas_dotdot_Slash_print=${DOCKER__SLASH_DOTDOT_SLASH}
     local trailingStr=${DOCKER__EMPTYSTRING}
     local trailingStr_left=${DOCKER__EMPTYSTRING}
     local trailingStr_right=${DOCKER__EMPTYSTRING}
@@ -2417,11 +2542,18 @@ function trim_string_toFit_specified_windowSize__func() {
     local isDirectory=false
     local isFile=false
 
-    #Get length of 'string__input'
-    string_len=${#string__input}
+    #Check if 'flag_enableColor__input = true'
+    if [[ ${flag_enableColor__input} == true ]]; then
+        slash_print=${DOCKER__COLOR_SLASH}
+        slas_dotdot_Slash_print=${DOCKER__COLOR_SLASH_DOTDOT_SLASH}
+        dotdot_print=${DOCKER__COLOR_DOTDOT}
+    fi
 
-    #Check if 'string_len <= windowsSize__input'
-    if [[ ${string_len} -le ${windowsSize__input} ]]; then
+    #Get length of 'string__input'
+    string_len=`get_stringlen_wo_regEx__func "${string__input}"`
+
+    #Check if 'string_len <= tableSize__input'
+    if [[ ${string_len} -le ${tableSize__input} ]]; then
         echo "${string__input}"
 
         return
@@ -2437,17 +2569,17 @@ function trim_string_toFit_specified_windowSize__func() {
             ;;
         ${DOCKER__NUMOFMATCH_1})
             leadingStr_left=`echo "${string__input}" | cut -d"${DOCKER__SLASH}" -f1`
-            leadingStr=${leadingStr_left}${DOCKER__COLOR_SLASH}
+            leadingStr=${leadingStr_left}${slash_print}
             ;;
         ${DOCKER__NUMOFMATCH_2})
             leadingStr_left=`echo "${string__input}" | cut -d"${DOCKER__SLASH}" -f1`
             leadingStr_right=`echo "${string__input}" | cut -d"${DOCKER__SLASH}" -f2`
-            leadingStr=${leadingStr_left}${DOCKER__COLOR_SLASH}${leadingStr_right}${DOCKER__COLOR_SLASH}
+            leadingStr=${leadingStr_left}${slash_print}${leadingStr_right}${slash_print}
             ;;
         *)
             leadingStr_left=`echo "${string__input}" | cut -d"${DOCKER__SLASH}" -f1`
             leadingStr_right=`echo ${string__input} | rev | cut -d"/" -f2- | cut -d"/" -f1 | rev`
-            leadingStr="${leadingStr_left}${DOCKER__COLOR_SLASH_DOTDOT_SLASH}${leadingStr_right}${DOCKER__COLOR_SLASH}"
+            leadingStr="${leadingStr_left}${slas_dotdot_Slash_print}${leadingStr_right}${slash_print}"
             ;;   
     esac
 
@@ -2461,10 +2593,10 @@ function trim_string_toFit_specified_windowSize__func() {
     #Calculate the total length
     totStr_len=$((leadingStr_len + trailingStr_len))
 
-    #Check if 'totStr_len > windowsSize__input'
-    if [[ ${totStr_len} -gt ${windowsSize__input} ]]; then
+    #Check if 'totStr_len > tableSize__input'
+    if [[ ${totStr_len} -gt ${tableSize__input} ]]; then
         #Recalculate 'trailingStr_len'
-        trailingStr_len=$((windowsSize__input - leadingStr_len))
+        trailingStr_len=$((tableSize__input - leadingStr_len))
 
         #Calculate the lenght of 'trailingStr_left'
         #Note: -1 due to 1 dot which will replace the trailing char of 'trailingStr_left'
@@ -2481,7 +2613,7 @@ function trim_string_toFit_specified_windowSize__func() {
         trailingStr_right=`get_theLast_xChars_ofString__func "${trailingStr}" "${trailingStr_right_len}"`
 
         #Get 'trailingStr'
-        trailingStr="${trailingStr_left}${DOCKER__COLOR_DOTDOT}${trailingStr_right}"
+        trailingStr="${trailingStr_left}${dotdot_print}${trailingStr_right}"
 
     fi
 
@@ -2847,14 +2979,35 @@ docker__environmental_variables__sub() {
     dirlist__readInput_w_autocomplete__filename="dirlist_readInput_w_autocomplete.sh"
     dirlist__readInput_w_autocomplete__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${dirlist__readInput_w_autocomplete__filename}
 
+    docker__run_chroot__filename="docker_run_chroot.sh"
+    docker__run_chroot__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__run_chroot__filename}
+
     docker__containerlist_tableinfo__filename="docker_containerlist_tableinfo.sh"
     docker__containerlist_tableinfo__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__containerlist_tableinfo__filename}
+
+    docker__cp_fromto_container__filename="docker_cp_fromto_container.sh"
+    docker__cp_fromto_container__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__cp_fromto_container__filename}
+
+    docker__create_image_from_container__filename="docker_create_image_from_container.sh"
+    docker__create_image_from_container__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__create_image_from_container__filename}
 
     docker__create_an_image_from_dockerfile__filename="docker_create_an_image_from_dockerfile.sh"
     docker__create_an_image_from_dockerfile__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__create_an_image_from_dockerfile__filename}
 
     docker__create_images_from_dockerlist__filename="docker_create_images_from_dockerlist.sh"
     docker__create_images_from_dockerlist__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__create_images_from_dockerlist__filename}
+
+    docker__create_image_from_existing_repository__filename="docker_create_image_from_existing_repository.sh"
+    docker__create_image_from_existing_repository__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__create_image_from_existing_repository__filename}
+
+    docker__create_images_menu__filename="docker_create_images_menu.sh"
+    docker__create_images_menu__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__create_images_menu__filename}
+
+    docker__enter_command__filename="docker_enter_command.sh"
+    docker__enter_command__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__enter_command__filename}
+
+    docker__export_env_var_menu__filename="docker_export_env_var_menu.sh"
+    docker__export_env_var_menu__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__export_env_var_menu__filename}
 
     docker__git_menu__filename="git_menu.sh"
     docker__git_menu__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__git_menu__filename}
@@ -2865,6 +3018,12 @@ docker__environmental_variables__sub() {
     docker__readInput_w_autocomplete__filename="docker_readInput_w_autocomplete.sh"
     docker__readInput_w_autocomplete__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__readInput_w_autocomplete__filename}
 
+    docker__remove_container__filename="docker_remove_container.sh"
+    docker__remove_container__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__remove_container__filename}
+    
+    docker__remove_image__filename="docker_remove_image.sh"
+    docker__remove_image__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__remove_image__filename}
+
     docker__repo_link_checkout_menu_select__filename="docker_repo_link_checkout_menu_select.sh"
     docker__repo_link_checkout_menu_select__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__repo_link_checkout_menu_select__filename}
 
@@ -2873,6 +3032,12 @@ docker__environmental_variables__sub() {
 
 	docker__repolist_tableinfo__filename="docker_repolist_tableinfo.sh"
 	docker__repolist_tableinfo__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__repolist_tableinfo__filename}
+
+    docker__run_container_from_a_repository__filename="docker_run_container_from_a_repository.sh"
+    docker__run_container_from_a_repository__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__run_container_from_a_repository__filename}
+
+    docker__run_exited_container__filename="docker_run_exited_container.sh"
+    docker__run_exited_container__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__run_exited_container__filename}
 
     docker__show_choose_add_del_from_cache__filename="docker_show_choose_add_del_from_cache.sh"
     docker__show_choose_add_del_from_cache__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__show_choose_add_del_from_cache__filename}
@@ -2883,7 +3048,7 @@ docker__environmental_variables__sub() {
     docker__ssh_to_host__filename="docker_ssh_to_host.sh"
     docker__ssh_to_host__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__ssh_to_host__filename}
 
-
+    
 
     docker__LTPP3_ROOTFS_docker__dir=${docker__LTPP3_ROOTFS__dir}/docker
     docker__LTPP3_ROOTFS_docker_dockerfiles__dir=${docker__LTPP3_ROOTFS_docker__dir}/dockerfiles
@@ -2929,6 +3094,9 @@ docker__environmental_variables__sub() {
 
     docker__enter_cmdline_out__filename="docker__enter_cmdline.out"
     docker__enter_cmdline_out__fpath=${docker__tmp_dir}/${docker__enter_cmdline_out__filename}
+
+    docker__export_env_var_menu_out__filename="docker_export_env_var_menu.out"
+    docker__export_env_var_menu_out__fpath=${docker__tmp_dir}/${docker__export_env_var_menu_out__filename}
 
     docker__readInput_w_autocomplete_out__filename="docker_readInput_w_autocomplete.out"
     docker__readInput_w_autocomplete_out__fpath=${docker__tmp_dir}/${docker__readInput_w_autocomplete_out__filename}

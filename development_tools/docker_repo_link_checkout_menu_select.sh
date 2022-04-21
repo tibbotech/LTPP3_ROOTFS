@@ -1,7 +1,8 @@
 #!/bin/bash -m
 #Remark: by using '-m' the INT will NOT propagate to the PARENT scripts
 #---INPUT ARGS
-exp_env_var_type__input=${1}
+docker__dockerFile_fpath=${1}
+exp_env_var_type__input=${2}
 
 
 
@@ -21,18 +22,10 @@ docker__load_source_files__sub() {
 }
 
 docker__load_header__sub() {
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-    echo -e "${DOCKER__BG_ORANGE}                                 ${DOCKER__TITLE}${DOCKER__BG_ORANGE}                               ${DOCKER__NOCOLOR}"
+    show_header__func "${DOCKER__TITLE}" "${DOCKER__TABLEWIDTH}" "${DOCKER__BG_ORANGE}" "${DOCKER__NUMOFLINES_2}" "${DOCKER__NUMOFLINES_0}"
 }
 
 docker__load_constants__sub() {
-    DOCKER__DIRLIST_MENUTITLE="Select a ${DOCKER__FG_DARKBLUE}docker-file${DOCKER__NOCOLOR}"
-    DOCKER__DIRLIST_LOCATION_INFO="${DOCKER__FOURSPACES}${DOCKER__FG_VERYLIGHTORANGE}Location${DOCKER__NOCOLOR}: ${docker__LTPP3_ROOTFS_docker_dockerfiles__dir}"
-    DOCKER__DIRLIST_REMARK="${DOCKER__FOURSPACES}${DOCKER__FG_LIGHTGREY}NOTE: only files containing pattern '${DOCKER__CONTAINER_ENV1}'...\n"
-    DOCKER__DIRLIST_REMARK+="${DOCKER__TENSPACES}...and '${DOCKER__CONTAINER_ENV2}' are shown${DOCKER__NOCOLOR}"
-	DOCKER__DIRLIST_READ_DIALOG="Choose a file: "
-    DOCKER__DIRLIST_ERRMSG="${DOCKER__FOURSPACES}-:${DOCKER__FG_LIGHTRED}directory is Empty${DOCKER__NOCOLOR}:-"
-
     DOCKER__LINK_MENUTITLE="Choose${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}Add${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}Del env-variable ${DOCKER__FG_GREEN41}Link${DOCKER__NOCOLOR}"
     DOCKER__LINK_LOCATION_INFO_MSG="${DOCKER__FOURSPACES}${DOCKER__FG_VERYLIGHTORANGE}Location${DOCKER__NOCOLOR}: "
     DOCKER__LINK_MENUOPTIONS_MSG="${DOCKER__FOURSPACES_F6_CHOOSE}\n"
@@ -66,7 +59,6 @@ docker__load_constants__sub() {
 }
 
 docker__init_variables__sub() {
-    docker__dockerFile_fpath=${DOCKER__EMPTYSTRING}
     docker__cacheFpath=${DOCKER__EMPTYSTRING}
     docker__linkCacheFpath=${DOCKER__EMPTYSTRING}
     docker__checkoutCacheFpath=${DOCKER__EMPTYSTRING}
@@ -81,32 +73,6 @@ docker__init_variables__sub() {
     docker__exp_env_var_option_del=${DOCKER__EMPTYSTRING}
 
     docker__exitCode=0
-}
-
-docker__show_dockerList_files__sub() {
-    #Show directory content
-    show_dirContent__func "${docker__LTPP3_ROOTFS_docker_dockerfiles__dir}" \
-                        "${DOCKER__DIRLIST_MENUTITLE}" \
-                        "${DOCKER__DIRLIST_REMARK}" \
-                        "${DOCKER__DIRLIST_LOCATION_INFO}" \
-                        "${DOCKER__FOURSPACES_F12_QUIT}" \
-                        "${DOCKER__DIRLIST_ERRMSG}" \
-                        "${DOCKER__DIRLIST_READ_DIALOG}" \
-                        "${DOCKER__CONTAINER_ENV1}" \
-                        "${DOCKER__CONTAINER_ENV2}" \
-                        "${docker__repo_link_checkout_menu_select_out__fpath}" \
-                        "${DOCKER__TABLEROWS}"
-
-    #Get the exitcode just in case a Ctrl-C was pressed in function 'show_dirContent__func' (in script 'docker_global.sh')
-    docker__exitCode=$?
-    if [[ ${docker__exitCode} -eq ${DOCKER__EXITCODE_99} ]]; then
-        exit__func "${docker__exitCode}" "${DOCKER__NUMOFLINES_2}"
-    fi
-
-    #Get result from file.
-    docker__dockerFile_fpath=`get_output_from_file__func \
-                        "${docker__repo_link_checkout_menu_select_out__fpath}" \
-                        "${DOCKER__LINENUM_1}"`
 }
 
 docker__generate_and_create_cache_filenames__sub() {
@@ -205,8 +171,6 @@ main_sub() {
     docker__load_constants__sub
 
     docker__init_variables__sub
-
-    docker__show_dockerList_files__sub
 
     docker__generate_and_create_cache_filenames__sub
 

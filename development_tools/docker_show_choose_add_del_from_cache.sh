@@ -47,6 +47,8 @@ docker__init_variables__sub() {
     docker__table_index_abs=0
     docker__table_index_rel=0
 
+    docker__colnum=0
+
     docker__dataFpath_numOfLines=0
     docker__fixed_numOfLines=0
     docker__info_numOfLines=0
@@ -106,7 +108,7 @@ docker__reset_variables__sub() {
 }
 
 docker__trim_msg_toFit_within_specified_windowSize__sub() {
-    docker__info=`trim_string_toFit_specified_windowSize__func "${info__input}" "${DOCKER__TABLEWIDTH}"`
+    docker__info=`trim_string_toFit_specified_windowSize__func "${info__input}" "${DOCKER__TABLEWIDTH}" "${DOCKER__TRUE}"`
 }
 
 docker__calc_numOfLines_of_inputArgs__sub() {
@@ -157,7 +159,7 @@ docker__preCheck_and_move_configered_env_var_to_top__sub() {
     docker__env_var_checkout=`retrieve_env_var_checkout_from_file__func "${dockerfile_fpath__input}" "${expEnvVarFpath__input}"`
         
     #Define 'docker__env_var_linkColonCheckout'
-    docker__env_var_linkColonCheckout="${docker__env_var_link}${DOCLER__COLON}${docker__env_var_checkout}"
+    docker__env_var_linkColonCheckout="${docker__env_var_link}${DOCKER__COLON}${docker__env_var_checkout}"
     
     case "${exp_env_var_type__input}" in
         ${DOCKER__LINK})
@@ -174,16 +176,13 @@ docker__preCheck_and_move_configered_env_var_to_top__sub() {
     #Get the line-number of 'docker__env_var_link' within 'cacheFpath__input'
     docker__lineNum_abs=`retrieve_lineNum_from_file__func "${docker__env_var_sel}" "${cacheFpath__input}"`
 
-    #Check if 'docker__lineNum_abs = 0'
-    if [[ ${retrieve_lineNum_from_file__func} -ne ${DOCKER__NUMOFMATCH_0} ]]; then
-        #Check if 'docker__lineNum_abs <> 1'
-        if [[ ${docker__lineNum_abs} -ne ${DOCKER__LINENUM_1} ]]; then
-            #Delete line specified by 'docker__lineNum_abs'
-            delete_lineNum_from_file__func "${docker__lineNum_abs}" "${DOCKER__EMPTYSTRING}" "${cacheFpath__input}"
+    #Check if 'docker__lineNum_abs > 1'
+    if [[ ${docker__lineNum_abs} -gt ${DOCKER__LINENUM_1} ]]; then
+        #Delete line specified by 'docker__lineNum_abs'
+        delete_lineNum_from_file__func "${docker__lineNum_abs}" "${DOCKER__EMPTYSTRING}" "${cacheFpath__input}"
 
-            #Insert 'line' at the top of the file.
-            insert_string_into_file__func "${docker__env_var_sel}" "${DOCKER__LINENUM_1}" "${cacheFpath__input}"
-        fi
+        #Insert 'line' at the top of the file.
+        insert_string_into_file__func "${docker__env_var_sel}" "${DOCKER__LINENUM_1}" "${cacheFpath__input}"
     fi
 
     #Reset all variables
@@ -215,11 +214,13 @@ docker__show_menu_handler__sub() {
         #Check if 'docker__cacheFpath_lineNum_min' has changed by comparing the current value with the backup'ed value.
         if [[ ${docker__flag_turnPage_isAllowed} == true ]]; then
             #Print a horizontal line
-            echo -e "${DOCKER__HORIZONTALLINE}"
-            #Show menu-title
+            duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+
+            #Print menu-title
             show_centered_string__func "${menuTitle__input}" "${DOCKER__TABLEWIDTH}"
+
             #Print a horizontal line
-            echo -e "${DOCKER__HORIZONTALLINE}"
+            duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
 
             #Show file-cotent
             docker__show_fileContent__sub
@@ -229,21 +230,24 @@ docker__show_menu_handler__sub() {
 
             #Show prev-next line
             docker__show_prev_next_handler__sub "${cacheFpath__input}"
+
             #Show line-number range in between prev and next
             docker__show_lineNumRange_between_prev_and_next__sub
 
             #Print a horizontal line
-            echo -e "${DOCKER__FG_LIGHTGREY}${DOCKER__HORIZONTALLINE}${DOCKER__NOCOLOR}"
+            duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+
             #show location of the cache-file
             echo -e "${docker__info}"
+
             #Print a horizontal line
-            echo -e "${DOCKER__FG_LIGHTGREY}${DOCKER__HORIZONTALLINE}${DOCKER__NOCOLOR}"
+            duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
 
             #Print menu-options
             echo -e "${menuOptions__input}"
             
             #Print a horizontal line
-            echo -e "${DOCKER__FG_LIGHTGREY}${DOCKER__HORIZONTALLINE}${DOCKER__NOCOLOR}"
+            duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
         fi
         
         #Show choose dialog
@@ -339,17 +343,39 @@ docker__show_fileContent__sub() {
                     #Get the repository:tag from 'dockerfile_fpath__input'
                     docker__repositoryTag=`retrieve_repositoryTag_from_dockerfile__func "${dockerfile_fpath__input}"`
 
-                    if [[ ${exp_env_var_type__input} != ${DOCKER__LINKCHECKOUT_PROFILE}  ]]; then
+                    if [[ ${exp_env_var_type__input} != ${DOCKER__LINKCHECKOUT_PROFILE} ]]; then
+                        #Choose column number
+                        if [[ ${exp_env_var_type__input} == ${DOCKER__LINK} ]]; then
+                            docker__colnum=${DOCKER__COLNUM_2}
+                        else    #exp_env_var_type__input = DOCKER__CHECKOUT
+                            docker__colnum=${DOCKER__COLNUM_3}
+                        fi
+
                         #Check for match
                         #Remark:
                         #   In this case 'line' represents 'docker__env_var_link' or 'docker__env_var_checkout'
-                        match_isFound=`checkForMatch_of_patterns_within_file__func "${docker__repositoryTag}" "${line}" "${expEnvVarFpath__input}"`
+                        match_isFound=`checkForMatch_of_pattern_for_a_column_within_file__func "${line}" \
+                                "${docker__repositoryTag}" \
+                                "${docker__colnum}" \
+                                "${expEnvVarFpath__input}"`
                     else
-                        #Compose 'docker__env_var_linkSpaceCheckout'
-                        docker__env_var_linkSpaceCheckout=`echo "${line}" | sed "s/\(.*\)${DOCKER__COLON}/\1${DOCKER__ONESPACE}/"`
+                        #Separate 'limk' from 'checkout'
+                        docker__env_var_link=`echo "${line}" | rev | cut -d"${DOCKER__COLON}" -f2- | rev`
+                        docker__env_var_checkout=`echo "${line}" | rev | cut -d"${DOCKER__COLON}" -f1 | rev`
 
-                        #SECONDLY: check for match
-                        match_isFound=`checkForMatch_of_patterns_within_file__func "${docker__repositoryTag}" "${docker__env_var_linkSpaceCheckout}" "${expEnvVarFpath__input}"`
+                        #FIRST MATCH: check if a match can be found for 'docker__env_var_link'
+                        match_isFound=`checkForMatch_of_pattern_for_a_column_within_file__func "${docker__env_var_link}" \
+                            "${docker__repositoryTag}" \
+                            "${DOCKER__COLNUM_2}" \
+                            "${expEnvVarFpath__input}"`
+
+                        if [[ ${match_isFound} == true ]]; then #true
+                            #SECOND MATCH: check if a match can be found for 'docker__env_var_checkout'
+                            match_isFound=`checkForMatch_of_pattern_for_a_column_within_file__func "${docker__env_var_checkout}" \
+                                "${docker__repositoryTag}" \
+                                "${DOCKER__COLNUM_3}" \
+                                "${expEnvVarFpath__input}"`
+                        fi
                     fi
 
                     #Check if 'match_isFound = true'?
@@ -363,7 +389,7 @@ docker__show_fileContent__sub() {
 
                 #Fit 'line_print' within the specified 'DOCKER__TABLEWIDTH'
                 if [[ ${exp_env_var_type__input} != ${DOCKER__LINKCHECKOUT_PROFILE}  ]]; then
-                    line_subst3=`trim_string_toFit_specified_windowSize__func "${line_subst2}" "${DOCKER__TABLEWIDTH}"`
+                    line_subst3=`trim_string_toFit_specified_windowSize__func "${line_subst2}" "${DOCKER__TABLEWIDTH}" "${DOCKER__TRUE}"`
                 else
                     #Get the substring 'line_subst2_left' which is on the left-side of the last colon ':'
                     line_subst2_left=`echo "${line_subst2}" | rev | cut -d"${DOCKER__COLON}" -f2- | rev`
@@ -377,7 +403,7 @@ docker__show_fileContent__sub() {
                     # line_subst3_right_max=$(( (DOCKER__TABLEWIDTH/2) - DOCKER__TEN ))
 
                     #Get 'line_subst3_left'
-                    line_subst3_left=`trim_string_toFit_specified_windowSize__func "${line_subst2_left}" "${line_subst3_left_max}"`
+                    line_subst3_left=`trim_string_toFit_specified_windowSize__func "${line_subst2_left}" "${line_subst3_left_max}" "${DOCKER__TRUE}"`
 
                     #Retrieve the current length of 'line_subst3_left'
                     line_subst3_left_len=`get_stringlen_wo_regEx__func "${line_subst3_left}"`
@@ -386,7 +412,7 @@ docker__show_fileContent__sub() {
                     line_subst3_right_max=$(( DOCKER__TABLEWIDTH - line_subst3_left_len ))
 
                     #Get 'line_subst3_right'
-                    line_subst3_right=`trim_string_toFit_specified_windowSize__func "${line_subst2_right}" "${line_subst3_right_max}"`
+                    line_subst3_right=`trim_string_toFit_specified_windowSize__func "${line_subst2_right}" "${line_subst3_right_max}" "${DOCKER__TRUE}"`
 
                     #Compose 'line_subst3'
                     line_subst3="${line_subst3_left}${DOCKER__BG_LIGHTGREY}${DOCKER__COLON}${DOCKER__NOCOLOR}${line_subst3_right}"
@@ -1098,50 +1124,55 @@ docker__any_choose_handler__sub() {
             return
             ;;
         true)
-            #IMPORTANT: set 'docker__keyInput = DOCKER__TABLEROWS' if 'docker__keyInput = 0'
-            if [[ ${docker__keyInput} -eq ${DOCKER__NUMOFMATCH_0} ]]; then
-                docker__keyInput=${DOCKER__TABLEROWS}
-            fi
-
-            #Get the absolute line-number
-            #Note: 'docker__keyInput' is the relative line-number (0-9)
-            docker__lineNum_abs=$((docker__cacheFpath_lineNum_base + docker__keyInput))
-
-            #Check if 'docker__lineNum_abs > docker__dataFpath_numOfLines' 
-            if [[ ${docker__lineNum_abs} -gt ${docker__dataFpath_numOfLines} ]]; then
-                return
-            fi
-
-            #Move selected item to the top of 'cacheFpath__input'
-            #Output:
-            #   docker__line
-            docker__selItem_moveToTop_of_cacheFpath__sub "${docker__lineNum_abs}"
-         
-            #Write to output file"
-            write_data_to_file__func "${docker__line}" "${outFpath__input}"
-
-            #Update 'docker_arg1' and 'docker_arg2'
-            local docker_arg1=${DOCKER__EMPTYSTRING}
-            local docker_arg2=${DOCKER__EMPTYSTRING}
-            if [[ ${exp_env_var_type__input} == ${DOCKER__LINK} ]]; then
-                docker_arg1=${docker__line}
-            else    #exp_env_var_type__input = DOCKER__CHECKOUT
-                docker_arg2=${docker__line}
-            fi
-
-            #Update 'exported_env_var.txt'
-            update_exported_env_var__func "${docker_arg1}" \
-                        "${docker_arg2}" \
-                        "${dockerfile_fpath__input}" \
-                        "${expEnvVarFpath__input}"
-
-            #Break the loop of subroutine 'docker__menuOption_handler__sub'
-            docker__flag_refresh_all=true  #set flag to 'true'
-
-            #Move-up and clean a specified number of lines
-            docker__moveUp_and_clean_basedOn_chosen_numOfLines__sub
+            docker__any_choose_link_checkout_profile__sub
             ;;
     esac
+}
+docker__any_choose_link_checkout_profile__sub() {
+    #Define variables
+    local docker_arg1=${DOCKER__EMPTYSTRING}
+    local docker_arg2=${DOCKER__EMPTYSTRING}
+
+    #IMPORTANT: set 'docker__keyInput = DOCKER__TABLEROWS' if 'docker__keyInput = 0'
+    if [[ ${docker__keyInput} -eq ${DOCKER__NUMOFMATCH_0} ]]; then
+        docker__keyInput=${DOCKER__TABLEROWS}
+    fi
+
+    #Get the absolute line-number
+    #Note: 'docker__keyInput' is the relative line-number (0-9)
+    docker__lineNum_abs=$((docker__cacheFpath_lineNum_base + docker__keyInput))
+
+    #Check if 'docker__lineNum_abs > docker__dataFpath_numOfLines' 
+    if [[ ${docker__lineNum_abs} -gt ${docker__dataFpath_numOfLines} ]]; then
+        return
+    fi
+
+    #Move selected item to the top of 'cacheFpath__input'
+    #Output:
+    #   docker__line
+    docker__selItem_moveToTop_of_cacheFpath__sub "${docker__lineNum_abs}"
+    
+    #Write to output file"
+    write_data_to_file__func "${docker__line}" "${outFpath__input}"
+
+    #Update 'docker_arg1' and 'docker_arg2'
+    if [[ ${exp_env_var_type__input} == ${DOCKER__LINK} ]]; then
+        docker_arg1=${docker__line}
+    else    #exp_env_var_type__input = DOCKER__CHECKOUT
+        docker_arg2=${docker__line}
+    fi
+
+    #Update 'exported_env_var.txt'
+    update_exported_env_var__func "${docker_arg1}" \
+                "${docker_arg2}" \
+                "${dockerfile_fpath__input}" \
+                "${expEnvVarFpath__input}"
+
+    #Break the loop of subroutine 'docker__menuOption_handler__sub'
+    docker__flag_refresh_all=true  #set flag to 'true'
+
+    #Move-up and clean a specified number of lines
+    docker__moveUp_and_clean_basedOn_chosen_numOfLines__sub
 }
 docker__selItem_moveToTop_of_cacheFpath__sub() {
     #Input args

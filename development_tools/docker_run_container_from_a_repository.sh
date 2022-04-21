@@ -156,8 +156,7 @@ docker__load_source_files__sub() {
 }
 
 docker__load_header__sub() {
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-    echo -e "${DOCKER__BG_ORANGE}                                 ${DOCKER__TITLE}${DOCKER__BG_ORANGE}                                ${DOCKER__NOCOLOR}"
+    show_header__func "${DOCKER__TITLE}" "${DOCKER__TABLEWIDTH}" "${DOCKER__BG_ORANGE}" "${DOCKER__NUMOFLINES_2}" "${DOCKER__NUMOFLINES_0}"
 }
 
 docker__init_variables__sub() {
@@ -193,11 +192,7 @@ docker__run_container_handler__sub() {
 
     #Define message constants
     local MENUTITLE="Run ${DOCKER__FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR} from specfied ${DOCKER__FG_PURPLE}Repository${DOCKER__NOCOLOR}"
-
     local READMSG_CHOOSE_IMAGEID_FROM_LIST="Choose an ${DOCKER__FG_BORDEAUX}Image-ID${DOCKER__NOCOLOR} from list (e.g. 0f7478cf7cab): "
-
-    local ERRMSG_NO_IMAGES_FOUND="=:${DOCKER__FG_LIGHTRED}NO IMAGES FOUND${DOCKER__NOCOLOR}:="
-    local ERRMSG_CHOSEN_IMAGEID_DOESNOT_EXISTS="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: chosen ${DOCKER__FG_BORDEAUX}Image-ID${DOCKER__NOCOLOR} does NOT exist"
 
     #Define variables
     local containerName=${DOCKER__EMPTYSTRING}
@@ -223,8 +218,8 @@ docker__run_container_handler__sub() {
                                     "${READMSG_CHOOSE_IMAGEID_FROM_LIST}" \
                                     "${DOCKER__EMPTYSTRING}" \
                                     "${readmsg_remarks}" \
-                                    "${ERRMSG_NO_IMAGES_FOUND}" \
-                                    "${ERRMSG_CHOSEN_IMAGEID_DOESNOT_EXISTS}" \
+                                    "${DOCKER__ERRMSG_NO_IMAGES_FOUND}" \
+                                    "${DOCKER__ERRMSG_CHOSEN_IMAGEID_DOESNOT_EXISTS}" \
                                     "${docker__images_cmd}" \
                                     "${docker__images_IDColNo}" \
                                     "${DOCKER__EMPTYSTRING}" \
