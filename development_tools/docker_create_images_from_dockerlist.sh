@@ -209,6 +209,9 @@ docker__show_dockerList_files_handler__sub() {
     #Start loop
     while true
     do
+        #Show Tibbo-header
+        docker__load_header__sub
+
         #Show dockerList files
         docker__show_dockerList_files__sub
 
@@ -218,11 +221,18 @@ docker__show_dockerList_files_handler__sub() {
         #Update variables
         docker__file_locationInfo="${DOCKER__FOURSPACES}${DOCKER__FG_VERYLIGHTORANGE}File${DOCKER__NOCOLOR}: ${docker__dockerList_filename}"
 
+
+
         #Move-down and clean lines
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
+        # moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
+
+
+
+        #Show Tibbo-header
+        docker__load_header__sub
 
         #Show file content
-        show_fileContent__sub "${docker__dockerList_fpath}" \
+        show_fileContent_wo_keyInput__func "${docker__dockerList_fpath}" \
                         "${DOCKER__FILE_MENUTITLE}" \
                         "${DOCKER__FILE_REMARK}" \
                         "${docker__file_locationInfo}" \
@@ -232,7 +242,7 @@ docker__show_dockerList_files_handler__sub() {
                         "${docker__create_images_from_dockerlist_out__fpath}" \
                         "${DOCKER__TABLEROWS}"
 
-        #Get the exitcode just in case a Ctrl-C was pressed in function 'show_dirContent__func' (in script 'docker_global.sh')
+        #Get the exitcode just in case a Ctrl-C was pressed in function 'show_fileContent_wo_keyInput__func' (in script 'docker_global.sh')
         docker__exitCode=$?
         if [[ ${docker__exitCode} -eq ${DOCKER__EXITCODE_99} ]]; then
             exit__func "${docker__exitCode}" "${DOCKER__NUMOFLINES_2}"
@@ -246,29 +256,36 @@ docker__show_dockerList_files_handler__sub() {
         #Check if 'docker__myAnswer' is a numeric value
         case "${docker__myAnswer}" in
             ${DOCKER__YES})
+                moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
+
                 return
                 ;;
             ${DOCKER__NO})
-                exit__func "${DOCKER__EXITCODE_0}" "${DOCKER__NUMOFLINES_0}"
+                exit__func "${DOCKER__EXITCODE_0}" "${DOCKER__NUMOFLINES_2}"
+                ;;
+            *)
+                moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
                 ;;
         esac
     done
 }
 docker__show_dockerList_files__sub() {
     #Show directory content
-    show_dirContent__func "${docker__my_LTPP3_ROOTFS_docker_list_dir}" \
+    show_pathContent_w_keyInput__func "${docker__my_LTPP3_ROOTFS_docker_list_dir}" \
+                        "${DOCKER__EMPTYSTRING}" \
                         "${DOCKER__DIR_MENUTITLE}" \
                         "${DOCKER__DIR_REMARK}" \
                         "${DOCKER__DIR_LOCATIONINFO}" \
                         "${DOCKER__FOURSPACES_F12_QUIT}" \
+                        "${DOCKER__EMPTYSTRING}" \
                         "${DOCKER__DIR_ERRMSG}" \
                         "${DOCKER__DIR_READDIALOG}" \
                         "${DOCKER__EMPTYSTRING}" \
                         "${DOCKER__EMPTYSTRING}" \
-                        "${docker__create_images_from_dockerlist_out__fpath}" \
-                        "${DOCKER__TABLEROWS}"
+                        "${DOCKER__TABLEROWS}" \
+                        "${docker__create_images_from_dockerlist_out__fpath}"
 
-    #Get the exitcode just in case a Ctrl-C was pressed in function 'show_dirContent__func' (in script 'docker_global.sh')
+    #Get the exitcode just in case a Ctrl-C was pressed in function 'show_fileContent_wo_keyInput__func' (in script 'docker_global.sh')
     docker__exitCode=$?
     if [[ ${docker__exitCode} -eq ${DOCKER__EXITCODE_99} ]]; then
         exit__func "${docker__exitCode}" "${DOCKER__NUMOFLINES_2}"
@@ -278,6 +295,13 @@ docker__show_dockerList_files__sub() {
     docker__dockerList_fpath=`get_output_from_file__func \
                         "${docker__create_images_from_dockerlist_out__fpath}" \
                         "${DOCKER__LINENUM_1}"`
+
+    #Double-check if 'docker__dockerFile_fpath = F12'
+    if [[ ${docker__dockerList_fpath} == ${DOCKER__ENUM_FUNC_F12} ]]; then
+        exit__func "${DOCKER__EXITCODE_0}" "${DOCKER__NUMOFLINES_2}"
+    else
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+    fi
 }
 
 docker__create_image_handler__sub() {
@@ -338,7 +362,7 @@ main_sub() {
 
     docker__load_source_files__sub
 
-    docker__load_header__sub
+    # docker__load_header__sub
 
     docker__load_constants__sub
 

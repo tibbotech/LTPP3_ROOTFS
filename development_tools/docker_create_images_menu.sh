@@ -32,16 +32,29 @@ docker__load_source_files__sub() {
 }
 
 docker__load_header__sub() {
-    show_header__func "${DOCKER__TITLE}" "${DOCKER__TABLEWIDTH}" "${DOCKER__BG_ORANGE}" "${DOCKER__NUMOFLINES_2}" "${DOCKER__NUMOFLINES_0}"
+    #Input args
+    local prepend_numOfLines__input=${1}
+
+    #Print
+    show_header__func "${DOCKER__TITLE}" "${DOCKER__TABLEWIDTH}" "${DOCKER__BG_ORANGE}" "${prepend_numOfLines__input}" "${DOCKER__NUMOFLINES_0}"
 }
 
 docker__init_variables__sub() {
-    docker__myChoice=""
+    docker__myChoice=${DOCKER__EMPTYSTRING}
+
+    docker__prepend_numOfLines=0
 }
 
 docker__create_images_menu__sub() {
+    #Initialization
+    docker__prepend_numOfLines=${DOCKER__NUMOFLINES_2}
+
     while true
     do
+        #Load header
+        docker__load_header__sub "${docker__prepend_numOfLines}"
+
+        #Print menu-options
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
         show_leadingAndTrailingStrings_separatedBySpaces__func "${DOCKER__CREATEIMAGE_MENUTITLE}" "${DOCKER__VERSION}" "${DOCKER__TABLEWIDTH}"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
@@ -63,6 +76,7 @@ docker__create_images_menu__sub() {
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
         # moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
+        #Show read-dialog
         while true
         do
             #Select an option
@@ -127,12 +141,15 @@ docker__create_images_menu__sub() {
                 exit__func "${DOCKER__EXITCODE_99}" "${DOCKER__NUMOFLINES_2}"
                 ;;
         esac
+
+        #Set 'docker__prepend_numOfLines'
+        docker__prepend_numOfLines=${DOCKER__NUMOFLINES_1}
     done
 }
 
 docker__show_repositoryList_handler__sub() {
     #Load header
-    docker__load_header__sub
+    docker__load_header__sub "${docker__prepend_numOfLines}"
 
     #Show container-list
     show_repository_or_container_list__func "${DOCKER__MENUTITLE_REPOSITORYLIST}" \
@@ -144,7 +161,7 @@ docker__show_repositoryList_handler__sub() {
 
 docker__show_containerList_handler__sub() {
     #Load header
-    docker__load_header__sub
+    docker__load_header__sub "${docker__prepend_numOfLines}"
 
     #Show container-list
     show_repository_or_container_list__func "${DOCKER__MENUTITLE_CONTAINERLIST}" \
@@ -162,7 +179,7 @@ main__sub() {
 
     docker__load_source_files__sub
 
-    docker__load_header__sub
+    # docker__load_header__sub
 
     docker__init_variables__sub
 

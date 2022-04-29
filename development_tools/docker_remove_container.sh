@@ -279,7 +279,7 @@ docker_containerId_input__sub() {
                     docker__myContainerId="${docker__myContainerId_input}"
                 else    #'docker__myContainerId' contains data
                     Check if 'docker__myContainerId_input' was already added
-                    isFound=`checkForMatch_keyWord_within_string__func "${docker__myContainerId_input}" "${docker__myContainerId}"`
+                    isFound=`checkForMatch_of_pattern_within_string__func "${docker__myContainerId_input}" "${docker__myContainerId}"`
 
                     #If false, then add 'docker__myContainerId_input' to 'docker__myContainerId'
                     if [[ ${isFound} == false ]]; then

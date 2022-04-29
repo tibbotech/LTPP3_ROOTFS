@@ -11,7 +11,7 @@ docker__load_environment_variables__sub() {
     fi
 
     docker__first_dir=${docker__parent_dir%/*}    #gets one directory up
-    docker__images_dir=${docker__first_dir}/docker/images
+    docker__docker_images__dir=${docker__first_dir}/docker/images
     docker__image_fPath=${DOCKER__EMPTYSTRING}
 
     docker__current_folder=`basename ${docker__current_dir}`
@@ -45,7 +45,6 @@ docker__import_handler__sub() {
 
     #Define local read-input constants
     local READMSG_YOUR_CHOICE="Your choice: "
-    local READMSG_DO_YOU_WISH_TO_CONTINUE="Do you wish to continue (y/n)? "    #Define local command variables
 
     #Define local variables
     local imageList_fPath_arrItem=${DOCKER__EMPTYSTRING}
@@ -54,7 +53,7 @@ docker__import_handler__sub() {
 
     #Define local message variables
     local errMsg=${DOCKER__EMPTYSTRING}
-    local locationMsg_dockerFiles="${DOCKER__FOURSPACES}${DOCKER__FG_VERYLIGHTORANGE}Location${DOCKER__NOCOLOR}: ${docker__images_dir}"
+    local locationMsg_dockerFiles="${DOCKER__FOURSPACES}${DOCKER__FG_VERYLIGHTORANGE}Location${DOCKER__NOCOLOR}: ${docker__docker_images__dir}"
 
     #Define local command variables
     local docker_image_ls_cmd="docker image ls"
@@ -65,7 +64,7 @@ docker__import_handler__sub() {
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
 
     #Get all files at the specified location
-    local imageList_fPath_string=`find ${docker__images_dir} -maxdepth 1 -type f`
+    local imageList_fPath_string=`find ${docker__docker_images__dir} -maxdepth 1 -type f`
     local imageList_fPath_arrItem=${DOCKER__EMPTYSTRING}
 
     #Check if '' is an EMPTY STRING
@@ -182,7 +181,7 @@ docker__import_handler__sub() {
         if [[ -f ${myOutput_fPath} ]]; then
             while true
             do
-                read -N1 -p "${READMSG_DO_YOU_WISH_TO_CONTINUE}" myAnswer
+                read -N1 -p "${DOCKER__READDIALOG_DO_YOU_WISH_TO_CONTINUE_YN}" myAnswer
                 if  [[ ${myAnswer} == "y" ]]; then
                     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
                     echo -e "---:${DOCKER__FG_ORANGE}START${DOCKER__NOCOLOR}: Loading image '${DOCKER__FG_LIGHTGREY}${myOutput_fPath}${DOCKER__NOCOLOR}'"

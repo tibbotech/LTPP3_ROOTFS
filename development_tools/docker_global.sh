@@ -23,7 +23,6 @@ DOCKER__PLUS="+"
 DOCKER__SEMICOLON=";"
 DOCKER__SLASH="/"
 DOCKER__UNDERSCORE="_"
-
 DOCKER__DOUBLE_UNDERSCORE="${DOCKER__UNDERSCORE}${DOCKER__UNDERSCORE}"
 
 DOCKER__ESCAPE_ASTERISK="\*"
@@ -40,6 +39,8 @@ DOCKER__DEL=$'\x7e'
 DOCKER__ENTER=$'\x0a'
 DOCKER__ESCAPEKEY=$'\x1b'   #note: this escape key is ^[
 DOCKER__TAB=$'\t'
+
+DOCKER__CARET_C="^C"
 
 
 
@@ -95,8 +96,11 @@ DOCKER__TABLEROWS=10
 
 
 #---DOCKER RELATED CONSTANTS
+DOCKER__CFG_NAME1="docker__dockerFile_fpath"
+
 DOCKER__NONE="<none>"
 DOCKER__PATTERN_EXITED="Exited"
+DOCKER__PATTERN_REPOSITORY_TAG="repository:tag"
 
 DOCKER__STATE_RUNNING="Running"
 DOCKER__STATE_EXITED="Exited"
@@ -105,12 +109,17 @@ DOCKER__STATE_NOTFOUND="NotFound"
 DOCKER__MENUTITLE_CONTAINERLIST="${DOCKER__FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}-list"
 DOCKER__MENUTITLE_REPOSITORYLIST="${DOCKER__FG_PURPLE}Repository${DOCKER__NOCOLOR}-list"
 
+DOCKER__READINPUTDIALOG_CHOOSE_IMAGEID_FROM_LIST="Choose an ${DOCKER__FG_BORDEAUX}Image-ID${DOCKER__NOCOLOR} (e.g. 0f7478cf7cab): "
+DOCKER__READDIALOG_DO_YOU_WISH_TO_CONTINUE_YNR="Do you wish to continue (y/n/r)? "
+DOCKER__READDIALOG_DO_YOU_WISH_TO_CONTINUE_YN="Do you wish to continue (y/n)? "
+
 DOCKER__ERRMSG_CHOSEN_CONTAINERID_DOESNOT_EXISTS="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Invalid input value "
 DOCKER__ERRMSG_CHOSEN_IMAGEID_DOESNOT_EXISTS="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Invalid input value "
 DOCKER__ERRMSG_NO_CONTAINERS_FOUND="=:${DOCKER__FG_LIGHTRED}NO CONTAINERS FOUND${DOCKER__NOCOLOR}:="
 DOCKER__ERRMSG_NO_EXITED_CONTAINERS_FOUND="=:${DOCKER__FG_LIGHTRED}NO *EXITED* CONTAINERS FOUND${DOCKER__NOCOLOR}:="
 DOCKER__ERRMSG_NO_IMAGES_FOUND="=:${DOCKER__FG_LIGHTRED}NO IMAGES FOUND${DOCKER__NOCOLOR}:="
 
+DOCKER__INVALID_OR_NOT_A_DIRECTORY="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Invalid or not a directory"
 
 
 #---ENV VARIABLES (WHICH ARE USED IN THE DOCKERFILE FILES)
@@ -128,6 +137,7 @@ DOCKER__EXITCODE_99=99  #an error which tells the device to exit
 #---FILE-RELATED CONSTANTS
 DOCKER__CHECKOUT="checkout"
 DOCKER__CACHE="cache"
+DOCKER__DOCKERFILE="dockerfile"
 DOCKER__LINK="link"
 DOCKER__LINKCHECKOUT_PROFILE="linkcheckout_profile"
 
@@ -179,6 +189,7 @@ DOCKER__LISTVIEW_NUMOFROWS=20
 DOCKER__LISTVIEW_NUMOFCOLS=0
 
 DOCKER__NUMOFCHARS_1=1
+DOCKER__NUMOFCHARS_10=10
 
 DOCKER__NUMOFLINES_0=0
 DOCKER__NUMOFLINES_1=1
@@ -205,6 +216,8 @@ DOCKER__TIMEOUT_3=3
 DOCKER__TIMEOUT_5=5
 DOCKER__TIMEOUT_10=10
 
+DOCKER__TRAP_NUM_2=2
+
 
 
 #---PATH CONSTANTS
@@ -220,8 +233,6 @@ DOCKER__COLOR_SLASH_DOTDOT_SLASH_DOTDOT="${DOCKER__COLOR_SLASH}${DOCKER__COLOR_D
 
 #---PATTERN CONSTANTS
 DOCKER__PATTERN_DOCKER_IO="docker.io"
-DOCKER__PATTERN_REPOSITORY_TAG="repository:tag"
-
 
 
 #---PHASE CONSTANTS
@@ -259,6 +270,8 @@ DOCKER__SEMICOLON_HOME=";h"
 #---REGEX CONSTANTS
 DOCKER__REGEX_0_TO_9="[1-90]"
 DOCKER__REGEX_0_TO_9_COMMA_DASH="[1-90,-]"
+DOCKER__REGEX_1q="[1q]"
+DOCKER__REGEX_1_TO_4q="[1-4q]"
 
 
 
@@ -321,6 +334,11 @@ DOCKER__FOURSPACES_F8_DEL="${DOCKER__FOURSPACES}${DOCKER__ENUM_FUNC_F8}: ${DOCKE
 DOCKER__FOURSPACES_F8_DEL+=" (${DOCKER__FG_LIGHTGREY}e.g.${DOCKER__NOCOLOR}, ${DOCKER__FG_LIGHTGREY}1,3,4${DOCKER__NOCOLOR}, ${DOCKER__FG_LIGHTGREY}2${DOCKER__NOCOLOR}, ${DOCKER__FG_LIGHTGREY}5-0${DOCKER__NOCOLOR})"
 DOCKER__FOURSPACES_F12_QUIT="${DOCKER__FOURSPACES}${DOCKER__ENUM_FUNC_F12}: ${DOCKER__FG_LIGHTGREY}Quit${DOCKER__NOCOLOR} (${DOCKER__FG_LIGHTGREY}Ctrl+C${DOCKER__NOCOLOR})"
 
+DOCKER__FOURSPACES_F1_CHOOSE_LINK="${DOCKER__FOURSPACES}${DOCKER__ENUM_FUNC_F1}: ${DOCKER__FG_LIGHTGREY}Choose link${DOCKER__NOCOLOR}"
+DOCKER__FOURSPACES_F2_CHOOSE_CHECKOUT="${DOCKER__FOURSPACES}${DOCKER__ENUM_FUNC_F2}: ${DOCKER__FG_LIGHTGREY}Choose checkout${DOCKER__NOCOLOR}"
+DOCKER__FOURSPACES_F5_ABORT="${DOCKER__FOURSPACES}${DOCKER__ENUM_FUNC_F5}: ${DOCKER__FG_LIGHTGREY}Abort${DOCKER__NOCOLOR}"
+DOCKER__FOURSPACES_F3_CONFIRM="${DOCKER__FOURSPACES}${DOCKER__ENUM_FUNC_F3}: ${DOCKER__FG_LIGHTGREEN}Confirm${DOCKER__NOCOLOR}"
+
 DOCKER__ONESPACE_PREV="${DOCKER__ONESPACE}${DOCKER__HOOKLEFT} ${DOCKER__FG_LIGHTGREY}${DOCKER__PREV}${DOCKER__NOCOLOR}"
 DOCKER__ONESPACE_NEXT="${DOCKER__FG_LIGHTGREY}${DOCKER__NEXT}${DOCKER__NOCOLOR} ${DOCKER__HOOKRIGHT}${DOCKER__ONESPACE}"
 
@@ -339,12 +357,13 @@ docker__ps_a_cmd="docker ps -a"
 
 
 
-#---EXTERN VARIABLES
+#---EXTERN CONSTANTS & VARIABLES
 #---------------------------------------------------------------------
 #***WARNING***
 #   Extern variables can be called from anywhere. 
 #   Therefore, use it with caution.
 #---------------------------------------------------------------------
+extern__req=${DOCKER__EMPTYSTRING}
 extern__ret=${DOCKER__EMPTYSTRING}
 
 
@@ -371,6 +390,19 @@ function disable_keyboard_input__func() {
     stty -echo
 }
 
+function enable_ctrl_c__func() {
+    trap ${DOCKER__TRAP_NUM_2}
+}
+
+function disable_ctrl_c__func() {
+    trap '' ${DOCKER__TRAP_NUM_2}
+}
+
+function unset_extern_variables__func() {
+    unset extern__req
+    unset extern__ret
+}
+
 function exit__func() {
     #Input args
     exitCode__input=${1}
@@ -384,6 +416,9 @@ function exit__func() {
 
     #Enable keyboard-input
     enable_keyboard_input__func
+
+    #Unset extern variable
+    unset_extern_variables__func
 
     #Move-down cursor
     moveDown_and_cleanLines__func "${numOfLines__input}"
@@ -537,6 +572,78 @@ function confirmation_w_timer__func() {
 
 
 
+#---ARRAY FUNCTIONS
+function array_find_and_move_element_toTop__func() {
+    #Input args
+    local pattern__input=${1}
+    shift
+    local arr__input=("$@")
+
+    #Define variables
+    local arr_leftOfMatch=()
+    local arr_rightOfMatch=()
+    local arr_new=()
+
+    local arrLen=0
+    local arrIndex_max=0
+    local index_match=0
+    local lineNum_match=0
+    local numOfElements_leftOfMatch=0
+    local startIndex_rightOfMatch=0
+
+    #Get length of array 'arr__input'
+    local arrLen=${#arr__input[@]}
+    local arrIndex_max=$((arrLen - 1))
+
+    #Check if there is match of 'pattern__input' within 'arr__input'.
+    #If true, then get the array-index.
+    #1. Get the line-number:
+    lineNum_match=`echo "${arr__input[@]}" | xargs -n1 | grep -n "${pattern__input}" | cut -d":" -f1`
+
+    #Check if 'lineNum_match = 0'.
+    #If true, then exit function, because no match was found.
+    if [[ ${lineNum_match} -eq ${DOCKER__NUMOFMATCH_0} ]]; then
+        echo "${arr__input[@]}"
+
+        return
+    fi
+
+    #2. Get the array-index:
+    index_match=$((lineNum_match - 1))
+
+    #Check if 'index_match = 0'.
+    #If true, then exit function, because 'pattern__input' is already on the top.
+    if [[ ${index_match} -eq ${DOCKER__NUMOFMATCH_0} ]]; then
+        echo "${arr__input[@]}"
+
+        return
+    fi
+
+    #Get the 'numOfElements_leftOfMatch' and 'startIndex_rightOfMatch'
+    numOfElements_leftOfMatch=$((lineNum_match - 1))
+    startIndex_rightOfMatch=$((index_match + 1))
+
+    #Get 'arr_leftOfMatch'
+    arr_leftOfMatch=("${arr__input[@]:0:numOfElements_leftOfMatch}")
+
+    #Check if 'startIndex_rightOfMatch <= arrIndex_max'
+    #If false, then no need to get 'arr_rightOfMatch'
+    if [[ ${startIndex_rightOfMatch} -le ${arrIndex_max} ]]; then
+        #Get 'arr_rightOfMatch'
+        arr_rightOfMatch=("${arr__input[@]:startIndex_rightOfMatch}")
+    fi
+
+    #Compose 'arr_new'
+    arr_new[0]=${arr__input[index_match]}
+    arr_new+=(${arr_leftOfMatch[@]})
+    arr_new+=(${arr_rightOfMatch[@]})
+
+    #Output
+    echo "${arr_new[@]}"
+}
+
+
+
 #---DOCKER RELATED FUNCTIONS
 function check_containerID_state__func() {
     #Input args
@@ -556,6 +663,40 @@ function check_containerID_state__func() {
     fi
 }
 
+function checkIf_repoTag_isUniq__func() {
+    #Input args
+    local repoName__input=${1}
+    local tag__input=${2}
+
+    #Define variables
+    local dataArr=()
+    local dataArr_item=${DOCKER__EMPTYSTRING}
+    local stdOutput1=${DOCKER__EMPTYSTRING}
+    local stdOutput2=${DOCKER__EMPTYSTRING}
+
+    #Write 'docker images' command output to array
+    readarray dataArr <<< $(docker images)
+
+    #Check if repository:tag is unique
+    local ret=true
+
+    for dataArr_item in "${dataArr[@]}"
+    do                                                      
+        stdOutput1=`echo ${dataArr_item} | awk '{print $1}' | grep -w "${repoName__input}"`
+        if [[ ! -z ${stdOutput1} ]]; then
+            stdOutput2=`echo ${dataArr_item} | awk '{print $2}' | grep -w "${tag__input}"`
+            if [[ ! -z ${stdOutput2} ]]; then
+                ret=false
+
+                break
+            fi
+        fi                                             
+    done
+
+    #Output
+    echo "${ret}"
+}
+
 function createAndWrite_data_to_cacheFiles_ifNotExist__func() {
     #Input args
     local link_cache_fpath__input=${1}
@@ -569,7 +710,7 @@ function createAndWrite_data_to_cacheFiles_ifNotExist__func() {
 
     #Get the git-checkout from file 'exported_env_var_fpath__input'
     local git_checkout=`retrieve_env_var_checkout_from_file__func "${dockerfile_fpath__input}" "${exported_env_var_fpath__input}"`
-
+    
     #Check if file 'link_cache_fpath__input' is exists
     #Renark:
     #   If not present, then:
@@ -577,6 +718,8 @@ function createAndWrite_data_to_cacheFiles_ifNotExist__func() {
     if [[ ! -f ${link_cache_fpath__input} ]]; then
         if [[ ! -z ${git_link} ]]; then
             echo ${git_link} > ${link_cache_fpath__input}
+        else
+            touch ${link_cache_fpath__input}
         fi
     fi
 
@@ -587,6 +730,8 @@ function createAndWrite_data_to_cacheFiles_ifNotExist__func() {
     if [[ ! -f ${checkout_cache_fpath__input} ]]; then
         if [[ ! -z ${git_checkout} ]]; then
             echo ${git_checkout} > ${checkout_cache_fpath__input}
+        else
+            touch ${checkout_cache_fpath__input}
         fi
     fi
 
@@ -597,6 +742,8 @@ function createAndWrite_data_to_cacheFiles_ifNotExist__func() {
     if [[ ! -f ${linkCheckoutProfile_cache_Fpath} ]]; then
         if [[ ! -z ${git_link} ]] && [[ ! -z ${git_checkout} ]]; then
             echo "${git_link}${DOCKER__COLON}${git_checkout}" > ${linkCheckoutProfile_cache_Fpath}
+        else
+            touch ${linkCheckoutProfile_cache_Fpath}
         fi
     fi
 }
@@ -717,6 +864,19 @@ function functionKey_detection__func() {
 
 
 #---FILE-RELATED FUNCTIONS
+function append_caretReturn_ifNotPresent_within_file__func() {
+    disable_expansion__func
+
+    #Input args
+    local targetFpath__input=${1}
+
+    #Check if file ends with a 'newline' (aka caret-return)
+    local caretReturn_isFound=`tail -c1 ${targetFpath__input} | wc -l`
+    if [[ ${caretReturn_isFound} -eq ${DOCKER__NUMOFMATCH_0} ]]; then   #no caret-return found
+        #Append caret-return
+        echo "" >> ${targetFpath__input}
+    fi
+}
 function checkIf_dir_exists__func() {
     #Input args
     local containerID__input=${1}
@@ -964,6 +1124,19 @@ function get_output_from_file__func() {
     echo -e "${ret}"
 }
 
+function remove_allEmptyLines_within_file__func() {
+    #Input args
+    targetFpath__input=${1}
+
+    #Check if file exists
+    if [[ ! -f ${targetFpath__input} ]]; then   #does not exist
+        return
+    fi
+
+    #Remove all empty lines
+    sed -i '/^$/d' ${targetFpath__input}
+}
+
 function write_data_to_file__func() {
     #Input args
     string__input=${1}
@@ -1177,36 +1350,41 @@ function show_errMsg_wo_menuTitle_and_exit_func() {
     exit__func "${DOCKER__EXITCODE_99}" "${DOCKER__NUMOFLINES_0}"
 }
 
-function show_dirContent__func() {
+function show_pathContent_w_keyInput__func() {
 #---Input args
-    local dir__input=${1}
-    local menuTitle__input=${2}
-    local remark__input=${3}
-    local info__input=${4}
-    local menuOptions__input=${5}
-    local errMsg__input=${6}
-    local readDialog__input=${7}
-    local pattern1__input=${8}
-    local pattern2__input=${9}
-    local outputFpath__input=${10}
-    local table_index_max__input=${11}
+    local path__input=${1}  #could be a directory or file
+    local selItem__input=${2}
+    local menuTitle__input=${3}
+    local remark__input=${4}
+    local info__input=${5}
+    local menuOptions__input=${6}
+    local matchPattern__input=${7}  #match pattern of 'menuOptions__input'
+    local errMsg__input=${8}
+    local readDialog__input=${9}
+    local pattern1__input=${10}
+    local pattern2__input=${11}
+    local table_index_max__input=${12}
+    local outputFpath__input=${13}
 
 
 
 #---Define variables
+    local fpath_arrTmp=()
     local fpath_arr=()
     local fpath_arrIndex=0
     local fpath_arrLen=0
     local fpath_arrItem=${DOCKER__EMPTYSTRING}
+    local fpath_arrItem_base=${DOCKER__EMPTYSTRING}
+    local fpath_arrItem_marked=${DOCKER__EMPTYSTRING}
+    local fpath_arrItem_conv=${DOCKER__EMPTYSTRING}
+    local fpath_arrItem_print=${DOCKER__EMPTYSTRING}
 
-    local filteredFiles_arr=()
-    local filteredFiles_arrIndex=0
-    local filteredFiles_arrIndex_sel=0
-    local filteredFiles_arrLen=0
-    local filteredFiles_filename=${DOCKER__EMPTYSTRING}
+    local filteredData_arr=()
+    local filteredData_arrIndex=0
+    local filteredData_arrIndex_sel=0
+    local filteredData_arrLen=0
+    local filteredData_arrItem_sel=${DOCKER__EMPTYSTRING}
 
-    local filename=${DOCKER__EMPTYSTRING}
-    local filename_base=${DOCKER__EMPTYSTRING}
     local keyOutput=${DOCKER__EMPTYSTRING}
     local pattern1_result=${DOCKER__EMPTYSTRING}
     local pattern2_result=${DOCKER__EMPTYSTRING}
@@ -1215,11 +1393,11 @@ function show_dirContent__func() {
     local table_index=0
     local table_index_base=0
     local table_index_base_try_next=0
-    local table_index_chosen=${DOCKER__EMPTYSTRING}
+    local keyInput=${DOCKER__EMPTYSTRING}
 
-    local flag_main_whileLoop_setTo_break=false
-    local flag_forLoop_setTo_break=false
-
+    local flag_break_main_whileLoop=false
+    local flag_break_forLoop=false
+    local flag_matched_fkey_isPressed=false
 
 
 #---Remove file (if present)
@@ -1236,11 +1414,11 @@ function show_dirContent__func() {
 
 #---Calculate num-of-lines of input-args
     #Each input-args
-    menuTitle_numOfLines=`echo -e "${menuTitle__input}" | sed '/^\s*$/d' | wc -l`
-    remark_numOfLines=`echo -e "${remark__input}" | sed '/^\s*$/d' | wc -l`
-    info_numOfLines=`echo -e "${info__input}" | sed '/^\s*$/d' | wc -l`
-    menuOptions_numOfLines=`echo -e "${menuOptions__input}" | sed '/^\s*$/d' | wc -l`
-    readDialog_numOfLines=`echo -e "${readDialog__input}" | sed '/^\s*$/d' | wc -l`
+    menuTitle_numOfLines=`get_numOfLines_for_specified_string_or_file__func "${menuTitle__input}"`
+    remark_numOfLines=`get_numOfLines_for_specified_string_or_file__func "${remark__input}"`
+    info_numOfLines=`get_numOfLines_for_specified_string_or_file__func "${info__input}"`
+    menuOptions_numOfLines=`get_numOfLines_for_specified_string_or_file__func "${menuOptions__input}"`
+    readDialog_numOfLines=`get_numOfLines_for_specified_string_or_file__func "${readDialog__input}"`
 
     #fixed objects
     fixed_numOfLines=${DOCKER__NUMOFLINES_4}    #due to a fixed number of horizontal and empty lines
@@ -1274,12 +1452,31 @@ function show_dirContent__func() {
 
 
 
-#---Store directory content in array'
+#---Store directory/file content in array'
     #Remark: 
     #   Also make sure to substitute '<space>' with '${STX}space${ETX}'
-    readarray -t fpath_arr < <(find ${dir__input} -maxdepth 1 -type f | \
-                                sort | \
-                                sed "s/${DOCKER__ONESPACE}/${SED_SUBST_SPACE}/g")
+    if [[ -d ${path__input} ]]; then    #directory
+        readarray -t fpath_arrTmp < <(find ${path__input} -maxdepth 1 -type f | \
+                                    sort | \
+                                    sed "s/${DOCKER__ONESPACE}/${SED_SUBST_SPACE}/g")
+    else    #file
+        readarray -t fpath_arrTmp < ${path__input}
+    fi
+
+    #Check if a match string 'selItem__input' is provided
+    if [[ ! -z ${selItem__input} ]]; then   #contains data
+        #Rearrange array and place 'selItem__input' on top of the array.
+        #Note: the output 'result' is a string.
+        result=`array_find_and_move_element_toTop__func "${selItem__input}" "${fpath_arrTmp[@]}"`
+
+        #Convert string to array
+        #Remark:
+        #   Even though the array has been re-arranged,
+        #   still 'fpath_arr' will not be written to a file!
+        read -a fpath_arr <<< "${result}"
+    else    #contains no data
+        fpath_arr=("${fpath_arrTmp[@]}")
+    fi
 
     #Get 'fpath_arrLen'
     fpath_arrLen=${#fpath_arr[@]}
@@ -1300,25 +1497,34 @@ function show_dirContent__func() {
 
         if [[ ! -z ${fpath_arr[@]} ]]; then
             #Initialization
-            flag_forLoop_setTo_break=false
-            filteredFiles_arr=()
-            filteredFiles_arrIndex=0
+            flag_break_forLoop=false
+            filteredData_arr=()
+            filteredData_arrIndex=0
             fpath_arrIndex=0
-            table_index_chosen=0
+            keyInput=0
             table_index=0
 
             #Loop thru array
             for fpath_arrItem in "${fpath_arr[@]}"
             do
-                #Narrow down the result by implementing 'pattern1__input' and 'pattern2__input'
-                #Both patterns must be found within the path 'fpath_arrItem'
-                pattern1_result=`cat ${fpath_arrItem} | grep "${pattern1__input}"`
-                pattern2_result=`cat ${fpath_arrItem} | grep "${pattern2__input}"`
+#---------------Narrow down the result by implementing 'pattern1__input' and 'pattern2__input'.
+                #Remark:
+                #   Only narrow down if 'path__input' is a directory!!!
+                if [[ -d ${path__input} ]]; then    #directory
+                    pattern1_result=`cat ${fpath_arrItem} | grep "${pattern1__input}"`
+                    pattern2_result=`cat ${fpath_arrItem} | grep "${pattern2__input}"`
+                else    #file
+                    #Do not care about 'pattern1_result' and 'pattern2_result'.
+                    #Note: can set those variables to any non Empty String value.
+                    pattern1_result=${fpath_arrItem}
+                    pattern2_result=${fpath_arrItem}
+                fi
+
+#---------------At least one of the results, 'pattern1_result' or 'pattern2_result', contains data.
                 if [[ ! -z ${pattern1_result} ]] || [[ ! -z ${pattern2_result} ]]; then
                     #Increment array-index
                     fpath_arrIndex=$((fpath_arrIndex + 1))
 
-                    #Turn
                     if [[ ${fpath_arrIndex} -gt ${table_index_base} ]]; then
                         #increment table-index
                         table_index=$((table_index + 1))
@@ -1329,62 +1535,71 @@ function show_dirContent__func() {
                         if [[ ${table_index} -eq ${table_index_max__input} ]]; then
                             table_index=${DOCKER__NUMOFMATCH_0}
 
-                            flag_forLoop_setTo_break=true
+                            flag_break_forLoop=true
                         fi
 
-                        #Get filename without diectory
-                        filename_base=`basename ${fpath_arrItem}`  
-                    
-                        #Convert 'SED_SUBST_SPACE' back to '<space>'
-                        filename=`echo "${filename_base}" | sed "s/${SED_SUBST_SPACE}/${OCKER__ONESPACE}/g"`
+#-----------------------Get 'fpath_arrItem_base' without directory (if applicable)
+                        fpath_arrItem_base=`basename ${fpath_arrItem}`  
+         
+#-----------------------Convert 'SED_SUBST_SPACE' back to '<space>'
+                        fpath_arrItem_conv=`echo "${fpath_arrItem_base}" | sed "s/${SED_SUBST_SPACE}/${DOCKER__ONESPACE}/g"`
 
-
-
-                        #Add 'filename' to 'filteredFiles_arr'
+#-----------------------Add 'fpath_arrItem_conv' to 'filteredData_arr'
                         #Remark:
                         #   This array contains only data which matches both patterns...
                         #   ...'pattern1__input' and 'pattern2__input'.
                         if [[ ${table_index} -eq ${DOCKER__NUMOFMATCH_0} ]]; then   #when a turnover has happened
-                            filteredFiles_arrIndex=$((table_index_max__input - 1))
+                            filteredData_arrIndex=$((table_index_max__input - 1))
                         else    #in normal conditions
-                            filteredFiles_arrIndex=$((table_index - 1))
+                            filteredData_arrIndex=$((table_index - 1))
                         fi
-                        filteredFiles_arr[${filteredFiles_arrIndex}]=${filename}
+                        filteredData_arr[${filteredData_arrIndex}]=${fpath_arrItem_conv}
 
+#-----------------------Set 'fpath_arrItem_marked' (default)
+                        fpath_arrItem_marked=${fpath_arrItem_conv}
 
+#-----------------------Mark 'fpath_arrItem_marked' with 'DOCKER__BG_LIGHTSOFTYELLOW' (if applicable)
+                        if [[ ${filteredData_arrIndex} -eq ${DOCKER__NUMOFMATCH_0} ]]; then #true
+                            #Check if 'selItem__input' contains datda?
+                            if [[ ! -z ${selItem__input} ]]; then   #true
+                                #Color 'fpath_arrItem_conv' if 'selItem__input != DOCKER__EMPTYSTRING'
+                                fpath_arrItem_marked="${DOCKER__BG_LIGHTSOFTYELLOW}${fpath_arrItem_marked}${DOCKER__NOCOLOR}"
+                            fi
+                        fi
 
-                        #Define and set 'line_print'
+                        #Define and set 'fpath_arrItem_print'
                         if [[ ${table_index} -ne ${DOCKER__NUMOFMATCH_0} ]]; then
-                            line_print="${DOCKER__FOURSPACES}${table_index}. ${filename}"
+                            fpath_arrItem_print="${DOCKER__FOURSPACES}${table_index}. ${fpath_arrItem_marked}"
                         else
-                            line_print="${DOCKER__THREESPACES}${DOCKER__FG_LIGHTGREY}${DOCKER__LINENUM_1}${DOCKER__NOCOLOR}${table_index}. ${filename}"
+                            fpath_arrItem_print="${DOCKER__THREESPACES}${DOCKER__FG_LIGHTGREY}${DOCKER__LINENUM_1}${DOCKER__NOCOLOR}${table_index}. ${fpath_arrItem_marked}"
                         fi
                 
-                        #Show filename
-                        echo -e "${line_print}"
+                        #Show fpath_arrItem_conv
+                        echo -e "${fpath_arrItem_print}"
                     fi
                 fi
 
                 #Prevously 'table_index' was set to '0'.
                 #This means that the maximum number of items allowed to-be-shown has been reached.
                 #In this case, break the for-loop.
-                if [[ ${flag_forLoop_setTo_break} == true ]]; then
+                if [[ ${flag_break_forLoop} == true ]]; then
                     break
                 fi
             done    #end of for
         else
             moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
             show_centered_string__func "${errMsg__input}" "${DOCKER__TABLEWIDTH}"
         fi
 
 
 
 #-------Fill up table with Empty Lines (if needed)
-        #Check if 'flag_forLoop_setTo_break = false'
+        #Check if 'flag_break_forLoop = false'
         #Remark:
-        #   Remember that if 'flag_forLoop_setTo_break = true', then...
+        #   Remember that if 'flag_break_forLoop = true', then...
         #   ...the for-loop was broken due to 'table_index = table_index_max__input'.
-        if [[ ${flag_forLoop_setTo_break} == false ]]; then
+        if [[ ${flag_break_forLoop} == false ]]; then
             while [[ ${table_index} -lt ${table_index_max__input} ]]
             do
                 #increment line-number
@@ -1425,6 +1640,9 @@ function show_dirContent__func() {
 
 #-------Show info & menu-options
         # moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+        info__input=`trim_string_toFit_specified_windowSize__func "${info__input}" \
+                        "${DOCKER__TABLEWIDTH}" \
+                        "${DOCKER__TRUE}"`
         if [[ ! -z ${info__input} ]]; then
             duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
             echo -e "${info__input}"
@@ -1449,7 +1667,7 @@ function show_dirContent__func() {
 
 
 #-------Get array-length
-        filteredFiles_arrLen=${#filteredFiles_arr[@]}
+        filteredData_arrLen=${#filteredData_arr[@]}
 
 
 
@@ -1457,10 +1675,10 @@ function show_dirContent__func() {
         while true
         do
             #Show read-input
-            read -N1 -p "${readDialog__input} " table_index_chosen
+            read -N1 -p "${readDialog__input}" keyInput
 
-            #Check if 'table_index_chosen' is a numeric value
-            case "${table_index_chosen}" in
+            #Check if 'keyInput' is a numeric value
+            case "${keyInput}" in
                 ${DOCKER__ENTER})
                     moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
                     ;;
@@ -1469,10 +1687,13 @@ function show_dirContent__func() {
                     #Remark:
                     #   Notice that 'table_index_base_try_next' is used here and NOT 'table_index_base'
                     if [[ ${table_index_base_try_next} -gt ${table_index_max__input} ]]; then
+                        #Set the index-base value (e.g., 0,10,20,etc...)
                         table_index_base=$((table_index_base - table_index_max__input))
 
+                        #Move-up and clean each line until the top of the table
                         moveUp_and_cleanLines__func "${tot_numOfLines}"
 
+                        #Break this for-loop
                         break
                     else
                         moveToBeginning_and_cleanLine__func
@@ -1484,10 +1705,13 @@ function show_dirContent__func() {
                     #Remark:
                     #   Notice that 'table_index_base_try_next' is used here and NOT 'table_index_base'
                     if [[ ${table_index_base_try_next} -lt ${fpath_arrLen} ]]; then
+                        #Set the index-base value (e.g., 0,10,20,etc...)
                         table_index_base=$((table_index_base + table_index_max__input))
 
+                        #Move-up and clean each line until the top of the table
                         moveUp_and_cleanLines__func "${tot_numOfLines}"
 
+                        #Break this for-loop
                         break
                     else
                         moveToBeginning_and_cleanLine__func
@@ -1496,41 +1720,113 @@ function show_dirContent__func() {
                 ${DOCKER__ESCAPEKEY})
                     moveToBeginning_and_cleanLine__func
 
-                    keyOutput=`functionKey_detection__func "${table_index_chosen}"`
-                    if [[ ${keyOutput} == ${DOCKER__ENUM_FUNC_F12} ]]; then
-                        #Print read-input dialog
-                        echo "${readDialog__input}"
+                    #Get the function-key 'keyOutput' based on the chosen 'keyInput'
+                    keyOutput=`functionKey_detection__func "${keyInput}"`
+                    case "${keyOutput}" in
+                        ${DOCKER__ENUM_FUNC_F12})
+                            #Print read-input dialog with 'keyOutput' value
+                            echo "${readDialog__input}"
+                            
+                            #Important: set flag to true
+                            flag_matched_fkey_isPressed=true
 
-                        #Exit
-                        exit__func "${DOCKER__EXITCODE_0}" "${DOCKER__NUMOFLINES_2}"
+                            # #Exit
+                            # exit__func "${DOCKER__EXITCODE_0}" "${DOCKER__NUMOFLINES_2}"
+                            ;;
+                        *)  #OTHER F-KEYS AS SPECIFIED BY 'matchPattern__input'
+                            if [[ ! -z ${matchPattern__input} ]]; then  #not an Empty String
+                                #Check if the retrieved function-key 'keyOutput' matches the pattern 'matchPattern__input'
+                                flag_matched_fkey_isPressed=`checkForMatch_of_pattern_within_string__func \
+                                        "${keyOutput}" \
+                                        "${matchPattern__input}"`
+                            fi
+                            ;;
+                    esac
+
+                    #Check if a matched function-key was pressed
+                    if [[ ${flag_matched_fkey_isPressed} == true ]]; then  #match was found
+                        #Set output 'ret'
+                        ret=${keyOutput}
+
+                        #Break the main while-loop
+                        flag_break_main_whileLoop=true
+
+                        #Break this for-loop
+                        break
                     fi
                     ;;
                 *)
-                    if [[ ${table_index_chosen} =~ [1-90] ]]; then
-                        #IMPORTANT: If 'table_index_chosen = 0', then set 'table_index_chosen = table_index_max__input'
-                        if [[ ${table_index_chosen} -eq ${DOCKER__NUMOFMATCH_0} ]]; then
-                            table_index_chosen=${table_index_max__input}
+                    if [[ ${keyInput} =~ [1-90] ]]; then
+                        #IMPORTANT: If 'keyInput = 0', then set 'keyInput = table_index_max__input'
+                        if [[ ${keyInput} -eq ${DOCKER__NUMOFMATCH_0} ]]; then
+                            keyInput=${table_index_max__input}
                         fi
 
-                        #Only take action if 'table_index_chosen =< filteredFiles_arrLen'
-                        if [[ ${table_index_chosen} -le ${filteredFiles_arrLen} ]]; then
-                            moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_3}"
+                        #Only handle the following condition if 'keyInput =< filteredData_arrLen'
+                        if [[ ${keyInput} -le ${filteredData_arrLen} ]]; then
+                            #If 'keyInput = 0', then set 'keyInput = table_index_max__input'
+                            #Remark:
+                            #   This part is actually not necessary since it has been executed already previously.
+                            if [[ ${keyInput} -eq ${DOCKER__NUMOFMATCH_0} ]]; then
+                                keyInput=${table_index_max__input}
+                            fi
 
-                            flag_main_whileLoop_setTo_break=true
+                            #Convert to array-index
+                            #Remark:
+                            #   -1 is a correction due to array starting with 'index = 0'
+                            filteredData_arrIndex_sel=$(( keyInput - 1 ))
 
+                            #Get the selected 'filteredData_arrItem_sel'
+                            filteredData_arrItem_sel="${filteredData_arr[filteredData_arrIndex_sel]}"
+
+                            #Determine the output 'ret' based on whether 'path__input' is a 'directory' or 'file' 
+                            if [[ -d ${path__input} ]]; then    #directory
+                                ret=${path__input}/${filteredData_arrItem_sel}
+                            else    #file
+                                ret=${filteredData_arrItem_sel}
+                            fi
+
+                            #Move-down and clean lines
+                            # moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_3}"
+
+                            #Break the main while-loop
+                            flag_break_main_whileLoop=true
+
+                            #Break this for-loop
                             break
                         else
                             moveToBeginning_and_cleanLine__func
                         fi             
                     else
+                        #'matchPattern__input' could contain any keys other than function-keys or numbers [1-90]
+                        #***NOT TESTED YET                    
+                        if [[ ! -z ${matchPattern__input} ]]; then  #not an Empty String
+                            #Check if the retrieved function-key 'keyInput' matches the pattern 'matchPattern__input'
+                            flag_matched_fkey_isPressed=`checkForMatch_of_pattern_within_string__func \
+                                    "${keyInput}" \
+                                    "${matchPattern__input}"`
+
+                            #Check if a matched function-key was pressed
+                            if [[ ${flag_matched_fkey_isPressed} == true ]]; then  #match was found
+                                #Set output 'ret'
+                                ret=${keyInput}
+
+                                #Break the main while-loop
+                                flag_break_main_whileLoop=true
+
+                                #Break this for-loop
+                                break
+                            fi
+                        fi
+
                         moveToBeginning_and_cleanLine__func
                     fi
                     ;;
             esac
         done    #end of while
 
-        #Check if 'flag_main_whileLoop_setTo_break = true'
-        if [[ ${flag_main_whileLoop_setTo_break} == true ]]; then
+        #Check if 'flag_break_main_whileLoop = true'
+        if [[ ${flag_break_main_whileLoop} == true ]]; then
             break
         fi
     done    #end of main while
@@ -1538,29 +1834,17 @@ function show_dirContent__func() {
 
 
 #---Output
-    #If 'table_index_chosen = 0', then set 'table_index_chosen = table_index_max__input'
-    #Remark:
-    #   This part is actually not necessary since it has been executed already previously.
-    if [[ ${table_index_chosen} -eq ${DOCKER__NUMOFMATCH_0} ]]; then
-        table_index_chosen=${table_index_max__input}
-    fi
-
-    #Convert to array-index
-    #Remark:
-    #   -1 is a correction due to array starting with 'index = 0'
-    filteredFiles_arrIndex_sel=$(( table_index_chosen - 1 ))
-
-    #Get the selected filename (with '${SED_SUBST_SPACE}')
-    filteredFiles_filename="${filteredFiles_arr[filteredFiles_arrIndex_sel]}"
-
-    #Get the fullpath
-    ret=${dir__input}/${filteredFiles_filename}
-
-    #Write to file
+    #on line-number: 1
     echo "${ret}" > ${outputFpath__input}
+
+    #on line-number: 2
+    #Remark:
+    #   This may be useful in case the whole table needs to be cleared...
+    #   ...which was drawn by this subroutine 'show_pathContent_w_keyInput__func'.
+    echo "${tot_numOfLines}" >> ${outputFpath__input}
 }
 
-function show_fileContent__sub() {
+function show_fileContent_wo_keyInput__func() {
 #---Input args
     local fpath__input=${1}
     local menuTitle__input=${2}
@@ -1587,8 +1871,8 @@ function show_fileContent__sub() {
     local table_index_base=0
     local table_index_base_try_next=0
 
-    local flag_main_whileLoop_setTo_break=false
-    local flag_forLoop_setTo_break=false
+    local flag_break_main_whileLoop=false
+    local flag_break_forLoop=false
 
 
 
@@ -1605,12 +1889,11 @@ function show_fileContent__sub() {
 
 
 #---Calculate num-of-lines of input-args
-    #Each input-args
-    menuTitle_numOfLines=`echo -e "${menuTitle__input}" | sed '/^\s*$/d' | wc -l`
-    remark_numOfLines=`echo -e "${remark__input}" | sed '/^\s*$/d' | wc -l`
-    info_numOfLines=`echo -e "${info__input}" | sed '/^\s*$/d' | wc -l`
-    menuOptions_numOfLines=`echo -e "${menuOptions__input}" | sed '/^\s*$/d' | wc -l`
-    readDialog_numOfLines=`echo -e "${readDialog__input}" | sed '/^\s*$/d' | wc -l`
+    menuTitle_numOfLines=`get_numOfLines_for_specified_string_or_file__func "${menuTitle__input}"`
+    remark_numOfLines=`get_numOfLines_for_specified_string_or_file__func "${remark__input}"`
+    info_numOfLines=`get_numOfLines_for_specified_string_or_file__func "${info__input}"`
+    menuOptions_numOfLines=`get_numOfLines_for_specified_string_or_file__func "${menuOptions__input}"`
+    readDialog_numOfLines=`get_numOfLines_for_specified_string_or_file__func "${readDialog__input}"`
 
     #fixed objects
     fixed_numOfLines=${DOCKER__NUMOFLINES_4}    #due to a fixed number of horizontal and empty lines
@@ -1668,7 +1951,7 @@ function show_fileContent__sub() {
 
         if [[ ! -z ${fpath_arr[@]} ]]; then
             #Initialization
-            flag_forLoop_setTo_break=false
+            flag_break_forLoop=false
             fpath_arrIndex=0
             keyInput=0
             table_index=0
@@ -1690,17 +1973,17 @@ function show_fileContent__sub() {
                     if [[ ${table_index} -eq ${table_index_max__input} ]]; then
                         table_index=${DOCKER__NUMOFMATCH_0}
 
-                        flag_forLoop_setTo_break=true
+                        flag_break_forLoop=true
                     fi
 
-                    #Print filename
+                    #Print fpath_arrItem
                     echo -e "${DOCKER__FOURSPACES}${fpath_arrItem}"
                 fi
 
                 #Prevously 'table_index' was set to '0'.
                 #This means that the maximum number of items allowed to-be-shown has been reached.
                 #In this case, break the for-loop.
-                if [[ ${flag_forLoop_setTo_break} == true ]]; then
+                if [[ ${flag_break_forLoop} == true ]]; then
                     break
                 fi
             done    #end of for
@@ -1712,11 +1995,11 @@ function show_fileContent__sub() {
 
 
 #-------Fill up table with Empty Lines (if needed)
-        #Check if 'flag_forLoop_setTo_break = false'
+        #Check if 'flag_break_forLoop = false'
         #Remark:
-        #   Remember that if 'flag_forLoop_setTo_break = true', then...
+        #   Remember that if 'flag_break_forLoop = true', then...
         #   ...the for-loop was broken due to 'table_index = table_index_max__input'.
-        if [[ ${flag_forLoop_setTo_break} == false ]]; then
+        if [[ ${flag_break_forLoop} == false ]]; then
             while [[ ${table_index} -lt ${table_index_max__input} ]]
             do
                 #increment line-number
@@ -1757,6 +2040,9 @@ function show_fileContent__sub() {
 
 #-------Show info & menu-options
         # moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+        info__input=`trim_string_toFit_specified_windowSize__func "${info__input}" \
+                        "${DOCKER__TABLEWIDTH}" \
+                        "${DOCKER__TRUE}"`
         if [[ ! -z ${info__input} ]]; then
             duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
             echo -e "${info__input}"
@@ -1794,10 +2080,13 @@ function show_fileContent__sub() {
                     #Remark:
                     #   Notice that 'table_index_base_try_next' is used here and NOT 'table_index_base'
                     if [[ ${table_index_base_try_next} -gt ${table_index_max__input} ]]; then
+                        #Set the index-base value (e.g., 0,10,20,etc...)
                         table_index_base=$((table_index_base - table_index_max__input))
 
+                        #Move-up and clean each line until the top of the table
                         moveUp_and_cleanLines__func "${tot_numOfLines}"
 
+                        #Break this for-loop
                         break
                     else
                         moveToBeginning_and_cleanLine__func
@@ -1809,10 +2098,13 @@ function show_fileContent__sub() {
                     #Remark:
                     #   Notice that 'table_index_base_try_next' is used here and NOT 'table_index_base'
                     if [[ ${table_index_base_try_next} -lt ${fpath_arrLen} ]]; then
+                        #Set the index-base value (e.g., 0,10,20,etc...)
                         table_index_base=$((table_index_base + table_index_max__input))
 
+                        #Move-up and clean each line until the top of the table
                         moveUp_and_cleanLines__func "${tot_numOfLines}"
 
+                        #Break this for-loop
                         break
                     else
                         moveToBeginning_and_cleanLine__func
@@ -1832,10 +2124,16 @@ function show_fileContent__sub() {
                     ;;
                 *)
                     if [[ ${keyInput} =~ [ynb] ]]; then
-                            moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_3}"
+                            # if [[ ${keyInput} =~ [yn] ]]; then
+                            #     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
+                            # else
+                            #     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+                            # fi
 
-                            flag_main_whileLoop_setTo_break=true
+                            #Break the main while-loop
+                            flag_break_main_whileLoop=true
 
+                            #Break this for-loop
                             break           
                     else
                         moveToBeginning_and_cleanLine__func
@@ -1844,8 +2142,8 @@ function show_fileContent__sub() {
             esac
         done    #end of while
 
-        #Check if 'flag_main_whileLoop_setTo_break = true'
-        if [[ ${flag_main_whileLoop_setTo_break} == true ]]; then
+        #Check if 'flag_break_main_whileLoop = true'
+        if [[ ${flag_break_main_whileLoop} == true ]]; then
             break
         fi
     done    #end of main while
@@ -1902,13 +2200,13 @@ function show_leadingAndTrailingStrings_separatedBySpaces__func() {
 function show_msg_only__func() {
     #Input args
     local msg__input=${1}
-    local numOfLines__input=${2}
+    local prepend_numOfLines__input=${2}
 
     #Move-down and clean
-    moveDown_and_cleanLines__func "${numOfLines__input}"
+    moveDown_and_cleanLines__func "${prepend_numOfLines__input}"
 
     #Print
-    echo -e "${msg__input}" #error message
+    echo -e "${msg__input}"
 }
 
 function show_msg_w_menuTitle_w_pressAnyKey_w_ctrlC_func() {
@@ -2094,6 +2392,76 @@ function show_menuTitle_only__func() {
 
 
 #---STRING FUNCTIONS
+function array_find_and_move_element_toTop__func() {
+    #Input args
+    local pattern__input=${1}
+    shift
+    local arr__input=("$@")
+
+    #Define variables
+    local arr_leftOfMatch=()
+    local arr_rightOfMatch=()
+    local arr_new=()
+
+    local arrLen=0
+    local arrIndex_max=0
+    local index_match=0
+    local lineNum_match=0
+    local numOfElements_leftOfMatch=0
+    local startIndex_rightOfMatch=0
+
+    #Get length of array 'arr__input'
+    local arrLen=${#arr__input[@]}
+    local arrIndex_max=$((arrLen - 1))
+
+    #Check if there is an EXACT MATCH of 'pattern__input' within 'arr__input'.
+    #If true, then get the array-index.
+    #1. Get the line-number:
+    lineNum_match=`echo "${arr__input[@]}" | xargs -n1 | grep -nw "${pattern__input}" | cut -d":" -f1`
+
+    #Check if 'lineNum_match = 0'.
+    #If true, then exit function, because no match was found.
+    if [[ ${lineNum_match} -eq ${DOCKER__NUMOFMATCH_0} ]]; then
+        echo "${arr__input[@]}"
+
+        return
+    fi
+
+    #2. Get the array-index:
+    index_match=$((lineNum_match - 1))
+
+    #Check if 'index_match = 0'.
+    #If true, then exit function, because 'pattern__input' is already on the top.
+    if [[ ${index_match} -eq ${DOCKER__NUMOFMATCH_0} ]]; then
+        echo "${arr__input[@]}"
+
+        return
+    fi
+
+    #Get the 'numOfElements_leftOfMatch' and 'startIndex_rightOfMatch'
+    numOfElements_leftOfMatch=$((lineNum_match - 1))
+    startIndex_rightOfMatch=$((index_match + 1))
+
+    #Get 'arr_leftOfMatch'
+    arr_leftOfMatch=("${arr__input[@]:0:numOfElements_leftOfMatch}")
+
+    #Check if 'startIndex_rightOfMatch <= arrIndex_max'
+    #If false, then no need to get 'arr_rightOfMatch'
+    if [[ ${startIndex_rightOfMatch} -le ${arrIndex_max} ]]; then
+        #Get 'arr_rightOfMatch'
+        arr_rightOfMatch=("${arr__input[@]:startIndex_rightOfMatch}")
+    fi
+
+    #Compose 'arr_new'
+    arr_new[0]=${arr__input[index_match]}
+    arr_new+=(${arr_leftOfMatch[@]})
+    arr_new+=(${arr_rightOfMatch[@]})
+
+    #Output
+    echo "${arr_new[@]}"
+}
+
+
 function checkForMatch_of_pattern_within_string__func() {
     #Turn-off Expansion
     disable_expansion__func
@@ -2144,23 +2512,59 @@ function checkForMatch_of_patterns_within_file__func() {
     enable_expansion__func
 }
 
-function checkForMatch_of_pattern_for_a_column_within_file__func() {
+function checkForMatch_pattern_of_a_column_within_file__func() {
     #Turn-off Expansion
     disable_expansion__func
 
     #Input Args
-    local matchString__input=${1}
+    local targetString__input=${1}
     local pattern__input=${2}
     local col__input=${3}
     local dataFpath__input=${4}
 
     #Compose command line
-    local col3_string=`cat "${dataFpath__input}" | grep -w "${pattern__input}" | awk -v COLNUM="${col__input}" '{print $COLNUM}'`
+    local matchString=`cat "${dataFpath__input}" | grep -w "${pattern__input}" | awk -v COLNUM="${col__input}" '{print $COLNUM}'`
     
-    #Check if 'col3_string = matchString__input' 
-    if [[ ${col3_string} == ${matchString__input} ]]; then  #no match
+    #Check if 'col3_string = targetString__input' 
+    if [[ ${matchString} == ${targetString__input} ]]; then  #no match
         echo "true"
     else    #match
+        echo "false"
+    fi
+
+    #Turn-on Expansion
+    enable_expansion__func
+}
+
+function checkForMatch_multi_patterns_under_specified_columns_within_file__func() {
+    #Turn-off Expansion
+    disable_expansion__func
+
+    #Input Args
+    local targetString1__input=${1}
+    local pattern1__input=${2}
+    local col1__input=${3}
+    local targetString2__input=${4}
+    local pattern2__input=${5}
+    local col2__input=${6}
+    local dataFpath__input=${7}
+
+    #FIRST MATCH: check if a match can be found for 'targetString1__input'
+   local  match1_isFound=`checkForMatch_pattern_of_a_column_within_file__func "${targetString1__input}" \
+        "${pattern1__input}" \
+        "${col1__input}" \
+        "${dataFpath__input}"`    
+
+    #SECOND MATCH: check if a match can be found for 'targetString2__input'
+    local match2_isFound=`checkForMatch_pattern_of_a_column_within_file__func "${targetString2__input}" \
+        "${pattern2__input}" \
+        "${col2__input}" \
+        "${dataFpath__input}"`    
+
+    #Output
+    if [[ ${match1_isFound} == true ]] && [[ ${match2_isFound} == true ]]; then
+        echo "true"
+    else
         echo "false"
     fi
 
@@ -2201,6 +2605,16 @@ function delete_lineNum_from_file__func() {
     local lineNum__input=${1}
     local excludeVal__input=${2}
     local targetFpath__input=${3}
+
+    #Check if 'lineNum__input = 0'
+    if [[ ${lineNum__input} -eq ${DOCKER__NUMOFMATCH_0} ]]; then
+        return
+    fi
+
+    #Check if 'targetFpath__input' does NOT exist
+    if [[ ! -f ${targetFpath__input} ]]; then
+        return
+    fi
 
     #Get the 'line' for 'lineNum__input'
     local line=`retrieve_line_from_file__func "${lineNum__input}" "${targetFpath__input}"`
@@ -2310,6 +2724,22 @@ function get_endResult_ofString_with_semiColonChar__func() {
     echo -e "${ret}"
 }
 
+function get_numOfLines_for_specified_string_or_file__func() {
+    #Input args
+    local string__input=${1}
+
+    #Get number of lines
+    local ret=${DOCKER__EMPTYSTRING}
+    if [[ ! -f ${string__input} ]]; then    #not a file
+        ret=`echo -e "${string__input}" | sed '/^\s*$/d' | wc -l`
+    else    #is a file
+        ret=`cat "${string__input}" | sed '/^\s*$/d' | wc -l`
+    fi
+
+    #Output
+    echo "${ret}"
+}
+
 function get_stringlen_wo_regEx__func() {
     #Input args
     local string__input=${1} 
@@ -2353,12 +2783,30 @@ function insert_string_into_file__func() {
     local string__input=${1}
     local lineNum__input=${2}
     local targetFpath__input=${3}
+    local flag_checkIf_already_inserted__input=${4}
+
+    #Check if 'string__input' is found in file 'targetFpath__input'
+    local isFound=false
+    if [[ ${flag_checkIf_already_inserted__input} == true ]]; then
+        isFound=`checkForMatch_of_patterns_within_file__func "${string__input}" "${DOCKER__EMPTYSTRING}" "${targetFpath__input}"`
+        if [[ ${isFound} == true ]]; then
+            return
+        fi
+    fi
+
+    #Get number of lines of 'targetFpath__input'
+    local targetFpath_numOfLines=`get_numOfLines_for_specified_string_or_file__func "${targetFpath__input}"`
 
     #Check if file contains data
     #If true, then insert
     #If false, then just write
     if [[ -s ${targetFpath__input} ]]; then #contains data
-        sed -i "${lineNum__input}i${string__input}" ${targetFpath__input}
+        #Check if 'targetFpath__input' contains at least the number of lines equal or greater than 'lineNum__input'
+        if [[ ${targetFpath_numOfLines} -ge ${lineNum__input} ]]; then
+            sed -i "${lineNum__input}i${string__input}" ${targetFpath__input}   #insert at 'lineNum__input'
+        else
+            echo "${string__input}" >> ${targetFpath__input}    #append
+        fi
     else    #contains no data
         echo "${string__input}" > ${targetFpath__input}
     fi
@@ -2422,9 +2870,11 @@ function replace_multiple_chars_with_single_char__func() {
 	echo "${ret}"
 }
 
-function retrieve_data_in_col2_from_2Darray__func() {
+function retrieve_data_specified_by_col_within_2Darray__func() {
 	#Input args
-	local col1str__input=${1}
+	local inString__input=${1}
+    local outString_col__input=${2}
+    shift
     shift
     local dataArr__input=("$@")
 
@@ -2435,11 +2885,11 @@ function retrieve_data_in_col2_from_2Darray__func() {
 
 	for dataArrItem in "${dataArr__input[@]}"
 	do
-		#Check if'col1str__input' is found in 'dataArrItem'
-		stdOutput=`echo "${dataArrItem}" | grep "${col1str__input}"`
+		#Check if'inString__input' is found in 'dataArrItem'
+		stdOutput=`echo "${dataArrItem}" | grep "${inString__input}"`
 		if [[ ! -z ${stdOutput} ]]; then	#match was found
 			#Get data in the 2nd column
-			ret=`echo "${stdOutput}" | awk '{print $2}'`
+			ret=`echo "${stdOutput}" | awk -v COLNUM="${outString_col__input}" '{print $COLNUM}'`
 
 			break
 		fi
@@ -2449,10 +2899,46 @@ function retrieve_data_in_col2_from_2Darray__func() {
 	echo "${ret}"
 }
 
+function retrieve__data_specified_by_col_within_file__func() {
+    #----------------------------------------------------------------------
+    # Note: 
+    #   If 'char__input' is NOT present within the specified 'string__input'
+    #   then this function will output an Empty String. 
+    #----------------------------------------------------------------------
+    #Input args
+    local inString__input=${1}
+    local outString_col__input=${2}
+    local targetFpath__input=${3}
+
+    #Find 'pattern__input'
+    local line=`cat ${targetFpath__input} | grep "${inString__input}"`
+
+    #Get data
+    local ret=`echo "${line}" | awk -v COLNUM="${outString_col__input}" '{print $COLNUM}'`
+
+    #Output
+    echo "${ret}"
+}
+
+
 function retrieve_line_from_file__func() {
     #Input args
     local lineNum__input=${1}
     local targetFpath__input=${2}
+
+    #Define variable
+    local ret=${DOCKER__EMPTYSTRING}
+
+    #Check if 'lineNum__input = 0'
+    if [[ ${lineNum__input} -eq ${DOCKER__NUMOFMATCH_0} ]]; then
+        return
+    fi
+
+    #Check if 'targetFpath__input' does NOT exist
+    if [[ ! -f ${targetFpath__input} ]]; then
+        return
+    fi
+
 
     #Retrieve line based on the specified 'lineNum__input'
     local ret=`sed "${lineNum__input}q;d" ${targetFpath__input}`
@@ -2478,7 +2964,7 @@ function retrieve_lineNum_from_file__func() {
     echo "${ret}"    
 }
 
-function retrieve_subStrings_delimited_by_trailing_specified_char__func() {
+function retrieve_subStrings_delimited_by_lastChar_within_string__func() {
     #----------------------------------------------------------------------
     # Note: 
     #   If 'char__input' is NOT present within the specified 'string__input'
@@ -2557,6 +3043,14 @@ function trim_string_toFit_specified_windowSize__func() {
         echo "${string__input}"
 
         return
+    fi
+
+    #Check if 'string__input' is a path?
+    if [[ -d ${string__input} ]] || [[ -f ${string__input} ]]; then   #true
+        #Replace multiple slashes with a single slash (/)
+        string__input=`replace_multiple_chars_with_single_char__func "${string__input}" \
+                        "${DOCKER__ESCAPE_SLASH}" \
+                        "${DOCKER__ESCAPE_SLASH}"`
     fi
 
     #Retrieve the number of slashes '/''
@@ -2833,7 +3327,7 @@ function retrieve_env_var_checkout_from_file__func() {
     #Get the repository:tag from 'dockerfile_fpath__input'
     local dockerfile_fpath_repositoryTag=`retrieve_repositoryTag_from_dockerfile__func "${dockerfile_fpath__input}"`
 
-    #Get the Sunplus git-checkout from file 'exported_env_var_fpath__input'
+    #Get the 'checkout' from file 'exported_env_var_fpath__input' (3rd column)
     local ret=`cat ${exported_env_var_fpath__input} | grep -w "${dockerfile_fpath_repositoryTag}" | awk '{print $3}'`
 
     #Output
@@ -2847,7 +3341,7 @@ function retrieve_env_var_link_from_file__func() {
     #Get the repository:tag from 'dockerfile_fpath__input'
     local dockerfile_fpath_repositoryTag=`retrieve_repositoryTag_from_dockerfile__func "${dockerfile_fpath__input}"`
 
-    #Get the Sunplus git-link from file 'exported_env_var_fpath__input'
+    #Get the 'link' from file 'exported_env_var_fpath__input' (2nd column)
     local ret=`cat ${exported_env_var_fpath__input} | grep -w "${dockerfile_fpath_repositoryTag}" | awk '{print $2}'`
 
     #Output
@@ -2875,14 +3369,19 @@ function update_exported_env_var__func() {
     local exported_env_var_fpath__input=${4}
 
     #Define Message Constants
-    local ERRMSG_DOCKERFILE_NOT_FOUND="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: File Not Found '${dockerFile__input}'"
-    local ERRMSG_EXPORTEDFILE_NOT_FOUND="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: File Not Found '${exported_env_var_fpath__input}'"
+    local ERRMSG_DOCKERFILE_NOT_FOUND="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Dockerfile '${dockerFile__input}' not Found"
+    local ERRMSG_EXPORTEDFILE_NOT_FOUND="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Environment variable file '${exported_env_var_fpath__input}' not Found"
 
     #Get repository:tag from file
-    local dockerfile_fpath_repositoryTag=`retrieve_repositoryTag_from_dockerfile__func "${dockerfile_fpath__input}"`
+    local dockerfile_fpath_repositoryTag=${DOCKER__EMPTYSTRING}
+    if [[ -s ${dockerfile_fpath__input} ]]; then
+        dockerfile_fpath_repositoryTag=`retrieve_repositoryTag_from_dockerfile__func "${dockerfile_fpath__input}"`
+    else
+        show_msg_wo_menuTitle_w_PressAnyKey__func "${ERRMSG_DOCKERFILE_NOT_FOUND}" "${DOCKER__NUMOFLINES_1}"
+    fi
 
     #Check if file exist
-    if [[ -f ${exported_env_var_fpath__input} ]]; then
+    if [[ -s ${exported_env_var_fpath__input} ]]; then
         #Check if 'dockerfile_fpath_repositoryTag' is already present in file
         repository_tag_lineNum=`cat ${exported_env_var_fpath__input} | grep -nw "${dockerfile_fpath_repositoryTag}" | cut -d"${DOCKER__COLON}" -f1`
         #If present, then remove line containing the 'dockerfile_fpath_repositoryTag'
@@ -2943,7 +3442,7 @@ function checkIf_webLink_isAccessible__func() {
 
 
 #---SUBROUTINES
-trap docker__ctrl_c__sub INT
+trap docker__ctrl_c__sub SIGINT
 
 docker__ctrl_c__sub() {
     # #Turn-on Expansion
@@ -2970,6 +3469,8 @@ docker__environmental_variables__sub() {
     fi
     docker__docker__dir=${docker__parentDir_of_LTPP3_ROOTFS__dir}/docker
     docker__docker_cache__dir=${docker__docker__dir}/cache
+    docker__docker_dockerfiles__dir=${docker__docker__dir}/dockerfiles
+    docker__docker_images__dir=${docker__docker__dir}/images
 
 
 
@@ -3039,6 +3540,9 @@ docker__environmental_variables__sub() {
     docker__run_exited_container__filename="docker_run_exited_container.sh"
     docker__run_exited_container__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__run_exited_container__filename}
 
+    docker__select_dockerfile__filename="docker_select_dockerfile.sh"
+    docker__select_dockerfile__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__select_dockerfile__filename}
+
     docker__show_choose_add_del_from_cache__filename="docker_show_choose_add_del_from_cache.sh"
     docker__show_choose_add_del_from_cache__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__show_choose_add_del_from_cache__filename}
 
@@ -3062,6 +3566,12 @@ docker__environmental_variables__sub() {
     docker__LTPP3_ROOTFS_docker_environment_dir=${docker__LTPP3_ROOTFS_docker__dir}/environment
     docker__exported_env_var_default_filename="exported_env_var_default.txt"
     docker__exported_env_var_default_fpath=${docker__LTPP3_ROOTFS_docker_environment_dir}/${docker__exported_env_var_default_filename}
+
+
+
+    docker__docker_config__dir=${docker__docker__dir}/config
+    docker__export_env_var_menu_cfg__filename="docker_export_env_var_menu.cfg"
+    docker__export_env_var_menu_cfg__fpath=${docker__docker_config__dir}/${docker__export_env_var_menu_cfg__filename}
 
 
 
@@ -3101,22 +3611,41 @@ docker__environmental_variables__sub() {
     docker__readInput_w_autocomplete_out__filename="docker_readInput_w_autocomplete.out"
     docker__readInput_w_autocomplete_out__fpath=${docker__tmp_dir}/${docker__readInput_w_autocomplete_out__filename}
 
-    docker__show_choose_add_del_from_cache_out__filename="docker_show_choose_add_del_from_cache.out"
-    docker__show_choose_add_del_from_cache_out__fpath=${docker__tmp_dir}/${docker__show_choose_add_del_from_cache_out__filename}
-
     docker__repo_link_checkout_menu_select_out__filname="docker_repo_link_checkout_menu_select.out"
     docker__repo_link_checkout_menu_select_out__fpath=${docker__tmp_dir}/${docker__repo_link_checkout_menu_select_out__filname}
 
     docker__repo_linkcheckout_profile_menu_select_out__filename="docker_repo_linkcheckout_profile_menu_select.out"
     docker__repo_linkcheckout_profile_menu_select_out__fpath=${docker__tmp_dir}/${docker__repo_linkcheckout_profile_menu_select_out__filename}
 
+    docker__select_dockerfile_out__filename="docker_select_dockerfile.out"
+    docker__select_dockerfile_out__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__select_dockerfile_out__filename}
 
+    docker__show_choose_add_del_from_cache_out__filename="docker_show_choose_add_del_from_cache.out"
+    docker__show_choose_add_del_from_cache_out__fpath=${docker__tmp_dir}/${docker__show_choose_add_del_from_cache_out__filename}
 
     #OLD VERSION (is temporarily present for backwards compaitibility)
 	docker__dockercontainer_dirlist__filename="dockercontainer_dirlist.sh"
 	docker__dockercontainer_dirlist__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__dockercontainer_dirlist__filename}
 	docker__localhost_dirlist__filename="localhost_dirlist.sh"
 	docker__localhost_dirlist__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__localhost_dirlist__filename}
+}
+
+docker__create_dir__sub() {
+    if [[ ! -d ${docker__docker_cache__dir} ]]; then
+        mkdir -p ${docker__docker_cache__dir}
+    fi
+    if [[ ! -d ${docker__docker_config__dir} ]]; then
+        mkdir -p ${docker__docker_config__dir}
+    fi
+    if [[ ! -d ${docker__docker_dockerfiles__dir} ]]; then
+        mkdir -p ${docker__docker_dockerfiles__dir}
+    fi
+    if [[ ! -d ${docker__docker_images__dir} ]]; then
+        mkdir -p ${docker__docker_images__dir}
+    fi
+    if [[ ! -d ${docker__tmp_dir} ]]; then
+        mkdir -p ${docker__tmp_dir}
+    fi
 }
 
 docker__create_exported_env_var_file__sub() {
@@ -3129,48 +3658,13 @@ docker__create_exported_env_var_file__sub() {
     fi
 }
 
-# function docker__generate_cache_filename_basedOn_specified_repositoryTag__func() {
-#     #Input args
-#     local cache_dir__input=${1}
-#     local repositoryTag__input=${2}
-
-#     #Check if directory exist
-#     #If false, then create directory
-#     if [[ ! -d ${cache_dir__input} ]]; then
-#         mkdir -p ${cache_dir__input}
-#     fi
-
-#     #Replace ':' with '_-_'
-#     local cache_filename=`echo "${repositoryTag__input}" | sed "s/${DOCKER__COLON}/${DOCKER__UNDERSCORE_DASH_UNDERSCORE}/g"`
-
-#     # #Check if file 'docker__gitlink.cache' is exists
-#     # #Renark:
-#     # #   If not present, then:
-#     # #   1. Get the git-link from file 'docker__exported_env_var_fpath'
-#     # #   2. Write the retrieved git-link to cache 'docker__sunplus_gitlink_cache__fpath'
-#     # if [[ ! -f ${docker__sunplus_gitlink_cache__fpath} ]]; then
-#     #     local sunplus_gitLink=`retrieve_env_var_link_from_file__func "${docker__dockerfile_ltps_sunplus_fpath}" "${docker__exported_env_var_fpath}"`
-
-#     #     echo ${sunplus_gitLink} > ${docker__sunplus_gitlink_cache__fpath}
-#     # fi
-
-#     # #Check if file 'docker__git_checkout.cache' is exists
-#     # #Renark:
-#     # #   If not present, then:
-#     # #   1. Get the git-checkout from file 'docker__exported_env_var_fpath'
-#     # #   2. Write the retrieved git-checkout to cache 'docker__sunplus_gitcheckout_cache__fpath'
-#     # if [[ ! -f ${docker__sunplus_gitcheckout_cache__fpath} ]]; then
-#     #     local sunplus_gitCheckout=`retrieve_env_var_checkout_from_file__func "${docker__dockerfile_ltps_sunplus_fpath}" "${docker__exported_env_var_fpath}"`
-
-#     #     echo ${sunplus_gitCheckout} > ${docker__sunplus_gitcheckout_cache__fpath}
-#     # fi
-# }
-
 
 
 #---MAIN SUBROUTINE
 main__sub() {
     docker__environmental_variables__sub
+
+    docker__create_dir__sub
 
     docker__create_exported_env_var_file__sub
 }

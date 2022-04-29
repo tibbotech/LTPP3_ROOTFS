@@ -192,7 +192,6 @@ docker__run_container_handler__sub() {
 
     #Define message constants
     local MENUTITLE="Run ${DOCKER__FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR} from specfied ${DOCKER__FG_PURPLE}Repository${DOCKER__NOCOLOR}"
-    local READMSG_CHOOSE_IMAGEID_FROM_LIST="Choose an ${DOCKER__FG_BORDEAUX}Image-ID${DOCKER__NOCOLOR} from list (e.g. 0f7478cf7cab): "
 
     #Define variables
     local containerName=${DOCKER__EMPTYSTRING}
@@ -215,7 +214,7 @@ docker__run_container_handler__sub() {
         case "${phase}" in
             ${IMAGEID_SELECT_PHASE})
                 ${docker__readInput_w_autocomplete__fpath} "${MENUTITLE}" \
-                                    "${READMSG_CHOOSE_IMAGEID_FROM_LIST}" \
+                                    "${DOCKER__READINPUTDIALOG_CHOOSE_IMAGEID_FROM_LIST}" \
                                     "${DOCKER__EMPTYSTRING}" \
                                     "${readmsg_remarks}" \
                                     "${DOCKER__ERRMSG_NO_IMAGES_FOUND}" \

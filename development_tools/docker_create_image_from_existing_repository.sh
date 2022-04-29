@@ -5,58 +5,15 @@ DOCKER__NUMOF_FILES_TOBE_KEPT_MAX=100
 
 
 
-#---FUNCTIONS
-function checkIf_repoTag_isUniq__func() {
-    #Input args
-    local repoName__input=${1}
-    local tag__input=${2}
-
-    #Define variables
-    local dataArr=()
-    local dataArr_item=${DOCKER__EMPTYSTRING}
-    local stdOutput1=${DOCKER__EMPTYSTRING}
-    local stdOutput2=${DOCKER__EMPTYSTRING}
-
-    #Write 'docker images' command output to array
-    readarray dataArr <<< $(docker images)
-
-    #Check if repository:tag is unique
-    local ret=true
-
-    for dataArr_item in "${dataArr[@]}"
-    do                                                      
-        stdOutput1=`echo ${dataArr_item} | awk '{print $1}' | grep -w "${repoName__input}"`
-        if [[ ! -z ${stdOutput1} ]]; then
-            stdOutput2=`echo ${dataArr_item} | awk '{print $2}' | grep -w "${tag__input}"`
-            if [[ ! -z ${stdOutput2} ]]; then
-                ret=false
-
-                break
-            fi
-        fi                                             
-    done
-
-    #Output
-    echo "${ret}"
-}
-
-
-
 #---SUBROUTINES
 docker__load_environment_variables__sub() {
-    #Define paths
+    #---Define PATHS
     docker__current_script_fpath="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
     docker__current_dir=$(dirname ${docker__current_script_fpath})
-    docker__parent_dir=${docker__current_dir%/*}    #go one directory up (LTPP3_ROOTFS/)
-    if [[ -z ${docker__parent_dir} ]]; then
-        docker__parent_dir="${DOCKER__SLASH_CHAR}"
+    if [[ ${docker__current_dir} == ${DOCKER__DOT} ]]; then
+        docker__current_dir=$(pwd)
     fi
     docker__current_folder=`basename ${docker__current_dir}`
-
-    docker__xxx_repo_dir=${docker__parent_dir%/*}    #go one directory up (e.g. repo/)
-    docker__xxx_docker_dockerfiles_dir=${docker__xxx_repo_dir}/docker/dockerfiles
-    docker__dockerfile_auto_filename="dockerfile_auto"
-    docker__dockerfile_autogen_fpath=${DOCKER__EMPTYSTRING}
 
     docker__development_tools_folder="development_tools"
     if [[ ${docker__current_folder} != ${docker__development_tools_folder} ]]; then
@@ -67,6 +24,9 @@ docker__load_environment_variables__sub() {
 
     docker__global__filename="docker_global.sh"
     docker__global__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__global__filename}
+
+    docker__dockerfile_auto_filename="dockerfile_auto"
+    docker__dockerfile_autogen_fpath=${DOCKER__EMPTYSTRING}
 }
 
 docker__load_source_files__sub() {
@@ -95,7 +55,7 @@ docker__init_variables__sub() {
 
 docker__cleanup_dockerfiles__sub() {
     #Get number of files in directory: <home>/repo/docker/dockerfiles
-    local numOf_files=`ls -1ltr ${docker__xxx_docker_dockerfiles_dir} | grep "^-" | wc -l`
+    local numOf_files=`ls -1ltr ${docker__docker_dockerfiles__dir} | grep "^-" | wc -l`
 
     #MESSAGE CONSTANTS
     local ECHOMSG_MAX_NUMOF_FILES_EXCEEDED="Maximum number of files exceeded (${DOCKER__FG_LIGHTGREY}${numOf_files}${DOCKER__NOCOLOR} out-of ${DOCKER__FG_LIGHTGREY}${DOCKER__NUMOF_FILES_TOBE_KEPT_MAX}${DOCKER__NOCOLOR})"
@@ -107,7 +67,7 @@ docker__cleanup_dockerfiles__sub() {
         #Print warning
         moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
         echo -e "---${DOCKER__FG_LIGHTRED}WARNING${DOCKER__NOCOLOR}: ${ECHOMSG_MAX_NUMOF_FILES_EXCEEDED}"
-        echo -e "---${DOCKER__FG_LIGHTSOFTYELLOW}LOCATION${DOCKER__NOCOLOR}: ${docker__xxx_docker_dockerfiles_dir}"
+        echo -e "---${DOCKER__FG_LIGHTSOFTYELLOW}LOCATION${DOCKER__NOCOLOR}: ${docker__docker_dockerfiles__dir}"
         echo -e "---${DOCKER__FG_ORANGE}START${DOCKER__NOCOLOR}: ${ECHOMSG_DELETING_FILES}"
 
         #Number of files exceeding
@@ -115,7 +75,7 @@ docker__cleanup_dockerfiles__sub() {
 
         #Put all files in array 'filesArr'
         local filesArr=()
-        readarray filesArr <<< $(ls -1ltr ${docker__xxx_docker_dockerfiles_dir} | grep "^-" | awk '{print $9}')
+        readarray filesArr <<< $(ls -1ltr ${docker__docker_dockerfiles__dir} | grep "^-" | awk '{print $9}')
 
         #Initialization
         local numof_files_deleted=0
@@ -126,7 +86,7 @@ docker__cleanup_dockerfiles__sub() {
         for filesArr_item in "${filesArr[@]}"
         do                         
             #Update variable
-            dockerfile_fpath=${docker__xxx_docker_dockerfiles_dir}/${filesArr_item}  
+            dockerfile_fpath=${docker__docker_dockerfiles__dir}/${filesArr_item}  
 
             #Remove file(s)
             rm ${dockerfile_fpath}
@@ -157,15 +117,15 @@ docker__cleanup_dockerfiles__sub() {
 
 docker__create_dockerfile__sub() {
     #Create directory if not present
-    if [[ ! -d ${docker__xxx_docker_dockerfiles_dir} ]]; then
-        mkdir -p ${docker__xxx_docker_dockerfiles_dir}
+    if [[ ! -d ${docker__docker_dockerfiles__dir} ]]; then
+        mkdir -p ${docker__docker_dockerfiles__dir}
     fi
 
     #Generate timestamp
     local dockerfile_autogen_filename=${docker__dockerfile_auto_filename}_${docker__repo_new}
 
     #Define filename
-    docker__dockerfile_autogen_fpath=${docker__xxx_docker_dockerfiles_dir}/${dockerfile_autogen_filename}
+    docker__dockerfile_autogen_fpath=${docker__docker_dockerfiles__dir}/${dockerfile_autogen_filename}
 
     #Check if file exist
     #If DOCKER__TRUE, then remove file
@@ -214,16 +174,13 @@ docker__create_image_handler__sub() {
     local MENUTITLE="Create an ${DOCKER__FG_BORDEAUX}Image${DOCKER__NOCOLOR} from a ${DOCKER__FG_PURPLE}Repository${DOCKER__NOCOLOR}"
     local MENUTITLE_UPDATED_IMAGE_LIST="Updated ${DOCKER__FG_BORDEAUX}Image${DOCKER__NOCOLOR}-list"
 
-    local READMSG_CHOOSE_IMAGEID_FROM_LIST="Choose an ${DOCKER__FG_BORDEAUX}Image-ID${DOCKER__NOCOLOR} from list (e.g. 0f7478cf7cab): "
     local READMSG_NEW_REPOSITORY_NAME="${DOCKER__FG_YELLOW}New${DOCKER__NOCOLOR} ${DOCKER__FG_BRIGHTLIGHTPURPLE}Repository${DOCKER__NOCOLOR}'s name (e.g. ubuntu_buildbin_NEW): "
     local READMSG_NEW_REPOSITORY_TAG="${DOCKER__FG_YELLOW}New${DOCKER__NOCOLOR} ${DOCKER__FG_LIGHTPINK}Tag${DOCKER__NOCOLOR} (e.g. test): "
 
     local ERRMSG_CHOSEN_REPO_PAIR_ALREADY_EXISTS="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: chosen ${DOCKER__FG_BRIGHTLIGHTPURPLE}Repository${DOCKER__NOCOLOR}:${DOCKER__FG_LIGHTPINK}Tag${DOCKER__NOCOLOR} pair already exists"
-    local DOCKER__ERRMSG_NO_IMAGES_FOUND="=:${DOCKER__FG_LIGHTRED}NO IMAGES FOUND${DOCKER__NOCOLOR}:="
     local ERRMSG_NONUNIQUE_INPUT_VALUE="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: non-unique input value "
 
     #Define variables
-    local errMsg=${DOCKER__EMPTYSTRING}
     local phase=${DOCKER__EMPTYSTRING}
     local readmsg_remarks=${DOCKER__EMPTYSTRING}
 
@@ -238,6 +195,7 @@ docker__create_image_handler__sub() {
     readmsg_remarks+="${DOCKER__DASH} ${DOCKER__FG_YELLOW};c${DOCKER__NOCOLOR}: clear"
 
 
+
     #Set initial 'phase'
     phase=${IMAGEID_SELECT_PHASE}
     while true
@@ -245,7 +203,7 @@ docker__create_image_handler__sub() {
         case "${phase}" in
             ${IMAGEID_SELECT_PHASE})
                 ${docker__readInput_w_autocomplete__fpath} "${MENUTITLE}" \
-                            "${READMSG_CHOOSE_IMAGEID_FROM_LIST}" \
+                            "${DOCKER__READINPUTDIALOG_CHOOSE_IMAGEID_FROM_LIST}" \
                             "${DOCKER__EMPTYSTRING}" \
                             "${readmsg_remarks}" \
                             "${DOCKER__ERRMSG_NO_IMAGES_FOUND}" \
@@ -358,24 +316,23 @@ docker__create_image_exec__sub() {
     #Define constants
     local ECHOMSG_CREATING_IMAGE="Creating image..."
     local ECHOMSG_LOCATION_DOCKERFILE="${DOCKER__FG_VERYLIGHTORANGE}Location${DOCKER__NOCOLOR} docker-file: "
-    local READMSG_DO_YOU_WISH_TO_CONTINUE="Do you wish to continue (y/n/r)? "
 
     #Define variables
-    local echomsg="${ECHOMSG_LOCATION_DOCKERFILE}${docker__xxx_docker_dockerfiles_dir}"
+    local echomsg="${ECHOMSG_LOCATION_DOCKERFILE}${docker__docker_dockerfiles__dir}"
 
     #Create image
     while true
     do
         #Show read-input message
-        read -N1 -p "${READMSG_DO_YOU_WISH_TO_CONTINUE}" docker__myAnswer
+        read -N1 -p "${DOCKER__READDIALOG_DO_YOU_WISH_TO_CONTINUE_YNR}" docker__myAnswer
         
         #Validate read-input answer
         if [[ ${docker__myAnswer} == ${DOCKER__ENTER} ]]; then
              moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
         elif [[ ${docker__myAnswer} == ${DOCKER__YES} ]]; then
             #Create directory if NOT exist yet
-            if [[ ! -d ${docker__xxx_docker_dockerfiles_dir} ]]; then
-                mkdir -p ${docker__xxx_docker_dockerfiles_dir}
+            if [[ ! -d ${docker__docker_dockerfiles__dir} ]]; then
+                mkdir -p ${docker__docker_dockerfiles__dir}
             fi
             
             #Print empty line
@@ -386,7 +343,7 @@ docker__create_image_exec__sub() {
 
             #Generate a 'dockerfile' with content
             #OUTPUT: docker__dockerfile_autogen_fpath
-            docker__create_dockerfile__sub "${docker__dockerfile_auto_filename}" ${docker__repo_new} "${docker__xxx_docker_dockerfiles_dir}"
+            docker__create_dockerfile__sub "${docker__dockerfile_auto_filename}" ${docker__repo_new} "${docker__docker_dockerfiles__dir}"
 
             #Execute command
             docker build --tag ${docker__repo_new}:${docker__tag_new} - < ${docker__dockerfile_autogen_fpath}

@@ -2,19 +2,13 @@
 #Remark: by using '-m' the INT will NOT propagate to the PARENT scripts
 #---SUBROUTINES
 docker__environmental_variables__sub() {
-	#---Define PATHS
-	docker__ispbooot_bin_filename="ISPBOOOT.BIN"
-
-	docker__bin_bash_dir=/bin/bash
-	docker__root_sp7xxx_out_dir=/root/SP7021/out
-
-	docker__current_script_fpath="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
-    docker__current_dir=$(dirname ${docker__current_script_fpath})	#/repo/LTPP3_ROOTFS/development_tools
-	docker__parent_dir=${docker__current_dir%/*}    #gets one directory up (/repo/LTPP3_ROOTFS)
-    if [[ -z ${docker__parent_dir} ]]; then
-        docker__parent_dir="${DOCKER__SLASH}"
+    #---Define PATHS
+    docker__current_script_fpath="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
+    docker__current_dir=$(dirname ${docker__current_script_fpath})
+    if [[ ${docker__current_dir} == ${DOCKER__DOT} ]]; then
+        docker__current_dir=$(pwd)
     fi
-	docker__current_folder=`basename ${docker__current_dir}`
+    docker__current_folder=`basename ${docker__current_dir}`
 
     docker__development_tools_folder="development_tools"
     if [[ ${docker__current_folder} != ${docker__development_tools_folder} ]]; then
@@ -25,6 +19,9 @@ docker__environmental_variables__sub() {
 
     docker__global__filename="docker_global.sh"
     docker__global__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__global__filename}
+
+    docker__dockerfile_auto_filename="dockerfile_auto"
+    docker__dockerfile_autogen_fpath=${DOCKER__EMPTYSTRING}
 }
 
 docker__load_source_files__sub() {
@@ -96,7 +93,7 @@ docker__load_constants__sub() {
     DOCKER__DIRLIST_REMARKS+="${DOCKER__DASH} ${DOCKER__FG_YELLOW};c${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}clear${DOCKER__NOCOLOR}\n"
     DOCKER__DIRLIST_REMARKS+="${DOCKER__DASH} ${DOCKER__FG_YELLOW};h${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}home${DOCKER__NOCOLOR}"
 
-	DOCKER__ECHOMSG_PLEASE_SELECT_A_SOURCEPATH_WHICH_CONTAINS_DATA="Please select valid source folder/file..."
+	DOCKER__PLEASE_SELECT_A_NON_EMPTY_SOURCE_FOLDER_FILE="Please select a non-empty source folder/file..."
 	DOCKER__ECHOMSG_PLEASE_SELECT_A_VALID_DESTINATIONPATH="Please select a valid destination folder..."
 
 
@@ -341,7 +338,7 @@ docker__src_path_selection__sub() {
 		docker__case_option=${DOCKER__CASE_SRC_PATH}
 
 		#Print
-		show_msg_only__func "${DOCKER__ECHOMSG_PLEASE_SELECT_A_SOURCEPATH_WHICH_CONTAINS_DATA}" "${DOCKER__NUMOFLINES_2}"
+		show_msg_only__func "${DOCKER__PLEASE_SELECT_A_NON_EMPTY_SOURCE_FOLDER_FILE}" "${DOCKER__NUMOFLINES_2}"
 
 		return
 	fi
@@ -352,7 +349,7 @@ docker__src_path_selection__sub() {
 		docker__case_option=${DOCKER__CASE_SRC_PATH}
 
 		#Print
-		show_msg_only__func "${DOCKER__ECHOMSG_PLEASE_SELECT_A_SOURCEPATH_WHICH_CONTAINS_DATA}" "${DOCKER__NUMOFLINES_2}"
+		show_msg_only__func "${DOCKER__PLEASE_SELECT_A_NON_EMPTY_SOURCE_FOLDER_FILE}" "${DOCKER__NUMOFLINES_2}"
 
 		return
 	fi
@@ -366,7 +363,7 @@ docker__src_path_selection__sub() {
 
 	#Update 'docker__src_dir' and 'docker__src_file'
 	#Check if 'docker__path_output' contains an 'asterisk'
-	asterisk_isFound=`checkForMatch_keyWord_within_string__func "${DOCKER__ASTERISK}" "${docker__path_output}"`
+	asterisk_isFound=`checkForMatch_of_pattern_within_string__func "${DOCKER__ASTERISK}" "${docker__path_output}"`
 	if [[ ${asterisk_isFound} == true ]]; then	#asterisk was found
 		docker__src_dir=`get_dirname_from_specified_path__func "${docker__path_output}"`
 
@@ -401,7 +398,7 @@ docker__src_path_selection__sub() {
 						"${docker__path_output}"
 
 				#Print
-				show_msg_only__func "${DOCKER__ECHOMSG_PLEASE_SELECT_A_SOURCEPATH_WHICH_CONTAINS_DATA}" "${DOCKER__NUMOFLINES_2}"
+				show_msg_only__func "${DOCKER__PLEASE_SELECT_A_NON_EMPTY_SOURCE_FOLDER_FILE}" "${DOCKER__NUMOFLINES_2}"
 
 				#Reset variables
 				docker__src_dir=${DOCKER__EMPTYSTRING}
@@ -427,8 +424,8 @@ docker__dst_path_selection__sub() {
 	local containerID__input=${1}
 
 	#Define variables
-	local asterisk_isFound=false
-	local fileExists=false
+	# local asterisk_isFound=false
+	# local fileExists=false
 
 	#Show and select path
 	${dirlist__readInput_w_autocomplete__fpath} "${containerID__input}" \
@@ -577,7 +574,7 @@ docker__copy_from_src_to_dst__sub() {
 	docker__copy_msg+="Destination: ${DOCKER__FG_LIGHTGREY}${docker__dst_dir}${DOCKER__NOCOLOR}"
 
 	#Check if 'asterisk' is found
-	asterisk_isFound=`checkForMatch_keyWord_within_string__func "${DOCKER__ASTERISK}" "${docker__src_file}"`
+	asterisk_isFound=`checkForMatch_of_pattern_within_string__func "${DOCKER__ASTERISK}" "${docker__src_file}"`
 
 	if [[ ${docker__mycopychoice} -eq ${DOCKER__CONTAINER_TO_HOST} ]]; then	#Container to Local Host
 		#Show Title

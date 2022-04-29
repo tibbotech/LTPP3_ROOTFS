@@ -150,7 +150,6 @@ git__git_pull__sub() {
     #Define local Question constants
     local QUESTION_CHECKOUT_BRANCH="Check out this Branch (y/n/q)? "
     local QUESTION_CREATE_AND_CHECKOUT_BRANCH="Create & Check out this Branch (y/n/q)? "
-    local READMSG_DO_YOU_WISH_TO_CONTINUE="Do you wish to continue (y/n/q)? "
 
     #Define local read-input constants
     local READ_YOURINPUT="${DOCKER__FG_LIGHTBLUE}Your choice${DOCKER__NOCOLOR}: "
@@ -247,7 +246,7 @@ GOTO__func START
     #Show question
     while true
     do
-        read -N1 -p "${DOCKER__FOURSPACES}${READMSG_DO_YOU_WISH_TO_CONTINUE}" myAnswer
+        read -N1 -p "${DOCKER__FOURSPACES}${DOCKER__READDIALOG_DO_YOU_WISH_TO_CONTINUE_YN}" myAnswer
 
         if [[ ! -z ${myAnswer} ]]; then #contains data
             #Handle 'myAnswer'

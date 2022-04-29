@@ -138,7 +138,7 @@ function add_leading_spaces__func() {
     echo "${ret}"
 }
 
-function checkForMatch_keyWord_within_string__func() {
+function checkForMatch_of_pattern_within_string__func() {
     #Turn-off Expansion
     set -f
 
@@ -589,7 +589,7 @@ function remove_trailingSlash__func() {
     local string_clean_wo_trailingChar_len=0
 
     #Check if trailing slash is present
-    local trailingSlash_isPresent=`checkForMatch_keyWord_within_string__func "${string__input}" "${SLASH}" "${CHECKFORMATCH_ENDWITH}" "${EMPTYSTRING}"`
+    local trailingSlash_isPresent=`checkForMatch_of_pattern_within_string__func "${string__input}" "${SLASH}" "${CHECKFORMATCH_ENDWITH}" "${EMPTYSTRING}"`
     if [[ ${trailingSlash_isPresent} == false ]]; then  #trailing backslash not found
         ret=${string__input}
     else    #trailing backslash found

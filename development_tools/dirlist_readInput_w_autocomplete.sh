@@ -6,9 +6,9 @@ dir__input=${2}
 readMsg__input=${3}
 readMsgRemarks__input=${4}
 output_fPath__input=${5}
-tmp_fPath__input=${6}
+tmp_fPath__input=${6}   #the temporary backup fullpath of 'output_fPath__input'
 dir_menuTitle__input=${7}
-prepend_emptyLine__input=${8}
+flag_prepend_emptyLine__input=${8}
 
 
 
@@ -255,7 +255,7 @@ function remove_asterisk_from_string() {
     local asterisk_isFound=false
 
     #Check if asterisk is present in 'str__input'
-    asterisk_isFound=`checkForMatch_keyWord_within_string__func "${DOCKER__ASTERISK}" "${str__input}"`
+    asterisk_isFound=`checkForMatch_of_pattern_within_string__func "${DOCKER__ASTERISK}" "${str__input}"`
     if [[ ${asterisk_isFound} == true ]]; then  #match found
         str_len=${#str__input}  #get length
 
@@ -285,7 +285,7 @@ function process_str_basedOn_numOf_results__func() {
         ret=${str_autocompleted__input}
     else    #autocomplete found multiple matches
         #Check if asterisk is present in 'str__input'
-        asterisk_isFound=`checkForMatch_keyWord_within_string__func "${DOCKER__ASTERISK}" "${str_bck__input}"`
+        asterisk_isFound=`checkForMatch_of_pattern_within_string__func "${DOCKER__ASTERISK}" "${str_bck__input}"`
         if [[ ${asterisk_isFound} == true ]]; then  #asterisk was found
             ret=${str_bck__input}
         else    #no asterisk found
@@ -648,10 +648,10 @@ dirlist__readInput_w_autocomplete__sub() {
                         moveDown_oneLine_then_moveUp_and_clean__func "${DOCKER__NUMOFLINES_1}"
                         ;;
                     ${DOCKER__TAB})
-                        #Check if 'str' and 'str_prev' are the same
+                        #Check if 'str' and 'str_prev' are the same?
                         #Remark:
-                        #   This means that TAB was pressed without inputting any character
-                        if [[ "${str}" != "${str_prev}" ]]; then  
+                        #   This means that TAB was pressed without new key-input
+                        if [[ "${str}" != "${str_prev}" ]]; then  #false
                             #Remove 'asterisk' from 'str' (if any)
                             str_wo_asterisk=`remove_asterisk_from_string "${str}"`
 
@@ -698,7 +698,7 @@ dirlist__readInput_w_autocomplete__sub() {
                                             "${str_autocompleted}" \
                                             "${output_fPath__input}" \
                                             "${dir_menuTitle__input}" \
-                                            "${prepend_emptyLine__input}"
+                                            "${flag_prepend_emptyLine__input}"
 
                                     #Update 'str_shown'
                                     str_shown=${str_autocompleted}
@@ -713,7 +713,7 @@ dirlist__readInput_w_autocomplete__sub() {
                                                 "${str_autocompleted}" \
                                                 "${output_fPath__input}" \
                                                 "${dir_menuTitle__input}" \
-                                                "${prepend_emptyLine__input}"
+                                                "${flag_prepend_emptyLine__input}"
 
                                         #Update 'str_shown'
                                         str_shown=${str_autocompleted}
@@ -762,7 +762,7 @@ dirlist__readInput_w_autocomplete__sub() {
                         if [[ ${autocomplete_numOfMatches} -ne ${DOCKER__NUMOFMATCH_0} ]]; then #at least one match is found
                             if [[ ${autocomplete_numOfMatches} -gt ${DOCKER__NUMOFMATCH_1} ]]; then #at least one match is found
                                 #Check if an asterisk is already present
-                                asterisk_isFound=`checkForMatch_keyWord_within_string__func "${DOCKER__ASTERISK}" "${ret}"`
+                                asterisk_isFound=`checkForMatch_of_pattern_within_string__func "${DOCKER__ASTERISK}" "${ret}"`
                                 if [[ ${asterisk_isFound} == false ]]; then  #asterisk was NOT found
                                     ret=${ret}${DOCKER__ASTERISK} #append asterisk
                                 fi
@@ -858,7 +858,7 @@ dirlist__show_dirContent_handler__sub() {
 	local fpath__input=${2}
     local dirlistContentFpath__input=${3}
     local menuTitle__input=${4}
-    local prependEmptyLine__input=${5}
+    local flag_prependEmptyLine__input=${5}
 
     #Split directory from file/folder
     local dir=`get_dirname_from_specified_path__func "${fpath__input}"`
@@ -873,9 +873,9 @@ dirlist__show_dirContent_handler__sub() {
 
     #Show directory content
 	if [[ -z ${containerID__input} ]]; then	#LOCAL machine (aka HOST)
-		${dclcau_lh_ls__fpath} "${dir}" "${DOCKER__LISTVIEW_NUMOFROWS}" "${DOCKER__LISTVIEW_NUMOFCOLS}" "${keyWord}" "${dirlistContentFpath__input}" "${prependEmptyLine__input}"
+		${dclcau_lh_ls__fpath} "${dir}" "${DOCKER__LISTVIEW_NUMOFROWS}" "${DOCKER__LISTVIEW_NUMOFCOLS}" "${keyWord}" "${dirlistContentFpath__input}" "${flag_prependEmptyLine__input}"
 	else	#REMOTE machine (aka Container)
-		${dclcau_dc_ls__fpath} "${containerID__input}" "${dir}" "${DOCKER__LISTVIEW_NUMOFROWS}" "${DOCKER__LISTVIEW_NUMOFCOLS}" "${keyWord}" "${dirlistContentFpath__input}" "${prependEmptyLine__input}"
+		${dclcau_dc_ls__fpath} "${containerID__input}" "${dir}" "${DOCKER__LISTVIEW_NUMOFROWS}" "${DOCKER__LISTVIEW_NUMOFCOLS}" "${keyWord}" "${dirlistContentFpath__input}" "${flag_prependEmptyLine__input}"
 	fi
 }
 

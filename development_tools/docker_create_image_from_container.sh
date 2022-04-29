@@ -233,13 +233,12 @@ docker__create_image_exec__sub() {
 
     #Define constants
     local ECHOMSG_CREATING_IMAGE="Creating image..."
-    local READMSG_DO_YOU_WISH_TO_CONTINUE="Do you wish to continue (y/n/r)? "
 
     #Create image
     while true
     do
         #Show read-input message
-        read -N1 -p "${READMSG_DO_YOU_WISH_TO_CONTINUE}" docker__myAnswer
+        read -N1 -p "${DOCKER__READDIALOG_DO_YOU_WISH_TO_CONTINUE_YNR}" docker__myAnswer
         
         #Validate read-input answer
         if [[ ${docker__myAnswer} == ${DOCKER__ENTER} ]]; then

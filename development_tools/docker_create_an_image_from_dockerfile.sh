@@ -165,19 +165,21 @@ docker__init_variables__sub() {
 
 docker__show_dockerList_files__sub() {
     #Show directory content
-    show_dirContent__func "${docker__LTPP3_ROOTFS_docker_dockerfiles__dir}" \
+    show_pathContent_w_keyInput__func "${docker__LTPP3_ROOTFS_docker_dockerfiles__dir}" \
+                        "${DOCKER__EMPTYSTRING}" \
                         "${DOCKER__MENUTITLE}" \
                         "${DOCKER__REMARK}" \
                         "${DOCKER__LOCATION_INFO}" \
                         "${DOCKER__FOURSPACES_F12_QUIT}" \
+                        "${DOCKER__EMPTYSTRING}" \
                         "${DOCKER__ERRMSG}" \
                         "${DOCKER__READ_DIALOG}" \
                         "${DOCKER__EMPTYSTRING}" \
                         "${DOCKER__EMPTYSTRING}" \
-                        "${docker__create_an_image_from_dockerfile_out__fpath}" \
-                        "${DOCKER__TABLEROWS}"
+                        "${DOCKER__TABLEROWS}" \
+                        "${docker__create_an_image_from_dockerfile_out__fpath}"
 
-    #Get the exitcode just in case a Ctrl-C was pressed in function 'show_dirContent__func' (in script 'docker_global.sh')
+    #Get the exitcode just in case a Ctrl-C was pressed in function 'DOCKER__FOURSPACES_F4_ABORT' (in script 'docker_global.sh')
     docker__exitCode=$?
     if [[ ${docker__exitCode} -eq ${DOCKER__EXITCODE_99} ]]; then
         exit__func "${docker__exitCode}" "${DOCKER__NUMOFLINES_2}"
@@ -187,6 +189,13 @@ docker__show_dockerList_files__sub() {
     docker__dockerFile_fpath=`get_output_from_file__func \
                         "${docker__create_an_image_from_dockerfile_out__fpath}" \
                         "${DOCKER__LINENUM_1}"`
+
+    #Double-check if 'docker__dockerFile_fpath = F12'
+    if [[ ${docker__dockerFile_fpath} == ${DOCKER__ENUM_FUNC_F12} ]]; then
+        exit__func "${DOCKER__EXITCODE_0}" "${DOCKER__NUMOFLINES_2}"
+    else
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
+    fi
 }
 
 docker__create_image_handler__sub() {

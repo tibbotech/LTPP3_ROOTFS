@@ -26,7 +26,11 @@ docker__load_source_files__sub() {
 }
 
 docker__load_header__sub() {
-    show_header__func "${DOCKER__TITLE}" "${DOCKER__TABLEWIDTH}" "${DOCKER__BG_ORANGE}" "${DOCKER__NUMOFLINES_2}" "${DOCKER__NUMOFLINES_0}"
+    #Input args
+    local prepend_numOfLines__input=${1}
+
+    #Print
+    show_header__func "${DOCKER__TITLE}" "${DOCKER__TABLEWIDTH}" "${DOCKER__BG_ORANGE}" "${prepend_numOfLines__input}" "${DOCKER__NUMOFLINES_0}"
 }
 
 docker__checkIf_user_is_root__sub()
@@ -49,11 +53,18 @@ docker__init_variables__sub() {
 }
 
 docker__mainmenu__sub() {
+    #Initialization
+    docker__prepend_numOfLines=${DOCKER__NUMOFLINES_2}
+
     while true
     do
+        #Print header
+        docker__load_header__sub "${docker__prepend_numOfLines}"
+    
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
         show_leadingAndTrailingStrings_separatedBySpaces__func "${DOCKER__MENUTITLE}" "${DOCKER__VERSION}" "${DOCKER__TABLEWIDTH}"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+
         echo -e "${DOCKER__FOURSPACES}1. Create ${DOCKER__FG_BORDEAUX}images${DOCKER__NOCOLOR} using a ${DOCKER__FG_DARKBLUE}docker-file${DOCKER__NOCOLOR}/${DOCKER__FG_LIGHTBLUE}docker-list${DOCKER__NOCOLOR}"
         echo -e "${DOCKER__FOURSPACES}2. Create an ${DOCKER__FG_BORDEAUX}image${DOCKER__NOCOLOR} from a ${DOCKER__FG_PURPLE}repository${DOCKER__NOCOLOR}"
         echo -e "${DOCKER__FOURSPACES}3. Create an ${DOCKER__FG_BORDEAUX}image${DOCKER__NOCOLOR} from a ${DOCKER__FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
@@ -64,6 +75,7 @@ docker__mainmenu__sub() {
         echo -e "${DOCKER__FOURSPACES}8. Copy a ${DOCKER__FG_ORANGE}file${DOCKER__NOCOLOR} from/to a ${DOCKER__FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
         echo -e "${DOCKER__FOURSPACES}9. ${DOCKER__FG_GREEN}Chroot${DOCKER__NOCOLOR} (from in/outside a container)"
         echo -e "${DOCKER__FOURSPACES}0. Enter Command Prompt"
+
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
         echo -e "${DOCKER__FOURSPACES}r. ${DOCKER__FG_PURPLE}Repository${DOCKER__NOCOLOR}-list"
         echo -e "${DOCKER__FOURSPACES}c. ${DOCKER__FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}-list"
@@ -174,30 +186,33 @@ docker__mainmenu__sub() {
                 exit
                 ;;
         esac
+
+        #Set 'docker__prepend_numOfLines'
+        docker__prepend_numOfLines=${DOCKER__NUMOFLINES_1}
     done
 }
 
 docker__show_repositoryList_handler__sub() {
     #Load header
-    docker__load_header__sub
+    docker__load_header__sub "${DOCKER__NUMOFLINES_2}"
 
     #Show container-list
     show_repository_or_container_list__func "${DOCKER__MENUTITLE_REPOSITORYLIST}" \
                         "${DOCKER__ERRMSG_NO_IMAGES_FOUND}" \
                         "${docker__images_cmd}" \
-                        "${DOCKER__NUMOFLINES_1}" \
+                        "${DOCKER__NUMOFLINES_0}" \
                         "${DOCKER__NUMOFLINES_2}"
 }
 
 docker__show_containerList_handler__sub() {
     #Load header
-    docker__load_header__sub
+    docker__load_header__sub "${DOCKER__NUMOFLINES_2}"
 
     #Show container-list
     show_repository_or_container_list__func "${DOCKER__MENUTITLE_CONTAINERLIST}" \
                         "${DOCKER__ERRMSG_NO_CONTAINERS_FOUND}" \
                         "${docker__ps_a_cmd}" \
-                        "${DOCKER__NUMOFLINES_1}" \
+                        "${DOCKER__NUMOFLINES_0}" \
                         "${DOCKER__NUMOFLINES_2}"
 }
 
@@ -209,7 +224,7 @@ main__sub() {
 
     docker__load_source_files__sub
 
-    docker__load_header__sub
+    # docker__load_header__sub
 
     docker__checkIf_user_is_root__sub
 
