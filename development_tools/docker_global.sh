@@ -863,7 +863,7 @@ function functionKey_detection__func() {
 
 
 
-#---FILE-RELATED FUNCTIONS
+#---FILES-RELATED FUNCTIONS
 function append_caretReturn_ifNotPresent_within_file__func() {
     disable_expansion__func
 
@@ -1137,6 +1137,62 @@ function remove_allEmptyLines_within_file__func() {
     sed -i '/^$/d' ${targetFpath__input}
 }
 
+function retrieve_files_from_specified_dir_basedOn_matching_patterns__func() {
+    #Input args
+    local dir__input=${1}
+    local pattern1__input=${2}
+    local pattern2__input=${3}
+
+    #Define variables
+    local arrPattern1=()
+    local arrPattern2=()
+    local arrMatch=()
+    local dir_w_asterisk=${DOCKER__EMPTYSTRING}
+    local ret=${DOCKER__EMPTYSTRING}
+
+    #Check if 'dir__input' is a directory
+    if [[ ! -d ${dir__input} ]]; then
+        echo "${ret}"
+
+        return
+    fi
+
+    #Set 'dir_w_asterisk'
+    dir_w_asterisk="${dir__input}/${DOCKER__ASTERISK}"
+
+    #Replace multiple slashes with a single slash (/)
+    dir_w_asterisk=`replace_multiple_chars_with_single_char__func "${dir_w_asterisk}" \
+                    "${DOCKER__ESCAPE_SLASH}" \
+                    "${DOCKER__ESCAPE_SLASH}"`
+
+    #Retrieve files based on matching pattern1 and write to arrPattern1
+    readarray -t arrPattern1 < <(grep -l "${pattern1__input}" ${dir_w_asterisk})
+
+    #Retrieve files based on matching pattern2 and write to arrPattern2
+    readarray -t arrPattern2 < <(grep -l "${pattern2__input}" ${dir_w_asterisk})
+
+    #Preparing arrays
+    #   1. sed 's/ /\n/g': replace all spaces with '\n'
+    #      (in other words, strings separated by space are placed underneath each other)
+    #   2. sort
+    #   3. uniq 
+    arrPattern1=$(echo "${arrPattern1[@]}" | sed 's/ /\n/g' | sort | uniq)
+    arrPattern2=$(echo "${arrPattern2[@]}" | sed 's/ /\n/g' | sort | uniq)
+
+    #Check for match between 'arrPattern1' and 'arrPattern2' and retrieve ONLY the matching elements
+    #   1. sed 's/ /\n/g': replace all spaces with '\n'
+    #      (in other words, strings separated by space are placed underneath each other)
+    #   2. sort
+    #   3. uniq -d: means only get the duplicate (or matching) elements between the two arrays
+    arrMatch=$(echo ${arrPattern1[@]} ${arrPattern2[@]} | sed 's/ /\n/g' | sort | uniq -d)
+
+    #***IMPORTANT: Rearrange strings back which are delimited by a space
+    ret=$(echo ${arrMatch[@]} | sed 's/\n/ /g')
+
+    #Output
+    echo "${ret}"
+}
+
 function write_data_to_file__func() {
     #Input args
     string__input=${1}
@@ -1369,7 +1425,6 @@ function show_pathContent_w_keyInput__func() {
 
 
 #---Define variables
-    local fpath_arrTmp=()
     local fpath_arr=()
     local fpath_arrIndex=0
     local fpath_arrLen=0
@@ -1378,12 +1433,18 @@ function show_pathContent_w_keyInput__func() {
     local fpath_arrItem_marked=${DOCKER__EMPTYSTRING}
     local fpath_arrItem_conv=${DOCKER__EMPTYSTRING}
     local fpath_arrItem_print=${DOCKER__EMPTYSTRING}
+    local fpath_arr_string=${DOCKER__EMPTYSTRING}
 
-    local filteredData_arr=()
-    local filteredData_arrIndex=0
-    local filteredData_arrIndex_sel=0
-    local filteredData_arrLen=0
-    local filteredData_arrItem_sel=${DOCKER__EMPTYSTRING}
+    local fpath_arrTmp=()
+    local fpath_arrTmp_string=${DOCKER__EMPTYSTRING}
+
+    #Relative array, which contains only the number of elements equal to 'table_index_max__input'.
+    #This array is renewed with each loop.
+    local fpath_relArr=()
+    local fpath_relArrIndex=0
+    local fpath_relArrIndex_sel=0
+    local fpath_relArrLen=0
+    local fpath_relArrItem_sel=${DOCKER__EMPTYSTRING}
 
     local keyOutput=${DOCKER__EMPTYSTRING}
     local pattern1_result=${DOCKER__EMPTYSTRING}
@@ -1395,9 +1456,16 @@ function show_pathContent_w_keyInput__func() {
     local table_index_base_try_next=0
     local keyInput=${DOCKER__EMPTYSTRING}
 
+    local lineNum_range_relMax=0
+    local lineNum_range_relMin=0
+    local lineNum_range_msg_startPos=0
+    local lineNum_range_msg_wo_regEx_len=0
+    local lineNum_range_msg=${DOCKER__EMPTYSTRING}
+
     local flag_break_main_whileLoop=false
     local flag_break_forLoop=false
     local flag_matched_fkey_isPressed=false
+
 
 
 #---Remove file (if present)
@@ -1452,28 +1520,33 @@ function show_pathContent_w_keyInput__func() {
 
 
 
-#---Store directory/file content in array'
-    #Remark: 
-    #   Also make sure to substitute '<space>' with '${STX}space${ETX}'
-    if [[ -d ${path__input} ]]; then    #directory
-        readarray -t fpath_arrTmp < <(find ${path__input} -maxdepth 1 -type f | \
-                                    sort | \
-                                    sed "s/${DOCKER__ONESPACE}/${SED_SUBST_SPACE}/g")
-    else    #file
-        readarray -t fpath_arrTmp < ${path__input}
+#---Retrieve array containing matching elements based on the specified patterns
+    #Remarks:
+    #   1. Only do this if 'path__input' is a directory.
+    #   2. if 'path__input' is a file, then no matching required, in this case...
+    #      ...just read the content of the file into array 'fpath_arrTmp'.
+    if [[ -d ${path__input} ]]; then    #is a directory
+        fpath_arrTmp_string=`retrieve_files_from_specified_dir_basedOn_matching_patterns__func "${path__input}" \
+                            "${pattern1__input}" \
+                            "${pattern2__input}"`
+#-------Convert string to array
+        read -a fpath_arrTmp <<< "${fpath_arrTmp_string}"
+    else    #is a file
+        readarray -t fpath_arrTmp < <(cat "${path__input}")
     fi
+
 
     #Check if a match string 'selItem__input' is provided
     if [[ ! -z ${selItem__input} ]]; then   #contains data
         #Rearrange array and place 'selItem__input' on top of the array.
-        #Note: the output 'result' is a string.
-        result=`array_find_and_move_element_toTop__func "${selItem__input}" "${fpath_arrTmp[@]}"`
+        #Note: the output 'fpath_arr_string' is a string.
+        fpath_arr_string=`array_find_and_move_element_toTop__func "${selItem__input}" "${fpath_arrTmp[@]}"`
 
         #Convert string to array
         #Remark:
         #   Even though the array has been re-arranged,
         #   still 'fpath_arr' will not be written to a file!
-        read -a fpath_arr <<< "${result}"
+        read -a fpath_arr <<< "${fpath_arr_string}"
     else    #contains no data
         fpath_arr=("${fpath_arrTmp[@]}")
     fi
@@ -1498,8 +1571,8 @@ function show_pathContent_w_keyInput__func() {
         if [[ ! -z ${fpath_arr[@]} ]]; then
             #Initialization
             flag_break_forLoop=false
-            filteredData_arr=()
-            filteredData_arrIndex=0
+            fpath_relArr=()
+            fpath_relArrIndex=0
             fpath_arrIndex=0
             keyInput=0
             table_index=0
@@ -1507,76 +1580,73 @@ function show_pathContent_w_keyInput__func() {
             #Loop thru array
             for fpath_arrItem in "${fpath_arr[@]}"
             do
-#---------------Narrow down the result by implementing 'pattern1__input' and 'pattern2__input'.
-                #Remark:
-                #   Only narrow down if 'path__input' is a directory!!!
-                if [[ -d ${path__input} ]]; then    #directory
-                    pattern1_result=`cat ${fpath_arrItem} | grep "${pattern1__input}"`
-                    pattern2_result=`cat ${fpath_arrItem} | grep "${pattern2__input}"`
-                else    #file
-                    #Do not care about 'pattern1_result' and 'pattern2_result'.
-                    #Note: can set those variables to any non Empty String value.
-                    pattern1_result=${fpath_arrItem}
-                    pattern2_result=${fpath_arrItem}
-                fi
+                #Increment array-index
+                fpath_arrIndex=$((fpath_arrIndex + 1))
 
-#---------------At least one of the results, 'pattern1_result' or 'pattern2_result', contains data.
-                if [[ ! -z ${pattern1_result} ]] || [[ ! -z ${pattern2_result} ]]; then
-                    #Increment array-index
-                    fpath_arrIndex=$((fpath_arrIndex + 1))
+                if [[ ${fpath_arrIndex} -gt ${table_index_base} ]]; then
+                    #increment table-index
+                    table_index=$((table_index + 1))
 
-                    if [[ ${fpath_arrIndex} -gt ${table_index_base} ]]; then
-                        #increment table-index
-                        table_index=$((table_index + 1))
+                    #Check if 'table_index = table_index_max__input'
+                    #Remark:
+                    #   If true, set 'table_index = 0'
+                    if [[ ${table_index} -eq ${table_index_max__input} ]]; then
+                        table_index=${DOCKER__NUMOFMATCH_0}
 
-                        #Check if 'table_index = table_index_max__input'
-                        #Remark:
-                        #   If true, set 'table_index = 0'
-                        if [[ ${table_index} -eq ${table_index_max__input} ]]; then
-                            table_index=${DOCKER__NUMOFMATCH_0}
-
-                            flag_break_forLoop=true
-                        fi
-
-#-----------------------Get 'fpath_arrItem_base' without directory (if applicable)
-                        fpath_arrItem_base=`basename ${fpath_arrItem}`  
-         
-#-----------------------Convert 'SED_SUBST_SPACE' back to '<space>'
-                        fpath_arrItem_conv=`echo "${fpath_arrItem_base}" | sed "s/${SED_SUBST_SPACE}/${DOCKER__ONESPACE}/g"`
-
-#-----------------------Add 'fpath_arrItem_conv' to 'filteredData_arr'
-                        #Remark:
-                        #   This array contains only data which matches both patterns...
-                        #   ...'pattern1__input' and 'pattern2__input'.
-                        if [[ ${table_index} -eq ${DOCKER__NUMOFMATCH_0} ]]; then   #when a turnover has happened
-                            filteredData_arrIndex=$((table_index_max__input - 1))
-                        else    #in normal conditions
-                            filteredData_arrIndex=$((table_index - 1))
-                        fi
-                        filteredData_arr[${filteredData_arrIndex}]=${fpath_arrItem_conv}
-
-#-----------------------Set 'fpath_arrItem_marked' (default)
-                        fpath_arrItem_marked=${fpath_arrItem_conv}
-
-#-----------------------Mark 'fpath_arrItem_marked' with 'DOCKER__BG_LIGHTSOFTYELLOW' (if applicable)
-                        if [[ ${filteredData_arrIndex} -eq ${DOCKER__NUMOFMATCH_0} ]]; then #true
-                            #Check if 'selItem__input' contains datda?
-                            if [[ ! -z ${selItem__input} ]]; then   #true
-                                #Color 'fpath_arrItem_conv' if 'selItem__input != DOCKER__EMPTYSTRING'
-                                fpath_arrItem_marked="${DOCKER__BG_LIGHTSOFTYELLOW}${fpath_arrItem_marked}${DOCKER__NOCOLOR}"
-                            fi
-                        fi
-
-                        #Define and set 'fpath_arrItem_print'
-                        if [[ ${table_index} -ne ${DOCKER__NUMOFMATCH_0} ]]; then
-                            fpath_arrItem_print="${DOCKER__FOURSPACES}${table_index}. ${fpath_arrItem_marked}"
-                        else
-                            fpath_arrItem_print="${DOCKER__THREESPACES}${DOCKER__FG_LIGHTGREY}${DOCKER__LINENUM_1}${DOCKER__NOCOLOR}${table_index}. ${fpath_arrItem_marked}"
-                        fi
-                
-                        #Show fpath_arrItem_conv
-                        echo -e "${fpath_arrItem_print}"
+                        flag_break_forLoop=true
                     fi
+
+#-------------------Get 'fpath_arrItem_base' without directory
+                    if [[ -d ${path__input} ]]; then    #is a directory
+                        fpath_arrItem_base=`basename ${fpath_arrItem}`  
+                    else    #is a file
+                        fpath_arrItem_base=${fpath_arrItem}
+                    fi
+        
+#-------------------Convert 'SED_SUBST_SPACE' back to '<space>'
+                    fpath_arrItem_conv=`echo "${fpath_arrItem_base}" | sed "s/${SED_SUBST_SPACE}/${DOCKER__ONESPACE}/g"`
+
+#-------------------Increment relative index 'fpath_relArrIndex'
+                    if [[ ${table_index} -eq ${DOCKER__NUMOFMATCH_0} ]]; then   #when a turnover has happened
+                        fpath_relArrIndex=$((table_index_max__input - 1))
+                    else    #in normal conditions
+                        fpath_relArrIndex=$((table_index - 1))
+                    fi
+
+#-------------------Add 'fpath_arrItem_conv' to 'fpath_relArr'
+                    #Remark:
+                    #   This array contains only data which matches both patterns...
+                    #   ...'pattern1__input' and 'pattern2__input'.
+                    fpath_relArr[${fpath_relArrIndex}]=${fpath_arrItem_conv}
+
+#-------------------Set 'fpath_arrItem_marked' (default)
+                    fpath_arrItem_marked=${fpath_arrItem_conv}
+
+#-------------------Mark the 1st array-element 'fpath_arrItem_marked' with 'DOCKER__BG_LIGHTSOFTYELLOW' (if applicable)
+                    if [[ ${fpath_relArrIndex} -eq ${DOCKER__NUMOFMATCH_0} ]]; then #true
+                        #Check if 'selItem__input' contains data?
+                        if [[ ! -z ${selItem__input} ]]; then   #true
+                            #Color 'fpath_arrItem_conv' if 'selItem__input != DOCKER__EMPTYSTRING'
+                            fpath_arrItem_marked="${DOCKER__BG_LIGHTSOFTYELLOW}${fpath_arrItem_marked}${DOCKER__NOCOLOR}"
+                        fi
+                    fi
+
+                    #Define and set 'fpath_arrItem_print'
+                    if [[ ${table_index} -ne ${DOCKER__NUMOFMATCH_0} ]]; then
+                        fpath_arrItem_print="${DOCKER__FOURSPACES}${table_index}. ${fpath_arrItem_marked}"
+                    else
+                        fpath_arrItem_print="${DOCKER__THREESPACES}${DOCKER__FG_LIGHTGREY}${DOCKER__LINENUM_1}${DOCKER__NOCOLOR}${table_index}. ${fpath_arrItem_marked}"
+                    fi
+
+                    #Substitute 'http' with 'hxxp' (if present)
+                    #Remark:
+                    #   This substitution is required in order to eliminate the underlines for hyperlinks
+                    fpath_arrItem_print=`subst_string_with_another_string__func "${fpath_arrItem_print}" \
+                            "${SED__HTTP}" \
+                            "${SED__HXXP}"`
+                                
+                    #Show fpath_arrItem_conv
+                    echo -e "${fpath_arrItem_print}"
                 fi
 
                 #Prevously 'table_index' was set to '0'.
@@ -1591,6 +1661,11 @@ function show_pathContent_w_keyInput__func() {
 
             show_centered_string__func "${errMsg__input}" "${DOCKER__TABLEWIDTH}"
         fi
+
+
+
+#-------Get array-length
+        fpath_relArrLen=${#fpath_relArr[@]}
 
 
 
@@ -1638,6 +1713,34 @@ function show_pathContent_w_keyInput__func() {
 
 
 
+#-------Show line-number range between 'prev' and 'next'
+        lineNum_range_relMax=$((table_index_base + table_index_max__input))
+        #Check if 'lineNum_range_relMax' has exceeded the maximum number array-items
+        if [[ ${lineNum_range_relMax} -gt ${fpath_arrLen} ]]; then
+            lineNum_range_relMax=${fpath_arrLen}
+        fi
+        lineNum_range_relMin=$((table_index_base + 1))
+        lineNum_range_max_abs=${fpath_arrLen}
+
+        #Prepare the line-number range message
+        lineNum_range_msg="${DOCKER__FG_LIGHTGREY}${lineNum_range_relMin}${DOCKER__NOCOLOR} "
+        lineNum_range_msg+="to ${DOCKER__FG_LIGHTGREY}${lineNum_range_relMax}${DOCKER__NOCOLOR} "
+        lineNum_range_msg+="(${DOCKER__FG_SOFTLIGHTRED}${lineNum_range_max_abs}${DOCKER__NOCOLOR})"
+        
+        #Caclulate the length of 'lineNum_range_msg' without regEx
+        lineNum_range_msg_wo_regEx_len=`get_stringlen_wo_regEx__func "${lineNum_range_msg}"`
+
+        #Determine the start-position of where to place 'lineNum_range_msg'
+        lineNum_range_msg_startPos=$(( (DOCKER__TABLEWIDTH/2) - (lineNum_range_msg_wo_regEx_len/2) ))
+
+        #Move cursor to start-position 'lineNum_range_msg_startPos'
+        tput cuu1 && tput cuf ${lineNum_range_msg_startPos}
+
+        #Print 'lineNum_range_msg'
+        echo -e "${lineNum_range_msg}"
+
+
+
 #-------Show info & menu-options
         # moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
         info__input=`trim_string_toFit_specified_windowSize__func "${info__input}" \
@@ -1658,16 +1761,12 @@ function show_pathContent_w_keyInput__func() {
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
 
 
+
 #-------Enable keyboard-input
         enable_keyboard_input__func
 
 #-------Show cursor
         cursor_show__func
-
-
-
-#-------Get array-length
-        filteredData_arrLen=${#filteredData_arr[@]}
 
 
 
@@ -1762,8 +1861,8 @@ function show_pathContent_w_keyInput__func() {
                             keyInput=${table_index_max__input}
                         fi
 
-                        #Only handle the following condition if 'keyInput =< filteredData_arrLen'
-                        if [[ ${keyInput} -le ${filteredData_arrLen} ]]; then
+                        #Only handle the following condition if 'keyInput =< fpath_relArrLen'
+                        if [[ ${keyInput} -le ${fpath_relArrLen} ]]; then
                             #If 'keyInput = 0', then set 'keyInput = table_index_max__input'
                             #Remark:
                             #   This part is actually not necessary since it has been executed already previously.
@@ -1774,16 +1873,16 @@ function show_pathContent_w_keyInput__func() {
                             #Convert to array-index
                             #Remark:
                             #   -1 is a correction due to array starting with 'index = 0'
-                            filteredData_arrIndex_sel=$(( keyInput - 1 ))
+                            fpath_relArrIndex_sel=$(( keyInput - 1 ))
 
-                            #Get the selected 'filteredData_arrItem_sel'
-                            filteredData_arrItem_sel="${filteredData_arr[filteredData_arrIndex_sel]}"
+                            #Get the selected 'fpath_relArrItem_sel'
+                            fpath_relArrItem_sel="${fpath_relArr[fpath_relArrIndex_sel]}"
 
                             #Determine the output 'ret' based on whether 'path__input' is a 'directory' or 'file' 
                             if [[ -d ${path__input} ]]; then    #directory
-                                ret=${path__input}/${filteredData_arrItem_sel}
+                                ret=${path__input}/${fpath_relArrItem_sel}
                             else    #file
-                                ret=${filteredData_arrItem_sel}
+                                ret=${fpath_relArrItem_sel}
                             fi
 
                             #Move-down and clean lines
@@ -1943,7 +2042,9 @@ function show_fileContent_wo_keyInput__func() {
 
 #-------Disable keyboard-input
         disable_keyboard_input__func
-        
+
+
+
 #-------Show menu-title
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
         show_centered_string__func "${menuTitle__input}" "${DOCKER__TABLEWIDTH}"
@@ -2035,6 +2136,34 @@ function show_fileContent_wo_keyInput__func() {
                 fi
             fi
         fi
+
+
+
+#-------Show line-number range between 'prev' and 'next'
+        lineNum_range_relMax=$((table_index_base + table_index_max__input))
+        #Check if 'lineNum_range_relMax' has exceeded the maximum number array-items
+        if [[ ${lineNum_range_relMax} -gt ${fpath_arrLen} ]]; then
+            lineNum_range_relMax=${fpath_arrLen}
+        fi
+        lineNum_range_relMin=$((table_index_base + 1))
+        lineNum_range_max_abs=${fpath_arrLen}
+
+        #Prepare the line-number range message
+        lineNum_range_msg="${DOCKER__FG_LIGHTGREY}${lineNum_range_relMin}${DOCKER__NOCOLOR} "
+        lineNum_range_msg+="to ${DOCKER__FG_LIGHTGREY}${lineNum_range_relMax}${DOCKER__NOCOLOR} "
+        lineNum_range_msg+="(${DOCKER__FG_SOFTLIGHTRED}${lineNum_range_max_abs}${DOCKER__NOCOLOR})"
+        
+        #Caclulate the length of 'lineNum_range_msg' without regEx
+        lineNum_range_msg_wo_regEx_len=`get_stringlen_wo_regEx__func "${lineNum_range_msg}"`
+
+        #Determine the start-position of where to place 'lineNum_range_msg'
+        lineNum_range_msg_startPos=$(( (DOCKER__TABLEWIDTH/2) - (lineNum_range_msg_wo_regEx_len/2) ))
+
+        #Move cursor to start-position 'lineNum_range_msg_startPos'
+        tput cuu1 && tput cuf ${lineNum_range_msg_startPos}
+
+        #Print 'lineNum_range_msg'
+        echo -e "${lineNum_range_msg}"
 
 
 

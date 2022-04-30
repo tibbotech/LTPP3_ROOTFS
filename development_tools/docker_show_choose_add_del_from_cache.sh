@@ -1170,8 +1170,8 @@ docker__update_exported_env_var_file_handler__sub() {
             #Remark:
             #   'data__input' contains 'docker_arg1' and 'docker_arg2'
             #   which are separated by a colon ':'
-            docker_arg1=`echo "${data__input}" | cut -d"${DOCKER__COLON}" -f1`
-            docker_arg2=`echo "${data__input}" | cut -d"${DOCKER__COLON}" -f2`
+            docker_arg2=`echo "${data__input}" | rev | cut -d"${DOCKER__COLON}" -f1 | rev`
+            docker_arg1=`echo "${data__input}" | rev |cut -d"${DOCKER__COLON}" -f2- | rev`
             ;;
     esac
 
@@ -1444,11 +1444,11 @@ docker__escapeKey_add_linkCheckout_profile__sub() {
                 moveUp_and_cleanLines__func "${tot_numOfLines_from_output}"
                 ;;
             ${DOCKER__ENUM_FUNC_F3})    #confirm
-                #Move-up or move-down and clean based on the condition (as mentioned in the subroutine)
-                docker__relative_move_and_clean_due_to_switch_between_different_tables__sub
-
                 #Add profile (and more...)
                 docker__escapeKey_add_linkCheckout_profile_confirm__sub
+
+                #Move-up or move-down and clean based on the condition (as mentioned in the subroutine)
+                docker__relative_move_and_clean_due_to_switch_between_different_tables__sub
 
                 #Switch back to 'readInputDialog1__input' (Choose)
                 docker__escapeKey_add_linkCheckout_profile_switch_to_choose__sub
@@ -1481,6 +1481,13 @@ docker__escapeKey_add_linkCheckout_profile__sub() {
         esac
     done
 }
+docker__escapeKey_add_linkCheckout_profile_confirm__sub() {
+    #IMPORTANT: Set 'docker__totInput'
+    docker__totInput="${linkSel}${DOCKER__COLON}${checkoutSel}"
+
+    #Execute 'docker___add_link_checkout_or_profile_handler__sub'
+    docker___add_link_checkout_or_profile_handler__sub
+}
 docker__relative_move_and_clean_due_to_switch_between_different_tables__sub() {
     #Input args
     local tot_numOfLines_from__input=${1}   #from this table with the specified total number of lines
@@ -1511,13 +1518,6 @@ docker__relative_move_and_clean_due_to_switch_between_different_tables__sub() {
         #move-down and clean
         moveDown_and_cleanLines__func "${rel_numOfLines}" "${rel_numOfLines}"OfLines
     fi    
-}
-docker__escapeKey_add_linkCheckout_profile_confirm__sub() {
-    #IMPORTANT: Set 'docker__totInput'
-    docker__totInput="${linkSel}${DOCKER__COLON}${checkoutSel}"
-
-    #Execute 'docker___add_link_checkout_or_profile_handler__sub'
-    docker___add_link_checkout_or_profile_handler__sub
 }
 docker__escapeKey_add_linkCheckout_profile_switch_to_choose__sub() {
     #Reset variables
