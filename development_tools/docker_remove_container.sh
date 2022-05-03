@@ -122,23 +122,22 @@ docker_remove_specified_containers__sub() {
                                         docker__myContainerId_isFound=`checkForMatch_dockerCmd_result__func "${docker__myContainerId_item}" \
                                                 "${docker__ps_a_cmd}" \
                                                 "${docker__ps_a_containerIdColno}"`
+
                                         if [[ ${docker__myContainerId_isFound} == false ]]; then
-                                            docker__prune_handler__sub "${docker__myContainerId_item}"
+                                            docker__prune_handler__sub "${docker__myContainerId_item}" "${DOCKER__NUMOFLINES_1}"
                                         else  
                                             errMsg="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Could *NOT* remove container-ID: ${DOCKER__FG_BORDEAUX}${docker__myContainerId_item}${DOCKER__NOCOLOR}"
-                                            
-                                            show_msg_only__func "${errMsg}" "${DOCKER__NUMOFLINES_0}"
+                                            show_msg_only__func "${errMsg}" "${DOCKER__NUMOFLINES_1}"
                                         fi
                                     else
                                         #Update error-message
                                         errMsg="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Invalid container-ID '${DOCKER__FG_BORDEAUX}${docker__myContainerId_item}${DOCKER__NOCOLOR}'"
-
-                                        show_msg_only__func "${errMsg}" "${DOCKER__NUMOFLINES_0}"
+                                        show_msg_only__func "${errMsg}" "${DOCKER__NUMOFLINES_1}"
                                     fi
                                 done
 
                                 #Set number of lines
-                                numOfLines=${DOCKER__NUMOFLINES_1}
+                                numOfLines=${DOCKER__NUMOFLINES_2}
                             fi
 
                             #Print an Empty Line
@@ -245,7 +244,11 @@ docker_containerId_input__sub() {
                             "${docker__showTable}" \
                             "${docker__onEnter_breakLoop}"
 
-        #Get the exitcode just in case a Ctrl-C was pressed in script 'docker__readInput_w_autocomplete__fpath'.
+        #Get the exitcode just in case:
+        #   1. Ctrl-C was pressed in script 'docker__readInput_w_autocomplete__fpath'.
+        #   2. An error occured in script 'docker__readInput_w_autocomplete__fpath',...
+        #      ...and exit-code = 99 came from function...
+        #      ...'show_msg_w_menuTitle_w_pressAnyKey_w_ctrlC_func' (in script: docker__global.sh).
         docker__exitCode=$?
         if [[ ${docker__exitCode} -eq ${DOCKER__EXITCODE_99} ]]; then
             docker__myContainerId_input=${DOCKER__EMPTYSTRING}
@@ -278,7 +281,7 @@ docker_containerId_input__sub() {
                 if [[ -z ${docker__myContainerId} ]]; then  #'docker__myContainerId' is an Empty String (this is the start)
                     docker__myContainerId="${docker__myContainerId_input}"
                 else    #'docker__myContainerId' contains data
-                    Check if 'docker__myContainerId_input' was already added
+                    #Check if 'docker__myContainerId_input' was already added
                     isFound=`checkForMatch_of_pattern_within_string__func "${docker__myContainerId_input}" "${docker__myContainerId}"`
 
                     #If false, then add 'docker__myContainerId_input' to 'docker__myContainerId'
@@ -296,8 +299,11 @@ docker_containerId_input__sub() {
 docker__prune_handler__sub()  {
     #Input args
     local imageId__input=${1}
+    local prepend_numOfLines__input=${2}
 
     #Prune and print messages
+    moveUp_and_cleanLines__func "${prepend_numOfLines__input}"
+
     echo -e "Successfully Removed Image-ID: ${DOCKER__FG_BORDEAUX}${imageId__input}${DOCKER__NOCOLOR}"
     echo -e "\r"
     echo -e "Removing ALL unlinked images"

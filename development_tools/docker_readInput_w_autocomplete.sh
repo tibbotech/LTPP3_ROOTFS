@@ -318,8 +318,8 @@ docker__readInput_w_autocomplete__sub() {
     if [[ ${showTable__input} == true ]]; then
         docker__show_infoTable__sub "${menuTitle__input}" \
                         "${dockerCmd__input}" \
-                        "${errorMsg__input}" \
-                        "${DOCKER__NUMOFLINES_0}"
+                        "${errorMsg__input}" #\
+                        # "${DOCKER__NUMOFLINES_0}"
 
         #Show current input
         if [[ ! -z ${readMsgRemarks__input} ]]; then
@@ -466,23 +466,31 @@ docker__show_infoTable__sub() {
     local menuTitle__input=${1}
     local dockerCmd__input=${2}
     local errorMsg__input=${3}
-    local numOfLines_toMoveDown=${4}
+    # local numOfLines_toMoveDown=${4}
 
-    #Print empty lines (if applicable)
-    local counter=1
-    while [[ ${counter} -le ${numOfLines_toMoveDown} ]];
-    do
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+    # #Print empty lines (if applicable)
+    # local counter=1
+    # while [[ ${counter} -le ${numOfLines_toMoveDown} ]];
+    # do
+    #     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
-        counter=$((counter+1))
-    done
+    #     counter=$((counter+1))
+    # done
 
-    #Get number of containers
-    local numOf_items=`${dockerCmd__input} | head -n -1 | wc -l`
+    # #Get number of containers
+    # local numOf_items=`${dockerCmd__input} | head -n -1 | wc -l`
 
     #Show Table
     if [[ ${cachedInput_ArrLen} -eq 0 ]]; then
-        show_msg_w_menuTitle_w_pressAnyKey_w_ctrlC_func "${menuTitle__input}" "${errorMsg__input}"
+        show_msg_w_menuTitle_w_pressAnyKey_w_ctrlC_func "${menuTitle__input}" \
+                        "${errorMsg__input}" \
+                        "${DOCKER__EXITCODE_99}"
+
+        #IMPORTANT: this will make sure that this script is exited upon error
+        docker__exitCode=$?
+        if [[ ${docker__exitCode} -eq ${DOCKER__EXITCODE_99} ]]; then
+            exit__func "${exitCode__input}" "${DOCKER__NUMOFLINES_0}"
+        fi
     else
         show_cmdOutput_w_menuTitle__func "${menuTitle__input}" "${dockerCmd__input}"
     fi

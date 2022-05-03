@@ -94,7 +94,6 @@ DOCKER__TABLEWIDTH=100
 DOCKER__TABLEROWS=10
 
 
-
 #---DOCKER RELATED CONSTANTS
 DOCKER__CFG_NAME1="docker__dockerFile_fpath"
 
@@ -108,6 +107,9 @@ DOCKER__STATE_NOTFOUND="NotFound"
 
 DOCKER__MENUTITLE_CONTAINERLIST="${DOCKER__FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}-list"
 DOCKER__MENUTITLE_REPOSITORYLIST="${DOCKER__FG_PURPLE}Repository${DOCKER__NOCOLOR}-list"
+DOCKER__MENUTITLE_UPDATED_CONTAINERLIST="Updated ${DOCKER__FG_BORDEAUX}Container${DOCKER__NOCOLOR}-list"
+DOCKER__MENUTITLE_UPDATED_REPOSITORYLIST="Updated ${DOCKER__FG_BORDEAUX}Image${DOCKER__NOCOLOR}-list"
+
 
 DOCKER__READINPUTDIALOG_CHOOSE_IMAGEID_FROM_LIST="Choose an ${DOCKER__FG_BORDEAUX}Image-ID${DOCKER__NOCOLOR} (e.g. 0f7478cf7cab): "
 DOCKER__READDIALOG_DO_YOU_WISH_TO_CONTINUE_YNR="Do you wish to continue (y/n/r)? "
@@ -120,6 +122,7 @@ DOCKER__ERRMSG_NO_EXITED_CONTAINERS_FOUND="=:${DOCKER__FG_LIGHTRED}NO *EXITED* C
 DOCKER__ERRMSG_NO_IMAGES_FOUND="=:${DOCKER__FG_LIGHTRED}NO IMAGES FOUND${DOCKER__NOCOLOR}:="
 
 DOCKER__INVALID_OR_NOT_A_DIRECTORY="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Invalid or not a directory"
+DOCKER__INVALID_OR_NOT_A_FILE="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Invalid or not a file"
 
 
 #---ENV VARIABLES (WHICH ARE USED IN THE DOCKERFILE FILES)
@@ -141,6 +144,13 @@ DOCKER__DOCKERFILE="dockerfile"
 DOCKER__LINK="link"
 DOCKER__LINKCHECKOUT_PROFILE="linkcheckout_profile"
 
+DOCKER__DIRLIST_REMARKS="${DOCKER__BG_ORANGE}Remarks:${DOCKER__NOCOLOR}\n"
+DOCKER__DIRLIST_REMARKS+="${DOCKER__DASH} append ${DOCKER__FG_YELLOW}/${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}to list directory${DOCKER__NOCOLOR} (e.g. ${DOCKER__FG_LIGHTGREY}/etc${DOCKER__NOCOLOR}${DOCKER__FG_YELLOW}/${DOCKER__NOCOLOR})\n"
+DOCKER__DIRLIST_REMARKS+="${DOCKER__DASH} ${DOCKER__FG_YELLOW}ENTER${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}to confirm${DOCKER__NOCOLOR}\n"
+DOCKER__DIRLIST_REMARKS+="${DOCKER__DASH} ${DOCKER__FG_YELLOW}TAB${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}auto-complete${DOCKER__NOCOLOR}\n"
+DOCKER__DIRLIST_REMARKS+="${DOCKER__DASH} ${DOCKER__FG_YELLOW};b${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}back${DOCKER__NOCOLOR}\n"
+DOCKER__DIRLIST_REMARKS+="${DOCKER__DASH} ${DOCKER__FG_YELLOW};c${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}clear${DOCKER__NOCOLOR}\n"
+DOCKER__DIRLIST_REMARKS+="${DOCKER__DASH} ${DOCKER__FG_YELLOW};h${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}home${DOCKER__NOCOLOR}"
 
 
 
@@ -2342,6 +2352,7 @@ function show_msg_w_menuTitle_w_pressAnyKey_w_ctrlC_func() {
     #Input args
     local menuTitle__input=${1}
     local msg__input=${2}
+    local exitCode__input=${3}
 
     #Horizontal line
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
@@ -2368,10 +2379,12 @@ function show_msg_w_menuTitle_w_pressAnyKey_w_ctrlC_func() {
     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
     #Show press any key
-    press_any_key__func
+    press_any_key__func "${DOCKER__TIMEOUT_10}" \
+                        "${DOCKER__NUMOFLINES_0}" \
+                        "${DOCKER__NUMOFLINES_0}"
 
     #Exit
-    exit__func "${DOCKER__EXITCODE_0}" "${DOCKER__NUMOFLINES_2}"
+    exit__func "${exitCode__input}" "${DOCKER__NUMOFLINES_2}"
 }
 
 function show_msg_w_menuTitle_only_func() {
@@ -2435,7 +2448,9 @@ function show_repository_or_container_list__func() {
     local msg__input=${2}
     local docker_cmd__input=${3}
     local prepend_numOfLines__input=${4}
-    local append_numOfLines__input=${5}
+    local confirmation_timeout__input=${5}
+    local confirmation_prepend_numOfLines__input=${6}
+    local confirmation_append_numOfLines__input=${7}
 
     #Move-down cursor
     moveDown_and_cleanLines__func "${prepend_numOfLines__input}"
@@ -2461,7 +2476,7 @@ function show_repository_or_container_list__func() {
         fi
 
         #Move-down cursor
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
+        # moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
     else    #no containers found
         #Move-down cursor
         moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"

@@ -123,7 +123,11 @@ docker__choose_containerID__sub() {
                         "${docker__showTable}" \
                         "${docker__onEnter_breakLoop}"
 
-    #Get the exitcode just in case a Ctrl-C was pressed in script 'docker__readInput_w_autocomplete_out__fpath'.
+    #Get the exitcode just in case:
+    #   1. Ctrl-C was pressed in script 'docker__readInput_w_autocomplete__fpath'.
+    #   2. An error occured in script 'docker__readInput_w_autocomplete__fpath',...
+    #      ...and exit-code = 99 came from function...
+    #      ...'show_msg_w_menuTitle_w_pressAnyKey_w_ctrlC_func' (in script: docker__global.sh).
     docker__exitCode=$?
     if [[ ${docker__exitCode} -eq ${DOCKER__EXITCODE_99} ]]; then
         docker__myContainerId=${DOCKER__EMPTYSTRING}

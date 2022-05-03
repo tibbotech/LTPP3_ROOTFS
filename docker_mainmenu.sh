@@ -196,12 +196,14 @@ docker__show_repositoryList_handler__sub() {
     #Load header
     docker__load_header__sub "${DOCKER__NUMOFLINES_2}"
 
-    #Show container-list
+    #Show repo-list
     show_repository_or_container_list__func "${DOCKER__MENUTITLE_REPOSITORYLIST}" \
                         "${DOCKER__ERRMSG_NO_IMAGES_FOUND}" \
                         "${docker__images_cmd}" \
                         "${DOCKER__NUMOFLINES_0}" \
-                        "${DOCKER__NUMOFLINES_2}"
+                        "${DOCKER__TIMEOUT_10}" \
+                        "${DOCKER__NUMOFLINES_0}" \
+                        "${DOCKER__NUMOFLINES_0}"
 }
 
 docker__show_containerList_handler__sub() {
@@ -213,7 +215,9 @@ docker__show_containerList_handler__sub() {
                         "${DOCKER__ERRMSG_NO_CONTAINERS_FOUND}" \
                         "${docker__ps_a_cmd}" \
                         "${DOCKER__NUMOFLINES_0}" \
-                        "${DOCKER__NUMOFLINES_2}"
+                        "${DOCKER__TIMEOUT_10}" \
+                        "${DOCKER__NUMOFLINES_0}" \
+                        "${DOCKER__NUMOFLINES_0}"
 }
 
 

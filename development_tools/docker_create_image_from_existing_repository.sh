@@ -172,7 +172,6 @@ docker__create_image_handler__sub() {
 
     #Define message constants
     local MENUTITLE="Create an ${DOCKER__FG_BORDEAUX}Image${DOCKER__NOCOLOR} from a ${DOCKER__FG_PURPLE}Repository${DOCKER__NOCOLOR}"
-    local MENUTITLE_UPDATED_IMAGE_LIST="Updated ${DOCKER__FG_BORDEAUX}Image${DOCKER__NOCOLOR}-list"
 
     local READMSG_NEW_REPOSITORY_NAME="${DOCKER__FG_YELLOW}New${DOCKER__NOCOLOR} ${DOCKER__FG_BRIGHTLIGHTPURPLE}Repository${DOCKER__NOCOLOR}'s name (e.g. ubuntu_buildbin_NEW): "
     local READMSG_NEW_REPOSITORY_TAG="${DOCKER__FG_YELLOW}New${DOCKER__NOCOLOR} ${DOCKER__FG_LIGHTPINK}Tag${DOCKER__NOCOLOR} (e.g. test): "
@@ -214,8 +213,20 @@ docker__create_image_handler__sub() {
                             "${docker__showTable}" \
                             "${docker__onEnter_breakLoop}"
 
-                #Retrieve the selected container-ID from file
-                docker__imageID_chosen=`get_output_from_file__func "${docker__readInput_w_autocomplete_out__fpath}" "1"`
+                #Get the exitcode just in case:
+                #   1. Ctrl-C was pressed in script 'docker__readInput_w_autocomplete__fpath'.
+                #   2. An error occured in script 'docker__readInput_w_autocomplete__fpath',...
+                #      ...and exit-code = 99 came from function...
+                #      ...'show_msg_w_menuTitle_w_pressAnyKey_w_ctrlC_func' (in script: docker__global.sh).
+                docker__exitCode=$?
+                if [[ ${docker__exitCode} -eq ${DOCKER__EXITCODE_99} ]]; then
+                    exit__func "${docker__exitCode}" "${DOCKER__NUMOFLINES_2}"
+                else
+                    #Retrieve the selected container-ID from file
+                    docker__imageID_chosen=`get_output_from_file__func \
+                                    "${docker__readInput_w_autocomplete_out__fpath}" \
+                                    "${DOCKER__LINENUM_1}"`
+                fi  
 
                 #Check if output is an Empty String
                 if [[ -z ${docker__imageID_chosen} ]]; then
@@ -251,8 +262,20 @@ docker__create_image_handler__sub() {
                             "${docker__showTable}" \
                             "${docker__onEnter_breakLoop}"
 
-                #Retrieve the selected container-ID from file
-                docker__repo_new=`get_output_from_file__func "${docker__readInput_w_autocomplete_out__fpath}" "1"`
+                #Get the exitcode just in case:
+                #   1. Ctrl-C was pressed in script 'docker__readInput_w_autocomplete__fpath'.
+                #   2. An error occured in script 'docker__readInput_w_autocomplete__fpath',...
+                #      ...and exit-code = 99 came from function...
+                #      ...'show_msg_w_menuTitle_w_pressAnyKey_w_ctrlC_func' (in script: docker__global.sh).
+                docker__exitCode=$?
+                if [[ ${docker__exitCode} -eq ${DOCKER__EXITCODE_99} ]]; then
+                    exit__func "${docker__exitCode}" "${DOCKER__NUMOFLINES_2}"
+                else
+                    #Retrieve the 'new repository' from file
+                    docker__repo_new=`get_output_from_file__func \
+                            "${docker__readInput_w_autocomplete_out__fpath}" \
+                            "${DOCKER__LINENUM_1}"`
+                fi
 
                 #Check if output is an Empty String
                 if [[ -z ${docker__repo_new} ]]; then
@@ -274,8 +297,20 @@ docker__create_image_handler__sub() {
                             "${docker__showTable}" \
                             "${docker__onEnter_breakLoop}"
             
-                #Retrieve the selected container-ID from file
-                docker__tag_new=`get_output_from_file__func "${docker__readInput_w_autocomplete_out__fpath}" "1"`
+                #Get the exitcode just in case:
+                #   1. Ctrl-C was pressed in script 'docker__readInput_w_autocomplete__fpath'.
+                #   2. An error occured in script 'docker__readInput_w_autocomplete__fpath',...
+                #      ...and exit-code = 99 came from function...
+                #      ...'show_msg_w_menuTitle_w_pressAnyKey_w_ctrlC_func' (in script: docker__global.sh).
+                docker__exitCode=$?
+                if [[ ${docker__exitCode} -eq ${DOCKER__EXITCODE_99} ]]; then
+                    exit__func "${docker__exitCode}" "${DOCKER__NUMOFLINES_2}"
+                else
+                    #Retrieve the 'new tag' from file
+                    docker__tag_new=`get_output_from_file__func \
+                                "${docker__readInput_w_autocomplete_out__fpath}" \
+                                "${DOCKER__LINENUM_1}"`
+                fi
 
                 #Check if output is an Empty String
                 if [[ -z ${docker__tag_new} ]]; then
@@ -288,7 +323,11 @@ docker__create_image_handler__sub() {
                 #Check if Repository:Tag pair is Unique
                 repoTag_isUniq=`checkIf_repoTag_isUniq__func "${docker__repo_new}" "${docker__tag_new}"`
                 if [[ ${repoTag_isUniq} == false ]]; then
-                    show_msg_wo_menuTitle_w_PressAnyKey__func "${ERRMSG_CHOSEN_REPO_PAIR_ALREADY_EXISTS}" "${DOCKER__NUMOFLINES_2}"
+                    show_msg_wo_menuTitle_w_PressAnyKey__func "${ERRMSG_CHOSEN_REPO_PAIR_ALREADY_EXISTS}" \
+                            "${DOCKER__NUMOFLINES_1}" \
+                            "${DOCKER__TIMEOUT_10}" \
+                            "${DOCKER__NUMOFLINES_1}" \
+                            "${DOCKER__NUMOFLINES_2}"
 
                     phase=${NEW_TAG_INPUT_PHASE}
                 else
@@ -303,6 +342,8 @@ docker__create_image_handler__sub() {
                 #   - redo
                 docker__create_image_exec__sub
                 if [[ ${docker__myAnswer} == ${DOCKER__REDO} ]]; then
+                    docker__myAnswer=${DOCKER__EMPTYSTRING}
+
                     phase=${IMAGEID_SELECT_PHASE}
                 else
                     break
@@ -336,7 +377,7 @@ docker__create_image_exec__sub() {
             fi
             
             #Print empty line
-            moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+            moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_3}"
 
             #Show start
             echo "---${DOCKER__FG_ORANGE}START${DOCKER__NOCOLOR}: ${ECHOMSG_CREATING_IMAGE}"
@@ -354,18 +395,27 @@ docker__create_image_exec__sub() {
             #Show completed
             echo "---${DOCKER__FG_ORANGE}COMPLETED${DOCKER__NOCOLOR}: ${ECHOMSG_CREATING_IMAGE}"
 
-            #Print empty line
-            moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+            # #Print empty line
+            # moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
-            #Show Docker Image List
-            show_cmdOutput_w_menuTitle__func "${MENUTITLE_UPDATED_IMAGE_LIST}" "${docker__images_cmd}"
-            
+            # #Show Docker Image List
+            # show_cmdOutput_w_menuTitle__func "${DOCKER__MENUTITLE_UPDATED_REPOSITORYLIST}" "${docker__images_cmd}"
+
+            #Show repo-list
+            show_repository_or_container_list__func "${DOCKER__MENUTITLE_UPDATED_REPOSITORYLIST}" \
+                                "${DOCKER__ERRMSG_NO_IMAGES_FOUND}" \
+                                "${docker__images_cmd}" \
+                                "${DOCKER__NUMOFLINES_2}" \
+                                "${DOCKER__TIMEOUT_10}" \
+                                "${DOCKER__NUMOFLINES_0}" \
+                                "${DOCKER__NUMOFLINES_0}"
+                                            
             #Exit this script
-            exit__func "${DOCKER__EXITCODE_0}" "${DOCKER__NUMOFLINES_0}"
+            exit__func "${DOCKER__EXITCODE_0}" "${DOCKER__NUMOFLINES_1}"
         elif [[ ${docker__myAnswer} == ${DOCKER__NO} ]]; then
-            exit__func "${DOCKER__EXITCODE_0}" "${DOCKER__NUMOFLINES_0}"
+            exit__func "${DOCKER__EXITCODE_0}" "${DOCKER__NUMOFLINES_2}"
         elif [[ ${docker__myAnswer} == ${DOCKER__REDO} ]]; then
-            moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
+            moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_3}"
 
             break
         else

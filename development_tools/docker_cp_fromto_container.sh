@@ -85,14 +85,6 @@ docker__load_constants__sub() {
 	DOCKER__COPY_DIRECTION_REMARKS+="${DOCKER__FOURSPACES}1. ${DOCKER__DIRECTION_CONTAINER_TO_LOCAL}\n"
 	DOCKER__COPY_DIRECTION_REMARKS+="${DOCKER__FOURSPACES}2. ${DOCKER__DIRECTION_LOCAL_TO_CONTAINER}"
 
-    DOCKER__DIRLIST_REMARKS="${DOCKER__BG_ORANGE}Remarks:${DOCKER__NOCOLOR}\n"
-    DOCKER__DIRLIST_REMARKS+="${DOCKER__DASH} append ${DOCKER__FG_YELLOW}/${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}to list directory${DOCKER__NOCOLOR} (e.g. ${DOCKER__FG_LIGHTGREY}/etc${DOCKER__NOCOLOR}${DOCKER__FG_YELLOW}/${DOCKER__NOCOLOR})\n"
-	DOCKER__DIRLIST_REMARKS+="${DOCKER__DASH} ${DOCKER__FG_YELLOW}ENTER${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}to confirm${DOCKER__NOCOLOR}\n"
-    DOCKER__DIRLIST_REMARKS+="${DOCKER__DASH} ${DOCKER__FG_YELLOW}TAB${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}auto-complete${DOCKER__NOCOLOR}\n"
-    DOCKER__DIRLIST_REMARKS+="${DOCKER__DASH} ${DOCKER__FG_YELLOW};b${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}back${DOCKER__NOCOLOR}\n"
-    DOCKER__DIRLIST_REMARKS+="${DOCKER__DASH} ${DOCKER__FG_YELLOW};c${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}clear${DOCKER__NOCOLOR}\n"
-    DOCKER__DIRLIST_REMARKS+="${DOCKER__DASH} ${DOCKER__FG_YELLOW};h${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}home${DOCKER__NOCOLOR}"
-
 	DOCKER__PLEASE_SELECT_A_NON_EMPTY_SOURCE_FOLDER_FILE="Please select a non-empty source folder/file..."
 	DOCKER__ECHOMSG_PLEASE_SELECT_A_VALID_DESTINATIONPATH="Please select a valid destination folder..."
 
@@ -167,7 +159,7 @@ docker__choose_copy_direction__sub() {
 					docker__mycopychoice=${DOCKER__HOST_TO_CONTAINER}
 				fi
 
-				moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
+				moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_3}"
 
 				break
 			else
@@ -189,7 +181,7 @@ docker__choose_copy_direction__sub() {
 
 docker__choose_containerid__sub() {
 	#Show read-input
-	${docker__readInput_w_autocomplete__fpath} "${DOCKER__MENUTITLE_REPOSITORYLIST}" \
+	${docker__readInput_w_autocomplete__fpath} "${DOCKER__MENUTITLE_CONTAINERLIST}" \
 						"${DOCKER__READINPUT_CONTAINERID}" \
 						"${DOCKER__EMPTYSTRING}" \
 						"${DOCKER__EMPTYSTRING}" \
@@ -201,7 +193,11 @@ docker__choose_containerid__sub() {
 						"${docker__showTable}" \
 						"${docker__onEnter_breakLoop}"
 
-	#Get the exitcode just in case a Ctrl-C was pressed in script 'docker__readInput_w_autocomplete__fpath'.
+    #Get the exitcode just in case:
+    #   1. Ctrl-C was pressed in script 'docker__readInput_w_autocomplete__fpath'.
+    #   2. An error occured in script 'docker__readInput_w_autocomplete__fpath',...
+    #      ...and exit-code = 99 came from function...
+    #      ...'show_msg_w_menuTitle_w_pressAnyKey_w_ctrlC_func' (in script: docker__global.sh).
 	docker__exitCode=$?
 	if [[ ${docker__exitCode} -eq ${DOCKER__EXITCODE_99} ]]; then
 		exit__func "${docker__exitCode}" "${DOCKER__NUMOFLINES_2}"
@@ -356,8 +352,12 @@ docker__src_path_selection__sub() {
 
 	#Handle 'Back' and 'Home'
 	if [[ ${docker__path_output} == ${DOCKER__SEMICOLON_HOME} ]]; then
+		moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_3}"
+
 		goto__func PHASE_CHOOSE_COPY_DIRECTION
 	elif [[ ${docker__path_output} == ${DOCKER__SEMICOLON_BACK} ]]; then
+		moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_3}"
+
 		goto__func PHASE_CHOOSE_CONTAINERID
 	fi
 
@@ -461,8 +461,12 @@ docker__dst_path_selection__sub() {
 
 	#Handle 'Back' and 'Home'
 	if [[ ${docker__path_output} == ${DOCKER__SEMICOLON_HOME} ]]; then
+		moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_3}"
+
 		goto__func PHASE_CHOOSE_COPY_DIRECTION
 	elif [[ ${docker__path_output} == ${DOCKER__SEMICOLON_BACK} ]]; then
+		moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
 		docker__case_option=${DOCKER__CASE_SRC_PATH}
 
 		return
@@ -537,14 +541,20 @@ docker__confirmation__sub() {
 						goto__func PHASE_EXIT
 						;;
 					p)
+						# moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
+	
 						docker__case_option=${DOCKER__CASE_SRC_PATH}
 
 						goto__func PHASE_GET_SRC_DST_FPATH
 						;;
 					i)
+						moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
+
 						goto__func PHASE_CHOOSE_CONTAINERID
 						;;
 					h)
+						moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
+
 						goto__func PHASE_CHOOSE_COPY_DIRECTION
 						;;
 				esac

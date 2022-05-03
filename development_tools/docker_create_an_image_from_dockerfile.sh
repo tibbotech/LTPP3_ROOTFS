@@ -11,7 +11,6 @@ function create_image__func() {
     local dockerfile_fpath=${1}
 
     #Define local constants
-    local MENUTITLE_UPDATED_CONTAINER_LIST="Updated ${DOCKER__FG_BORDEAUX}Image${DOCKER__NOCOLOR}-list"
     local GREP_PATTERN="LABEL repository:tag"
 
     #Define local message variables
@@ -54,7 +53,7 @@ function create_image__func() {
     #Print docker image list
     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
-    show_cmdOutput_w_menuTitle__func "${MENUTITLE_UPDATED_CONTAINER_LIST}" "${docker__images_cmd}"
+    show_cmdOutput_w_menuTitle__func "${DOCKER__MENUTITLE_UPDATED_REPOSITORYLIST}" "${docker__images_cmd}"
     
     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
 }

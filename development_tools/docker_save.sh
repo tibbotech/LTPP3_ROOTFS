@@ -38,15 +38,7 @@ docker__load_constants__sub() {
 
     #Define message constants
     DOCKER__MENUTITLE="Export an ${DOCKER__FG_BORDEAUX}Image${DOCKER__NOCOLOR} file"
-    DOCKER__READDIALOG_CHOOSE_TARGET_DIR="Choose target dir: "
-
-    DOCKER__DIRLIST_REMARKS="${DOCKER__BG_ORANGE}Remarks:${DOCKER__NOCOLOR}\n"
-    DOCKER__DIRLIST_REMARKS+="${DOCKER__DASH} append ${DOCKER__FG_YELLOW}/${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}to list directory${DOCKER__NOCOLOR} (e.g. ${DOCKER__FG_LIGHTGREY}/etc${DOCKER__NOCOLOR}${DOCKER__FG_YELLOW}/${DOCKER__NOCOLOR})\n"
-	DOCKER__DIRLIST_REMARKS+="${DOCKER__DASH} ${DOCKER__FG_YELLOW}ENTER${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}to confirm${DOCKER__NOCOLOR}\n"
-    DOCKER__DIRLIST_REMARKS+="${DOCKER__DASH} ${DOCKER__FG_YELLOW}TAB${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}auto-complete${DOCKER__NOCOLOR}\n"
-    DOCKER__DIRLIST_REMARKS+="${DOCKER__DASH} ${DOCKER__FG_YELLOW};b${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}back${DOCKER__NOCOLOR}\n"
-    DOCKER__DIRLIST_REMARKS+="${DOCKER__DASH} ${DOCKER__FG_YELLOW};c${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}clear${DOCKER__NOCOLOR}\n"
-    DOCKER__DIRLIST_REMARKS+="${DOCKER__DASH} ${DOCKER__FG_YELLOW};h${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}home${DOCKER__NOCOLOR}"
+    DOCKER__READDIALOG_CHOOSE_TARGET_DIR="Choose dst-dir: "
 
     #Define numeric constants
     #Remark:
@@ -95,19 +87,31 @@ docker__save_handler__sub() {
         case "${phase}" in
             ${DOCKER__IMAGEID_SELECT_PHASE})
                 ${docker__readInput_w_autocomplete__fpath} "${DOCKER__MENUTITLE}" \
-                            "${DOCKER__READINPUTDIALOG_CHOOSE_IMAGEID_FROM_LIST}" \
-                            "${DOCKER__EMPTYSTRING}" \
-                            "${readmsg_remarks}" \
-                            "${DOCKER__ERRMSG_NO_IMAGES_FOUND}" \
-                            "${DOCKER__ERRMSG_CHOSEN_IMAGEID_DOESNOT_EXISTS}" \
-                            "${docker__images_cmd}" \
-                            "${docker__images_IDColNo}" \
-                            "${DOCKER__EMPTYSTRING}" \
-                            "${docker__showTable}" \
-                            "${docker__onEnter_breakLoop}"
+                        "${DOCKER__READINPUTDIALOG_CHOOSE_IMAGEID_FROM_LIST}" \
+                        "${DOCKER__EMPTYSTRING}" \
+                        "${readmsg_remarks}" \
+                        "${DOCKER__ERRMSG_NO_IMAGES_FOUND}" \
+                        "${DOCKER__ERRMSG_CHOSEN_IMAGEID_DOESNOT_EXISTS}" \
+                        "${docker__images_cmd}" \
+                        "${docker__images_IDColNo}" \
+                        "${DOCKER__EMPTYSTRING}" \
+                        "${docker__showTable}" \
+                        "${docker__onEnter_breakLoop}"
 
-                #Retrieve the selected container-ID from file
-                docker__imageID_chosen=`get_output_from_file__func "${docker__readInput_w_autocomplete_out__fpath}" "1"`
+                #Get the exitcode just in case:
+                #   1. Ctrl-C was pressed in script 'docker__readInput_w_autocomplete__fpath'.
+                #   2. An error occured in script 'docker__readInput_w_autocomplete__fpath',...
+                #      ...and exit-code = 99 came from function...
+                #      ...'show_msg_w_menuTitle_w_pressAnyKey_w_ctrlC_func' (in script: docker__global.sh).
+                docker__exitCode=$?
+                if [[ ${docker__exitCode} -eq ${DOCKER__EXITCODE_99} ]]; then
+                    exit__func "${docker__exitCode}" "${DOCKER__NUMOFLINES_2}"
+                else
+                    #Retrieve the 'new tag' from file
+                    docker__imageID_chosen=`get_output_from_file__func \
+                                "${docker__readInput_w_autocomplete_out__fpath}" \
+                                "${DOCKER__LINENUM_1}"`
+                fi
 
                 #Check if 'docker__imageID_chosen' contains data?
                 #Remark:
@@ -124,6 +128,8 @@ docker__save_handler__sub() {
                 #   1. docker__repo_chosen
                 #   2. docker__tag_chosen
                 docker__get_and_check_repoTag__sub
+
+                #Goto next-phase
                 if [[ -z ${docker__repo_chosen} ]] || [[ -z ${docker__tag_chosen} ]]; then
                     phase=${DOCKER__IMAGEID_SELECT_PHASE}
                 else
@@ -139,7 +145,7 @@ docker__save_handler__sub() {
                         "${dirlist__dst_ls_1aA_output__fpath}" \
                         "${dirlist__dst_ls_1aA_tmp__fpath}" \
 						"${DOCKER__EMPTYSTRING}" \
-                        "${DOCKER__TRUE}"
+                        "${DOCKER__FALSE}"
 
                 #Get the exitcode just in case a Ctrl-C was pressed in script 'docker__readInput_w_autocomplete__fpath'.
                 docker__exitCode=$?
@@ -173,6 +179,7 @@ docker__save_handler__sub() {
                     echomsg="---:${DOCKER__FG_ORANGE}DESTINATION${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}${docker__image_fpath_print}${DOCKER__NOCOLOR}"
                     show_msg_only__func "${echomsg}" "${DOCKER__NUMOFLINES_1}"
 
+                    #Goto next-phase
                     phase=${DOCKER__SAVE_PHASE}
                 else    #false
                     show_msg_wo_menuTitle_w_PressAnyKey__func "${DOCKER__INVALID_OR_NOT_A_DIRECTORY}" \
@@ -183,7 +190,7 @@ docker__save_handler__sub() {
                 fi
                 ;;
             ${DOCKER__SAVE_PHASE})
-                moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+                moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
 
                 while true
                 do
@@ -207,6 +214,7 @@ docker__save_handler__sub() {
                     elif  [[ "${docker__answer}" == "${DOCKER__N}" ]]; then
                         moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_3}"
 
+                        #Goto next-phase
                         phase=${DOCKER__IMAGEID_SELECT_PHASE}
 
                         break

@@ -13,7 +13,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 #---Update local Git repository
 RUN cd ~/LTPP3_ROOTFS && git pull
 
-#---Disk Prepreparation (before CHROOT)
+# ---Disk Prepreparation (before CHROOT)
 RUN cd ~ && ~/LTPP3_ROOTFS/disk_preprep.sh
 
 #---CHROOT

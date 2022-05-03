@@ -123,22 +123,22 @@ docker__remove_specified_images__sub() {
                                                 "${docker__images_cmd}" \
                                                 "${docker__images_IDColNo}"`
                                         if [[ ${docker__myImageId_isFound} == false ]]; then
-                                            docker__prune_handler__sub "${docker__myImageId_item}"
+                                            docker__prune_handler__sub "${docker__myImageId_item}" "${DOCKER__NUMOFLINES_1}"
                                         else  
                                             errMsg="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Could *NOT* remove image-ID: ${DOCKER__FG_BORDEAUX}${docker__myImageId_item}${DOCKER__NOCOLOR}"
                                             
-                                            show_msg_only__func "${errMsg}" "${DOCKER__NUMOFLINES_0}"
+                                            show_msg_only__func "${errMsg}" "${DOCKER__NUMOFLINES_1}"
                                         fi
                                     else
                                         #Update error-message
                                         errMsg="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Invalid image-ID '${DOCKER__FG_BORDEAUX}${docker__myImageId_item}${DOCKER__NOCOLOR}'"
 
-                                        show_msg_only__func "${errMsg}" "${DOCKER__NUMOFLINES_0}"
+                                        show_msg_only__func "${errMsg}" "${DOCKER__NUMOFLINES_1}"
                                     fi
                                 done
 
                                 #Set number of lines
-                                numOfLines=${DOCKER__NUMOFLINES_1}
+                                numOfLines=${DOCKER__NUMOFLINES_2}
                             fi
 
                             #Print an Empty Line
@@ -245,7 +245,11 @@ docker_imageId_input__sub() {
                             "${docker__showTable}" \
                             "${docker__onEnter_breakLoop}"
 
-        #Get the exitcode just in case a Ctrl-C was pressed in script 'docker__readInput_w_autocomplete__fpath'.
+        #Get the exitcode just in case:
+        #   1. Ctrl-C was pressed in script 'docker__readInput_w_autocomplete__fpath'.
+        #   2. An error occured in script 'docker__readInput_w_autocomplete__fpath',...
+        #      ...and exit-code = 99 came from function...
+        #      ...'show_msg_w_menuTitle_w_pressAnyKey_w_ctrlC_func' (in script: docker__global.sh).
         docker__exitCode=$?
         if [[ ${docker__exitCode} -eq 99 ]]; then
             docker__myImageId_input=${DOCKER__EMPTYSTRING}
@@ -296,8 +300,11 @@ docker_imageId_input__sub() {
 docker__prune_handler__sub()  {
     #Input args
     local imageId__input=${1}
+    local prepend_numOfLines__input=${2}
 
     #Prune and print messages
+    moveUp_and_cleanLines__func "${prepend_numOfLines__input}"
+
     echo -e "Successfully Removed image-ID: ${DOCKER__FG_BORDEAUX}${imageId__input}${DOCKER__NOCOLOR}"
     echo -e "\r"
     echo -e "Removing ALL unlinked images"
@@ -306,32 +313,34 @@ docker__prune_handler__sub()  {
     echo -e "y\n" | docker container prune
 }
 
-docker__show_infoTable__sub() {
-    #Input args
-    local menuTitle__input=${1}
-    local dockerCmd__input=${2}
-    local errorMsg__input=${3}
-    local nunOfEmptyLines_toAdd__input=${4}
+# docker__show_infoTable__sub() {
+#     #Input args
+#     local menuTitle__input=${1}
+#     local dockerCmd__input=${2}
+#     local errorMsg__input=${3}
+#     local nunOfEmptyLines_toAdd__input=${4}
 
-    #Move-down a specified number of lines
-    local counter=1
-    while [[ ${counter} -le ${nunOfEmptyLines_toAdd__input} ]];
-    do
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+#     #Move-down a specified number of lines
+#     local counter=1
+#     while [[ ${counter} -le ${nunOfEmptyLines_toAdd__input} ]];
+#     do
+#         moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
-        counter=$((counter+1))
-    done
+#         counter=$((counter+1))
+#     done
 
-    #Get number of containers
-    local numOf_items=`${dockerCmd__input} | head -n -1 | wc -l`
+#     #Get number of containers
+#     local numOf_items=`${dockerCmd__input} | head -n -1 | wc -l`
 
-    #Show Table
-    if [[ ${numOf_items} -eq 0 ]]; then
-        show_msg_w_menuTitle_w_pressAnyKey_w_ctrlC_func "${menuTitle__input}" "${errorMsg__input}"
-    else
-        show_cmdOutput_w_menuTitle__func "${menuTitle__input}" "${dockerCmd__input}"
-    fi
-}
+#     #Show Table
+#     if [[ ${numOf_items} -eq 0 ]]; then
+#         show_msg_w_menuTitle_w_pressAnyKey_w_ctrlC_func "${menuTitle__input}" \
+#                         "${errorMsg__input}"  \
+#                         "${DOCKER__EXITCODE_99}"
+#     else
+#         show_cmdOutput_w_menuTitle__func "${menuTitle__input}" "${dockerCmd__input}"
+#     fi
+# }
 
 
 
