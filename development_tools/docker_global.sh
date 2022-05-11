@@ -19,22 +19,35 @@ DOCKER__HASH="#"
 DOCKER__HOOKLEFT="<"
 DOCKER__HOOKRIGHT=">"
 DOCKER__MINUS="-"
+DOCKER__PIPE="|"
 DOCKER__PLUS="+"
 DOCKER__SEMICOLON=";"
 DOCKER__SLASH="/"
 DOCKER__UNDERSCORE="_"
 DOCKER__DOUBLE_UNDERSCORE="${DOCKER__UNDERSCORE}${DOCKER__UNDERSCORE}"
 
+DOCKER__DOTSLASH="./"
+DOCKER__SLASHDOT="/."
+
 DOCKER__ESCAPE_ASTERISK="\*"
 DOCKER__ESCAPE_BACKSLASH="\\"
+DOCKER__DOUBLE_ESCAPE_BACKSLASH="${DOCKER__ESCAPE_BACKSLASH}${DOCKER__ESCAPE_BACKSLASH}"
+DOCKER__TRIPLE_ESCAPE_BACKSLASH="${DOCKER__ESCAPE_BACKSLASH}${DOCKER__ESCAPE_BACKSLASH}${DOCKER__ESCAPE_BACKSLASH}"
+DOCKER__QUADRUPLE_ESCAPE_BACKSLASH="${DOCKER__ESCAPE_BACKSLASH}${DOCKER__ESCAPE_BACKSLASH}${DOCKER__ESCAPE_BACKSLASH}${DOCKER__ESCAPE_BACKSLASH}"
+DOCKER__ESCAPE_BACKSLASHDOT="\\."
+DOCKER__ESCAPE_BACKSLASH_ESCAPE_DOT="\\\."    #used in grep
+DOCKER__ESCAPE_DOTBACKSLASH=".\\"
 DOCKER__ESCAPE_HOOKLEFT="\<"
 DOCKER__ESCAPE_HOOKRIGHT="\>"
 DOCKER__ESCAPE_QUOTE="\""
 DOCKER__ESCAPE_SLASH="\/"
+DOCKER__ESCAPE_BACKSLASHSPACE="\\ "
+DOCKER__ESCAPE_T="\t"
 
 DOCKER__EMPTYSTRING=""
 
 DOCKER__BACKSPACE=$'\b'
+DOCKER__CR="$'\r'"
 DOCKER__DEL=$'\x7e'
 DOCKER__ENTER=$'\x0a'
 DOCKER__ESCAPEKEY=$'\x1b'   #note: this escape key is ^[
@@ -91,7 +104,11 @@ DOCKER__TEN=10
 DOCKER__NINE=9
 
 DOCKER__TABLEWIDTH=100
-DOCKER__TABLEROWS=10
+DOCKER__TABLEROWS_10=10
+DOCKER__TABLEROWS_20=20
+DOCKER__TABLECOLS_0=0
+DOCKER__TABLECOLS_MAX_7=7
+
 
 
 #---DOCKER RELATED CONSTANTS
@@ -110,10 +127,11 @@ DOCKER__MENUTITLE_REPOSITORYLIST="${DOCKER__FG_PURPLE}Repository${DOCKER__NOCOLO
 DOCKER__MENUTITLE_UPDATED_CONTAINERLIST="Updated ${DOCKER__FG_BORDEAUX}Container${DOCKER__NOCOLOR}-list"
 DOCKER__MENUTITLE_UPDATED_REPOSITORYLIST="Updated ${DOCKER__FG_BORDEAUX}Image${DOCKER__NOCOLOR}-list"
 
-
 DOCKER__READINPUTDIALOG_CHOOSE_IMAGEID_FROM_LIST="Choose an ${DOCKER__FG_BORDEAUX}Image-ID${DOCKER__NOCOLOR} (e.g. 0f7478cf7cab): "
 DOCKER__READDIALOG_DO_YOU_WISH_TO_CONTINUE_YNR="Do you wish to continue (y/n/r)? "
 DOCKER__READDIALOG_DO_YOU_WISH_TO_CONTINUE_YN="Do you wish to continue (y/n)? "
+
+DOCKER__ECHOMSG_NORESULTS_FOUND="${FOUR_SPACES}-:${FG_YELLOW}No results found${NOCOLOR}:-"
 
 DOCKER__ERRMSG_CHOSEN_CONTAINERID_DOESNOT_EXISTS="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Invalid input value "
 DOCKER__ERRMSG_CHOSEN_IMAGEID_DOESNOT_EXISTS="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Invalid input value "
@@ -148,9 +166,12 @@ DOCKER__DIRLIST_REMARKS="${DOCKER__BG_ORANGE}Remarks:${DOCKER__NOCOLOR}\n"
 DOCKER__DIRLIST_REMARKS+="${DOCKER__DASH} append ${DOCKER__FG_YELLOW}/${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}to list directory${DOCKER__NOCOLOR} (e.g. ${DOCKER__FG_LIGHTGREY}/etc${DOCKER__NOCOLOR}${DOCKER__FG_YELLOW}/${DOCKER__NOCOLOR})\n"
 DOCKER__DIRLIST_REMARKS+="${DOCKER__DASH} ${DOCKER__FG_YELLOW}ENTER${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}to confirm${DOCKER__NOCOLOR}\n"
 DOCKER__DIRLIST_REMARKS+="${DOCKER__DASH} ${DOCKER__FG_YELLOW}TAB${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}auto-complete${DOCKER__NOCOLOR}\n"
-DOCKER__DIRLIST_REMARKS+="${DOCKER__DASH} ${DOCKER__FG_YELLOW};b${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}back${DOCKER__NOCOLOR}\n"
-DOCKER__DIRLIST_REMARKS+="${DOCKER__DASH} ${DOCKER__FG_YELLOW};c${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}clear${DOCKER__NOCOLOR}\n"
-DOCKER__DIRLIST_REMARKS+="${DOCKER__DASH} ${DOCKER__FG_YELLOW};h${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}home${DOCKER__NOCOLOR}"
+DOCKER__DIRLIST_REMARKS+="${DOCKER__DASH} ${DOCKER__FG_YELLOW}Ctrl+C${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}quit${DOCKER__NOCOLOR}"
+
+DOCKER__DIRLIST_REMARKS_EXTENDED="${DOCKER__DIRLIST_REMARKS}\n"
+DOCKER__DIRLIST_REMARKS_EXTENDED+="${DOCKER__DASH} ${DOCKER__FG_YELLOW};b${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}back${DOCKER__NOCOLOR}\n"
+DOCKER__DIRLIST_REMARKS_EXTENDED+="${DOCKER__DASH} ${DOCKER__FG_YELLOW};c${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}clear${DOCKER__NOCOLOR}\n"
+DOCKER__DIRLIST_REMARKS_EXTENDED+="${DOCKER__DASH} ${DOCKER__FG_YELLOW};h${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}home${DOCKER__NOCOLOR}"
 
 
 
@@ -195,10 +216,8 @@ DOCKER__LINENUM_0=0
 DOCKER__LINENUM_1=1
 DOCKER__LINENUM_2=2
 
-DOCKER__LISTVIEW_NUMOFROWS=20
-DOCKER__LISTVIEW_NUMOFCOLS=0
-
 DOCKER__NUMOFCHARS_1=1
+DOCKER__NUMOFCHARS_2=2
 DOCKER__NUMOFCHARS_10=10
 
 DOCKER__NUMOFLINES_0=0
@@ -221,6 +240,8 @@ DOCKER__NUMOFMATCH_3=3
 DOCKER__NUMOFMATCH_4=4
 DOCKER__NUMOFMATCH_10=10
 DOCKER__NUMOFMATCH_20=20
+
+DOCKER__SPACE_BETWEEN_WORDS=4
 
 DOCKER__TIMEOUT_3=3
 DOCKER__TIMEOUT_5=5
@@ -282,6 +303,7 @@ DOCKER__REGEX_0_TO_9="[1-90]"
 DOCKER__REGEX_0_TO_9_COMMA_DASH="[1-90,-]"
 DOCKER__REGEX_1q="[1q]"
 DOCKER__REGEX_1_TO_4q="[1-4q]"
+DOCKER__REGEX_DOTSLASH_EXACTMATCH="^[./]+$" #^: leading, +$:trailing
 
 
 
@@ -291,10 +313,15 @@ SED__BACKSLASH="\\\\"
 SED__DOT="\\."
 SED__SLASH="\\/"
 
+SED__GS=$'\x1D'
 SED__RS=$'\x1E'
 SED__STX=$'\x02'
 SED__ETX=$'\x03'
+
+SED_SUBST_BACKSLASHSPACE="${SED__STX}backslashspace${SED__ETX}"
+SED_SUBST_BACKSLASH="${SED__STX}backslash${SED__ETX}"
 SED_SUBST_SPACE="${SED__STX}space${SED__ETX}"
+SED_SUBST_BACKSLASHT="${SED__STX}backslasht${SED__ETX}"
 
 SED__DOUBLE_BACKSLASH=${SED__BACKSLASH}${SED__BACKSLASH}
 SED__BACKSLASH_DOT="${SED__BACKSLASH}${SED__DOT}"
@@ -889,8 +916,8 @@ function append_caretReturn_ifNotPresent_within_file__func() {
 }
 function checkIf_dir_exists__func() {
     #Input args
-    local containerID__input=${1}
-    local dir__input=${2}
+    local containerID__input="${1}"
+    local dir__input="${2}"
 
     #Check if dir exists
     local ret=false
@@ -905,7 +932,7 @@ function checkIf_dir_exists__func() {
             fi
         fi
     else
-        ret=${dir__input}
+        ret=false
     fi
 
     #Output
@@ -913,15 +940,20 @@ function checkIf_dir_exists__func() {
 }
 function container_checkIf_dir_exists__func() {
 	#Input args
-    local containerID__input=${1}
-	local dir__input=${2}
+    local containerID__input="${1}"
+	local dir__input="${2}"
 
-	#Define variables
+	#Define docker command
     local bin_bash_dir=/bin/bash
     local docker_exec_cmd="docker exec -t ${containerID__input} ${bin_bash_dir} -c"
 
+    # #Prepend backslash in front of special chars (e.g., backslash, space, asterisk, etc.)
+    # local dir_prepended_backslash=`prepend_backSlash_inFrontOf_specialChars__func \
+    #                         "${dir__input}" \
+    #                         "${DOCKER__TRUE}"`
+
     #Check if directory exists
-    local ret_raw=`${docker_exec_cmd} "[ -d "${dir__input}" ] && echo true || echo false"`
+    local ret_raw=`${docker_exec_cmd} "[ -d \"${dir__input}\" ] && echo true || echo false"`
 
     #Remove carriage returns '\r' caused by '/bin/bash -c'
     local ret=`echo "${ret_raw}" | tr -d $'\r'`
@@ -931,13 +963,43 @@ function container_checkIf_dir_exists__func() {
 }
 function lh_checkIf_dir_exists__func() {
 	#Input args
-	local dir__input=${1}
+	local dir__input="${1}"
+
+    # #Prepend backslash in front of special chars (e.g., backslash, space, asterisk, etc.)
+    # local dir_prepended_backslash=`prepend_backSlash_inFrontOf_specialChars__func \
+    #                         "${dir__input}" \
+    #                         "${DOCKER__TRUE}"`
 
     #Check if directory exists
-    if [[ -d ${dir__input} ]]; then
+    if [[ -d "${dir__input}" ]]; then
         echo true
     else
         echo false
+    fi
+}
+
+function checkIf_file_contains_only_dots_and_Slashes__func() {
+    #Input args
+    local targetFpath__input=${1}
+    local tmpFpath__input=${2}
+
+    #Backup 'targetFpath__input'
+    cp ${targetFpath__input} ${tmpFpath__input}
+
+    #Replace all dots and slashes with an Empty String
+    sed -i 's/\(\.*\/*\)//g' ${tmpFpath__input}
+
+    #Remove whitespaces (if any)
+    sed -i '/^$/d;s/[[:blank:]]//g' ${tmpFpath__input}
+
+    #Check file 'tmpFpath__input' contains any data
+    #Remarks:
+    #   file is empty -> 'targetFpath__input' contains only dot and/or slash.
+    #   file is not empty -> 'targetFpath__input' contains NOT only dot and/or slash.
+    if [[ ! -s ${tmpFpath__input} ]]; then  #file is empty
+        echo "true"
+    else    #file is NOT empty
+        echo "false"
     fi
 }
 
@@ -989,25 +1051,6 @@ function lh_checkIf_file_exists__func() {
      else
         echo false
      fi
-}
-
-function checkIf_dir_has_trailing_slash() {
-	#Input args
-	local dir__input=${1}
-
-    #Check if 'dir__input' already has a trailing slash
-    local dir_len=${#dir__input}
-    local lastChar_pos=$((dir_len - 1))
-
-    #Get the first character
-    local lastChar=${dir__input:lastChar_pos:dir_len}
-
-    #Check if 'firstChar' is a slash '/'
-    if [[ ${lastChar} == ${DOCKER__SLASH} ]]; then
-        echo "true"
-    else
-        echo "false"
-    fi
 }
 
 function checkIf_dirnames_are_the_same__func() {
@@ -1074,11 +1117,11 @@ function checkIf_fpaths_are_the_same__func() {
     local fpath2_len=${#fpath2__input}
 
     #Get the last character
-    fpath1_lastChar=`get_theLast_xChars_ofString__func "${fpath1__input}" "${DOCKER__NUMOFCHARS_1}"`
+    fpath1_lastChar=`get_last_nChars_ofString__func "${fpath1__input}" "${DOCKER__NUMOFCHARS_1}"`
     if [[ ${fpath1_lastChar} == ${DOCKER__SLASH} ]]; then
         fpath1_rev=${fpath1__input:0:(fpath1_len-1)}
     fi
-    fpath2_lastChar=`get_theLast_xChars_ofString__func "${fpath2__input}" "${DOCKER__NUMOFCHARS_1}"`
+    fpath2_lastChar=`get_last_nChars_ofString__func "${fpath2__input}" "${DOCKER__NUMOFCHARS_1}"`
     if [[ ${fpath2_lastChar} == ${DOCKER__SLASH} ]]; then
         fpath2_rev=${fpath2__input:0:(fpath2_len-1)}
     fi
@@ -1171,7 +1214,7 @@ function retrieve_files_from_specified_dir_basedOn_matching_patterns__func() {
     dir_w_asterisk="${dir__input}/${DOCKER__ASTERISK}"
 
     #Replace multiple slashes with a single slash (/)
-    dir_w_asterisk=`replace_multiple_chars_with_single_char__func "${dir_w_asterisk}" \
+    dir_w_asterisk=`subst_multiple_chars_with_single_char__func "${dir_w_asterisk}" \
                     "${DOCKER__ESCAPE_SLASH}" \
                     "${DOCKER__ESCAPE_SLASH}"`
 
@@ -1201,6 +1244,42 @@ function retrieve_files_from_specified_dir_basedOn_matching_patterns__func() {
 
     #Output
     echo "${ret}"
+}
+
+function subst_leading_string_with_another_string_within_file__func() {
+    #Input args
+    local oldSubString__input=${1}
+    local newSubString__input=${2}
+    local targetFpath__input=${3}
+    local flag_enableExcludes__input=${4}
+
+    #IMPORTANT:
+    #   It is important to do the following 2 steps before using 'sed'.
+    #   Failure to do so, will result in an error.
+    #STEP1: prepend backslash (\) in front of any special chars except for slash (/) and dot (.)
+    oldSubString__input=`prepend_backSlash_inFrontOf_specialChars__func "${oldSubString__input}" "${flag_enableExcludes__input}"`
+
+    #Substitute
+    #Note: notice the (^), which tells sed to only replace the LEADING substring.
+    sed -i "s/^${oldSubString__input}/${newSubString__input}/g" "${targetFpath__input}"
+}
+
+function subst_trailing_string_with_another_string_within_file__func() {
+    #Input args
+    local oldSubString__input=${1}
+    local newSubString__input=${2}
+    local targetFpath__input=${3}
+    local flag_enableExcludes__input=${4}
+
+    #IMPORTANT:
+    #   It is important to do the following 2 steps before using 'sed'.
+    #   Failure to do so, will result in an error.
+    #STEP1: prepend backslash (\) in front of any special chars except for slash (/) and dot (.)
+    oldSubString__input=`prepend_backSlash_inFrontOf_specialChars__func "${oldSubString__input}" "${flag_enableExcludes__input}"`
+
+    #Substitute
+    #Note: notice the (^), which tells sed to only replace the LEADING substring.
+    sed -i "s/${oldSubString__input}$/${newSubString__input}/g" "${targetFpath__input}"
 }
 
 function write_data_to_file__func() {
@@ -1335,6 +1414,30 @@ function moveUp_oneLine_then_moveRight__func() {
 
 
 #---SHOW FUNCTIONS
+function center_string_and_writeTo_file__func() {
+    #Input args
+    local string__input=${1}
+    local maxStrLen__input=${2}
+    local writeToThisFile__input=${3}
+
+    #Define one-space constant
+    local ONESPACE=" "
+
+    #Get string 'without visiable' color characters
+    local strInput_wo_colorChars=`echo "${string__input}" | sed "s,\x1B\[[0-9;]*m,,g"`
+
+    #Get string length
+    local strInput_wo_colorChars_len=${#strInput_wo_colorChars}
+
+    #Calculated the number of spaces to-be-added
+    local numOf_spaces=$(( (maxStrLen__input-strInput_wo_colorChars_len)/2 ))
+
+    #Create a string containing only EMPTY SPACES
+    local emptySpaces_string=`duplicate_char__func "${ONESPACE}" "${numOf_spaces}" `
+
+    #Print text including Leading Empty Spaces
+    printf "%s" "${emptySpaces_string}${string__input}" >> ${writeToThisFile__input}
+}
 function show_cmdOutput_w_menuTitle__func() {
     #Input args
     local menuTitle__input=${1}
@@ -2561,7 +2664,7 @@ function array_find_and_move_element_toTop__func() {
     #Check if there is an EXACT MATCH of 'pattern__input' within 'arr__input'.
     #If true, then get the array-index.
     #1. Get the line-number:
-    lineNum_match=`echo "${arr__input[@]}" | xargs -n1 | grep -nw "${pattern__input}" | cut -d":" -f1`
+    lineNum_match=`echo "${arr__input[@]}" | xargs -n1 | grep -nw "${pattern__input}" | cut -d"${DOCKER__COLON}" -f1`
 
     #Check if 'lineNum_match = 0'.
     #If true, then exit function, because no match was found.
@@ -2670,7 +2773,7 @@ function checkForMatch_pattern_of_a_column_within_file__func() {
     local matchString=`cat "${dataFpath__input}" | grep -w "${pattern__input}" | awk -v COLNUM="${col__input}" '{print $COLNUM}'`
     
     #Check if 'col3_string = targetString__input' 
-    if [[ ${matchString} == ${targetString__input} ]]; then  #no match
+    if [[ "${matchString}" == "${targetString__input}" ]]; then  #no match
         echo "true"
     else    #match
         echo "false"
@@ -2723,11 +2826,111 @@ function checkForMatch_dockerCmd_result__func() {
     local dockerTableColno__input=${3}
 
     #Find any match (not exact)
-    local stdOutput=`${dockerCmd__input} | awk -vcolNo=${dockerTableColno__input} '{print $colNo}' | grep -w ${pattern__input}`
+    local stdOutput=`${dockerCmd__input} | awk -v COLNUM=${dockerTableColno__input} '{print $COLNUM}' | grep -w ${pattern__input}`
     if [[ -z ${stdOutput} ]]; then  #no match
         echo "false"
     else    #match
         echo "true"
+    fi
+}
+
+function checkIf_string_contains_a_leading_specified_chars__func() {
+    #Note:
+    #   Regarding 'backslashes', whenever 'backslashes' are passed into a function...
+    #   these 'backslashes' will be ESCAPED.
+    #Example:
+    #   passed into function: \\\\
+    #   received by function:   \\
+    #Input args
+    local string__input=${1}
+    local numOfChars__input=${2}
+    local keyWord__input=${3}
+
+    #Get the first char(s)
+    local firstChars=`get_first_nChars_ofString__func "${string__input}" "${numOfChars__input}"`
+
+    #Compare
+    #Note: 
+    #   It is important to 'double-quote' the variables which are going to be compared.
+    #Reason:
+    #   If 'double-quotes' are NOT used, comparing variables might fail.
+    #Example:
+    #   firstChars=\\
+    #   keyWord__input=\\
+    #   When no 'double-quotes' are used comparing these 2 variables would fail.
+    if [[ "${firstChars}" == "${keyWord__input}" ]]; then
+        echo "true"
+    else
+        echo "false"
+    fi
+}
+
+function checkIf_string_contains_a_trailing_specified_chars__func() {
+    #Note:
+    #   Regarding 'backslashes', whenever 'backslashes' are passed into a function...
+    #   these 'backslashes' will be ESCAPED.
+    #Example:
+    #   passed into function: \\\\
+    #   received by function:   \\
+	#Input args
+	local string__input=${1}
+    local numOfChars__input=${2}
+    local keyWord__input=${3}
+
+    #Check if 'string__input' already has a trailing slash
+    local string_len=${#string__input}
+    local lastChar_pos=$((string_len - numOfChars__input))
+
+    #Get the last char(s)
+    local lastChars=${string__input:lastChar_pos:string_len}
+
+    #Compare
+    #Note: 
+    #   It is important to 'double-quote' the variables which are going to be compared.
+    #Reason:
+    #   If 'double-quotes' are NOT used, comparing variables might fail.
+    #Example:
+    #   firstChars=\\
+    #   keyWord__input=\\
+    #   When no 'double-quotes' are used comparing these 2 variables would fail.
+    if [[ "${lastChars}" == "${keyWord__input}" ]]; then
+        echo "true"
+    else
+        echo "false"
+    fi
+}
+
+function checkIf_string_contains_nonSpace_chars__func() {
+    #Turn-off Expansion
+    set -f
+
+    #Input Args
+    local string__input=${1}
+
+    #Remove all spaces from string
+    local str_wo_spaces="${string__input//${DOCKER__ONESPACE}}"
+
+    #Check if 'string_input' contains spaces only
+    if [[ -z "${str_wo_spaces}" ]]; then
+        echo "false"
+    else
+        echo "true"
+    fi
+
+    #Turn-on Expansion
+    set +f
+}
+
+function checkIf_string_contains_only_specified_regEx__func() {
+    #Input args
+    local string__input=${1}
+    local regex__input=${2}
+
+    #Check if 'string__input' contains only chars specified by 'regEx'
+    if [[ ${string__input} =~ ${regex__input} ]]; then
+        echo "true"
+    else
+        echo "false"
     fi
 }
 
@@ -2898,28 +3101,28 @@ function get_stringlen_wo_regEx__func() {
     echo "${string_wo_regEx_len}"
 }
 
-function get_theFirst_xChars_ofString__func() {
+function get_first_nChars_ofString__func() {
     #Input args
     local string__input=${1}
     local numOfChars__input=${2}
 
     #Define local variable
-    local ret=`echo ${string__input:0:numOfChars__input}`
+    local ret=${string__input:0:numOfChars__input}
 
     #Output
-    echo -e "${ret}"
+    echo "${ret}"
 }
 
-function get_theLast_xChars_ofString__func() {
+function get_last_nChars_ofString__func() {
     #Input args
     local string__input=${1}
     local numOfChars__input=${2}
 
     #Define local variable
-    local ret=`echo ${string__input: -numOfChars__input}`
+    local ret=${string__input: -numOfChars__input}
 
     #Output
-    echo -e "${ret}"
+    echo "${ret}"
 }
 
 function insert_string_into_file__func() {
@@ -2971,6 +3174,26 @@ function isNumeric__func() {
     fi
 }
 
+function prepend_backSlash_inFrontOf_specialChars__func() {
+	#Input args
+	local string__input=${1}
+    local flag_enableExcludes__input=${2}
+
+	#Define excluding chars
+	local SED_EXCLUDES="${DOCKER__DOTSLASH}"
+
+	#Prepend a backslash '\' in front of any special chars execpt for chars specified by 'SED_EXCLUDES'
+    local ret=${DOCKER__EMPTYSTRING}
+    if [[ ${flag_enableExcludes__input} == true ]]; then
+	    ret=`echo "${string__input}" | sed "s/[^[:alnum:]${SED_EXCLUDES}]/${DOCKER__ESCAPE_BACKSLASH}${DOCKER__ESCAPE_BACKSLASH}&/g"`
+    else
+        ret=`echo "${string__input}" | sed "s/[^[:alnum:]]/${DOCKER__ESCAPE_BACKSLASH}${DOCKER__ESCAPE_BACKSLASH}&/g"`
+    fi
+
+	#Output
+	echo "${ret}"
+}
+
 function remove_trailing_char__func() {
     #Input args
     local string__input=${1}
@@ -2999,19 +3222,6 @@ function remove_whiteSpaces__func() {
 
     #Output
     echo -e "${ret}"
-}
-
-function replace_multiple_chars_with_single_char__func() {
-    #Input args
-    local string__input=${1}
-    local charOld__input=${2}
-    local charNew__input=${3}
-
-    #Replace
-    local ret=`echo "${string__input}" | sed "s/${charOld__input}${charOld__input}*/${charNew__input}/g"`
-
-	#Output
-	echo "${ret}"
 }
 
 function retrieve_data_specified_by_col_within_2Darray__func() {
@@ -3140,6 +3350,32 @@ function retrieve_subStrings_delimited_by_lastChar_within_string__func() {
     echo "${ret_left}${SED__RS}${ret_right}"
 }
 
+function subst_multiple_chars_with_single_char__func() {
+    #Input args
+    local string__input=${1}
+    local charOld__input=${2}
+    local charNew__input=${3}
+
+    #Replace
+    local ret=`echo "${string__input}" | sed "s/${charOld__input}${charOld__input}*/${charNew__input}/g"`
+
+	#Output
+	echo "${ret}"
+}
+
+function subst_trailing_char_with_another_char__func() {
+    #Input args
+    local string__input=${1}
+    local charOld__input=${2}
+    local charNew__input=${3}
+
+    #Replace
+    local ret=`echo "${string__input}" | sed "s/${charOld__input}$/${charNew__input}/g"`
+
+	#Output
+	echo "${ret}"
+}
+
 function trim_string_toFit_specified_windowSize__func() {
     #Input args
     local string__input=${1}
@@ -3192,7 +3428,7 @@ function trim_string_toFit_specified_windowSize__func() {
     #Check if 'string__input' is a path?
     if [[ -d ${string__input} ]] || [[ -f ${string__input} ]]; then   #true
         #Replace multiple slashes with a single slash (/)
-        string__input=`replace_multiple_chars_with_single_char__func "${string__input}" \
+        string__input=`subst_multiple_chars_with_single_char__func "${string__input}" \
                         "${DOCKER__ESCAPE_SLASH}" \
                         "${DOCKER__ESCAPE_SLASH}"`
     fi
@@ -3245,10 +3481,10 @@ function trim_string_toFit_specified_windowSize__func() {
         trailingStr_right_len=$(( (trailingStr_len/2) - 1 )) 
 
         #Get 'trailingStr_left'
-        trailingStr_left=`get_theFirst_xChars_ofString__func "${trailingStr}" "${trailingStr_left_len}"`
+        trailingStr_left=`get_first_nChars_ofString__func "${trailingStr}" "${trailingStr_left_len}"`
 
         #Get 'trailingStr_right'
-        trailingStr_right=`get_theLast_xChars_ofString__func "${trailingStr}" "${trailingStr_right_len}"`
+        trailingStr_right=`get_last_nChars_ofString__func "${trailingStr}" "${trailingStr_right_len}"`
 
         #Get 'trailingStr'
         trailingStr="${trailingStr_left}${dotdot_print}${trailingStr_right}"
@@ -3603,7 +3839,8 @@ docker__ctrl_c__sub() {
 }
 
 docker__environmental_variables__sub() {
-    #---Define PATHS
+    docker__bin_bash__dir=/bin/bash
+
     docker__LTPP3_ROOTFS_development_tools__fpath="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
     docker__LTPP3_ROOTFS_development_tools__dir=$(dirname ${docker__LTPP3_ROOTFS_development_tools__fpath})
     docker__LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS_development_tools__dir%/*}    #move one directory up: LTPP3_ROOTFS/
@@ -3775,6 +4012,9 @@ docker__environmental_variables__sub() {
 }
 
 docker__create_dir__sub() {
+    if [[ ! -d ${docker__tmp_dir} ]]; then
+        mkdir -p ${docker__tmp_dir}
+    fi
     if [[ ! -d ${docker__docker_cache__dir} ]]; then
         mkdir -p ${docker__docker_cache__dir}
     fi

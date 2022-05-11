@@ -150,7 +150,7 @@ docker__calc_numOfLines_of_inputArgs__sub() {
     docker__fixed_numOfLines=${DOCKER__NUMOFLINES_6}    #allOther means: horizontal lines, empty string lines, prev-next line.
 
     #Calculate unchanged number of lines
-    docker__subTot_numOfLines=$((docker__menuTitle_numOfLines + docker__info_numOfLines + docker__menuOptions_numOfLines + docker__fixed_numOfLines + DOCKER__TABLEROWS))
+    docker__subTot_numOfLines=$((docker__menuTitle_numOfLines + docker__info_numOfLines + docker__menuOptions_numOfLines + docker__fixed_numOfLines + DOCKER__TABLEROWS_10))
 
     #Calculate the total number of lines for 3 situations:
     #1. HASH (e.g. Choose)
@@ -338,7 +338,7 @@ docker__seqNum_init__sub() {
     #5. docker__flag_turnPage_isAllowed
     docker__seqNum_handler__sub "${docker__cacheFpath_lineNum_base}" \
                         "${docker__cacheFpath_lineNum_min}" \
-                        "${DOCKER__TABLEROWS}" \
+                        "${DOCKER__TABLEROWS_10}" \
                         "${DOCKER__NEXT}"
 }
 docker__show_fileContent__sub() {
@@ -401,7 +401,7 @@ docker__show_fileContent__sub() {
                 #Define 'line_index'
                 if [[ ${docker__readInputDialog} != ${readInputDialog3__input} ]]; then #Choose & Add
                     #Redefine 'docker__table_index_rel' in case its '10'
-                    if [[ ${docker__table_index_rel} -eq ${DOCKER__TABLEROWS} ]]; then
+                    if [[ ${docker__table_index_rel} -eq ${DOCKER__TABLEROWS_10} ]]; then
                         docker__table_index_rel=${DOCKER__NUMOFMATCH_0}
                     fi
 
@@ -585,7 +585,7 @@ docker__linkStatusArr__add_data__sub() {
 
 docker__show_prev_next_handler__sub() {
     #Check if the specified file contains less than or equal to 10 lines
-    if [[ ${docker__cacheFpath_numOfLines} -le ${DOCKER__TABLEROWS} ]]; then #less than 10 lines
+    if [[ ${docker__cacheFpath_numOfLines} -le ${DOCKER__TABLEROWS_10} ]]; then #less than 10 lines
         #Don't show anything
         echo -e "${EMPTYSTRING}"
     else    #file contains more than 10 lines
@@ -1422,7 +1422,7 @@ docker__escapeKey_add_linkCheckout_profile__sub() {
                         "${readInputDialog}" \
                         "${DOCKER__EMPTYSTRING}" \
                         "${DOCKER__EMPTYSTRING}" \
-                        "${DOCKER__TABLEROWS}" \
+                        "${DOCKER__TABLEROWS_10}" \
                         "${docker__show_choose_add_del_from_cache_out__fpath}"
 
         #Get result_from_output
@@ -1577,7 +1577,7 @@ docker__next_handler__sub() {
     #5. docker__flag_turnPage_isAllowed
     docker__seqNum_handler__sub "${docker__cacheFpath_lineNum_base}" \
                         "${docker__cacheFpath_lineNum_min}" \
-                        "${DOCKER__TABLEROWS}" \
+                        "${DOCKER__TABLEROWS_10}" \
                         "${DOCKER__NEXT}"
 
     #Select the appropriate 'number of lines'
@@ -1602,7 +1602,7 @@ docker__prev_handler__sub() {
     #5. docker__flag_turnPage_isAllowed
     docker__seqNum_handler__sub "${docker__cacheFpath_lineNum_base}" \
                         "${docker__cacheFpath_lineNum_min}" \
-                        "${DOCKER__TABLEROWS}" \
+                        "${DOCKER__TABLEROWS_10}" \
                         "${DOCKER__PREV}"
 
     #Select the appropriate 'number of lines'
@@ -1668,9 +1668,9 @@ docker__any_choose_handler__sub() {
     esac
 }
 docker__any_choose_link_checkout_profile__sub() {
-    #IMPORTANT: set 'docker__keyInput = DOCKER__TABLEROWS' if 'docker__keyInput = 0'
+    #IMPORTANT: set 'docker__keyInput = DOCKER__TABLEROWS_10' if 'docker__keyInput = 0'
     if [[ ${docker__keyInput} -eq ${DOCKER__NUMOFMATCH_0} ]]; then
-        docker__keyInput=${DOCKER__TABLEROWS}
+        docker__keyInput=${DOCKER__TABLEROWS_10}
     fi
 
     #Get the absolute line-number

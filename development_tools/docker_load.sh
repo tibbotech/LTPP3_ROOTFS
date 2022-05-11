@@ -71,14 +71,6 @@ docker__load_handler__sub() {
     #Define variables
     local echomsg=${DOCKER__EMPTYSTRING}
     local phase=${DOCKER__EMPTYSTRING}
-    local readmsg_remarks=${DOCKER__EMPTYSTRING}
-
-
-    #Set 'readmsg_remarks'
-    readmsg_remarks="${DOCKER__BG_ORANGE}Remarks:${DOCKER__NOCOLOR}\n"
-    readmsg_remarks+="${DOCKER__DASH} ${DOCKER__FG_YELLOW}Up/Down Arrow${DOCKER__NOCOLOR}: to cycle thru existing values\n"
-    readmsg_remarks+="${DOCKER__DASH} ${DOCKER__FG_YELLOW}TAB${DOCKER__NOCOLOR}: auto-complete\n"
-    readmsg_remarks+="${DOCKER__DASH} ${DOCKER__FG_YELLOW};c${DOCKER__NOCOLOR}: clear"
 
     #Set initial 'phase'
     phase=${DOCKER__SELECT_SRC_DIR}
@@ -115,7 +107,7 @@ docker__load_handler__sub() {
                     docker__image_fpath="${docker__path_output}"
 
                     #Replace multiple slashes with a single slash (/)
-                    docker__image_fpath=`replace_multiple_chars_with_single_char__func "${docker__image_fpath}" \
+                    docker__image_fpath=`subst_multiple_chars_with_single_char__func "${docker__image_fpath}" \
                                     "${DOCKER__ESCAPE_SLASH}" \
                                     "${DOCKER__ESCAPE_SLASH}"`
 

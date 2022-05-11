@@ -239,7 +239,7 @@ docker__show_dockerList_files_handler__sub() {
                         "${DOCKER__FILE_ERRMSG}" \
                         "${DOCKER__FILE_READDIALOG}" \
                         "${docker__create_images_from_dockerlist_out__fpath}" \
-                        "${DOCKER__TABLEROWS}"
+                        "${DOCKER__TABLEROWS_10}"
 
         #Get the exitcode just in case a Ctrl-C was pressed in function 'show_fileContent_wo_keyInput__func' (in script 'docker_global.sh')
         docker__exitCode=$?
@@ -281,7 +281,7 @@ docker__show_dockerList_files__sub() {
                         "${DOCKER__DIR_READDIALOG}" \
                         "${DOCKER__EMPTYSTRING}" \
                         "${DOCKER__EMPTYSTRING}" \
-                        "${DOCKER__TABLEROWS}" \
+                        "${DOCKER__TABLEROWS_10}" \
                         "${docker__create_images_from_dockerlist_out__fpath}"
 
     #Get the exitcode just in case a Ctrl-C was pressed in function 'show_fileContent_wo_keyInput__func' (in script 'docker_global.sh')

@@ -175,7 +175,7 @@ docker__show_dockerList_files__sub() {
                         "${DOCKER__READ_DIALOG}" \
                         "${DOCKER__EMPTYSTRING}" \
                         "${DOCKER__EMPTYSTRING}" \
-                        "${DOCKER__TABLEROWS}" \
+                        "${DOCKER__TABLEROWS_10}" \
                         "${docker__create_an_image_from_dockerfile_out__fpath}"
 
     #Get the exitcode just in case a Ctrl-C was pressed in function 'DOCKER__FOURSPACES_F4_ABORT' (in script 'docker_global.sh')

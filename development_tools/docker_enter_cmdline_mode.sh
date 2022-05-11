@@ -22,10 +22,6 @@ docker__environmental_variables__sub() {
         docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}
     fi
 
-#-----------REMOVE THIS PART!!!!
-docker__my_LTPP3_ROOTFS_development_tools_dir=/home/imcase/repo/LTPP3_ROOTFS/development_tools/
-#-----------REMOVE THIS PART!!!!
-
     docker__global_filename="docker_global.sh"
     docker__global__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__global_filename}
 }
@@ -255,9 +251,9 @@ docker__exec_cmd_and_write_output_toFile__sub() {
     #Define header to-be-printed
     docker__output_arr="${DOCKER__EMPTYSTRING}\n"
     docker__output_arr+="${DOCKER__EMPTYSTRING}\n"
-    docker__output_arr+="${DOCKER__FG_LIGHTGREY}${DOCKER__HORIZONTALLINE}${DOCKER__NOCOLOR}\n"
+    docker__output_arr+="${DOCKER__FG_LIGHTGREY}${docker__dup_horizLine}${DOCKER__NOCOLOR}\n"
     docker__output_arr+="${DOCKER__FG_DEEPORANGE}Results of command ${DOCKER__NOCOLOR} <${DOCKER__FG_REDORANGE}${docker__cmd}${DOCKER__NOCOLOR}>\n"
-    docker__output_arr+="${DOCKER__FG_LIGHTGREY}${DOCKER__HORIZONTALLINE}${DOCKER__NOCOLOR}\n"
+    docker__output_arr+="${DOCKER__FG_LIGHTGREY}${docker__dup_horizLine}${DOCKER__NOCOLOR}\n"
 
     #Execute command
     #Remark:
@@ -285,7 +281,7 @@ docker__exec_cmd_and_write_output_toFile__sub() {
     #Append horizontal line to array
     docker__output_arr+="${DOCKER__EMPTYSTRING}\n"
     docker__output_arr+="${DOCKER__EMPTYSTRING}\n"
-    docker__output_arr+="${DOCKER__FG_LIGHTGREY}${DOCKER__HORIZONTALLINE}${DOCKER__NOCOLOR}"
+    docker__output_arr+="${DOCKER__FG_LIGHTGREY}${docker__dup_horizLine}${DOCKER__NOCOLOR}"
     
     #Write to file
     echo -e "${docker__output_arr[@]}" > ${docker__enter_cmdline_out__fpath}
@@ -346,11 +342,11 @@ docker__tab_handler__sub() {
         return
     fi
 
-    #If none of the above...
+    #Get the closest match
     ${compgen__query_w_autocomplete__fpath} "${containerID__input}" \
                     "${docker__cmd}" \
-                    "${DOCKER__LISTVIEW_NUMOFROWS}" \
-                    "${DOCKER__LISTVIEW_NUMOFCOLS}" \
+                    "${DOCKER__TABLEROWS_20}" \
+                    "${DOCKER__TABLECOLS_0}" \
                     "${compgen__query_w_autocomplete_out__fpath}"
 
 
@@ -359,7 +355,7 @@ docker__tab_handler__sub() {
     if [[ ${docker__exitCode} -eq ${DOCKER__EXITCODE_99} ]]; then
         exit__func "${docker__exitCode}" "${DOCKER__NUMOFLINES_2}"
     else
-        #Retrieve the selected container-ID from file
+        #Get result from file.
         docker__cmd=`get_output_from_file__func \
                         "${compgen__query_w_autocomplete_out__fpath}" \
                         "${DOCKER__LINENUM_1}"`

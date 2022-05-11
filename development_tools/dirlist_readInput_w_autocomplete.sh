@@ -191,7 +191,10 @@ function autocomplete__func() {
                     isDirectory=`checkIf_dir_exists__func "${containerID__input}" "${fpath}"`
                     if [[ ${isDirectory} == true ]]; then   #is directory
                         #Check if slash is found
-                        slash_isFound=`checkIf_dir_has_trailing_slash "${fpath}"`
+                        slash_isFound=`checkIf_string_contains_a_trailing_specified_chars__func \
+                                "${fpath}" \
+                                "${DOCKER__NUMOFCHARS_1}" \
+                                "${DOCKER__SLASH}"`
                         if [[ ${slash_isFound} == false ]]; then    #slash is NOT found
                             fpath=${fpath}${DOCKER__SLASH}  #append slash
                         fi
@@ -873,9 +876,9 @@ dirlist__show_dirContent_handler__sub() {
 
     #Show directory content
 	if [[ -z ${containerID__input} ]]; then	#LOCAL machine (aka HOST)
-		${dclcau_lh_ls__fpath} "${dir}" "${DOCKER__LISTVIEW_NUMOFROWS}" "${DOCKER__LISTVIEW_NUMOFCOLS}" "${keyWord}" "${dirlistContentFpath__input}" "${flag_prependEmptyLine__input}"
+		${dclcau_lh_ls__fpath} "${dir}" "${DOCKER__TABLEROWS_20}" "${DOCKER__TABLECOLS_0}" "${keyWord}" "${dirlistContentFpath__input}" "${flag_prependEmptyLine__input}"
 	else	#REMOTE machine (aka Container)
-		${dclcau_dc_ls__fpath} "${containerID__input}" "${dir}" "${DOCKER__LISTVIEW_NUMOFROWS}" "${DOCKER__LISTVIEW_NUMOFCOLS}" "${keyWord}" "${dirlistContentFpath__input}" "${flag_prependEmptyLine__input}"
+		${dclcau_dc_ls__fpath} "${containerID__input}" "${dir}" "${DOCKER__TABLEROWS_20}" "${DOCKER__TABLECOLS_0}" "${keyWord}" "${dirlistContentFpath__input}" "${flag_prependEmptyLine__input}"
 	fi
 }
 

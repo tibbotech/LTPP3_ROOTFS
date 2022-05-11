@@ -163,7 +163,7 @@ docker__save_handler__sub() {
                     docker__image_fpath="${docker__path_output}/${docker__repo_chosen}_${docker__tag_chosen}_${docker__imageID_chosen}.tar.gz"
 
                     #Replace multiple slashes with a single slash (/)
-                    docker__image_fpath=`replace_multiple_chars_with_single_char__func "${docker__image_fpath}" \
+                    docker__image_fpath=`subst_multiple_chars_with_single_char__func "${docker__image_fpath}" \
                                     "${DOCKER__ESCAPE_SLASH}" \
                                     "${DOCKER__ESCAPE_SLASH}"`
 

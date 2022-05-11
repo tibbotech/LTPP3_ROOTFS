@@ -14,8 +14,6 @@ docker__load_environment_variables__sub() {
     docker__LTPP3_ROOTFS_development_tools__dir=$(dirname ${docker__LTPP3_ROOTFS_development_tools__fpath})
     docker__LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS_development_tools__dir%/*}    #move one directory up: LTPP3_ROOTFS/
 
-    docker__LTPP3_ROOTFS_development_tools__dir=/home/imcase/repo/LTPP3_ROOTFS/development_tools
-
     docker__global_filename="docker_global.sh"
     docker__global__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__global_filename}
 }
@@ -54,7 +52,7 @@ docker__select_dockerfile__sub() {
                         "${DOCKER__DIRLIST_READ_DIALOG}" \
                         "${DOCKER__CONTAINER_ENV1}" \
                         "${DOCKER__CONTAINER_ENV2}" \
-                        "${DOCKER__TABLEROWS}" \
+                        "${DOCKER__TABLEROWS_10}" \
                         "${docker__select_dockerfile_out__fpath}"
 
     #Get the exitcode just in case a Ctrl-C was pressed in function 'DOCKER__FOURSPACES_F4_ABORT' (in script 'docker_global.sh')

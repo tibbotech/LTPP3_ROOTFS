@@ -87,12 +87,6 @@ docker__load_constants__sub() {
 
 	DOCKER__PLEASE_SELECT_A_NON_EMPTY_SOURCE_FOLDER_FILE="Please select a non-empty source folder/file..."
 	DOCKER__ECHOMSG_PLEASE_SELECT_A_VALID_DESTINATIONPATH="Please select a valid destination folder..."
-
-
-
-	#---NUMERIC CONSTANTS
-	DOCKER__LISTVIEW_NUMOFROWS=20
-	DOCKER__LISTVIEW_NUMOFCOLS=0
 }
 
 docker__init_variables__sub() {
@@ -233,8 +227,8 @@ docker__dirlist_show_dirContent_handler__sub() {
     #Show directory content
 	if [[ -z ${containerID__input} ]]; then	#LOCAL machine (aka HOST)
 		${dclcau_lh_ls__fpath} "${dir__input}" \
-						"${DOCKER__LISTVIEW_NUMOFROWS}" \
-						"${DOCKER__LISTVIEW_NUMOFCOLS}" \
+						"${DOCKER__TABLEROWS_20}" \
+						"${DOCKER__TABLECOLS_0}" \
 						"${DOCKER__EMPTYSTRING}" \
 						"${DOCKER__EMPTYSTRING}" \
 						"${DOCKER__TRUE}"
@@ -242,8 +236,8 @@ docker__dirlist_show_dirContent_handler__sub() {
 		${dclcau_dc_ls__fpath} \
 						"${containerID__input}" \
 						"${dir__input}" \
-						"${DOCKER__LISTVIEW_NUMOFROWS}" \
-						"${DOCKER__LISTVIEW_NUMOFCOLS}" \
+						"${DOCKER__TABLEROWS_20}" \
+						"${DOCKER__TABLECOLS_0}" \
 						"${DOCKER__EMPTYSTRING}" \
 						"${DOCKER__EMPTYSTRING}" \
 						"${DOCKER__TRUE}"
@@ -312,7 +306,7 @@ docker__src_path_selection__sub() {
 	${dirlist__readInput_w_autocomplete__fpath} "${containerID__input}" \
 						"${DOCKER__EMPTYSTRING}" \
 						"${DOCKER__READINPUT_CONTAINER_SRC}" \
-						"${DOCKER__DIRLIST_REMARKS}" \
+						"${DOCKER__DIRLIST_REMARKS_EXTENDED}" \
                         "${dirlist__src_ls_1aA_output__fpath}" \
                         "${dirlist__src_ls_1aA_tmp__fpath}" \
 						"${DOCKER__EMPTYSTRING}" \
@@ -431,7 +425,7 @@ docker__dst_path_selection__sub() {
 	${dirlist__readInput_w_autocomplete__fpath} "${containerID__input}" \
 						"${DOCKER__EMPTYSTRING}" \
 						"${DOCKER__READINPUT_HOST_DST}" \
-						"${DOCKER__DIRLIST_REMARKS}" \
+						"${DOCKER__DIRLIST_REMARKS_EXTENDED}" \
                         "${dirlist__dst_ls_1aA_output__fpath}" \
                         "${dirlist__dst_ls_1aA_tmp__fpath}" \
 						"${DOCKER__EMPTYSTRING}" \

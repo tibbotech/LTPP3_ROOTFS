@@ -1,4 +1,4 @@
 #repository:tag DOCKER_ARG1 DOCKER_ARG2
 ltps_test:test https://github.com/sunplus-plus1/SP7021.git 1234567890
-ltps_sunplus_env:test https://github.com/sunplus-plus1/SP7021.git 03645855a9a533cda7c4324072ef51d1fcfb8f7f
 ltps_sunplus:latest https://github.com/sunplus-plus1/SP7021.git 03645855a9a533cda7c4324072ef51d1fcfb8f7f
+ltps_sunplus_env:test www.google.com 55744
