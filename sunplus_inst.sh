@@ -111,12 +111,10 @@ source ${home_dir}/.bashrc
 
 press_any_key__func
 echo -e "\r"
-echo "---Updating submodules with git-command---"
+echo "---Checkout & Updating submodules with git-command---"
 echo -e "\r"
-git submodule update --init --recursive
-git submodule update --remote --merge
-git submodule foreach --recursive git checkout master
 git checkout 03645855a9a533cda7c4324072ef51d1fcfb8f7f
+git submodule update --init --recursive
 
 echo -e "\r"
 echo ">Navigating to ${sunplus_dir}"
