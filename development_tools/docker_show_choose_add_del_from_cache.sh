@@ -696,6 +696,7 @@ docker__seqNum_handler__sub() {
     fi
 
     #Get the maximum value
+
     docker__cacheFpath_lineNum_max=$((docker__cacheFpath_lineNum_min + seqNum_range__input - 1))
     
     #Set 'docker__flag_turnPage_isAllowed'
@@ -738,12 +739,12 @@ docker__menuOptions_handler__sub() {
             ${DOCKER__TAB})
                 docker__tab_handler__Sub    
                 ;;
-            ${DOCKER__ESCAPE_HOOKLEFT})  
+            ${DOCKER__ESCAPED_HOOKLEFT})  
                 docker__prev_handler__sub
 
                 break
                 ;;
-            ${DOCKER__ESCAPE_HOOKRIGHT})  
+            ${DOCKER__ESCAPED_HOOKRIGHT})  
                 docker__next_handler__sub
 
                 break
@@ -830,11 +831,11 @@ docker__enter_add_handler__sub() {
             return
             ;;
         *)
-            docker___add_link_checkout_or_profile_handler__sub
+            docker__enter_add_link_checkout_or_profile_handler__sub
             ;;
     esac
 }
-docker___add_link_checkout_or_profile_handler__sub() {
+docker__enter_add_link_checkout_or_profile_handler__sub() {
     #Check if 'docker__totInput' is already added to 'target_cacheFpath'?
     local isFound=`checkForMatch_of_patterns_within_file__func "${docker__totInput}" "${DOCKER__EMPTYSTRING}" "${target_cacheFpath}"`
     if [[ ${isFound} == true ]]; then
@@ -1485,8 +1486,8 @@ docker__escapeKey_add_linkCheckout_profile_confirm__sub() {
     #IMPORTANT: Set 'docker__totInput'
     docker__totInput="${linkSel}${DOCKER__COLON}${checkoutSel}"
 
-    #Execute 'docker___add_link_checkout_or_profile_handler__sub'
-    docker___add_link_checkout_or_profile_handler__sub
+    #Execute 'docker__enter_add_link_checkout_or_profile_handler__sub'
+    docker__enter_add_link_checkout_or_profile_handler__sub
 }
 docker__relative_move_and_clean_due_to_switch_between_different_tables__sub() {
     #Input args

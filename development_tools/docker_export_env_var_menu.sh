@@ -101,9 +101,20 @@ docker__retrieve_data_from_configFile__sub() {
     fi
 
     #Retrieve data
-    docker__dockerFile_fpath=`retrieve__data_specified_by_col_within_file__func "${DOCKER__CONFIGNAME____DOCKER__DOCKERFILE_FPATH}" \
-                    "${DOCKER__COLNUM_2}" \
-                    "${docker__export_env_var_menu_cfg__fpath}"`
+    docker__dockerFile_fpath=`retrieve__data_specified_by_col_within_file__func \
+                        "${DOCKER__CONFIGNAME____DOCKER__DOCKERFILE_FPATH}" \
+                        "${DOCKER__COLNUM_2}" \
+                        "${docker__export_env_var_menu_cfg__fpath}"`
+
+    #Check if 'docker__dockerFile_fpath' exists
+    if [[ ! -f ${docker__dockerFile_fpath} ]]; then #does not exist
+        #Reset variable
+        docker__dockerFile_fpath=${DOCKER__EMPTYSTRING}
+
+        #Remove line containing 'DOCKER__CONFIGNAME____DOCKER__DOCKERFILE_FPATH' value
+        find_and_remove_all_lines_from_file_forGiven_keyWord__func "${docker__export_env_var_menu_cfg__fpath}" \
+                        "${DOCKER__CONFIGNAME____DOCKER__DOCKERFILE_FPATH}"
+    fi
 }
 
 docker__retrieve_link_and_checkout_from_file__sub() {

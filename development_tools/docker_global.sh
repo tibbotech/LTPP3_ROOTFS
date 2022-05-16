@@ -8,7 +8,7 @@ DOCKER__Y="y"
 
 
 
-#---CHARACTER CHONSTANTS
+#---CHARACTER CONSTANTS
 DOCKER__ASTERISK="*"
 DOCKER__CARET="^"
 DOCKER__COLON=":"
@@ -28,21 +28,25 @@ DOCKER__DOUBLE_UNDERSCORE="${DOCKER__UNDERSCORE}${DOCKER__UNDERSCORE}"
 
 DOCKER__DOTSLASH="./"
 DOCKER__SLASHDOT="/."
+DOCKER__SPACEDOT=" ."
 
-DOCKER__ESCAPE_ASTERISK="\*"
-DOCKER__ESCAPE_BACKSLASH="\\"
-DOCKER__DOUBLE_ESCAPE_BACKSLASH="${DOCKER__ESCAPE_BACKSLASH}${DOCKER__ESCAPE_BACKSLASH}"
-DOCKER__TRIPLE_ESCAPE_BACKSLASH="${DOCKER__ESCAPE_BACKSLASH}${DOCKER__ESCAPE_BACKSLASH}${DOCKER__ESCAPE_BACKSLASH}"
-DOCKER__QUADRUPLE_ESCAPE_BACKSLASH="${DOCKER__ESCAPE_BACKSLASH}${DOCKER__ESCAPE_BACKSLASH}${DOCKER__ESCAPE_BACKSLASH}${DOCKER__ESCAPE_BACKSLASH}"
-DOCKER__ESCAPE_BACKSLASHDOT="\\."
-DOCKER__ESCAPE_BACKSLASH_ESCAPE_DOT="\\\."    #used in grep
-DOCKER__ESCAPE_DOTBACKSLASH=".\\"
-DOCKER__ESCAPE_HOOKLEFT="\<"
-DOCKER__ESCAPE_HOOKRIGHT="\>"
-DOCKER__ESCAPE_QUOTE="\""
-DOCKER__ESCAPE_SLASH="\/"
-DOCKER__ESCAPE_BACKSLASHSPACE="\\ "
-DOCKER__ESCAPE_T="\t"
+DOCKER__ESCAPED_BACKSLASH="\\"
+DOCKER__DOUBLE_ESCAPED_BACKSLASH="${DOCKER__ESCAPED_BACKSLASH}${DOCKER__ESCAPED_BACKSLASH}"
+DOCKER__TRIPLE_ESCAPED_BACKSLASH="${DOCKER__ESCAPED_BACKSLASH}${DOCKER__ESCAPED_BACKSLASH}${DOCKER__ESCAPED_BACKSLASH}"
+DOCKER__QUADRUPLE_ESCAPED_BACKSLASH="${DOCKER__ESCAPED_BACKSLASH}${DOCKER__ESCAPED_BACKSLASH}${DOCKER__ESCAPED_BACKSLASH}${DOCKER__ESCAPED_BACKSLASH}"
+
+DOCKER__ESCAPED_ASTERISK="\*"
+DOCKER__ESCAPED_BACKSLASHSPACE="\\ "
+DOCKER__ESCAPED_BACKSLASHDOT="\\."
+DOCKER__ESCAPED__BACKSLASH_ESCAPE_DOT="\\\."    #used in grep
+DOCKER__ESCAPED_DOTBACKSLASH=".\\"
+DOCKER__ESCAPED_HOOKLEFT="\<"
+DOCKER__ESCAPED__HOOKRIGHT="\>"
+DOCKER__ESCAPED_QUOTE="\""
+DOCKER__ESCAPED_SLASH="\/"
+DOCKER__DOUBLE_ESCAPE_SLASH="${DOCKER__ESCAPED_SLASH}${DOCKER__ESCAPED_SLASH}"
+
+DOCKER__ESCAPED_T="\t"
 
 DOCKER__EMPTYSTRING=""
 
@@ -141,6 +145,9 @@ DOCKER__ERRMSG_NO_IMAGES_FOUND="=:${DOCKER__FG_LIGHTRED}NO IMAGES FOUND${DOCKER_
 
 DOCKER__INVALID_OR_NOT_A_DIRECTORY="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Invalid or not a directory"
 DOCKER__INVALID_OR_NOT_A_FILE="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Invalid or not a file"
+
+DOCKER__CONFIGNAME____DOCKER__DOCKERFILE_FPATH="docker__dockerFile_fpath"
+
 
 
 #---ENV VARIABLES (WHICH ARE USED IN THE DOCKERFILE FILES)
@@ -303,7 +310,10 @@ DOCKER__REGEX_0_TO_9="[1-90]"
 DOCKER__REGEX_0_TO_9_COMMA_DASH="[1-90,-]"
 DOCKER__REGEX_1q="[1q]"
 DOCKER__REGEX_1_TO_4q="[1-4q]"
-DOCKER__REGEX_DOTSLASH_EXACTMATCH="^[./]+$" #^: leading, +$:trailing
+#Note: it is important to escape the dollar-sign ($)
+DOCKER__REGEX_DOT_SLASH_EXACTMATCH="^[./]+\$" #^: leading, +\$:trailing
+#Note: it is important to escape the backslash (\) and dollar-sign ($)
+DOCKER__REGEX_BACKSLASH_DOT_SLASH_EXACTMATCH="^[\\./]+\$"   #^: leading, +\$:trailing
 
 
 
@@ -318,10 +328,15 @@ SED__RS=$'\x1E'
 SED__STX=$'\x02'
 SED__ETX=$'\x03'
 
-SED_SUBST_BACKSLASHSPACE="${SED__STX}backslashspace${SED__ETX}"
-SED_SUBST_BACKSLASH="${SED__STX}backslash${SED__ETX}"
-SED_SUBST_SPACE="${SED__STX}space${SED__ETX}"
-SED_SUBST_BACKSLASHT="${SED__STX}backslasht${SED__ETX}"
+SED_SUBST_BACKSLASHSPACE="${DOCKER__SEMICOLON}backslashspace${DOCKER__SEMICOLON}"
+SED_SUBST_BACKSLASH="${DOCKER__SEMICOLON}backslash${DOCKER__SEMICOLON}"
+SED_SUBST_SPACE="${DOCKER__SEMICOLON}space${DOCKER__SEMICOLON}"
+SED_SUBST_BACKSLASHT="${DOCKER__SEMICOLON}backslasht${DOCKER__SEMICOLON}"
+
+# SED_SUBST_BACKSLASHSPACE="${SED__STX}backslashspace${SED__ETX}"
+# SED_SUBST_BACKSLASH="${SED__STX}backslash${SED__ETX}"
+# SED_SUBST_SPACE="${SED__STX}space${SED__ETX}"
+# SED_SUBST_BACKSLASHT="${SED__STX}backslasht${SED__ETX}"
 
 SED__DOUBLE_BACKSLASH=${SED__BACKSLASH}${SED__BACKSLASH}
 SED__BACKSLASH_DOT="${SED__BACKSLASH}${SED__DOT}"
@@ -907,12 +922,19 @@ function append_caretReturn_ifNotPresent_within_file__func() {
     #Input args
     local targetFpath__input=${1}
 
+    #Check if file exists
+    if [[ ! -s ${targetFpath__input} ]]; then   #does not exist
+        return
+    fi
+
     #Check if file ends with a 'newline' (aka caret-return)
     local caretReturn_isFound=`tail -c1 ${targetFpath__input} | wc -l`
     if [[ ${caretReturn_isFound} -eq ${DOCKER__NUMOFMATCH_0} ]]; then   #no caret-return found
         #Append caret-return
         echo "" >> ${targetFpath__input}
     fi
+
+    enable_expansion__func
 }
 function checkIf_dir_exists__func() {
     #Input args
@@ -1134,8 +1156,22 @@ function checkIf_fpaths_are_the_same__func() {
     fi
 }
 
+function find_and_remove_all_lines_from_file_forGiven_keyWord__func() {
+    #Input args
+    local fpath__input=${1}
+    local keyWord__input=${2}
+
+    #Check if 'fpath__input' exists
+    if [[ ! -f ${fpath__input} ]]; then
+        return
+    fi
+
+    #Find and remove all lines containg the specified 'keyWord__input'
+    sed -i "/${keyWord__input}/d"  ${fpath__input}
+}
+
 function get_basename_from_specified_path__func() {
-    #Input arg
+    #Input args
     local fpath__input=${1}
 
     #Get basename (which is a file or folder)
@@ -1146,7 +1182,7 @@ function get_basename_from_specified_path__func() {
 }
 
 function get_dirname_from_specified_path__func() {
-    #Input arg
+    #Input args
     local fpath__input=${1}
 
     #Get dirname
@@ -1182,7 +1218,7 @@ function remove_allEmptyLines_within_file__func() {
     targetFpath__input=${1}
 
     #Check if file exists
-    if [[ ! -f ${targetFpath__input} ]]; then   #does not exist
+    if [[ ! -s ${targetFpath__input} ]]; then   #does not exist
         return
     fi
 
@@ -1215,8 +1251,8 @@ function retrieve_files_from_specified_dir_basedOn_matching_patterns__func() {
 
     #Replace multiple slashes with a single slash (/)
     dir_w_asterisk=`subst_multiple_chars_with_single_char__func "${dir_w_asterisk}" \
-                    "${DOCKER__ESCAPE_SLASH}" \
-                    "${DOCKER__ESCAPE_SLASH}"`
+                    "${DOCKER__ESCAPED_SLASH}" \
+                    "${DOCKER__ESCAPED_SLASH}"`
 
     #Retrieve files based on matching pattern1 and write to arrPattern1
     readarray -t arrPattern1 < <(grep -l "${pattern1__input}" ${dir_w_asterisk})
@@ -1894,7 +1930,7 @@ function show_pathContent_w_keyInput__func() {
                 ${DOCKER__ENTER})
                     moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
                     ;;
-                ${DOCKER__ESCAPE_HOOKLEFT})
+                ${DOCKER__ESCAPED_HOOKLEFT})
                     #Only decrement if 'table_index_base > table_index_max__input'
                     #Remark:
                     #   Notice that 'table_index_base_try_next' is used here and NOT 'table_index_base'
@@ -1912,7 +1948,7 @@ function show_pathContent_w_keyInput__func() {
                     fi
 
                     ;;
-                ${DOCKER__ESCAPE_HOOKRIGHT})
+                ${DOCKER__ESCAPED_HOOKRIGHT})
                     #Only decrement if 'table_index_base_try_next < fpath_arrLen'
                     #Remark:
                     #   Notice that 'table_index_base_try_next' is used here and NOT 'table_index_base'
@@ -2317,7 +2353,7 @@ function show_fileContent_wo_keyInput__func() {
                 ${DOCKER__ENTER})
                     moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
                     ;;
-                ${DOCKER__ESCAPE_HOOKLEFT})
+                ${DOCKER__ESCAPED_HOOKLEFT})
                     #Only decrement if 'table_index_base > table_index_max__input'
                     #Remark:
                     #   Notice that 'table_index_base_try_next' is used here and NOT 'table_index_base'
@@ -2335,7 +2371,7 @@ function show_fileContent_wo_keyInput__func() {
                     fi
 
                     ;;
-                ${DOCKER__ESCAPE_HOOKRIGHT})
+                ${DOCKER__ESCAPED_HOOKRIGHT})
                     #Only decrement if 'table_index_base_try_next < fpath_arrLen'
                     #Remark:
                     #   Notice that 'table_index_base_try_next' is used here and NOT 'table_index_base'
@@ -3185,9 +3221,9 @@ function prepend_backSlash_inFrontOf_specialChars__func() {
 	#Prepend a backslash '\' in front of any special chars execpt for chars specified by 'SED_EXCLUDES'
     local ret=${DOCKER__EMPTYSTRING}
     if [[ ${flag_enableExcludes__input} == true ]]; then
-	    ret=`echo "${string__input}" | sed "s/[^[:alnum:]${SED_EXCLUDES}]/${DOCKER__ESCAPE_BACKSLASH}${DOCKER__ESCAPE_BACKSLASH}&/g"`
+	    ret=`echo "${string__input}" | sed "s/[^[:alnum:]${SED_EXCLUDES}]/${SED__BACKSLASH}&/g"`
     else
-        ret=`echo "${string__input}" | sed "s/[^[:alnum:]]/${DOCKER__ESCAPE_BACKSLASH}${DOCKER__ESCAPE_BACKSLASH}&/g"`
+        ret=`echo "${string__input}" | sed "s/[^[:alnum:]]/${SED__BACKSLASH}&/g"`
     fi
 
 	#Output
@@ -3429,8 +3465,8 @@ function trim_string_toFit_specified_windowSize__func() {
     if [[ -d ${string__input} ]] || [[ -f ${string__input} ]]; then   #true
         #Replace multiple slashes with a single slash (/)
         string__input=`subst_multiple_chars_with_single_char__func "${string__input}" \
-                        "${DOCKER__ESCAPE_SLASH}" \
-                        "${DOCKER__ESCAPE_SLASH}"`
+                        "${DOCKER__ESCAPED_SLASH}" \
+                        "${DOCKER__ESCAPED_SLASH}"`
     fi
 
     #Retrieve the number of slashes '/''

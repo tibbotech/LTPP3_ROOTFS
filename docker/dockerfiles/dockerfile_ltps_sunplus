@@ -13,13 +13,16 @@ ARG DEBIAN_FRONTEND=noninteractive
 #---2. docker_create_images_from_dockerlist.sh -> function: create_image__func
 ARG DOCKER_ARG1
 ARG DOCKER_ARG2
-#---Set ENVIRONMENT VARIABLE
+ARG DOCKER_ARG3
+#---Set ENVIRONMENT VARIABLE TO BE PASSED INTO CONTAINER
 #---The NAME of the defined environment variable(s) MUST be the same as
 #   the variable(s) names which is(are) used in the script (e.g. sunplus_inst.sh)
 #   to be run in the container
 ENV CONTAINER_ENV1=${DOCKER_ARG1}
 ENV CONTAINER_ENV2=${DOCKER_ARG2}
+#---Set ENVIRONMENT VARIABLE TO BE USED IN THIS DOCKERFILE
+ENV DOCKERFILE_ENV1=${DOCKER_ARG3}
 #---Retrieve files from Git
-RUN cd ~ && git clone https://github.com/tibbotech/LTPP3_ROOTFS.git
+RUN cd ~ && git clone ${DOCKERFILE_ENV1}
 #---Run Sunplus installation and Configuration
 RUN cd ~ && ~/LTPP3_ROOTFS/sunplus_inst.sh

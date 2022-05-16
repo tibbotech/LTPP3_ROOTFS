@@ -18,16 +18,12 @@ function create_image__func() {
 
     #Define local command variables
     local docker_image_ls_cmd="docker image ls"
-    local exported_env_var1=${DOCKER__EMPTYSTRING}
-    local exported_env_var2=${DOCKER__EMPTYSTRING}
+    local exported_env_var1=${DOCKER__EMPTYSTRING}  #sunplus git-link
+    local exported_env_var2=${DOCKER__EMPTYSTRING}  #sunplus checkout-number
+    local exported_env_var3=${DOCKER__EMPTYSTRING}  #tibbo git-link (e.g. LTPP3_ROOTFS.git)
 
     #Get REPOSITORY:TAG from dockerfile
     local dockerfile_repository_tag=`egrep -w "${GREP_PATTERN}" ${dockerfile_fpath} | cut -d"\"" -f2`
-
-    #Check if 'dockerfile_repository_tag' is an EMPTY STRING
-    if [[ -z ${dockerfile_repository_tag} ]]; then
-        dockerfile_repository_tag="${dockerfile}:${DOCKER__LATEST}"
-    fi
 
     #Check if 'dockerfile_repository_tag' is an EMPTY STRING
     if [[ -z ${dockerfile_repository_tag} ]]; then  #is an Empty String
@@ -35,8 +31,34 @@ function create_image__func() {
         dockerfile_repository_tag="${dockerfile}:${DOCKER__LATEST}"
     else    #is Not an Empty String
         #Retrieve to-be-exported Environment variables
-        exported_env_var1=`cat ${docker__exported_env_var_fpath} | grep -w "${dockerfile_repository_tag}" | awk '{print $2}'`
-        exported_env_var2=`cat ${docker__exported_env_var_fpath} | grep -w "${dockerfile_repository_tag}" | awk '{print $3}'`
+        exported_env_var1=`retrieve_env_var_link_from_file__func "${dockerfile_fpath}" "${docker__exported_env_var_fpath}"`
+        exported_env_var2=`retrieve_env_var_checkout_from_file__func "${dockerfile_fpath}" "${docker__exported_env_var_fpath}"`
+        exported_env_var3=`git config --get remote.origin.url`
+
+        #For now, lets assume that the git-repo was cloned via HTTPS.
+        #Remark:
+        #   Cloning via SSH would require to set the SSH-key of the HOST on GIT-HUB.
+        #   This is not do-able, because everytime when a new image is created the SSH-KEY...
+        #   ...would change as well. 
+        git_https_link_isFound=`echo "${exported_env_var3}" | grep "https"`
+        if [[ -z ${git_https_link_isFound} ]]; then #no match was found
+            #Substitute 'SED__PATTERN_SSH_FORMAT' with 'SED__PATTERN_HTTPS_FORMAT'
+            #In other words:
+            #   git@github.com:tibbotech/LTPP3_ROOTFS.git
+            #   to
+            #   https://github.com/tibbotech/LTPP3_ROOTFS.git
+            exported_env_var3=`echo "${exported_env_var3}" | sed "s/${SED__PATTERN_SSH_FORMAT}/${SED__PATTERN_HTTPS_FORMAT}/g"`
+        fi
+
+        #Get the 'branch' from which the repo was cloned (e.g. main, fixonetimexec, etc.)
+        git_branch=`git status -uno | grep "${DOCKER__PATTERN2}" | rev | cut -d" " -f1 | rev`
+
+        #Update 'exported_env_var3' by including 'git_branch' 
+        #Remark:
+        #   Do this only if 'git_branch != main'
+        if [[ "${git_branch}" != "${DOCKER__GIT_MAIN}" ]]; then
+            exported_env_var3="--branch ${git_branch} ${exported_env_var3}"
+        fi
     fi
 
     #Print
@@ -49,7 +71,7 @@ function create_image__func() {
     #Remark:
     #   DOCKER_ARG1: argument defined in the dockerfile(s) (e.g. sunplus_inst.sh)
     #   HOST_EXPORTED_ARG1: exported variable in defined in the HOST device (e.g. sunplus git clone link)
-    docker build --build-arg DOCKER_ARG1=${exported_env_var1} --build-arg DOCKER_ARG2=${exported_env_var2} --tag ${dockerfile_repository_tag} - < ${dockerfile_fpath} #with REPOSITORY:TAG
+    docker build --build-arg DOCKER_ARG1=${exported_env_var1} --build-arg DOCKER_ARG2=${exported_env_var2} --build-arg DOCKER_ARG3=${exported_env_var3} --tag ${dockerfile_repository_tag} - < ${dockerfile_fpath} #with REPOSITORY:TAG
 
     #Validate executed command
     validate_exitCode__func

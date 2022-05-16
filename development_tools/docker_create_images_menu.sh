@@ -40,6 +40,7 @@ docker__load_header__sub() {
 }
 
 docker__init_variables__sub() {
+    docker__git_remote_origin_url=${DOCKER__EMPTYSTRING}
     docker__myChoice=${DOCKER__EMPTYSTRING}
 
     docker__prepend_numOfLines=0

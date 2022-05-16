@@ -108,8 +108,8 @@ docker__load_handler__sub() {
 
                     #Replace multiple slashes with a single slash (/)
                     docker__image_fpath=`subst_multiple_chars_with_single_char__func "${docker__image_fpath}" \
-                                    "${DOCKER__ESCAPE_SLASH}" \
-                                    "${DOCKER__ESCAPE_SLASH}"`
+                                    "${DOCKER__ESCAPED_SLASH}" \
+                                    "${DOCKER__ESCAPED_SLASH}"`
 
                     #Set the maximum allowed string-length for 'docker__image_fpath_print'
                     docker__image_fpath_print_maxLen=$((DOCKER__TABLEWIDTH - DOCKER__LEADING_ECHOMSG_LEN))
