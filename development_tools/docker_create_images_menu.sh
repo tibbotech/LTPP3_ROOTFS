@@ -25,6 +25,9 @@ docker__load_environment_variables__sub() {
 
     docker__global__filename="docker_global.sh"
     docker__global__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__global__filename}
+
+    #Move one directory up, which is the 'LTPP3_ROOTFS'
+    docker__LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS_development_tools__dir%/*}
 }
 
 docker__load_source_files__sub() {
@@ -44,6 +47,10 @@ docker__init_variables__sub() {
     docker__myChoice=${DOCKER__EMPTYSTRING}
 
     docker__prepend_numOfLines=0
+}
+
+docker__run_mandatory_commands__sub() {
+    git config --global --add safe.directory ${docker__LTPP3_ROOTFS__dir}
 }
 
 docker__create_images_menu__sub() {
@@ -187,6 +194,8 @@ main__sub() {
     # docker__load_header__sub
 
     docker__init_variables__sub
+
+    docker__run_mandatory_commands__sub
 
     docker__create_images_menu__sub
 }

@@ -76,7 +76,6 @@ function create_image__func() {
     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
     # docker build --tag ${dockerfile_repository_tag} - < ${dockerfile_fpath} #with REPOSITORY:TAG
-    
     #Remark:
     #   DOCKER_ARG1: argument defined in the dockerfile(s) (e.g. sunplus_inst.sh)
     #   HOST_EXPORTED_ARG1: exported variable in defined in the HOST device (e.g. sunplus git clone link)

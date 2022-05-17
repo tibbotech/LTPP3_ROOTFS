@@ -1,7 +1,11 @@
 #!/bin/bash -m
 #Remark: by using '-m' the INT will NOT propagate to the PARENT scripts
 #---PATTERN CONSTANTS
+DOCKER__GIT_MAIN="main"
 DOCKER__PATTERN1="repository:tag"
+DOCKER__PATTERN2="On branch"
+SED__PATTERN_SSH_FORMAT="git\@github.com:"
+SED__PATTERN_HTTPS_FORMAT="https:\/\/github.com\/"
 
 
 
@@ -67,11 +71,10 @@ function create_image__func() {
     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
     # docker build --tag ${dockerfile_repository_tag} - < ${dockerfile_fpath} #with REPOSITORY:TAG
-    
     #Remark:
     #   DOCKER_ARG1: argument defined in the dockerfile(s) (e.g. sunplus_inst.sh)
     #   HOST_EXPORTED_ARG1: exported variable in defined in the HOST device (e.g. sunplus git clone link)
-    docker build --build-arg DOCKER_ARG1=${exported_env_var1} --build-arg DOCKER_ARG2=${exported_env_var2} --build-arg DOCKER_ARG3=${exported_env_var3} --tag ${dockerfile_repository_tag} - < ${dockerfile_fpath} #with REPOSITORY:TAG
+    docker build --build-arg DOCKER_ARG1="${exported_env_var1}" --build-arg DOCKER_ARG2="${exported_env_var2}" --build-arg DOCKER_ARG3="${exported_env_var3}" --tag ${dockerfile_repository_tag} - < ${dockerfile_fpath} #with REPOSITORY:TAG
 
     #Validate executed command
     validate_exitCode__func
