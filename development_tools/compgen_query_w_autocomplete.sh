@@ -1,10 +1,10 @@
 #!/bin/bash
-#Input args
-containerID__input=${1}
-query__input=${2}
-table_numOfRows__input=${3}
-table_numOfCols__input=${4}
-output_fPath__input=${5}
+#INPUT ARGS
+containerID__input="${1}"
+query__input="${2}"
+table_numOfRows__input="${3}"
+table_numOfCols__input="${4}"
+output_fPath__input="${5}"
 
 
 
@@ -678,7 +678,21 @@ docker__load_source_files__sub() {
 }
 
 compgen__environmental_variables__sub() {
-    >>>NEED TO BE ADDED
+    compgen__raw_headed_tmp__filename="compgen_raw_headed.tmp"
+    compgen__raw_headed_tmp__fpath=${docker__tmp_dir}/${compgen__raw_headed_tmp__filename}
+    compgen__raw_headed2_tmp__filename="compgen_raw_headed2.tmp"
+    compgen__raw_headed2_tmp__fpath=${docker__tmp_dir}/${compgen__raw_headed2_tmp__filename}
+    compgen__raw_headed3_tmp__filename="compgen_raw_headed3.tmp"
+    compgen__raw_headed3_tmp__fpath=${docker__tmp_dir}/${compgen__raw_headed3_tmp__filename}
+    compgen__raw_backslash_prepended_tmp__filename="compgen_raw_backslash_prepended.tmp"
+    compgen__raw_backslash_prepended_tmp__fpath=${docker__tmp_dir}/${compgen__raw_backslash_prepended_tmp__filename}
+    compgen__raw_all_tmp__filename="compgen_raw_all.tmp"
+    compgen__raw_all_tmp__fpath=${docker__tmp_dir}/${compgen__raw_all_tmp__filename}
+    compgen__tablized_tmp__filename="compgen_tablized.tmp"
+    compgen__tablized_tmp__fpath=${docker__tmp_dir}/${compgen__tablized_tmp__filename}
+
+    compgen__query_w_autocomplete_out__filename="compgen_query_w_autocomplete.out"
+    compgen__query_w_autocomplete_out__fpath=${docker__tmp_dir}/${compgen__query_w_autocomplete_out__filename}
 }
 
 compgen__load_constants__sub() {
@@ -692,13 +706,6 @@ compgen__load_constants__sub() {
     COMPGEN__COMPGEN_F="compgen -f"  #find files and folders
     COMPGEN__COMPGEN_C_D="compgen -c -d" #find folders, and executable commands
     COMPGEN__COMPGEN_C_F="compgen -c -f" #find files, folders, and executable commands
-
-    COMPGEN__TRIM_CR="tr -d ${DOCKER__CR}"
-
-    SED_SUBST_BACKSLASHSPACE="${SED__STX}backslashspace${SED__ETX}"
-    SED_SUBST_BACKSLASH="${SED__STX}backslash${SED__ETX}"
-    SED_SUBST_SPACE="${SED__STX}space${SED__ETX}"
-    SED_SUBST_BACKSLASHT="${SED__STX}backslasht${SED__ETX}"
 }
 
 compgen__init_variables__sub() {
@@ -727,23 +734,202 @@ compgen__init_variables__sub() {
 }
 
 compgen__delete_tmpFiles__sub() {
-    >>>NEED TO BE ADDED
+    if [[ -f ${compgen__raw_all_tmp__fpath} ]]; then
+        rm ${compgen__raw_all_tmp__fpath}
+    fi
+    if [[ -f ${compgen__raw_headed_tmp__fpath} ]]; then
+        rm ${compgen__raw_headed_tmp__fpath}
+    fi
+    if [[ -f ${compgen__raw_headed2_tmp__fpath} ]]; then
+        rm ${compgen__raw_headed2_tmp__fpath}
+    fi
+    if [[ -f ${compgen__raw_headed3_tmp__fpath} ]]; then
+        rm ${compgen__raw_headed3_tmp__fpath}
+    fi
+    if [[ -f ${compgen__raw_backslash_prepended_tmp__fpath} ]]; then
+        rm ${compgen__raw_backslash_prepended_tmp__fpath}
+    fi
+    if [[ -f ${compgen__tablized_tmp__fpath} ]]; then
+        rm ${compgen__tablized_tmp__fpath}
+    fi
 }
 
 compgen__delete_files__sub() {
-    >>>NEED TO BE ADDED
+    if [[ -f ${output_fPath__input} ]]; then
+        rm ${output_fPath__input}
+    fi 
 }
 
 compgen__prep_param_and_cmd_handler__sub() {
-    >>>NEED TO BE ADDED
+    #query__input: 
+    #   substitution of the following chars (if present) in the specified sequence (MUST)
+    #       1. .\ becomes .
+    #       2. \. becomes .
+    #       3. ending with . becomes ./
+    #       4. \/ becomes /
+    #       5. // becomes /
+    #       6. \ becomes \\ (which is a double-backslash)
+    # local query_subst=`subst_a_combo_of_dot_slash_backslash_to_correct_format__func "${query__input}"`
+
+    #Retrieve 4 results: compgen__leadStr, compgen__trailStr, compgen__query_numOfWords, compgen__cmd
+    local results=`retrieve_leadingStr__compgen_in__and__cmd____func "${query__input}" \
+                        "${DOCKER__FALSE}"`
+
+    #Get the results
+    #Remark:
+    #   This leading string part will have to be prepended to...
+    #   ...the return value 'ret' in function 'compgen__get_closest_match__sub'
+    compgen__leadStr=`echo "${results}" | cut -d"${SED__GS}" -f1`
+
+    #Get the string part which will be injected into 'compgen'
+    compgen__trailStr=`echo "${results}" | cut -d"${SED__GS}" -f2`
+
+    #compgen__leadStr & compgen__trailStr:
+    #   substitution of backslash-dot-slash (\./) in the specified sequence (MUST):
+    #       1. .\ becomes .
+    #       2. \. becomes .
+    #       3. ending with . becomes ./
+    #       4. \/ becomes /
+    #       5. // becomes /
+    #       6. \ becomes \\ (which is a double-backslash)
+    compgen__leadStr=`subst_a_combo_of_dot_slash_backslash_to_correct_format__func "${compgen__leadStr}"`
+    compgen__trailStr=`subst_a_combo_of_dot_slash_backslash_to_correct_format__func "${compgen__trailStr}"`
+
+
+    #Get number of words
+    compgen__query_numOfWords=`echo "${results}" | cut -d"${SED__GS}" -f3`
+
+
+    #Get compgen command
+    compgen__cmd=`echo "${results}" | cut -d"${SED__GS}" -f4`
+
+
+    #Check if 'compgen__trailStr' contains a leading dash (-)
+    local leadingDash_isFound=`checkIf_string_contains_a_leading_specified_chars__func "${compgen__trailStr}" \
+                        "${DOCKER__NUMOFCHARS_1}" \
+                        "${DOCKER__DASH}"`
+
+    case "${leadingDash_isFound}" in
+            ${DOCKER__TRUE})
+            compgen__cachedArr=()
+            compgen__cachedArrLen=0
+
+            compgen__leadStr=${DOCKER__EMPTYSTRING}
+            compgen__out="${query__input}"
+
+            compgen_skip_get_results=true
+
+            return
+            ;;
+        *)
+            ;;
+    esac
 }
 
 compgen__get_results__sub() {
-    >>>NEED TO BE ADDED 
+    #If flag 'compgen_skip_get_results = true', then...
+    #...create an empty file and exit this subroutine
+    if [[ ${compgen_skip_get_results} == true ]]; then
+        touch ${compgen__raw_all_tmp__fpath}
+
+        return
+    fi
+
+    #Update compgen__in
+    case "${compgen__trailStr}" in
+        "${DOCKER__QUADRUPLE_ESCAPED_BACKSLASH}${DOCKER__ONESPACE}")  #equivalent to (\\\\\\\\ ) which is (\\ )
+            #MUST set to compgen__cmd = compgen -f (instead of compgen -c -f)
+            compgen__cmd=${COMPGEN__COMPGEN_F}
+
+            #MUST change from (\\\\ ) to Empty String. 
+            #If not done, executing 'cmd' with (\\\\ ) will not give any result.
+            compgen__in=${DOCKER__EMPTYSTRING}
+            ;;
+        *)  #no special case
+            compgen__in=${compgen__trailStr}
+            ;;
+    esac
+
+echo "-----------------------"
+echo "query__input>${query__input}<"
+echo "compgen__leadStr>${compgen__leadStr}<"
+echo "compgen__trailStr>${compgen__trailStr}<"
+echo "compgen__in>${compgen__in}<"
+echo "compgen__cmd>${compgen__cmd}<"
+echo "-----------------------"
+    #Define commands
+    #Remarks:
+    #1. In order to be able to execute commands with SPACES, 'eval' must be used.
+    #2. Backslash (\) should be prepended before a quote ('), because otherwise 
+    #   the command 'cmd' will not be executed correctly.
+    #3. sort: sort result.
+    #4. uniq: remove duplicates.
+    local cmd="eval ${compgen__cmd} \"${compgen__in}\" | sort | uniq"
+
+    #Execute command
+    if [[ -z ${containerID__input} ]]; then
+        readarray -t compgen__cachedArr < <(${cmd})
+    else
+        readarray -t compgen__cachedArr < <(${compgen__docker_exec_cmd} "${cmd}" | tr -d ${DOCKER__CR})
+    fi
+
+    #Update array-length
+    compgen__cachedArrLen=${#compgen__cachedArr[@]}
+
+    if [[ ${compgen__cachedArrLen} -gt ${DOCKER__NUMOFMATCH_0} ]]; then
+        printf "%s\n" "${compgen__cachedArr[@]}" > ${compgen__raw_all_tmp__fpath}
+    else
+        touch ${compgen__raw_all_tmp__fpath}
+    fi
 }
 
 compgen__get_closest_match__sub() {
-    >>>NEED TO BE ADDED
+    #Get closest match
+    if [[ ${compgen__cachedArrLen} -gt ${DOCKER__NUMOFMATCH_0} ]]; then
+        #This function outputs 2 values:
+        #1. closest match result
+        #2. number of matches 'numOfMatch'
+        #Both results are separated by a pipe (|)
+        local results=`autocomplete__func "${compgen__trailStr}" "${compgen__cachedArr[@]}"`
+
+        #Get results delimited by a pipe (|)
+        compgen__out=`echo "${results}" | cut -d"${SED__GS}" -f1`
+        compgen__autocomplete_numOfMatch=`echo "${results}" | cut -d"${SED__GS}" -f2`
+
+        #Append compgen__autocomplete_numOfMatch (if 'compgen__out' is a directory)
+        if [[ ${compgen__autocomplete_numOfMatch} -eq ${DOCKER__NUMOFMATCH_1} ]]; then   #exactly 1 match
+            compgen__out=`append_slash__func "${containerID__input}" "${compgen__out}"`
+        fi
+    fi
+
+    #Check if 'compgen__out = Empty String'
+    case "${compgen__out}" in
+        ${DOCKER__EMPTYSTRING}) #is an Empty String
+            #Remark:
+            #   In this special case when 'compgen__out' is an 'Empty String'...
+            #   ...whether 'compgen__trailStr' or 'compgen__leadStr' is an Empty String...
+            #   ...and on the other hand 'compgen__leadStr' or 'compgen__trailStr'...
+            #   ...contains data...
+            #   ...(and vice versa)
+            ret="${compgen__leadStr}${compgen__trailStr}"
+            ;;
+        *)  #is NOT an Empty String
+            if [[ ${compgen__query_numOfWords} -eq ${DOCKER__NUMOFMATCH_1} ]]; then #query__input consists of 1 word only
+                if [[ ${compgen__autocomplete_numOfMatch} -gt ${DOCKER__NUMOFMATCH_0} ]]; then  #at least one match was found
+                    ret="${compgen__out}"
+                else    #no match was found
+                    ret="${compgen__trailStr}"
+                fi
+            else    #query_input consists more of 2 words
+                ret="${compgen__leadStr}${compgen__out}"
+            fi
+            ;;
+    esac
+
+
+
+    # #Write to file
+    echo -e "${ret}" > ${output_fPath__input}
 }
 
 compgen__show_handler__sub() {
@@ -754,11 +940,262 @@ compgen__show_handler__sub() {
     cat ${compgen__tablized_tmp__fpath}
 }
 compgen__prep_print__sub() {
-    >>>NEED TO BE ADDED
+    case "${compgen__cachedArrLen}" in
+        ${DOCKER__NUMOFMATCH_0})
+            compgen__prep_header_print__sub
+
+#-----------Check if there are any results
+            #Write empty line to file
+            echo "${DOCKER__EMPTYSTRING}" >> ${compgen__tablized_tmp__fpath}
+        
+            center_string_and_writeTo_file__func "${DOCKER__ECHOMSG_NORESULTS_FOUND}" "${DOCKER__TABLEWIDTH}" "${compgen__tablized_tmp__fpath}"
+
+            #Write empty lines to file
+            echo "${DOCKER__EMPTYSTRING}" >> ${compgen__tablized_tmp__fpath}
+            echo "${DOCKER__EMPTYSTRING}" >> ${compgen__tablized_tmp__fpath}
+            #Write horizontal line to file
+            echo "${compgen__dup_horizLine}" >> ${compgen__tablized_tmp__fpath}
+
+            return
+            ;;
+        *)
+#-----------Copy from 'compgen__raw_all_tmp__fpath' to 'compgen__raw_headed_tmp__fpath'...
+            #...based on the specified 'table_numOfRows__input'.
+            if [[ ${table_numOfRows__input} -eq 0 ]]; then  #copy everything
+                cp ${compgen__raw_all_tmp__fpath} ${compgen__raw_headed_tmp__fpath}
+            else    #copy a number of lines specified by 'table_numOfRows__input'
+                cat ${compgen__raw_all_tmp__fpath} | head -n${table_numOfRows__input} > ${compgen__raw_headed_tmp__fpath}
+            fi
+
+#-----------Remove the substring on the left-side of the LAST slash (/) of...
+            #...all lines within file 'compgen__raw_headed_tmp__fpath'.
+            compgen__prep_print_rem_subString_onLeftSideOf_last_slash__sub 
+
+#-----------Determine the 'word_length_max' and 'compgen__numOfItems_toBeShown'
+            #word_length_max: maximum word-length found
+            #compgen__numOfItems_toBeShown: number of words found in the file 'compgen_raw.tmp'
+            local dirFormat=${DOCKER__EMPTYSTRING}
+            local dirFormat_isDirectory=false
+            local line=${DOCKER__EMPTYSTRING}
+            local line_readyToWrite=${DOCKER__EMPTYSTRING}
+            local line_usedTo_meassure=${DOCKER__EMPTYSTRING}
+            local line_w_prepended_backslash=${DOCKER__EMPTYSTRING}
+
+            local line_usedTo_meassure_len=0
+            local word_length_max=0
+
+            while IFS= read -r line
+            do
+                #Prepend backslash (\) in front of all special characters (execpt for: dot (.) and slash(/))
+                line_w_prepended_backslash=`prepend_backSlash_inFrontOf_specialChars__func \
+                        "${line}" \
+                        "${DOCKER__TRUE}"`
+
+                #Update 'dirFormat'
+                #***IMPORTANT: use 'line' instead of 'line_w_prepended_backslash'
+                dirFormat="${compgen__out}/${line}"
+
+                #Check if 'dirFormat' is a directory
+                dirFormat_isDirectory=`checkIf_dir_exists__func "${DOCKER__EMPTYSTRING}" "${dirFormat}"`
+                if [[ ${dirFormat_isDirectory} == true ]]; then #is a directory
+                    #Append slash (/) to 'line_usedTo_meassure'
+                    line_usedTo_meassure="${line_w_prepended_backslash}${DOCKER__SLASH}"
+
+                    line_readyToWrite="${line_usedTo_meassure}${SED__ETX}"
+                else
+                    #Update 'line_usedTo_meassure'
+                    line_usedTo_meassure="${line_w_prepended_backslash}"
+
+                    line_readyToWrite="${line_usedTo_meassure}"
+                fi
+            
+                #Write 'line_readyToWrite' to file 'compgen__raw_backslash_prepended_tmp__fpath'
+                echo "${line_readyToWrite}" >> ${compgen__raw_backslash_prepended_tmp__fpath}
+
+
+                #Get length of 'line_usedTo_meassure_len'
+                line_usedTo_meassure_len=${#line_usedTo_meassure}
+
+                #Update max 'word' length
+                if [[ ${word_length_max} -lt ${line_usedTo_meassure_len} ]]; then
+                    word_length_max=${line_usedTo_meassure_len}
+                fi
+
+
+                #Count the number of words in this file
+                compgen__numOfItems_toBeShown=$((compgen__numOfItems_toBeShown+1))
+            done < ${compgen__raw_headed_tmp__fpath}
+
+#-----------Get 'word_length_max_corr'
+            #REMARK:
+            #   This means that the space between the columns are 4 characters wide
+            local word_length_max_corr=$((word_length_max + DOCKER__SPACE_BETWEEN_WORDS))
+
+#-----------Get 'table_numOfCols__input'
+            #Calculate maximum allowed number of columns
+            local numOfCols_calc_max=$((DOCKER__TABLEWIDTH/word_length_max_corr))
+            local line_length_max_try=$((word_length_max_corr*numOfCols_calc_max + word_length_max))
+            #Finally check if it is possible to add another word with max. length is 'word_length_max'
+            if [[ ${line_length_max_try} -le ${DOCKER__TABLEWIDTH} ]]; then #line_length_max_try
+                numOfCols_calc_max=$((numOfCols_calc_max + 1))
+            fi
+
+            #Check if the number of 'numOfCols_calc_max > DOCKER__TABLECOLS_MAX_7'
+            if [[ ${numOfCols_calc_max} -gt ${DOCKER__TABLECOLS_MAX_7} ]]; then
+                numOfCols_calc_max=${DOCKER__TABLECOLS_MAX_7}    #set value to 'DOCKER__TABLECOLS_MAX_7'
+            fi
+
+#-----------Get 'table_numOfCols__input'
+            #Or 'table_numOfCols__input = 0 (auto)'
+            if [[ ${table_numOfCols__input} -gt ${numOfCols_calc_max} ]] || \
+                    [[ ${table_numOfCols__input} -eq 0 ]]; then
+                table_numOfCols__input=${numOfCols_calc_max}
+            fi
+
+
+#-----------Write header to file (must be placed here)
+            compgen__prep_header_print__sub
+
+#-----------Add spaces between each column
+            local line_colored=${DOCKER__EMPTYSTRING}
+            local line_print=${DOCKER__EMPTYSTRING}
+
+            local fileLineNum=0
+            local fileLineNum_max=`cat ${compgen__raw_backslash_prepended_tmp__fpath} | wc -l`
+            local line_print_numOfWords=0
+
+            #Go through each line of the file
+            #Remark:
+            #   Each line contains a string which is one-word in length.
+            while IFS= read -r line
+            do
+                #Increment by 1
+                fileLineNum=$((fileLineNum + 1))
+                line_print_numOfWords=$((line_print_numOfWords + 1))
+
+                #Check if 'string__input' already contains any trailing 'SED__ETX'
+                #Note: if 'SED__EXT' is found, then apply color.
+                local trailingEtx_isFound=`checkIf_string_contains_a_trailing_specified_chars__func \
+                        "${line}" \
+                        "${DOCKER__NUMOFCHARS_1}" \
+                        "${SED__ETX}"`
+                if [[ ${trailingEtx_isFound} == true ]]; then
+                    #Apply color to 'line'
+                    line_colored="${DOCKER__FG_DEEPORANGE}${line}${DOCKER__NOCOLOR}"
+        
+                    #Get the length of 'line_colored' without color-regex
+                    line_length=`get_stringlen_wo_regEx__func "${line_colored}"`
+
+                    #***IMPORTANT: Substract (-1) due to the presence of 'SED__ETX'
+                    line_length=$((line_length - 1))
+                else
+                    #Update 'line_colored'
+                    line_colored="${line}"
+
+                    #Get the length of 'line_colored' without color-regex
+                    line_length=`get_stringlen_wo_regEx__func "${line_colored}"`
+                fi
+
+                #Set 'word' to be printed
+                if [[ ${line_print_numOfWords} -eq 1 ]]; then
+                    line_print="${line_colored}"
+                else
+                    line_print="${line_print}${line_colored}" 
+                fi
+
+                
+                #Calculate the gap to be appended.
+                #Remark:
+                #   This is the gap between each column.
+                if [[ ${fileLineNum} -lt ${fileLineNum_max} ]]; then
+                    #Calculate the gap-length
+                    gap_length=$((word_length_max_corr - line_length))
+                    #Generate the spaces based on the specified 'gap_length'
+                    gap_string=`duplicate_char__func "${DOCKER__ONESPACE}" "${gap_length}" `
+
+                    #Append the 'gap_string' to 'line_print'
+                    line_print=${line_print}${gap_string}
+                fi
+
+                #Write to file
+                #Remarks:
+                #   Only do this when:
+                #   1. line_print_numOfWords = table_numOfCols__input
+                #   OR
+                #   2. fileLineNum = fileLineNum_max
+                if [[ ${line_print_numOfWords} -eq ${table_numOfCols__input} ]] || [[ ${fileLineNum} -eq ${fileLineNum_max} ]]; then
+                    #write to file
+                    echo "${line_print}" >> ${compgen__tablized_tmp__fpath}
+
+                    #Reset line_print_numOfWords
+                    line_print_numOfWords=0   
+
+                    #Reset string
+                    line_print=${DOCKER__EMPTYSTRING}
+                fi
+            done < ${compgen__raw_backslash_prepended_tmp__fpath}
+            ;;
+    esac
+
+#---Finalizing print
+    #Write empty line to file
+    echo "${DOCKER__EMPTYSTRING}" >> ${compgen__tablized_tmp__fpath}
+    #Write horizontal line to file
+    echo "${compgen__dup_horizLine}" >> ${compgen__tablized_tmp__fpath}
 }
 compgen__prep_header_print__sub() {
-    >>>NEED TO BE ADDED
+    #Get maximum number of results
+    compgen__numOfItems_max=`cat ${compgen__raw_all_tmp__fpath} | wc -l`
+
+    #Update variable
+    compgen__print_numOfItems_shown="(${DOCKER__FG_DEEPORANGE}${compgen__numOfItems_toBeShown}${DOCKER__NOCOLOR} out-of ${DOCKER__FG_REDORANGE}${compgen__numOfItems_max}${DOCKER__NOCOLOR})"
+
+    #Print message showing which directory's content is being shown
+    echo "${DOCKER__EMPTYSTRING}" >> ${compgen__tablized_tmp__fpath}
+    echo "${DOCKER__EMPTYSTRING}" >> ${compgen__tablized_tmp__fpath}
+    echo "${compgen__dup_horizLine}" >> ${compgen__tablized_tmp__fpath}
+    echo "${DOCKER__FG_DEEPORANGE}List of keyword ${DOCKER__NOCOLOR} <${DOCKER__FG_REDORANGE}${query__input}${DOCKER__NOCOLOR}> ${compgen__print_numOfItems_shown}" >> ${compgen__tablized_tmp__fpath}
+    echo "${compgen__dup_horizLine}" >> ${compgen__tablized_tmp__fpath}
 }
+compgen__prep_print_rem_subString_onLeftSideOf_last_slash__sub() {
+    #Remark:
+    #   To give an idea what is meant with 'leading string ending /w slash',...
+    #   ...please take a look at the following examples:
+    #   ./../
+    #   .././
+    #   /tmp/
+    #   /home/imcase/
+
+    ##Get substring on the LEFT-side of the LAST slash (/)...
+    cat "${compgen__raw_headed_tmp__fpath}" | rev | cut -d"${DOCKER__SLASH}" -f2- | rev |  sort | uniq > ${compgen__raw_headed3_tmp__fpath}
+
+    #Check the number of lines in file 'compgen__raw_headed3_tmp__fpath'
+    #Remark:
+    #   1. if 'numOfLines = 1', then it means that all files/folders are in the same directory.
+    #   2. if 'numOfLines > 1', then it means that all files/folders are in different directories...
+    #      ...OR...
+    #      ...file-contents of file 'compgen__raw_headed2_tmp__fpath' are not files/folders, but commands.
+    #      
+    local numOfLines=`cat "${compgen__raw_headed3_tmp__fpath}" | wc -l`
+    if [[ ${numOfLines} -gt ${DOCKER__NUMOFMATCH_1} ]]; then    #file contains more than 1 line
+        return
+    else    #file contains only 1 line
+        #Get file-content
+        local fileContent=`cat "${compgen__raw_headed3_tmp__fpath}"`
+        #Check if 'fileContent' is an Empty String, then it means that all files/folders are in the main directory (/).
+        if [[ "${fileContent}" == "${DOCKER__EMPTYSTRING}" ]]; then
+            return
+        fi
+    fi
+
+    #Get substring on the RIGHT-side of the LAST slash (/)...
+    #...within the lines of file 'compgen__raw_headed2_tmp__fpath'
+    cat "${compgen__raw_headed_tmp__fpath}" | rev | cut -d"${DOCKER__SLASH}" -f1 | rev > ${compgen__raw_headed2_tmp__fpath}
+
+    #Update 'compgen__raw_headed_tmp__fpath'
+    cp ${compgen__raw_headed2_tmp__fpath} ${compgen__raw_headed_tmp__fpath}    
+}
+
 
 
 
