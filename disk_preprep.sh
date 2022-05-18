@@ -907,13 +907,13 @@ echo -e "\r"
 echo -e ">>>Navigate to ${SP7xxx_linux_kernel_dir}"
 	cd ${SP7xxx_linux_kernel_dir}
 
-press_any_key__func
-echo -e "\r"
-echo -e ">>>>>Importing Kernel config-file: ${make_menuconfig_default_filename}"
-echo -e ">from: ${SP7xxx_linux_kernel_dir}"
-	make olddefconfig
-echo -e "\r"
-echo -e "\r"
+#press_any_key__func
+#echo -e "\r"
+#echo -e ">>>>>Importing Kernel config-file: ${make_menuconfig_default_filename}"
+#echo -e ">from: ${SP7xxx_linux_kernel_dir}"
+#	make olddefconfig
+#echo -e "\r"
+#echo -e "\r"
 
 #---DTSI
 press_any_key__func
