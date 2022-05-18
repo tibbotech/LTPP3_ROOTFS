@@ -65,7 +65,7 @@ armhf_filename="ubuntu-base-20.04.1-base-armhf.tar.gz"
 disk_foldername="disk"
 firmware_foldername="firmware"
 
-clkspq628c_filename="clk-sp-q628.c"
+#clkspq628c_filename="clk-sp-q628.c"
 
 brcm_patchram_plus_filename="brcm_patchram_plus"
 
@@ -170,8 +170,8 @@ disk_etc_profile_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}/${profile_f
 src_firmware_fpath=${home_lttp3rootfs_rootfs_initramfs_disk_etc_dir}/${firmware_foldername}
 dst_firmware_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}/${firmware_foldername}
 
-src_clkspq628c_fpath=${home_lttp3rootfs_kernel_drivers_clk_dir}/${clkspq628c_filename}
-dst_clkspq628c_fpath=${SP7xxx_linux_kernel_drivers_clk}/${clkspq628c_filename}
+#src_clkspq628c_fpath=${home_lttp3rootfs_kernel_drivers_clk_dir}/${clkspq628c_filename}
+#dst_clkspq628c_fpath=${SP7xxx_linux_kernel_drivers_clk}/${clkspq628c_filename}
 
 src_brcm_patchram_plus_fpath=${home_lttp3rootfs_usr_bin_dir}/${brcm_patchram_plus_filename}
 dst_brcm_patchram_plus_fpath=${SP7xxx_linux_rootfs_initramfs_disk_usr_bin_dir}/${brcm_patchram_plus_filename}
@@ -857,12 +857,12 @@ echo -e ">>>Change permission to <-rw-r--r--> for folder: ${firmware_foldername}
 
 
 #---FILE: clk-sp-q628.c
-press_any_key__func
-echo -e "\r"
-echo -e ">Copying: ${clkspq628c_filename}"
-echo -e ">from: ${home_lttp3rootfs_kernel_drivers_clk_dir}"
-echo -e ">to: ${SP7xxx_linux_kernel_drivers_clk}"
-	cp ${src_clkspq628c_fpath} ${SP7xxx_linux_kernel_drivers_clk}
+#press_any_key__func
+#echo -e "\r"
+#echo -e ">Copying: ${clkspq628c_filename}"
+#echo -e ">from: ${home_lttp3rootfs_kernel_drivers_clk_dir}"
+#echo -e ">to: ${SP7xxx_linux_kernel_drivers_clk}"
+#	cp ${src_clkspq628c_fpath} ${SP7xxx_linux_kernel_drivers_clk}
 
 echo -e "\r"
 echo -e ">>>Change ownership to <root> for file: ${clkspq628c_filename}"

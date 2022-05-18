@@ -359,10 +359,10 @@ echo ">Installing update"
 echo -e "\r"
 	apt-get -y update
 
-echo -e "\r"
-echo "---Installing <tibbo-oobe>---"
-echo -e "\r"
-	apt-get -y install tibbo-oobe
+#echo -e "\r"
+#echo "---Installing <tibbo-oobe>---"
+#echo -e "\r"
+#	apt-get -y install tibbo-oobe
 
 # echo -e "\r"
 # echo "---Installing <pmount>---"
