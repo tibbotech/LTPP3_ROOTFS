@@ -2,3 +2,6 @@
 *test*
 *-workspace
 *mytest
+
+#ignore the users local environmet variables. 
+/docker/environment/exported_env_var.txt
