@@ -40,7 +40,9 @@ root_ssh_id_rsa_fpath=${root_ssh_dir}/id_rsa
 ${resize2fs_fpath} ${dev_mmcblk0p8_dir}
 echo -e ":-->${FG_ORANGE}STATUS${NOCOLOR}: RESIZED ${FG_LIGHTGREY}${dev_mmcblk0p8_dir}${NOCOLOR}"
 
-
+#Home folder fix permissions
+#Change home folder owner to 'ubuntu'
+chown ubuntu:ubuntu -R ${home_ubuntu_dir}
 
 #---SSH
 #For user 'ubuntu': create folder '.ssh'
