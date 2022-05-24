@@ -168,7 +168,6 @@ pinctrl-names = "default";
 
 &uart4 {
  pinctrl-names = "default";
- /* pinctrl-0 = <&pins_uart4>; */
  pinctrl-0 = <&pins_btuart &pins_bt_reset>;
  status = "okay";
  // this: enable (bt) | enable (uart4), pins_uart4

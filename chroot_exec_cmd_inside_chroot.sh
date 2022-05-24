@@ -348,21 +348,21 @@ echo -e "\r"
 echo "---Configure <PPA>---"
 echo -e "\r"
 echo ">Add Tibbo-PPA-Key"
-	curl -s --compressed "https://tibbotech.github.io/ltpp3g2_ppa/ppa/KEY.gpg" | apt-key add -
+	curl -s --compressed "https://tibbotech.github.io/ltpp3g2_ppa/u0_4_0/KEY.gpg" | apt-key add -
 
 echo -e "\r"
 echo ">Add Tibbo-PPA to 'sources.list'"
-	curl -s --compressed -o /etc/apt/sources.list.d/my_list_file.list "https://tibbotech.github.io/ltpp3g2_ppa/ppa/my_list_file.list"
+	curl -s --compressed -o /etc/apt/sources.list.d/my_list_file.list "https://tibbotech.github.io/ltpp3g2_ppa/u0_4_0/my_list_file.list"
 
 echo -e "\r"
 echo ">Installing update"
 echo -e "\r"
 	apt-get -y update
 
-#echo -e "\r"
-#echo "---Installing <tibbo-oobe>---"
-#echo -e "\r"
-#	apt-get -y install tibbo-oobe
+echo -e "\r"
+echo "---Installing <tibbo-oobe>---"
+echo -e "\r"
+	apt-get -y install tibbo-oobe
 
 # echo -e "\r"
 # echo "---Installing <pmount>---"
