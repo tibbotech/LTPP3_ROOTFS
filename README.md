@@ -60,12 +60,45 @@ Select option #2 (type `2`). This will provide a list of options for builds, as 
 
 ![Docker Sub-Menu](./doc/docker_menu_03.png)
 
-The base build that includes the core Ubuntu components, SP7021-specific software, and Tibbo's customizations, as well as the image binary, ends in _rootfs_ispboootbin.txt_.
+The base build that includes the core Ubuntu components, SP7021-specific software, and Tibbo's customizations, as well as the image binary, ends in _rootfs_ispboootbin.txt_. This is the recommended choice when starting out. However, if you would like to start farther upstream, you can pick one of the earlier options.
 
 You will be asked to confirm whether you wish to continue.
 Type `y` — no need to press `Enter`. 
 
 This will begin the process of downloading the various files needed to build images. As some of these files are very large (up to nearly 10GB), how long this process takes is highly dependent on your Internet connection, as well as your processor and storage speed.
+
+<br>
+
+***
+
+<br>
+
+## Changing build sources
+
+This script provides the ability to customize your build with alternate sources for components. This allows you to fork the repo, meaning you can make persistent changes from the point of the fork while still retaining automated build capabilities.
+
+![Docker Main Menu](./doc/docker_menu_01.png)
+
+From the main menu, selection option #1 (type `1`). This will take you to a submenu, as illustrated below.
+
+![Docker Sub-Menu](./doc/docker_menu_02.png)
+
+Select option #3 (type `3`). This will take you to another submenu.
+
+![Docker Sub-Menu](./doc/docker_menu_07.png)
+
+The first time you enter this menu, you'll need to select the docker-file with which to work. Select option #1 (type `1`) to do so.
+
+![Docker Sub-Menu](./doc/docker_menu_08.png)
+
+On a fresh pull from the repo, you'll only have one option: _dockerfile_ltps_sunplus_. Select it by typing `1`.
+
+![Docker Sub-Menu](./doc/docker_menu_09.png)
+
+You'll be returned to the first submenu. However, this time, you'll have additional options:
+* Choose, add, or delete links to repos
+* Choose, add, or delete checkout
+* Choose, add, or delete link-checkout profile
 
 <br>
 
