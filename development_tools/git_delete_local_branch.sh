@@ -38,7 +38,7 @@ function checkIf_branch_isCheckedOut__func() {
     local branchName_input=${1}
 
     #Check if 'branchName_input' already exists
-    local stdOutput=`git branch | grep -w "${branchName_input}" | grep "${DOCKER__BACKSLASH_ASTERISK}" 2>&1`
+    local stdOutput=`git branch | grep -w "${branchName_input}" | grep "${DOCKER__ESCAPED_ASTERISK}" 2>&1`
     if [[ ! -z ${stdOutput} ]]; then #contains data
         echo ${DOCKER__TRUE}
     else    #contains no data
@@ -74,11 +74,11 @@ function show_git_branchList__func() {
     for gitBranchList_arrItem in "${git__gitBranchList_arr[@]}"
     do 
         #Check if asterisk is present
-        asterisk_isFound=`checkForMatch_subString_in_string__func "${gitBranchList_arrItem}" "${DOCKER__BACKSLASH_ASTERISK}"`
+        asterisk_isFound=`checkForMatch_subString_in_string__func "${gitBranchList_arrItem}" "${DOCKER__ESCAPED_ASTERISK}"`
         if [[ ${asterisk_isFound} == ${DOCKER__TRUE} ]]; then
-            gitBranchList_arrItem_wo_asterisk=`echo ${gitBranchList_arrItem} | cut -d"${DOCKER__BACKSLASH_ASTERISK}" -f2`
+            gitBranchList_arrItem_wo_asterisk=`echo ${gitBranchList_arrItem} | cut -d"${DOCKER__ASTERISK}" -f2-`
 
-            echo -e "${DOCKER__FOURSPACES}${DOCKER__BACKSLASH_ASTERISK} ${DOCKER__FG_GREEN}${gitBranchList_arrItem_wo_asterisk}${DOCKER__NOCOLOR} (${CHECKED_OUT})"
+            echo -e "${DOCKER__FOURSPACES}${DOCKER__ASTERISK} ${DOCKER__FG_GREEN}${gitBranchList_arrItem_wo_asterisk}${DOCKER__NOCOLOR} (${CHECKED_OUT})"
         else
             echo -e "${DOCKER__FOURSPACES}${gitBranchList_arrItem}"
         fi
@@ -93,24 +93,41 @@ function show_git_branchList__func() {
 
 #---SUBROUTINES
 git__environmental_variables__sub() {
-	# git__current_dir=`pwd`
-	git__current_script_fpath="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
-    git__current_dir=$(dirname ${git__current_script_fpath})	#/repo/LTPP3_ROOTFS/development_tools
-	git__parent_dir=${git__current_dir%/*}    #gets one directory up (/repo/LTPP3_ROOTFS)
-    if [[ -z ${git__parent_dir} ]]; then
-        git__parent_dir="${DOCKER__SLASH}"
-    fi
-	git__current_folder=`basename ${git__current_dir}`
+    #Check the number of input args
+    if [[ -z ${docker__global__fpath} ]]; then   #must be equal to 3 input args
+        #---Defin FOLDER
+        docker__LTPP3_ROOTFS__foldername="LTPP3_ROOTFS"
+        docker__development_tools__foldername="development_tools"
 
-    git__development_tools_folder="development_tools"
-    if [[ ${git__current_folder} != ${git__development_tools_folder} ]]; then
-        git__my_LTPP3_ROOTFS_development_tools_dir=${git__current_dir}/${git__development_tools_folder}
-    else
-        git__my_LTPP3_ROOTFS_development_tools_dir=${git__current_dir}
-    fi
+        #Get all the directories containing the foldername 'LTPP3_ROOTFS'...
+        #... and read to array 'find_result_arr'
+        #Remark:
+        #   By using '2> /dev/null', the errors are not shown.
+        readarray -t find_dir_result_arr < <(find  / -type d -iname "${docker__LTPP3_ROOTFS__foldername}" 2> /dev/null)
 
-    docker__global__filename="docker_global.sh"
-    docker__global__fpath=${git__my_LTPP3_ROOTFS_development_tools_dir}/${docker__global__filename}
+        #Define variable
+        local find_path_of_LTPP3_ROOTFS=${DOCKER__EMPTYSTRING}
+
+        #Loop thru array-elements
+        for find_dir_result_arrItem in "${find_dir_result_arr[@]}"
+        do
+            #Update variable 'find_path_of_LTPP3_ROOTFS'
+            find_path_of_LTPP3_ROOTFS="${find_dir_result_arrItem}/${docker__development_tools__foldername}"
+            #Check if 'directory' exist
+            if [[ -d "${find_path_of_LTPP3_ROOTFS}" ]]; then    #directory exists
+                #Update variable
+                docker__LTPP3_ROOTFS_development_tools__dir="${find_path_of_LTPP3_ROOTFS}"
+
+                break
+            fi
+        done
+
+        docker__LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS_development_tools__dir%/*}    #move one directory up: LTPP3_ROOTFS/
+        docker__parentDir_of_LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS__dir%/*}    #move two directories up. This directory is the one-level higher than LTPP3_ROOTFS/
+
+        docker__global__filename="docker_global.sh"
+        docker__global__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__global__filename}
+    fi
 }
 
 git__load_source_files__sub() {
@@ -156,7 +173,7 @@ git__git_pull__sub() {
 
 
 #Goto phase: START
-GOTO__func START
+goto__func START
 
 
 
@@ -168,7 +185,7 @@ GOTO__func START
     echo -e "${DOCKER__FOURSPACES}${DOCKER__QUIT_CTRL_C}"
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
 
-    GOTO__func PRECHECK    #goto next-phase
+    goto__func PRECHECK    #goto next-phase
 
 
 
@@ -176,9 +193,9 @@ GOTO__func START
     #Check if the current directory is a git-repository
     git__stdErr=`git branch 2>&1 > /dev/null`
     if [[ ! -z ${git__stdErr} ]]; then   #not a git-repository
-        GOTO__func EXIT_PRECHECK_FAILED  #goto next-phase
+        goto__func EXIT_PRECHECK_FAILED  #goto next-phase
     else    #is a git-repository
-        GOTO__func BRANCH_LIST    #goto next-phase
+        goto__func BRANCH_LIST    #goto next-phase
     fi
 
 
@@ -190,7 +207,7 @@ GOTO__func START
     #Show Branch List
     show_git_branchList__func
 
-    GOTO__func BRANCH_INPUT    #goto next-phase
+    goto__func BRANCH_INPUT    #goto next-phase
 
 
 
@@ -246,15 +263,15 @@ GOTO__func START
                 if [[ ${myAnswer} == "q" ]]; then
                     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
-                    GOTO__func EXIT_SUCCESSFUL  #goto next-phase
+                    goto__func EXIT_SUCCESSFUL  #goto next-phase
                 elif [[ ${myAnswer} == "n" ]]; then
                     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
 
-                    GOTO__func BRANCH_LIST    #goto next-phase
+                    goto__func BRANCH_LIST    #goto next-phase
                 else
                     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
 
-                    GOTO__func DELETE_BRANCH    #goto next-phase
+                    goto__func DELETE_BRANCH    #goto next-phase
                 fi
 
                 break
@@ -285,10 +302,10 @@ GOTO__func START
         moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
         
         #Goto next-phase
-        GOTO__func GET_AND_SHOW_BRANCH_LIST
+        goto__func GET_AND_SHOW_BRANCH_LIST
     else
         #Goto next-phase
-        GOTO__func EXIT_FAILED
+        goto__func EXIT_FAILED
     fi
 
 
@@ -301,7 +318,7 @@ GOTO__func START
     show_git_branchList__func
 
     #Goto next-phase
-    GOTO__func EXIT_SUCCESSFUL
+    goto__func EXIT_SUCCESSFUL
 
 
 

@@ -41,8 +41,8 @@ docker__init_variables__sub() {
 
     docker__exitCode=0
 
-    docker__ps_a_cmd="docker ps -a"
-    docker__ps_a_containerIdColno=1
+    # docker__ps_a_cmd="docker ps -a"
+    # docker__ps_a_containerIdColno=1
 
     docker__showTable=false
     docker__onEnter_breakLoop=true

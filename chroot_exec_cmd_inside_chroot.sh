@@ -97,9 +97,13 @@ sudo_fpath=${usr_bin_dir}/sudo
 sshd_fpath=${etc_dir}/ssh/sshd_config
 yaml_fpath=${etc_dir}/netplan/\*.yaml
 
-enable_eth1_before_login_service_filename="enable-eth1-before-login.service"
-enable_eth1_before_login_service_fpath=${etc_systemd_system_dir}/${enable_eth1_before_login_service_filename}
-enable_eth1_before_login_service_symlink_fpath=${etc_systemd_system_multi_user_target_wants_dir}/${enable_eth1_before_login_service_filename}
+# enable_eth1_before_login_service_filename="enable-eth1-before-login.service"
+# enable_eth1_before_login_service_fpath=${etc_systemd_system_dir}/${enable_eth1_before_login_service_filename}
+# enable_eth1_before_login_service_symlink_fpath=${etc_systemd_system_multi_user_target_wants_dir}/${enable_eth1_before_login_service_filename}
+
+# daisychain_state_service_filename="daisychain_state.service"
+# daisychain_state_service_fpath=${etc_systemd_system_dir}/${daisychain_state_service_filename}
+# daisychain_state_service_symlink_fpath=${etc_systemd_system_multi_user_target_wants_dir}/${daisychain_state_service_filename}
 
 create_chown_pwm_service_filename="create-chown-pwm.service"
 create_chown_pwm_service_fpath=${etc_systemd_system_dir}/${create_chown_pwm_service_filename}
@@ -348,21 +352,21 @@ echo -e "\r"
 echo "---Configure <PPA>---"
 echo -e "\r"
 echo ">Add Tibbo-PPA-Key"
-	curl -s --compressed "https://tibbotech.github.io/ltpp3g2_ppa/u0_4_0/KEY.gpg" | apt-key add -
+	curl -s --compressed "https://tibbotech.github.io/ltpp3g2_ppa/ppa/KEY.gpg" | apt-key add -
 
 echo -e "\r"
 echo ">Add Tibbo-PPA to 'sources.list'"
-	curl -s --compressed -o /etc/apt/sources.list.d/my_list_file.list "https://tibbotech.github.io/ltpp3g2_ppa/u0_4_0/my_list_file.list"
+	curl -s --compressed -o /etc/apt/sources.list.d/my_list_file.list "https://tibbotech.github.io/ltpp3g2_ppa/ppa/my_list_file.list"
 
 echo -e "\r"
 echo ">Installing update"
 echo -e "\r"
 	apt-get -y update
 
-echo -e "\r"
-echo "---Installing <tibbo-oobe>---"
-echo -e "\r"
-	apt-get -y install tibbo-oobe
+#echo -e "\r"
+#echo "---Installing <tibbo-oobe>---"
+#echo -e "\r"
+#	apt-get -y install tibbo-oobe
 
 # echo -e "\r"
 # echo "---Installing <pmount>---"
@@ -479,6 +483,10 @@ echo "---Enable Services---"
 # echo -e "\r"
 # echo ">Create symlink for <${enable_eth1_before_login_service_filename}>"
 # 	ln -s ${enable_eth1_before_login_service_fpath} ${enable_eth1_before_login_service_symlink_fpath}
+
+# echo -e "\r"
+# echo ">Create symlink for <${daisychain_state_service_filename}>"
+# 	ln -s ${daisychain_state_service_fpath} ${daisychain_state_service_symlink_fpath}
 
 echo -e "\r"
 echo ">Create symlink for <${create_chown_pwm_service_filename}>"
