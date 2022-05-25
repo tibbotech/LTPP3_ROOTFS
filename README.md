@@ -85,15 +85,15 @@ From the main menu, selection option #1 (type `1`). This will take you to a subm
 
 Select option #3 (type `3`). This will take you to another submenu.
 
-![Docker Sub-Menu](./doc/docker_menu_07.png)
+![Docker Sub-Menu](./doc/docker_menu_08.png)
 
 The first time you enter this menu, you'll need to select the docker-file with which to work. Select option #1 (type `1`) to do so.
 
-![Docker Sub-Menu](./doc/docker_menu_08.png)
+![Docker Sub-Menu](./doc/docker_menu_09.png)
 
 On a fresh pull from the repo, you'll only have one option: _dockerfile_ltps_sunplus_. Select it by typing `1`.
 
-![Docker Sub-Menu](./doc/docker_menu_09.png)
+![Docker Sub-Menu](./doc/docker_menu_10.png)
 
 You'll be returned to the first submenu. However, this time, you'll have additional options:
 * Choose, add, or delete links to repos
@@ -108,9 +108,7 @@ You'll be returned to the first submenu. However, this time, you'll have additio
 
 ## Getting the Binary 
 
-After the script completes successfully, the images containing the different steps of the build process are displayed.
-
-You will now be back at the main menu of the interactive script.
+After the image creation script completes successfully, the images containing the different steps of the build process are displayed. You will now be back at the image creation submenu. Type `q` to return to the main menu.
 
 ![Docker Main Menu](./doc/docker_menu_01.png)
 
@@ -118,9 +116,9 @@ Select option #4 (type `4`). This will take you to a submenu, as illustrated bel
 
 ![Docker Sub-Menu](./doc/docker_menu_04.png)
 
-Type the name of image you want to use; in this case, that would be `ltps_rootfs_ispboootbin`.
+Type the **ID** of image you want to use. When you're just starting out, we recommend using _ltps_rootfs_ispboootbin_. 
 
-At the subsequent prompt, type the name of the tag you want to use. To use the default ("latest"), just press `Enter`.
+_Hint: You can press `tab` to autocomplete._
 
 After the container is created, a summary will show the IP address and port you can use to SSH into it.
 
@@ -137,13 +135,17 @@ Alternatively, the script can also extract the file for you.
 
 At the main menu, enter `8`, which takes you to a submenu.
 
-You can specify which file to extract or insert into the container. In this case, you'll want to type `1` to extract the image. 
-
-You will be asked for the container ID, source directory, filename, and destination directory. Pressing `Enter` at these prompts will use the default value.
-
-You will be prompted to confirm that you want to continue. Type `y`.
-
 ![Docker Sub-Menu](./doc/docker_menu_06.png)
+
+You can specify whether you want to extract or insert a file. In this case, you'll want to type `1` to extract the image. 
+
+You will be asked for the container ID, source directory and filename (usually `/root/SP7021/out/ISPBOOOT.BIN`), and destination directory.
+
+_Hint: You can press `tab` to autocomplete._
+
+You will be shown a summary and prompted to confirm that you want to continue. Type `y` to extract.
+
+![Docker Sub-Menu](./doc/docker_menu_07.png)
 
 <br>
 
