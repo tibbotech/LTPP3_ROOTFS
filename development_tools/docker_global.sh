@@ -1,10 +1,19 @@
 #!/bin/bash
+
+
+
 #---BOOLEAN CONSTANTS
 DOCKER__TRUE=true
 DOCKER__FALSE=false
 
 DOCKER__N="n"
 DOCKER__Y="y"
+
+
+
+#---CACHE CONSTANTS
+DOCKER__ENTER_CMDLINE_MODE_CACHE_MAX=50  ##maximum number of entries for 'docker_enter_cmdline_mode.sh'
+DOCKER__GIT_CACHE_MAX=50    #maximum number of entries for Git-Link and Git-Checkout
 
 
 
@@ -41,7 +50,7 @@ DOCKER__ESCAPED_BACKSLASHDOT="\\."
 DOCKER__ESCAPED__BACKSLASH_ESCAPE_DOT="\\\."    #used in grep
 DOCKER__ESCAPED_DOTBACKSLASH=".\\"
 DOCKER__ESCAPED_HOOKLEFT="\<"
-DOCKER__ESCAPED__HOOKRIGHT="\>"
+DOCKER__ESCAPED_HOOKRIGHT="\>"
 DOCKER__ESCAPED_QUOTE="\""
 DOCKER__ESCAPED_SLASH="\/"
 DOCKER__DOUBLE_ESCAPE_SLASH="${DOCKER__ESCAPED_SLASH}${DOCKER__ESCAPED_SLASH}"
@@ -58,6 +67,12 @@ DOCKER__ESCAPEKEY=$'\x1b'   #note: this escape key is ^[
 DOCKER__TAB=$'\t'
 
 DOCKER__CARET_C="^C"
+
+#Remarks:
+#   This cosntant has to be used in combination with 'disable_stty_intr__func' and 'enable_stty_intr__func'
+#   For example see script: docker_enter_cmdline_mode.sh
+DOCKER__CTRL_C=$'\003'
+DOCKER__CTRL_H=\^H
 
 
 
@@ -100,6 +115,12 @@ DOCKER__BG_LIGHTBLUE=$'\e[30;48;5;45m'
 DOCKER__BG_LIGHTGREY=$'\e[30;48;5;246m'
 DOCKER__BG_LIGHTSOFTYELLOW=$'\e[30;48;5;229m'
 DOCKER__BG_WHITE=$'\e[30;48;5;15m'
+
+
+
+#---COMMAND CONSTANTS
+DOCKER__CD="cd"
+DOCKER__EXIT="exit"
 
 
 
@@ -153,6 +174,13 @@ DOCKER__CONFIGNAME____DOCKER__DOCKERFILE_FPATH="docker__dockerFile_fpath"
 #---ENV VARIABLES (WHICH ARE USED IN THE DOCKERFILE FILES)
 DOCKER__CONTAINER_ENV1="CONTAINER_ENV1"
 DOCKER__CONTAINER_ENV2="CONTAINER_ENV2"
+
+
+
+#---EXCLUSION CONSTANTS
+DOCKER__EXCL_CMD_ARR=()
+DOCKER__EXCL_CMD_ARR+=("${DOCKER__CD}")
+DOCKER__EXCL_CMD_ARR+=("${DOCKER__EXIT}")
 
 
 
@@ -210,11 +238,6 @@ DOCKER__FUNC_24="24"
 
 
 
-#---GIT CONSTANTS
-DOCKER__GIT_CACHE_MAX=50    #maximum number of entries for Git-Link and Git-Checkout
-
-
-
 #---NUMERIC CONSTANTS
 DOCKER__COLNUM_2=2
 DOCKER__COLNUM_3=3
@@ -222,6 +245,8 @@ DOCKER__COLNUM_3=3
 DOCKER__LINENUM_0=0
 DOCKER__LINENUM_1=1
 DOCKER__LINENUM_2=2
+
+DOCKER__MINUS_ONE=-1
 
 DOCKER__NUMOFCHARS_1=1
 DOCKER__NUMOFCHARS_2=2
@@ -291,12 +316,18 @@ DOCKER__BACK="b"
 DOCKER__CLEAR="c"
 DOCKER__HOME="h"
 DOCKER__NO="n"
+DOCKER__OVERWRITE="o"
 DOCKER__QUIT="q"
 DOCKER__REDO="r"
 DOCKER__YES="y"
 
 DOCKER__Y_SLASH_N="${DOCKER__Y}/${DOCKER__N}"
-DOCKER__Y_SLASH_N_SLASH_B="${DOCKER__Y}/${DOCKER__N}/${DOCKER__BACK}"
+DOCKER__Y_SLASH_N_SLASH_B="${DOCKER__Y_SLASH_N}/${DOCKER__BACK}${DOCKER__FG_LIGHTGREY}ack${DOCKER__NOCOLOR}"
+DOCKER__Y_SLASH_N_SLASH_H="${DOCKER__Y_SLASH_N}/${DOCKER__HOME}${DOCKER__FG_LIGHTGREY}ome${DOCKER__NOCOLOR}"
+DOCKER__Y_SLASH_N_SLASH_O="${DOCKER__Y_SLASH_N}/${DOCKER__OVERWRITE}${DOCKER__FG_LIGHTGREY}verwrite${DOCKER__NOCOLOR}"
+
+DOCKER__Y_SLASH_N_SLASH_O_B_H="${DOCKER__Y_SLASH_N_SLASH_O}/${DOCKER__BACK}${DOCKER__FG_LIGHTGREY}ack${DOCKER__NOCOLOR}/"
+DOCKER__Y_SLASH_N_SLASH_O_B_H+="${DOCKER__HOME}${DOCKER__FG_LIGHTGREY}ome${DOCKER__NOCOLOR}"
 
 DOCKER__SEMICOLON_BACK=";b"
 DOCKER__SEMICOLON_CLEAR=";c"
@@ -357,6 +388,7 @@ DOCKER__TWOSPACES=${DOCKER__ONESPACE}${DOCKER__ONESPACE}
 DOCKER__THREESPACES=${DOCKER__TWOSPACES}${DOCKER__ONESPACE}
 DOCKER__FOURSPACES=${DOCKER__TWOSPACES}${DOCKER__TWOSPACES}
 DOCKER__FIVESPACES=${DOCKER__FOURSPACES}${DOCKER__ONESPACE}
+DOCKER__SEVENSPACES=${DOCKER__FOURSPACES}${DOCKER__THREESPACES}
 DOCKER__TENSPACES=${DOCKER__FIVESPACES}${DOCKER__FIVESPACES}
 
 
@@ -407,6 +439,10 @@ DOCKER__HTTP_200=200
 docker__images_cmd="docker images"
 docker__ps_a_cmd="docker ps -a"
 
+docker__images_repoColNo=1
+docker__images_tagColNo=2
+docker__images_IDColNo=3
+docker__ps_a_containerIdColno=1
 
 
 #---EXTERN CONSTANTS & VARIABLES
@@ -421,6 +457,10 @@ extern__ret=${DOCKER__EMPTYSTRING}
 
 
 #---SPECIFAL FUNCTIONS
+function erase_ctrl_h__func() {
+    stty erase ${DOCKER__CTRL_H}
+}
+
 function cursor_hide__func() {
     printf '\e[?25l'
 }
@@ -450,9 +490,38 @@ function disable_ctrl_c__func() {
     trap '' ${DOCKER__TRAP_NUM_2}
 }
 
+function enable_stty_intr__func() {
+    stty sane
+
+    #This function MUST be executed
+    #Note: 
+    #   If this function is NOT executed, when pressing <backspace>
+    #   MobaXterm sends (^H).
+    erase_ctrl_h__func
+}
+
+function disable_stty_intr__func() {
+    stty intr ''
+}
+
 function unset_extern_variables__func() {
     unset extern__req
     unset extern__ret
+}
+
+function cmd_exec__func() {
+    #Input args
+    cmd=${1}
+
+    #Define local variable
+    currUser=$(whoami)
+
+    #Exec command
+    if [[ ${currUser} != "root" ]]; then
+        sudo ${cmd}
+    else
+        ${cmd}
+    fi
 }
 
 function exit__func() {
@@ -549,13 +618,14 @@ function confirmation_w_timer__func() {
 
 
 	#Initialize variables
-    local regEx=${DOCKER__EMPTYSTRING}
-    if [[ ${confirmation_choices__input} == ${DOCKER__Y_SLASH_N} ]]; then
-        regEx="[yn]"
-    else   #confirmation_choices__input =  DOCKER__Y_SLASH_N_SLASH_B_SLASH_Q
-        regEx="[ynbq]"
-    fi
+    # local regEx=${DOCKER__EMPTYSTRING}
+    # if [[ ${confirmation_choices__input} == ${DOCKER__Y_SLASH_N} ]]; then
+    #     regEx="[yn]"
+    # else   #confirmation_choices__input =  DOCKER__Y_SLASH_N_SLASH_B_SLASH_Q
+    #     regEx="[ynbq]"
+    # fi
 
+    local match_isFound=${DOCKER__EMPTYSTRING}
 	local ret=${DOCKER__EMPTYSTRING}
 	local tCounter=0
 
@@ -574,8 +644,6 @@ function confirmation_w_timer__func() {
     fi
     local after_confirmation_append_numOfLines=$((append_numOfLines - 1))
 
-
-
     #Hide cursor
     # cursor_hide__func
 
@@ -585,10 +653,10 @@ function confirmation_w_timer__func() {
 	do
 		delta_tcounter=$(( ${timeout} - ${tCounter} ))
 
-		read -N1 -t1 -r -p "${ECHOMSG_DO_YOU_WISH_TO_CONTINUE} (${delta_tcounter}) (${confirmation_choices__input})? " ret
-
+		read -N1 -t1 -r -p "${ECHOMSG_DO_YOU_WISH_TO_CONTINUE} (${confirmation_choices__input}) (${delta_tcounter})? " ret
 		if [[ ! -z "${ret}" ]]; then
-			if [[ "${ret}" =~ ${regEx} ]]; then
+            match_isFound=`echo "${confirmation_choices__input}" | grep "${ret}"`
+			if [[ ! -z "${match_isFound}" ]]; then
                 moveDown_and_cleanLines__func "${after_confirmation_append_numOfLines}"
 
 				break
@@ -1226,6 +1294,28 @@ function remove_allEmptyLines_within_file__func() {
     sed -i '/^$/d' ${targetFpath__input}
 }
 
+function remove_all_lines_from_file_after_a_specified_lineNum__func() {
+    #Input args
+    local targetFpath__input="${1}"
+    local tmpFpath__input="${2}"
+    local lineNumMax__input="${3}"
+
+    #Check if the number of linies of file 'targetFpath__input'
+    local targetFpath_numOfLines=`cat ${targetFpath__input} | wc -l`
+    #Check if 'targetFpath_numOfLines < lineNumMax__input'
+    #If true, then do nothing and exit function
+    if [[ ${targetFpath_numOfLines} -le ${lineNumMax__input} ]]; then
+        return
+    fi
+
+    #Remove all lines which follows AFTER 'lineNumMax__input'...
+    #...and write to a temporary file 'tmpFpath__input'
+    head -n${lineNumMax__input} "${targetFpath__input}" > ${tmpFpath__input}
+
+    #Copy 'tmpFpath__input' to 'targetFpath__input'
+    cp ${tmpFpath__input} ${targetFpath__input}
+}
+
 function retrieve_files_from_specified_dir_basedOn_matching_patterns__func() {
     #Input args
     local dir__input=${1}
@@ -1555,7 +1645,7 @@ function show_errMsg_wo_menuTitle_and_exit_func() {
     exit__func "${DOCKER__EXITCODE_99}" "${DOCKER__NUMOFLINES_0}"
 }
 
-function show_pathContent_w_keyInput__func() {
+function show_pathContent_w_selection__func() {
 #---Input args
     local path__input=${1}  #could be a directory or file
     local selItem__input=${2}
@@ -1585,6 +1675,7 @@ function show_pathContent_w_keyInput__func() {
     local fpath_arr_string=${DOCKER__EMPTYSTRING}
 
     local fpath_arrTmp=()
+    local fpath_arrTmpLen=0
     local fpath_arrTmp_string=${DOCKER__EMPTYSTRING}
 
     #Relative array, which contains only the number of elements equal to 'table_index_max__input'.
@@ -1638,7 +1729,7 @@ function show_pathContent_w_keyInput__func() {
     readDialog_numOfLines=`get_numOfLines_for_specified_string_or_file__func "${readDialog__input}"`
 
     #fixed objects
-    fixed_numOfLines=${DOCKER__NUMOFLINES_4}    #due to a fixed number of horizontal and empty lines
+    fixed_numOfLines=${DOCKER__NUMOFLINES_5}    #due to a fixed number of horizontal and empty lines
     if [[ ${remark_numOfLines} -gt ${DOCKER__NUMOFMATCH_0} ]]; then
         fixed_numOfLines=$((fixed_numOfLines + 1))  #due to the preceding horizontal line
     fi
@@ -1680,24 +1771,38 @@ function show_pathContent_w_keyInput__func() {
                             "${pattern2__input}"`
 #-------Convert string to array
         read -a fpath_arrTmp <<< "${fpath_arrTmp_string}"
-    else    #is a file
-        readarray -t fpath_arrTmp < <(cat "${path__input}")
+    else    #is a file or...
+        if [[ -s ${path__input} ]]; then    #file contains data
+            readarray -t fpath_arrTmp < <(cat "${path__input}")
+        fi
     fi
 
 
-    #Check if a match string 'selItem__input' is provided
-    if [[ ! -z ${selItem__input} ]]; then   #contains data
-        #Rearrange array and place 'selItem__input' on top of the array.
-        #Note: the output 'fpath_arr_string' is a string.
-        fpath_arr_string=`array_find_and_move_element_toTop__func "${selItem__input}" "${fpath_arrTmp[@]}"`
 
-        #Convert string to array
-        #Remark:
-        #   Even though the array has been re-arranged,
-        #   still 'fpath_arr' will not be written to a file!
-        read -a fpath_arr <<< "${fpath_arr_string}"
-    else    #contains no data
-        fpath_arr=("${fpath_arrTmp[@]}")
+#---Set 'table_index_max__input' (if needed)
+    if [[ -z ${fpath_arrTmp[@]} ]]; then
+        table_index_max__input=${DOCKER__NUMOFLINES_5}
+    fi
+
+#---Get Length of 'fpath_arrTmp'
+    fpath_arrTmpLen=${#fpath_arrTmp[@]}
+
+
+#---Check if a match string 'selItem__input' is provided
+    if [[ ${fpath_arrTmpLen} -gt ${DOCKER__NUMOFMATCH_0} ]]; then
+        if [[ ! -z ${selItem__input} ]]; then   #contains data
+            #Rearrange array and place 'selItem__input' on top of the array.
+            #Note: the output 'fpath_arr_string' is a string.
+            fpath_arr_string=`array_find_and_move_element_toTop__func "${selItem__input}" "${fpath_arrTmp[@]}"`
+
+            #Convert string to array
+            #Remark:
+            #   Even though the array has been re-arranged,
+            #   still 'fpath_arr' will not be written to a file!
+            read -a fpath_arr <<< "${fpath_arr_string}"
+        else    #contains no data
+            fpath_arr=("${fpath_arrTmp[@]}")
+        fi
     fi
 
     #Get 'fpath_arrLen'
@@ -1795,7 +1900,7 @@ function show_pathContent_w_keyInput__func() {
                             "${SED__HXXP}"`
                                 
                     #Show fpath_arrItem_conv
-                    echo -e "${fpath_arrItem_print}"
+                    echo "${fpath_arrItem_print}"
                 fi
 
                 #Prevously 'table_index' was set to '0'.
@@ -1868,25 +1973,34 @@ function show_pathContent_w_keyInput__func() {
         if [[ ${lineNum_range_relMax} -gt ${fpath_arrLen} ]]; then
             lineNum_range_relMax=${fpath_arrLen}
         fi
-        lineNum_range_relMin=$((table_index_base + 1))
+
+        #Check if 'fpath_arrLen = 0'
+        if [[ ${fpath_arrLen} -eq ${DOCKER__NUMOFMATCH_0} ]]; then  #array contains no data
+            lineNum_range_relMin=${DOCKER__LINENUM_0}
+        else    #array contains data
+            lineNum_range_relMin=$((table_index_base + 1))
+        fi
+
         lineNum_range_max_abs=${fpath_arrLen}
 
         #Prepare the line-number range message
         lineNum_range_msg="${DOCKER__FG_LIGHTGREY}${lineNum_range_relMin}${DOCKER__NOCOLOR} "
         lineNum_range_msg+="to ${DOCKER__FG_LIGHTGREY}${lineNum_range_relMax}${DOCKER__NOCOLOR} "
         lineNum_range_msg+="(${DOCKER__FG_SOFTLIGHTRED}${lineNum_range_max_abs}${DOCKER__NOCOLOR})"
-        
-        #Caclulate the length of 'lineNum_range_msg' without regEx
-        lineNum_range_msg_wo_regEx_len=`get_stringlen_wo_regEx__func "${lineNum_range_msg}"`
 
-        #Determine the start-position of where to place 'lineNum_range_msg'
-        lineNum_range_msg_startPos=$(( (DOCKER__TABLEWIDTH/2) - (lineNum_range_msg_wo_regEx_len/2) ))
+        show_centered_string__func "${lineNum_range_msg}" "${DOCKER__TABLEWIDTH}"
 
-        #Move cursor to start-position 'lineNum_range_msg_startPos'
-        tput cuu1 && tput cuf ${lineNum_range_msg_startPos}
+        # #Caclulate the length of 'lineNum_range_msg' without regEx
+        # lineNum_range_msg_wo_regEx_len=`get_stringlen_wo_regEx__func "${lineNum_range_msg}"`
 
-        #Print 'lineNum_range_msg'
-        echo -e "${lineNum_range_msg}"
+        # #Determine the start-position of where to place 'lineNum_range_msg'
+        # lineNum_range_msg_startPos=$(( (DOCKER__TABLEWIDTH/2) - (lineNum_range_msg_wo_regEx_len/2) ))
+
+        # #Move cursor to start-position 'lineNum_range_msg_startPos'
+        # tput cuu1 && tput cuf ${lineNum_range_msg_startPos}
+
+        # #Print 'lineNum_range_msg'
+        # echo -e "${lineNum_range_msg}"
 
 
 
@@ -2045,9 +2159,10 @@ function show_pathContent_w_keyInput__func() {
                         else
                             moveToBeginning_and_cleanLine__func
                         fi             
-                    else
+                    else    #any other keys
                         #'matchPattern__input' could contain any keys other than function-keys or numbers [1-90]
-                        #***NOT TESTED YET                    
+                        #Remark:
+                        #   This part has been tested, but NOT thoroughly.                
                         if [[ ! -z ${matchPattern__input} ]]; then  #not an Empty String
                             #Check if the retrieved function-key 'keyInput' matches the pattern 'matchPattern__input'
                             flag_matched_fkey_isPressed=`checkForMatch_of_pattern_within_string__func \
@@ -2082,17 +2197,17 @@ function show_pathContent_w_keyInput__func() {
 
 
 #---Output
-    #on line-number: 1
+    #write to line-number: 1
     echo "${ret}" > ${outputFpath__input}
 
-    #on line-number: 2
+    #write to line-number: 2
     #Remark:
     #   This may be useful in case the whole table needs to be cleared...
-    #   ...which was drawn by this subroutine 'show_pathContent_w_keyInput__func'.
+    #   ...which was drawn by this subroutine 'show_pathContent_w_selection__func'.
     echo "${tot_numOfLines}" >> ${outputFpath__input}
 }
 
-function show_fileContent_wo_keyInput__func() {
+function show_fileContent_wo_select__func() {
 #---Input args
     local fpath__input=${1}
     local menuTitle__input=${2}
@@ -2103,6 +2218,8 @@ function show_fileContent_wo_keyInput__func() {
     local readDialog__input=${7}
     local outputFpath__input=${8}
     local table_index_max__input=${9}
+    local menuTitle_indent__input=${10}  #leading spaces to-be-added before 'menuTitle__input'
+    local flag_pressAnyKey_isEnabled=${11}
 
 
 
@@ -2144,7 +2261,7 @@ function show_fileContent_wo_keyInput__func() {
     readDialog_numOfLines=`get_numOfLines_for_specified_string_or_file__func "${readDialog__input}"`
 
     #fixed objects
-    fixed_numOfLines=${DOCKER__NUMOFLINES_4}    #due to a fixed number of horizontal and empty lines
+    fixed_numOfLines=${DOCKER__NUMOFLINES_5}    #due to a fixed number of horizontal and empty lines
     if [[ ${remark_numOfLines} -gt ${DOCKER__NUMOFMATCH_0} ]]; then
         fixed_numOfLines=$((fixed_numOfLines + 1))  #due to the preceding horizontal line
     fi
@@ -2152,6 +2269,9 @@ function show_fileContent_wo_keyInput__func() {
         fixed_numOfLines=$((fixed_numOfLines + 1))  #due to the preceding horizontal line
     fi
     if [[ ${menuOptions_numOfLines} -gt ${DOCKER__NUMOFMATCH_0} ]]; then
+        fixed_numOfLines=$((fixed_numOfLines + 1))  #due to the preceding horizontal line
+    fi
+    if [[ ${flag_pressAnyKey_isEnabled} == true ]]; then
         fixed_numOfLines=$((fixed_numOfLines + 1))  #due to the preceding horizontal line
     fi
 
@@ -2178,10 +2298,30 @@ function show_fileContent_wo_keyInput__func() {
 #---Store directory content in array'
     #Remark: 
     #   Also make sure to substitute '<space>' with '${STX}space${ETX}'
-    readarray -t fpath_arr < ${fpath__input}
+    if [[ -s ${fpath__input} ]]; then   #file contains data
+        readarray -t fpath_arr < ${fpath__input}
+    fi
 
-    #Get 'fpath_arrLen'
+#---Get 'fpath_arrLen'
     fpath_arrLen=${#fpath_arr[@]}
+
+
+
+#---Set 'table_index_max__input' (if needed)
+    #Note: 
+    #   The condition to check whether 'array contains no data' is preferred over...
+    #   ...checking whether the 'array-length is zero', because...
+    #   ...should the array contains empty lines then the array-length is non-zero.
+    #   This is behavior is unwanted.
+    if [[ -z "${fpath_arr[@]}" ]]; then   #array contains no data
+        table_index_max__input=${DOCKER__NUMOFLINES_5}
+    else    #array contains data
+        if [[ ${fpath_arrLen} -le ${table_index_max__input} ]]; then
+            table_index_max__input=${fpath_arrLen}
+        fi
+    fi
+
+
 
 #---Show directory content
     while true
@@ -2195,9 +2335,9 @@ function show_fileContent_wo_keyInput__func() {
 
 
 #-------Show menu-title
-        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-        show_centered_string__func "${menuTitle__input}" "${DOCKER__TABLEWIDTH}"
-        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+        # duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+        show_menuTitle_only__func "${menuTitle__input}" "${menuTitle_indent__input}"
+        # duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
 
         if [[ ! -z ${fpath_arr[@]} ]]; then
             #Initialization
@@ -2227,7 +2367,7 @@ function show_fileContent_wo_keyInput__func() {
                     fi
 
                     #Print fpath_arrItem
-                    echo -e "${DOCKER__FOURSPACES}${fpath_arrItem}"
+                    echo "${DOCKER__FOURSPACES}${fpath_arrItem}"
                 fi
 
                 #Prevously 'table_index' was set to '0'.
@@ -2239,6 +2379,7 @@ function show_fileContent_wo_keyInput__func() {
             done    #end of for
         else
             moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
             show_centered_string__func "${errMsg__input}" "${DOCKER__TABLEWIDTH}"
         fi
 
@@ -2294,41 +2435,53 @@ function show_fileContent_wo_keyInput__func() {
         if [[ ${lineNum_range_relMax} -gt ${fpath_arrLen} ]]; then
             lineNum_range_relMax=${fpath_arrLen}
         fi
-        lineNum_range_relMin=$((table_index_base + 1))
+
+        #Check if 'fpath_arrLen = 0'
+        if [[ ${fpath_arrLen} -eq ${DOCKER__NUMOFMATCH_0} ]]; then  #array contains no data
+            lineNum_range_relMin=${DOCKER__LINENUM_0}
+        else    #array contains data
+            lineNum_range_relMin=$((table_index_base + 1))
+        fi
+
         lineNum_range_max_abs=${fpath_arrLen}
 
         #Prepare the line-number range message
         lineNum_range_msg="${DOCKER__FG_LIGHTGREY}${lineNum_range_relMin}${DOCKER__NOCOLOR} "
         lineNum_range_msg+="to ${DOCKER__FG_LIGHTGREY}${lineNum_range_relMax}${DOCKER__NOCOLOR} "
         lineNum_range_msg+="(${DOCKER__FG_SOFTLIGHTRED}${lineNum_range_max_abs}${DOCKER__NOCOLOR})"
-        
-        #Caclulate the length of 'lineNum_range_msg' without regEx
-        lineNum_range_msg_wo_regEx_len=`get_stringlen_wo_regEx__func "${lineNum_range_msg}"`
 
-        #Determine the start-position of where to place 'lineNum_range_msg'
-        lineNum_range_msg_startPos=$(( (DOCKER__TABLEWIDTH/2) - (lineNum_range_msg_wo_regEx_len/2) ))
+        show_centered_string__func "${lineNum_range_msg}" "${DOCKER__TABLEWIDTH}"
 
-        #Move cursor to start-position 'lineNum_range_msg_startPos'
-        tput cuu1 && tput cuf ${lineNum_range_msg_startPos}
+        # #Caclulate the length of 'lineNum_range_msg' without regEx
+        # lineNum_range_msg_wo_regEx_len=`get_stringlen_wo_regEx__func "${lineNum_range_msg}"`
 
-        #Print 'lineNum_range_msg'
-        echo -e "${lineNum_range_msg}"
+        # #Determine the start-position of where to place 'lineNum_range_msg'
+        # lineNum_range_msg_startPos=$(( (DOCKER__TABLEWIDTH - lineNum_range_msg_wo_regEx_len)/2 ))
+
+        # #Move cursor to start-position 'lineNum_range_msg_startPos'
+        # tput cuu1 && tput cuf ${lineNum_range_msg_startPos}
+
+        # #Print 'lineNum_range_msg'
+        # echo -e "${lineNum_range_msg}"
 
 
 
-#-------Show info & menu-options
+#-------Show info
         # moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-        info__input=`trim_string_toFit_specified_windowSize__func "${info__input}" \
-                        "${DOCKER__TABLEWIDTH}" \
-                        "${DOCKER__TRUE}"`
         if [[ ! -z ${info__input} ]]; then
             duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+            #Trim 'info__input' (if necessary)
+            info__input=`trim_string_toFit_specified_windowSize__func "${info__input}" \
+                            "${DOCKER__TABLEWIDTH}" \
+                            "${DOCKER__TRUE}"`
             echo -e "${info__input}"
         fi
+#-------Show remark
         if [[ ! -z ${remark__input} ]]; then
             duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
             echo -e "${remark__input}"
         fi
+#-------Show menu-options
         if [[ ! -z ${menuOptions__input} ]]; then
             duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
             echo -e "${menuOptions__input}"
@@ -2339,8 +2492,28 @@ function show_fileContent_wo_keyInput__func() {
 #-------Enable keyboard-input
         enable_keyboard_input__func
 
+
 #-------Show cursor
         cursor_show__func
+
+
+#-------Check if 'flag_pressAnyKey_isEnabled = true'
+        if [[ "${flag_pressAnyKey_isEnabled}" == true ]]; then
+            #Check if array 'fpath_arr' contains data
+            #Note: 
+            #   The condition to check whether 'array contains no data' is preferred over...
+            #   ...checking whether the 'array-length is zero', because...
+            #   ...should the array contains empty lines then the array-length is non-zero.
+            #   This is behavior is unwanted.
+            if [[ -z "${fpath_arr[@]}" ]]; then   #array contains no data
+                return
+            else    #array contains data
+                if [[ ${fpath_arrLen} -le ${table_index_max__input} ]]; then
+                    return
+                fi
+            fi
+        fi
+
 
 #-------Read-input
         while true
@@ -2351,6 +2524,15 @@ function show_fileContent_wo_keyInput__func() {
             #Check if 'keyInput' is a numeric value
             case "${keyInput}" in
                 ${DOCKER__ENTER})
+                    #Check if 'flag_pressAnyKey_isEnabled = true'
+                    #Remark:
+                    #   If true, then exit upon pressing Enter.
+                    if [[ ${flag_pressAnyKey_isEnabled} == true ]]; then
+                        moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+                        return
+                    fi
+
                     moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
                     ;;
                 ${DOCKER__ESCAPED_HOOKLEFT})
@@ -2391,16 +2573,47 @@ function show_fileContent_wo_keyInput__func() {
                 ${DOCKER__ESCAPEKEY})
                     moveToBeginning_and_cleanLine__func
 
+                    #Get the function-key which was pressed
                     keyOutput=`functionKey_detection__func "${keyInput}"`
+
+                    #Check if 'flag_pressAnyKey_isEnabled = true'
+                    #Remarks:
+                    #   1. If true, then exit upon pressing other function-keys (F1 to F11)
+                    #   2. In order to remove the unwanted escaped chars,...
+                    #      ...function 'functionKey_detection__func' should be executed...
+                    #      ...BEFORE this condtion, 
+                    if [[ ${flag_pressAnyKey_isEnabled} == true ]]; then
+                        return
+                    fi
+
+                    #Check if function-key F12 was pressed
                     if [[ ${keyOutput} == ${DOCKER__ENUM_FUNC_F12} ]]; then
                         #Print read-input dialog
                         echo "${readDialog__input}"
 
-                        #Exit
-                        exit__func "${DOCKER__EXITCODE_0}" "${DOCKER__NUMOFLINES_2}"
+                        #Update 'keyInput'
+                        keyInput=${keyOutput}
+
+                        #Break the main while-loop
+                        flag_break_main_whileLoop=true
+
+                        #Break this for-loop
+                        break                   
+
+                        # #Exit
+                        # exit__func "${DOCKER__EXITCODE_0}" "${DOCKER__NUMOFLINES_2}"
                     fi
                     ;;
                 *)
+                    #Check if 'flag_pressAnyKey_isEnabled = true'
+                    #Remark:
+                    #   If true, then exit upon pressing any other keys (e.g., a,b,@,etc...)
+                    if [[ ${flag_pressAnyKey_isEnabled} == true ]]; then
+                        moveToBeginning_and_cleanLine__func
+
+                        return
+                    fi
+
                     if [[ ${keyInput} =~ [ynb] ]]; then
                             # if [[ ${keyInput} =~ [yn] ]]; then
                             #     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
@@ -2412,7 +2625,7 @@ function show_fileContent_wo_keyInput__func() {
                             flag_break_main_whileLoop=true
 
                             #Break this for-loop
-                            break           
+                            break
                     else
                         moveToBeginning_and_cleanLine__func
                     fi
@@ -2665,10 +2878,15 @@ function show_msg_wo_menuTitle_w_confirmation__func() {
 function show_menuTitle_only__func() {
     #Input args
     local menuTitle__input=${1}
+    local menuTitle_indent__input=${2}
 
     #Show list
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-    show_centered_string__func "${menuTitle__input}" "${DOCKER__TABLEWIDTH}"
+    if [[ -z ${menuTitle_indent__input} ]]; then
+        show_centered_string__func "${menuTitle__input}" "${DOCKER__TABLEWIDTH}"
+    else
+        echo "${menuTitle_indent__input}${menuTitle__input}"
+    fi
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
 }
 
@@ -2745,6 +2963,35 @@ function array_find_and_move_element_toTop__func() {
 }
 
 
+function checkFor_leading_partialMatch_of_pattern_within_array__func() {
+    #Turn-off Expansion
+    disable_expansion__func
+
+    #Input Args
+    local pattern__input="${1}"
+    shift
+    local arr__input=("$@")
+
+    #Define variables
+    local arrItem=${DOCKER__EMPTYSTRING}
+    local isFound=${DOCKER__EMPTYSTRING}
+    local ret="false"
+
+    #Loop thru array
+    for arrItem in "${arr__input[@]}"
+    do   
+        isFound=`echo "${pattern__input}" | grep "^${arrItem}"`
+        if [[ ! -z "${isFound}" ]]; then
+            ret="true"
+
+            break
+        fi
+    done
+
+    #Output
+    echo "${ret}"
+}
+
 function checkForMatch_of_pattern_within_string__func() {
     #Turn-off Expansion
     disable_expansion__func
@@ -2765,6 +3012,60 @@ function checkForMatch_of_pattern_within_string__func() {
     enable_expansion__func
 }
 
+function checkFor_exact_match_of_pattern_within_file__func() {
+    #Turn-off Expansion
+    disable_expansion__func
+
+    #Input Args
+    local pattern__input=${1}
+    local dataFpath__input=${2}
+
+    #Check if file exists
+    if [[ ! -s ${dataFpath__input} ]]; then #does not exist
+        echo "false"
+
+        return
+    fi
+
+    #Find match
+    local isFound=`cat ${dataFpath__input} | grep "^${pattern__input}$"`
+    if [[ -z ${isFound} ]]; then  #no match
+        echo "false"
+    else    #match
+        echo "true"
+    fi
+
+    #Turn-on Expansion
+    enable_expansion__func
+}
+
+function checkFor_any_match_of_pattern_within_file__func() {
+    #Turn-off Expansion
+    disable_expansion__func
+
+    #Input Args
+    local pattern__input=${1}
+    local dataFpath__input=${2}
+
+    #Check if file exists
+    if [[ ! -s ${dataFpath__input} ]]; then #does not exist
+        echo "false"
+
+        return
+    fi
+
+    #Find match
+    local isFound=`cat "${dataFpath__input}" | grep "${pattern__input}"`
+    if [[ -z ${isFound} ]]; then  #no match
+        echo "false"
+    else    #match
+        echo "true"
+    fi
+
+    #Turn-on Expansion
+    enable_expansion__func
+}
+
 function checkForMatch_of_patterns_within_file__func() {
     #Turn-off Expansion
     disable_expansion__func
@@ -2773,6 +3074,13 @@ function checkForMatch_of_patterns_within_file__func() {
     local pattern1__input=${1}
     local pattern2__input=${2}
     local dataFpath__input=${3}
+
+    #Check if file exists
+    if [[ ! -f ${dataFpath__input} ]]; then #does not exist
+        echo "false"
+
+        return
+    fi
 
     #Compose command line
     local cmd="cat ${dataFpath__input}"
@@ -3062,7 +3370,7 @@ function get_endResult_ofString_with_semiColonChar__func() {
     if [[ ${homeIsFound} == true ]]; then
         ret=${DOCKER__SEMICOLON_HOME}
 
-        echo -e "${ret}"
+        echo "${ret}"
         
         return
     fi
@@ -3073,7 +3381,7 @@ function get_endResult_ofString_with_semiColonChar__func() {
     if [[ ${backIsFound} == true ]]; then
         ret=${DOCKER__SEMICOLON_BACK}
 
-        echo -e "${ret}"
+        echo "${ret}"
 
         return
     fi
@@ -3084,14 +3392,14 @@ function get_endResult_ofString_with_semiColonChar__func() {
     if [[ ${clearIsFound} == false ]]; then
         ret=${string__input}
 
-        echo -e "${ret}"
+        echo "${ret}"
         
         return
     fi
 
-    #If ';c' was found previously then, retrieve the substring which is on the right-side of the semi-colon ';'.
+    #If '{;h | ;b | ;c}' was found previously then, retrieve the substring which is on the right-side of the semi-colon ';'.
     #Remark:
-    #   In case there were multiple ';c' issued and thus residing in 'string__input',...
+    #   In case there were multiple '{;h | ;b | ;c}' issued and thus residing in 'string__input',...
     #   ...then just make sure to get the substring at the last semi-colon ';'.
     rightPart=`echo "${string__input}" | rev | cut -d";" -f1 | rev`
 
@@ -3104,19 +3412,24 @@ function get_endResult_ofString_with_semiColonChar__func() {
     ret=${rightPart:1:rightPart_len}
 
     #Output
-    echo -e "${ret}"
+    echo "${ret}"
 }
 
 function get_numOfLines_for_specified_string_or_file__func() {
     #Input args
-    local string__input=${1}
+    local param__input=${1}
 
     #Get number of lines
-    local ret=${DOCKER__EMPTYSTRING}
-    if [[ ! -f ${string__input} ]]; then    #not a file
-        ret=`echo -e "${string__input}" | sed '/^\s*$/d' | wc -l`
+    local ret=${DOCKER__NUMOFLINES_0}
+    if [[ ! -f ${param__input} ]]; then    #not a file
+        ret=`echo -e "${param__input}" | sed '/^\s*$/d' | wc -l`
     else    #is a file
-        ret=`cat "${string__input}" | sed '/^\s*$/d' | wc -l`
+        #Check if file exists
+        if [[ ! -f ${param__input} ]]; then #does not exist
+            ret=${DOCKER__NUMOFLINES_0}
+        else
+            ret=`cat "${param__input}" | sed '/^\s*$/d' | wc -l`
+        fi
     fi
 
     #Output
@@ -3161,7 +3474,7 @@ function get_last_nChars_ofString__func() {
     echo "${ret}"
 }
 
-function insert_string_into_file__func() {
+function insert_string_into_file_at_specified_lineNum__func() {
     #Input args
     local string__input=${1}
     local lineNum__input=${2}
@@ -3171,7 +3484,7 @@ function insert_string_into_file__func() {
     #Check if 'string__input' is found in file 'targetFpath__input'
     local isFound=false
     if [[ ${flag_checkIf_already_inserted__input} == true ]]; then
-        isFound=`checkForMatch_of_patterns_within_file__func "${string__input}" "${DOCKER__EMPTYSTRING}" "${targetFpath__input}"`
+        isFound=`checkFor_exact_match_of_pattern_within_file__func "${string__input}" "${targetFpath__input}"`
         if [[ ${isFound} == true ]]; then
             return
         fi
@@ -3342,12 +3655,18 @@ function retrieve_lineNum_from_file__func() {
     local line__input=${1}
     local targetFpath__input=${2}
 
-    #Retrieve line-number based on the specified 'line__input'
-    local ret=`cat ${targetFpath__input} | grep -n "^${line__input}$" | cut -d":" -f1`
-    
-    #Check if 'ret' is an Empty String
-    if [[ -z ${ret} ]]; then    #true
-        ret=0
+    #Define variables
+    local ret=0
+
+    #Check if 'targetFpath__input' contains data
+    if [[ -s ${targetFpath__input} ]]; then #contains data
+        #Retrieve line-number based on the specified 'line__input'
+        ret=`cat ${targetFpath__input} | grep -n "^${line__input}$" | cut -d":" -f1`
+
+        #Check if 'ret' is an Empty String
+        if [[ -z ${ret} ]]; then    #true
+            ret=0
+        fi
     fi
 
     #Output
@@ -3875,22 +4194,60 @@ docker__ctrl_c__sub() {
 }
 
 docker__environmental_variables__sub() {
-    docker__bin_bash__dir=/bin/bash
+    #Check the number of input args
+    if [[ -z ${docker__LTPP3_ROOTFS__dir} ]]; then   #must be equal to 3 input args
+        #---Defin FOLDER
+        docker__LTPP3_ROOTFS__foldername="LTPP3_ROOTFS"
+        docker__development_tools__foldername="development_tools"
 
-    docker__LTPP3_ROOTFS_development_tools__fpath="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
-    docker__LTPP3_ROOTFS_development_tools__dir=$(dirname ${docker__LTPP3_ROOTFS_development_tools__fpath})
-    docker__LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS_development_tools__dir%/*}    #move one directory up: LTPP3_ROOTFS/
-    docker__parentDir_of_LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS__dir%/*}    #move two directories up. This directory is the one-level higher than LTPP3_ROOTFS/
-    if [[ -z ${docker__parentDir_of_LTPP3_ROOTFS__dir} ]]; then
-        docker__parentDir_of_LTPP3_ROOTFS__dir="${DOCKER__SLASH_CHAR}"
+        #Get all the directories containing the foldername 'LTPP3_ROOTFS'...
+        #... and read to array 'find_result_arr'
+        #Remark:
+        #   By using '2> /dev/null', the errors are not shown.
+        readarray -t find_dir_result_arr < <(find  / -type d -iname "${docker__LTPP3_ROOTFS__foldername}" 2> /dev/null)
+
+        #Define variable
+        local find_path_of_LTPP3_ROOTFS=${DOCKER__EMPTYSTRING}
+
+        #Loop thru array-elements
+        for find_dir_result_arrItem in "${find_dir_result_arr[@]}"
+        do
+            #Update variable 'find_path_of_LTPP3_ROOTFS'
+            find_path_of_LTPP3_ROOTFS="${find_dir_result_arrItem}/${docker__development_tools__foldername}"
+            #Check if 'directory' exist
+            if [[ -d "${find_path_of_LTPP3_ROOTFS}" ]]; then    #directory exists
+                #Update variable
+                docker__LTPP3_ROOTFS_development_tools__dir="${find_path_of_LTPP3_ROOTFS}"
+
+                break
+            fi
+        done
+
+        docker__LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS_development_tools__dir%/*}    #move one directory up: LTPP3_ROOTFS/
+        docker__parentDir_of_LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS__dir%/*}    #move two directories up. This directory is the one-level higher than LTPP3_ROOTFS/
     fi
+
     docker__docker__dir=${docker__parentDir_of_LTPP3_ROOTFS__dir}/docker
     docker__docker_cache__dir=${docker__docker__dir}/cache
+    docker__docker_config__dir=${docker__docker__dir}/config
     docker__docker_dockerfiles__dir=${docker__docker__dir}/dockerfiles
     docker__docker_images__dir=${docker__docker__dir}/images
 
+    docker__enter_cmdline_mode__dir=${docker__parentDir_of_LTPP3_ROOTFS__dir}/enter_cmd_mode
+    docker__enter_cmdline_mode_cache__dir=${docker__enter_cmdline_mode__dir}/cache
 
+    docker__LTPP3_ROOTFS_docker__dir=${docker__LTPP3_ROOTFS__dir}/docker
+    docker__LTPP3_ROOTFS_docker_dockerfiles__dir=${docker__LTPP3_ROOTFS_docker__dir}/dockerfiles
+    docker__LTPP3_ROOTFS_docker_list__dir=${docker__LTPP3_ROOTFS_docker__dir}/list
 
+    docker__tmp_dir=/tmp
+    docker__bin_bash__dir=/bin/bash
+
+#---docker__enter_cmdline_mode_cache__dir - contents
+    docker__enter_cmdline_mode_cache__filename="docker_enter_cmdline_mode.cache"
+    docker__enter_cmdline_mode_cache__fpath=${docker__enter_cmdline_mode_cache__dir}/${docker__enter_cmdline_mode_cache__filename}
+
+#---docker__LTPP3_ROOTFS_development_tools__dir - contents
     compgen__query_w_autocomplete__filename="compgen_query_w_autocomplete.sh"
     compgen__query_w_autocomplete__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${compgen__query_w_autocomplete__filename}
 
@@ -3898,49 +4255,52 @@ docker__environmental_variables__sub() {
     dirlist__readInput_w_autocomplete__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${dirlist__readInput_w_autocomplete__filename}
 
     docker__run_chroot__filename="docker_run_chroot.sh"
-    docker__run_chroot__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__run_chroot__filename}
+    docker__run_chroot__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__run_chroot__filename}
 
     docker__containerlist_tableinfo__filename="docker_containerlist_tableinfo.sh"
     docker__containerlist_tableinfo__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__containerlist_tableinfo__filename}
 
     docker__cp_fromto_container__filename="docker_cp_fromto_container.sh"
-    docker__cp_fromto_container__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__cp_fromto_container__filename}
+    docker__cp_fromto_container__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__cp_fromto_container__filename}
 
     docker__create_image_from_container__filename="docker_create_image_from_container.sh"
-    docker__create_image_from_container__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__create_image_from_container__filename}
+    docker__create_image_from_container__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__create_image_from_container__filename}
 
     docker__create_an_image_from_dockerfile__filename="docker_create_an_image_from_dockerfile.sh"
-    docker__create_an_image_from_dockerfile__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__create_an_image_from_dockerfile__filename}
+    docker__create_an_image_from_dockerfile__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__create_an_image_from_dockerfile__filename}
 
     docker__create_images_from_dockerlist__filename="docker_create_images_from_dockerlist.sh"
-    docker__create_images_from_dockerlist__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__create_images_from_dockerlist__filename}
+    docker__create_images_from_dockerlist__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__create_images_from_dockerlist__filename}
 
     docker__create_image_from_existing_repository__filename="docker_create_image_from_existing_repository.sh"
-    docker__create_image_from_existing_repository__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__create_image_from_existing_repository__filename}
+    docker__create_image_from_existing_repository__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__create_image_from_existing_repository__filename}
 
     docker__create_images_menu__filename="docker_create_images_menu.sh"
-    docker__create_images_menu__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__create_images_menu__filename}
+    docker__create_images_menu__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__create_images_menu__filename}
 
     docker__enter_command__filename="docker_enter_command.sh"
-    docker__enter_command__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__enter_command__filename}
+    docker__enter_command__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__enter_command__filename}
+
+    docker__enter_cmdline_mode__filename="docker_enter_cmdline_mode.sh"
+    docker__enter_cmdline_mode__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__enter_cmdline_mode__filename}
 
     docker__export_env_var_menu__filename="docker_export_env_var_menu.sh"
-    docker__export_env_var_menu__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__export_env_var_menu__filename}
+    docker__export_env_var_menu__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__export_env_var_menu__filename}
 
     docker__git_menu__filename="git_menu.sh"
-    docker__git_menu__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__git_menu__filename}
+    docker__git_menu__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__git_menu__filename}
 
     docker__load__filename="docker_load.sh"
-    docker__load__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__load__filename}
+    docker__load__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__load__filename}
 
     docker__readInput_w_autocomplete__filename="docker_readInput_w_autocomplete.sh"
     docker__readInput_w_autocomplete__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__readInput_w_autocomplete__filename}
 
     docker__remove_container__filename="docker_remove_container.sh"
-    docker__remove_container__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__remove_container__filename}
+    docker__remove_container__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__remove_container__filename}
     
     docker__remove_image__filename="docker_remove_image.sh"
-    docker__remove_image__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__remove_image__filename}
+    docker__remove_image__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__remove_image__filename}
 
     docker__repo_link_checkout_menu_select__filename="docker_repo_link_checkout_menu_select.sh"
     docker__repo_link_checkout_menu_select__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__repo_link_checkout_menu_select__filename}
@@ -3952,27 +4312,24 @@ docker__environmental_variables__sub() {
 	docker__repolist_tableinfo__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__repolist_tableinfo__filename}
 
     docker__run_container_from_a_repository__filename="docker_run_container_from_a_repository.sh"
-    docker__run_container_from_a_repository__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__run_container_from_a_repository__filename}
+    docker__run_container_from_a_repository__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__run_container_from_a_repository__filename}
 
     docker__run_exited_container__filename="docker_run_exited_container.sh"
-    docker__run_exited_container__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__run_exited_container__filename}
+    docker__run_exited_container__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__run_exited_container__filename}
 
     docker__select_dockerfile__filename="docker_select_dockerfile.sh"
-    docker__select_dockerfile__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__select_dockerfile__filename}
+    docker__select_dockerfile__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__select_dockerfile__filename}
 
     docker__show_choose_add_del_from_cache__filename="docker_show_choose_add_del_from_cache.sh"
     docker__show_choose_add_del_from_cache__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__show_choose_add_del_from_cache__filename}
 
     docker__save__filename="docker_save.sh"
-    docker__save__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__save__filename}
+    docker__save__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__save__filename}
 
     docker__ssh_to_host__filename="docker_ssh_to_host.sh"
-    docker__ssh_to_host__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__ssh_to_host__filename}
+    docker__ssh_to_host__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__ssh_to_host__filename}
 
-    
-
-    docker__LTPP3_ROOTFS_docker__dir=${docker__LTPP3_ROOTFS__dir}/docker
-    docker__LTPP3_ROOTFS_docker_dockerfiles__dir=${docker__LTPP3_ROOTFS_docker__dir}/dockerfiles
+#---docker__LTPP3_ROOTFS_docker__dir - contents
     docker__dockerfile_ltps_sunplus_filename="dockerfile_ltps_sunplus"
     docker__dockerfile_ltps_sunplus_fpath=${docker__LTPP3_ROOTFS_docker_dockerfiles__dir}/${docker__dockerfile_ltps_sunplus_filename}
 
@@ -3984,15 +4341,11 @@ docker__environmental_variables__sub() {
     docker__exported_env_var_default_filename="exported_env_var_default.txt"
     docker__exported_env_var_default_fpath=${docker__LTPP3_ROOTFS_docker_environment_dir}/${docker__exported_env_var_default_filename}
 
-
-
-    docker__docker_config__dir=${docker__docker__dir}/config
+#---docker__docker_config__dir - contents
     docker__export_env_var_menu_cfg__filename="docker_export_env_var_menu.cfg"
     docker__export_env_var_menu_cfg__fpath=${docker__docker_config__dir}/${docker__export_env_var_menu_cfg__filename}
 
-
-
-    docker__tmp_dir=/tmp
+#---docker__tmp_dir - contents
     compgen__query_w_autocomplete_out__filename="compgen_query_w_autocomplete.out"
     compgen__query_w_autocomplete_out__fpath=${docker__tmp_dir}/${compgen__query_w_autocomplete_out__filename}
 
@@ -4019,8 +4372,11 @@ docker__environmental_variables__sub() {
     docker__create_images_from_dockerlist_out__filename="docker_create_images_from_dockerlist.out"
     docker__create_images_from_dockerlist_out__fpath=${docker__tmp_dir}/${docker__create_images_from_dockerlist_out__filename}
 
-    docker__enter_cmdline_out__filename="docker__enter_cmdline.out"
-    docker__enter_cmdline_out__fpath=${docker__tmp_dir}/${docker__enter_cmdline_out__filename}
+    docker__enter_cmdline_mode_out__filename="docker_enter_cmdline_mode.out"
+    docker__enter_cmdline_mode_out__fpath=${docker__tmp_dir}/${docker__enter_cmdline_mode_out__filename}
+
+    docker__enter_cmdline_mode_tmp__filename="docker_enter_cmdline_mode.tmp"
+    docker__enter_cmdline_mode_tmp__fpath=${docker__tmp_dir}/${docker__enter_cmdline_mode_tmp__filename}
 
     docker__export_env_var_menu_out__filename="docker_export_env_var_menu.out"
     docker__export_env_var_menu_out__fpath=${docker__tmp_dir}/${docker__export_env_var_menu_out__filename}
@@ -4035,10 +4391,16 @@ docker__environmental_variables__sub() {
     docker__repo_linkcheckout_profile_menu_select_out__fpath=${docker__tmp_dir}/${docker__repo_linkcheckout_profile_menu_select_out__filename}
 
     docker__select_dockerfile_out__filename="docker_select_dockerfile.out"
-    docker__select_dockerfile_out__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__select_dockerfile_out__filename}
+    docker__select_dockerfile_out__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__select_dockerfile_out__filename}
 
     docker__show_choose_add_del_from_cache_out__filename="docker_show_choose_add_del_from_cache.out"
     docker__show_choose_add_del_from_cache_out__fpath=${docker__tmp_dir}/${docker__show_choose_add_del_from_cache_out__filename}
+
+    docker__show_fileContent_wo_select_func_out__filename="show_fileContent_wo_select__func.out"
+    docker__show_fileContent_wo_select_func_out__fpath=${docker__tmp_dir}/${docker__show_fileContent_wo_select_func_out__filename}
+
+    docker__show_pathContent_w_selection_func_out__filename="show_pathContent_w_selection__func.out"
+    docker__show_pathContent_w_selection_func_out__fpath=${docker__tmp_dir}/${docker__show_pathContent_w_selection_func_out__filename}
 
     #OLD VERSION (is temporarily present for backwards compaitibility)
 	docker__dockercontainer_dirlist__filename="dockercontainer_dirlist.sh"
@@ -4048,8 +4410,8 @@ docker__environmental_variables__sub() {
 }
 
 docker__create_dir__sub() {
-    if [[ ! -d ${docker__tmp_dir} ]]; then
-        mkdir -p ${docker__tmp_dir}
+    if [[ ! -d ${docker__docker__dir} ]]; then
+        mkdir -p ${docker__docker__dir}
     fi
     if [[ ! -d ${docker__docker_cache__dir} ]]; then
         mkdir -p ${docker__docker_cache__dir}
@@ -4062,6 +4424,12 @@ docker__create_dir__sub() {
     fi
     if [[ ! -d ${docker__docker_images__dir} ]]; then
         mkdir -p ${docker__docker_images__dir}
+    fi
+    if [[ ! -d ${docker__enter_cmdline_mode__dir} ]]; then
+        mkdir -p ${docker__enter_cmdline_mode__dir}
+    fi
+    if [[ ! -d ${docker__enter_cmdline_mode_cache__dir} ]]; then
+        mkdir -p ${docker__enter_cmdline_mode_cache__dir}
     fi
     if [[ ! -d ${docker__tmp_dir} ]]; then
         mkdir -p ${docker__tmp_dir}

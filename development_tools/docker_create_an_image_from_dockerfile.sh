@@ -21,7 +21,7 @@ function create_image__func() {
     local statusMsg="---:${DOCKER__FG_ORANGE}STATUS${DOCKER__NOCOLOR}: Creating image..."
 
     #Define local  variables
-    local docker__images_cmd="docker images"
+    # local docker__images_cmd="docker images"
     local exported_env_var1=${DOCKER__EMPTYSTRING}  #sunplus git-link
     local exported_env_var2=${DOCKER__EMPTYSTRING}  #sunplus checkout-number
     local exported_env_var3=${DOCKER__EMPTYSTRING}  #tibbo git-link (e.g. LTPP3_ROOTFS.git)
@@ -151,27 +151,41 @@ function validate_exitCode__func() {
 
 #---SUBROUTINES
 docker__load_environment_variables__sub() {
-    docker__current_script_fpath="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
-    docker__current_dir=$(dirname ${docker__current_script_fpath})
-    docker__parent_dir=${docker__current_dir%/*}    #gets one directory up
-    if [[ -z ${docker__parent_dir} ]]; then
-        docker__parent_dir="${DOCKER__SLASH_CHAR}"
+    #Check the number of input args
+    if [[ -z ${docker__global__fpath} ]]; then   #must be equal to 3 input args
+        #---Defin FOLDER
+        docker__LTPP3_ROOTFS__foldername="LTPP3_ROOTFS"
+        docker__development_tools__foldername="development_tools"
+
+        #Get all the directories containing the foldername 'LTPP3_ROOTFS'...
+        #... and read to array 'find_result_arr'
+        #Remark:
+        #   By using '2> /dev/null', the errors are not shown.
+        readarray -t find_dir_result_arr < <(find  / -type d -iname "${docker__LTPP3_ROOTFS__foldername}" 2> /dev/null)
+
+        #Define variable
+        local find_path_of_LTPP3_ROOTFS=${DOCKER__EMPTYSTRING}
+
+        #Loop thru array-elements
+        for find_dir_result_arrItem in "${find_dir_result_arr[@]}"
+        do
+            #Update variable 'find_path_of_LTPP3_ROOTFS'
+            find_path_of_LTPP3_ROOTFS="${find_dir_result_arrItem}/${docker__development_tools__foldername}"
+            #Check if 'directory' exist
+            if [[ -d "${find_path_of_LTPP3_ROOTFS}" ]]; then    #directory exists
+                #Update variable
+                docker__LTPP3_ROOTFS_development_tools__dir="${find_path_of_LTPP3_ROOTFS}"
+
+                break
+            fi
+        done
+
+        docker__LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS_development_tools__dir%/*}    #move one directory up: LTPP3_ROOTFS/
+        docker__parentDir_of_LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS__dir%/*}    #move two directories up. This directory is the one-level higher than LTPP3_ROOTFS/
+
+        docker__global__filename="docker_global.sh"
+        docker__global__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__global__filename}
     fi
-    docker_current_script_filename=`basename $0`
-	docker__current_folder=`basename ${docker__current_dir}`
-
-    docker__my_LTPP3_ROOTFS_docker_dir=${docker__parent_dir}/docker
-    docker__LTPP3_ROOTFS_docker_dockerfiles__dir=${docker__my_LTPP3_ROOTFS_docker_dir}/dockerfiles
-
-    docker__development_tools_folder="development_tools"
-    if [[ ${docker__current_folder} != ${docker__development_tools_folder} ]]; then
-        docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}/${docker__development_tools_folder}
-    else
-        docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}
-    fi
-
-    docker__global_filename="docker_global.sh"
-    docker__global__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__global_filename}
 }
 
 docker__load_source_files__sub() {
@@ -198,7 +212,7 @@ docker__init_variables__sub() {
 
 docker__show_dockerList_files__sub() {
     #Show directory content
-    show_pathContent_w_keyInput__func "${docker__LTPP3_ROOTFS_docker_dockerfiles__dir}" \
+    show_pathContent_w_selection__func "${docker__LTPP3_ROOTFS_docker_dockerfiles__dir}" \
                         "${DOCKER__EMPTYSTRING}" \
                         "${DOCKER__MENUTITLE}" \
                         "${DOCKER__REMARK}" \
@@ -210,7 +224,7 @@ docker__show_dockerList_files__sub() {
                         "${DOCKER__EMPTYSTRING}" \
                         "${DOCKER__EMPTYSTRING}" \
                         "${DOCKER__TABLEROWS_10}" \
-                        "${docker__create_an_image_from_dockerfile_out__fpath}"
+                        "${docker__show_pathContent_w_selection_func_out__fpath}"
 
     #Get the exitcode just in case a Ctrl-C was pressed in function 'DOCKER__FOURSPACES_F4_ABORT' (in script 'docker_global.sh')
     docker__exitCode=$?
@@ -220,7 +234,7 @@ docker__show_dockerList_files__sub() {
 
     #Get result from file.
     docker__dockerFile_fpath=`get_output_from_file__func \
-                        "${docker__create_an_image_from_dockerfile_out__fpath}" \
+                        "${docker__show_pathContent_w_selection_func_out__fpath}" \
                         "${DOCKER__LINENUM_1}"`
 
     #Double-check if 'docker__dockerFile_fpath = F12'

@@ -73,12 +73,12 @@ docker__init_variables__sub() {
     docker__repo_new=${DOCKER__EMPTYSTRING}
     docker__tag_new=${DOCKER__EMPTYSTRING}
 
-    docker__images_cmd="docker images"
-    docker__ps_a_cmd="docker ps -a"
+    # docker__images_cmd="docker images"
+    # docker__ps_a_cmd="docker ps -a"
 
-    docker__ps_a_containerIdColno=1
-    docker__images_repoColNo=1
-    docker__images_tagColNo=2
+    # docker__ps_a_containerIdColno=1
+    # docker__images_repoColNo=1
+    # docker__images_tagColNo=2
 
     docker__onEnter_breakLoop=false
     docker__showTable=true

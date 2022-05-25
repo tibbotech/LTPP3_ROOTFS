@@ -36,7 +36,7 @@ docker__load_header__sub() {
 docker__init_variables__sub() {
     docker__containerID_chosen=${DOCKER__EMPTYSTRING}
 
-    docker__ps_a_cmd="docker ps -a"
+    # docker__ps_a_cmd="docker ps -a"
 
     docker__ps_a_containerIdColno=1
 

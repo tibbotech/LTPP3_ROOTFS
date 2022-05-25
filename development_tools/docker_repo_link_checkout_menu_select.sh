@@ -9,16 +9,43 @@ menuOption_linkCheckoutProfile__input=${5}
 
 
 
-
 #---SUBROUTINES
 docker__load_environment_variables__sub() {
-    #Define paths
-    docker__LTPP3_ROOTFS_development_tools__fpath="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
-    docker__LTPP3_ROOTFS_development_tools__dir=$(dirname ${docker__LTPP3_ROOTFS_development_tools__fpath})
-    docker__LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS_development_tools__dir%/*}    #move one directory up: LTPP3_ROOTFS/
+    #Check the number of input args
+    if [[ -z ${docker__global__fpath} ]]; then   #must be equal to 3 input args
+        #---Defin FOLDER
+        docker__LTPP3_ROOTFS__foldername="LTPP3_ROOTFS"
+        docker__development_tools__foldername="development_tools"
 
-    docker__global_filename="docker_global.sh"
-    docker__global__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__global_filename}
+        #Get all the directories containing the foldername 'LTPP3_ROOTFS'...
+        #... and read to array 'find_result_arr'
+        #Remark:
+        #   By using '2> /dev/null', the errors are not shown.
+        readarray -t find_dir_result_arr < <(find  / -type d -iname "${docker__LTPP3_ROOTFS__foldername}" 2> /dev/null)
+
+        #Define variable
+        local find_path_of_LTPP3_ROOTFS=${DOCKER__EMPTYSTRING}
+
+        #Loop thru array-elements
+        for find_dir_result_arrItem in "${find_dir_result_arr[@]}"
+        do
+            #Update variable 'find_path_of_LTPP3_ROOTFS'
+            find_path_of_LTPP3_ROOTFS="${find_dir_result_arrItem}/${docker__development_tools__foldername}"
+            #Check if 'directory' exist
+            if [[ -d "${find_path_of_LTPP3_ROOTFS}" ]]; then    #directory exists
+                #Update variable
+                docker__LTPP3_ROOTFS_development_tools__dir="${find_path_of_LTPP3_ROOTFS}"
+
+                break
+            fi
+        done
+
+        docker__LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS_development_tools__dir%/*}    #move one directory up: LTPP3_ROOTFS/
+        docker__parentDir_of_LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS__dir%/*}    #move two directories up. This directory is the one-level higher than LTPP3_ROOTFS/
+
+        docker__global__filename="docker_global.sh"
+        docker__global__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__global__filename}
+    fi
 }
 
 docker__load_source_files__sub() {
