@@ -355,7 +355,7 @@ docker__prune_handler__sub()  {
 #                         "${errorMsg__input}"  \
 #                         "${DOCKER__EXITCODE_99}"
 #     else
-#         show_cmdOutput_w_menuTitle__func "${menuTitle__input}" "${dockerCmd__input}"
+#         show_repoList_or_containerList_w_menuTitle__func "${menuTitle__input}" "${dockerCmd__input}"
 #     fi
 # }
 

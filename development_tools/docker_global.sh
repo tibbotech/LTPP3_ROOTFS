@@ -83,6 +83,7 @@ DOCKER__FG_BORDEAUX=$'\e[30;38;5;198m'
 DOCKER__FG_BRIGHTPRUPLE=$'\e[30;38;5;141m'
 DOCKER__FG_BRIGHTLIGHTPURPLE=$'\e[30;38;5;147m'
 DOCKER__FG_DARKBLUE=$'\e[30;38;5;33m'
+DOCKER__FG_RED1=$'\e[30;38;5;1m'
 DOCKER__FG_DEEPORANGE=$'\e[30;38;5;208m'
 DOCKER__FG_REDORANGE=$'\e[30;38;5;203m'
 DOCKER__FG_GREEN=$'\e[30;38;5;82m'
@@ -99,6 +100,7 @@ DOCKER__FG_LIGHTPINK=$'\e[30;38;5;218m'
 DOCKER__FG_LIGHTRED=$'\e[1;31m'
 DOCKER__FG_LIGHTSOFTYELLOW=$'\e[30;38;5;229m'
 DOCKER__FG_ORANGE=$'\e[30;38;5;215m'
+DOCKER__FG_PINK=$'\e[30;38;5;213m'
 DOCKER__FG_PURPLE=$'\e[30;38;5;93m'
 DOCKER__FG_PURPLERED=$'\e[30;38;5;198m'
 DOCKER__FG_SOFTDARKBLUE=$'\e[30;38;5;38m'
@@ -140,6 +142,7 @@ DOCKER__TABLECOLS_MAX_7=7
 DOCKER__CFG_NAME1="docker__dockerFile_fpath"
 
 DOCKER__NONE="<none>"
+DOCKER__BCK="bck"
 DOCKER__PATTERN_EXITED="Exited"
 DOCKER__PATTERN_REPOSITORY_TAG="repository:tag"
 
@@ -156,7 +159,7 @@ DOCKER__READINPUTDIALOG_CHOOSE_IMAGEID_FROM_LIST="Choose an ${DOCKER__FG_BORDEAU
 DOCKER__READDIALOG_DO_YOU_WISH_TO_CONTINUE_YNR="Do you wish to continue (y/n/r)? "
 DOCKER__READDIALOG_DO_YOU_WISH_TO_CONTINUE_YN="Do you wish to continue (y/n)? "
 
-DOCKER__ECHOMSG_NORESULTS_FOUND="${FOUR_SPACES}-:${FG_YELLOW}No results found${NOCOLOR}:-"
+DOCKER__ECHOMSG_NORESULTS_FOUND="${FOUR_SPACES}=:${FG_YELLOW}No results found${NOCOLOR}:="
 
 DOCKER__ERRMSG_CHOSEN_CONTAINERID_DOESNOT_EXISTS="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Invalid input value "
 DOCKER__ERRMSG_CHOSEN_IMAGEID_DOESNOT_EXISTS="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Invalid input value "
@@ -278,6 +281,7 @@ DOCKER__SPACE_BETWEEN_WORDS=4
 DOCKER__TIMEOUT_3=3
 DOCKER__TIMEOUT_5=5
 DOCKER__TIMEOUT_10=10
+DOCKER__TIMEOUT_30=30
 
 DOCKER__TRAP_NUM_2=2
 
@@ -326,8 +330,8 @@ DOCKER__Y_SLASH_N_SLASH_B="${DOCKER__Y_SLASH_N}/${DOCKER__BACK}${DOCKER__FG_LIGH
 DOCKER__Y_SLASH_N_SLASH_H="${DOCKER__Y_SLASH_N}/${DOCKER__HOME}${DOCKER__FG_LIGHTGREY}ome${DOCKER__NOCOLOR}"
 DOCKER__Y_SLASH_N_SLASH_O="${DOCKER__Y_SLASH_N}/${DOCKER__OVERWRITE}${DOCKER__FG_LIGHTGREY}verwrite${DOCKER__NOCOLOR}"
 
-DOCKER__Y_SLASH_N_SLASH_O_B_H="${DOCKER__Y_SLASH_N_SLASH_O}/${DOCKER__BACK}${DOCKER__FG_LIGHTGREY}ack${DOCKER__NOCOLOR}/"
-DOCKER__Y_SLASH_N_SLASH_O_B_H+="${DOCKER__HOME}${DOCKER__FG_LIGHTGREY}ome${DOCKER__NOCOLOR}"
+DOCKER__Y_SLASH_N_SLASH_O_SLASH_B_SLASH_H="${DOCKER__Y_SLASH_N_SLASH_O}/${DOCKER__BACK}${DOCKER__FG_LIGHTGREY}ack${DOCKER__NOCOLOR}/"
+DOCKER__Y_SLASH_N_SLASH_O_SLASH_B_SLASH_H+="${DOCKER__HOME}${DOCKER__FG_LIGHTGREY}ome${DOCKER__NOCOLOR}"
 
 DOCKER__SEMICOLON_BACK=";b"
 DOCKER__SEMICOLON_CLEAR=";c"
@@ -337,6 +341,9 @@ DOCKER__SEMICOLON_HOME=";h"
 
 
 #---REGEX CONSTANTS
+DOCKER__REGEX_YN="[yn]"
+DOCKER__REGEX_YNH="[ynh]"
+DOCKER__REGEX_YNOBH="[ynobh]"
 DOCKER__REGEX_0_TO_9="[1-90]"
 DOCKER__REGEX_0_TO_9_COMMA_DASH="[1-90,-]"
 DOCKER__REGEX_1q="[1q]"
@@ -609,23 +616,18 @@ function press_any_key__func() {
 function confirmation_w_timer__func() {
     #Input args
     local confirmation_choices__input=${1}
-    local timeout__input=${2}
-    local prepend_numOfLines__input=${3}
-    local append_numOfLines__input=${4}
+    local confirmation_regEx__input=${2}
+    local timeout__input=${3}
+    local prepend_numOfLines__input=${4}
+    local append_numOfLines__input=${5}
 
     #Define constants
     local ECHOMSG_DO_YOU_WISH_TO_CONTINUE="Do you wish to continue"
 
+    #Define regEx
+    local regEx="${confirmation_regEx__input}"
 
-	#Initialize variables
-    # local regEx=${DOCKER__EMPTYSTRING}
-    # if [[ ${confirmation_choices__input} == ${DOCKER__Y_SLASH_N} ]]; then
-    #     regEx="[yn]"
-    # else   #confirmation_choices__input =  DOCKER__Y_SLASH_N_SLASH_B_SLASH_Q
-    #     regEx="[ynbq]"
-    # fi
-
-    local match_isFound=${DOCKER__EMPTYSTRING}
+    #Initialization
 	local ret=${DOCKER__EMPTYSTRING}
 	local tCounter=0
 
@@ -654,17 +656,18 @@ function confirmation_w_timer__func() {
 		delta_tcounter=$(( ${timeout} - ${tCounter} ))
 
 		read -N1 -t1 -r -p "${ECHOMSG_DO_YOU_WISH_TO_CONTINUE} (${confirmation_choices__input}) (${delta_tcounter})? " ret
-		if [[ ! -z "${ret}" ]]; then
-            match_isFound=`echo "${confirmation_choices__input}" | grep "${ret}"`
-			if [[ ! -z "${match_isFound}" ]]; then
-                moveDown_and_cleanLines__func "${after_confirmation_append_numOfLines}"
+		if [[ ! -z ${ret} ]]; then
+            if [[ ${ret} == ${DOCKER__ENTER} ]]; then
+                moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+            else
+                if [[ ${ret} =~ ${regEx} ]]; then
+                    moveDown_and_cleanLines__func "${after_confirmation_append_numOfLines}"
 
-				break
-			else
-                if [[ "${ret}" == "${DOCKER__ENTER}" ]]; then
-				    moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+                    break
                 else
                     moveToBeginning_and_cleanLine__func
+
+                    # moveUp_and_cleanLines__func "${prepend_numOfLines__input}"
                 fi
 			fi
         else
@@ -762,6 +765,21 @@ function array_find_and_move_element_toTop__func() {
     echo "${arr_new[@]}"
 }
 
+function array_subst_string__func() {
+    #Input args
+    local oldString__input=${1}
+    local newSubString__input=${2}
+    shift
+    shift
+    local dataArr__input=("$@")
+
+    #Replace all 'oldString__input' with 'newSubString__input'
+    local ret=`printf '%s\n' "${dataArr__input[@]}" | sed "s/${oldString__input}/${newSubString__input}/g"`
+
+    #Output
+    #Note: the output is an array-STRING!!!
+    echo "${ret[@]}"
+}
 
 
 #---DOCKER RELATED FUNCTIONS
@@ -1034,8 +1052,8 @@ function container_checkIf_dir_exists__func() {
 	local dir__input="${2}"
 
 	#Define docker command
-    local bin_bash_dir=/bin/bash
-    local docker_exec_cmd="docker exec -t ${containerID__input} ${bin_bash_dir} -c"
+    local docker__bin_bash__dir=/bin/bash
+    local docker_exec_cmd="docker exec -t ${containerID__input} ${docker__bin_bash__dir} -c"
 
     # #Prepend backslash in front of special chars (e.g., backslash, space, asterisk, etc.)
     # local dir_prepended_backslash=`prepend_backSlash_inFrontOf_specialChars__func \
@@ -1119,8 +1137,8 @@ function container_checkIf_file_exists__func() {
 	local fpath__input=${2}
 
 	#Define variables
-    local bin_bash_dir=/bin/bash
-    local docker_exec_cmd="docker exec -t ${containerID__input} ${bin_bash_dir} -c"
+    local docker__bin_bash__dir=/bin/bash
+    local docker_exec_cmd="docker exec -t ${containerID__input} ${docker__bin_bash__dir} -c"
 
     #Check if directory exists
     local ret_raw=`${docker_exec_cmd} "[ -f "${fpath__input}" ] && echo true || echo false"`
@@ -1564,30 +1582,6 @@ function center_string_and_writeTo_file__func() {
     #Print text including Leading Empty Spaces
     printf "%s" "${emptySpaces_string}${string__input}" >> ${writeToThisFile__input}
 }
-function show_cmdOutput_w_menuTitle__func() {
-    #Input args
-    local menuTitle__input=${1}
-    local dockerCmd__input=${2}
-
-    #Show list
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-    show_centered_string__func "${menuTitle__input}" "${DOCKER__TABLEWIDTH}"
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-    
-    if [[ ${dockerCmd__input} == ${docker__ps_a_cmd} ]]; then
-        ${docker__containerlist_tableinfo__fpath}
-    else
-        ${docker__repolist_tableinfo__fpath}
-    fi
-
-    #Move-down cursor
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-
-    #Print
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-    echo -e "${DOCKER__FOURSPACES_QUIT_CTRL_C}"
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-}
 
 function show_centered_string__func() {
     #Input args
@@ -1780,12 +1774,24 @@ function show_pathContent_w_selection__func() {
 
 
 #---Set 'table_index_max__input' (if needed)
-    if [[ -z ${fpath_arrTmp[@]} ]]; then
+    #Note: 
+    #   The condition to check whether 'array contains no data' is preferred over...
+    #   ...checking whether the 'array-length is zero', because...
+    #   ...should the array contains empty lines then the array-length is non-zero.
+    #   This is behavior is unwanted.
+    if [[ -z "${fpath_arr[@]}" ]]; then   #array contains no data
         table_index_max__input=${DOCKER__NUMOFLINES_5}
+    else    #array contains data
+        if [[ ${fpath_arrLen} -le ${table_index_max__input} ]]; then
+            table_index_max__input=${fpath_arrLen}
+        fi
     fi
+
+
 
 #---Get Length of 'fpath_arrTmp'
     fpath_arrTmpLen=${#fpath_arrTmp[@]}
+
 
 
 #---Check if a match string 'selItem__input' is provided
@@ -2030,8 +2036,6 @@ function show_pathContent_w_selection__func() {
 
 #-------Show cursor
         cursor_show__func
-
-
 
 #-------Read-input
         while true
@@ -2794,7 +2798,58 @@ function show_msg_wo_menuTitle_w_PressAnyKey__func() {
                         "${confirmation_append_numOfLines__input}"
 }
 
-function show_repository_or_container_list__func() {
+function show_array_elements_w_menuTitle__func() {
+    #Input args
+    local menuTitle__input=${1}
+    shift
+    local dataArr__input=("$@")
+
+    #Show list
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    show_centered_string__func "${menuTitle__input}" "${DOCKER__TABLEWIDTH}"
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    
+    #Loop thru array-elements
+    for dataArrItem in "${dataArr__input[@]}"
+    do
+        echo "${DOCKER__FOURSPACES}${dataArrItem}"
+    done
+
+    #Move-down cursor
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+    #Print
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    echo -e "${DOCKER__FOURSPACES_QUIT_CTRL_C}"
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+}
+
+function show_repoList_or_containerList_w_menuTitle__func() {
+    #Input args
+    local menuTitle__input=${1}
+    local dockerCmd__input=${2}
+
+    #Show list
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    show_centered_string__func "${menuTitle__input}" "${DOCKER__TABLEWIDTH}"
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    
+    if [[ ${dockerCmd__input} == ${docker__ps_a_cmd} ]]; then
+        ${docker__containerlist_tableinfo__fpath}
+    else
+        ${docker__repolist_tableinfo__fpath}
+    fi
+
+    #Move-down cursor
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+    #Print
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    echo -e "${DOCKER__FOURSPACES_QUIT_CTRL_C}"
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+}
+
+function show_repoList_or_containerList_w_menuTitle_w_confirmation__func() {
     #Input args
     local menuTitle__input=${1}
     local msg__input=${2}
@@ -2857,19 +2912,23 @@ function show_msg_wo_menuTitle_w_confirmation__func() {
     #Input args
     local msg__input=${1}
     local confirmation_choices__input=${2}
-    local prepend_numOfLines__input=${3}
-    local confirmation_timeout__input=${4}
-    local confirmation_prepend_numOfLines__input=${5}
-    local confirmation_append_numOfLines__input=${6}
+    local confirmation_regEx__input=${3}
+    local prepend_numOfLines__input=${4}
+    local confirmation_timeout__input=${5}
+    local confirmation_prepend_numOfLines__input=${6}
+    local confirmation_append_numOfLines__input=${7}
 
     #Move-down cursor
     moveDown_and_cleanLines__func "${prepend_numOfLines__input}"
 
     #Print
-    echo -e "${msg__input}"
+    if [[ ! -z "${msg__input}" ]]; then
+        echo -e "${msg__input}"
+    fi
 
     #Show press-any-key dialog
     confirmation_w_timer__func "${confirmation_choices__input}" \
+                        "${confirmation_regEx__input}" \
                         "${confirmation_timeout__input}" \
                         "${confirmation_prepend_numOfLines__input}" \
                         "${confirmation_append_numOfLines__input}"
@@ -3001,7 +3060,7 @@ function checkForMatch_of_pattern_within_string__func() {
     local string__input=${2}
 
     #Find any match (not exact)
-    local stdOutput=`echo ${string__input} | grep "${pattern__input}"`
+    local stdOutput=`echo "${string__input}" | grep "${pattern__input}"`
     if [[ -z ${stdOutput} ]]; then  #no match
         echo "false"
     else    #match
@@ -4260,6 +4319,9 @@ docker__environmental_variables__sub() {
     docker__containerlist_tableinfo__filename="docker_containerlist_tableinfo.sh"
     docker__containerlist_tableinfo__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__containerlist_tableinfo__filename}
 
+    docker__container_run_remove__filename="docker_container_run_remove.sh"
+    docker__container_run_remove__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__container_run_remove__filename}
+
     docker__cp_fromto_container__filename="docker_cp_fromto_container.sh"
     docker__cp_fromto_container__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__cp_fromto_container__filename}
 
@@ -4275,8 +4337,8 @@ docker__environmental_variables__sub() {
     docker__create_image_from_existing_repository__filename="docker_create_image_from_existing_repository.sh"
     docker__create_image_from_existing_repository__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__create_image_from_existing_repository__filename}
 
-    docker__create_images_menu__filename="docker_create_images_menu.sh"
-    docker__create_images_menu__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__create_images_menu__filename}
+    docker_create_images_from_dockerfile_dockerlist_menu__filename="docker_create_images_from_dockerfile_dockerlist_menu.sh"
+    docker_create_images_from_dockerfile_dockerlist_menu__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker_create_images_from_dockerfile_dockerlist_menu__filename}
 
     docker__enter_command__filename="docker_enter_command.sh"
     docker__enter_command__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__enter_command__filename}
@@ -4290,6 +4352,9 @@ docker__environmental_variables__sub() {
     docker__git_menu__filename="git_menu.sh"
     docker__git_menu__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__git_menu__filename}
 
+    docker_image_create_remove_rename_menu__filename="docker_image_create_remove_rename_menu.sh"
+    docker_image_create_remove_rename_menu__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker_image_create_remove_rename_menu__filename}
+
     docker__load__filename="docker_load.sh"
     docker__load__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__load__filename}
 
@@ -4301,6 +4366,9 @@ docker__environmental_variables__sub() {
     
     docker__remove_image__filename="docker_remove_image.sh"
     docker__remove_image__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__remove_image__filename}
+
+    docker_rename_repotag__filename="docker_rename_repotag.sh"
+    docker_rename_repotag__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker_rename_repotag__filename}
 
     docker__repo_link_checkout_menu_select__filename="docker_repo_link_checkout_menu_select.sh"
     docker__repo_link_checkout_menu_select__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__repo_link_checkout_menu_select__filename}
@@ -4328,6 +4396,26 @@ docker__environmental_variables__sub() {
 
     docker__ssh_to_host__filename="docker_ssh_to_host.sh"
     docker__ssh_to_host__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__ssh_to_host__filename}
+
+    git__git_create_checkout_local_branch__filename="git_create_checkout_local_branch.sh"
+    git__git_create_checkout_local_branch__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${git__git_create_checkout_local_branch__filename}
+   
+    git__git_delete_local_branch__filename="git_delete_local_branch.sh"
+    git__git_delete_local_branch__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${git__git_delete_local_branch__filename}
+    
+    git__git_pull__filename="git_pull.sh"
+    git__git_pull__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${git__git_pull__filename}
+    
+    git__git_pull_origin_otherBranch__filename="git_pull_origin_otherbranch.sh"
+    git__git_pull_origin_otherBranch__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${git__git_pull_origin_otherBranch__filename}
+    
+    git__git_push__filename="git_push.sh"
+    git__git_push__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${git__git_push__filename}
+
+    git__git_readInput_w_autocomplete__filename="git_readInput_w_autocomplete.sh"
+    git__git_readInput_w_autocomplete__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${git__git_readInput_w_autocomplete__filename}
+
+
 
 #---docker__LTPP3_ROOTFS_docker__dir - contents
     docker__dockerfile_ltps_sunplus_filename="dockerfile_ltps_sunplus"
@@ -4391,7 +4479,7 @@ docker__environmental_variables__sub() {
     docker__repo_linkcheckout_profile_menu_select_out__fpath=${docker__tmp_dir}/${docker__repo_linkcheckout_profile_menu_select_out__filename}
 
     docker__select_dockerfile_out__filename="docker_select_dockerfile.out"
-    docker__select_dockerfile_out__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__select_dockerfile_out__filename}
+    docker__select_dockerfile_out__fpath=${docker__tmp_dir}/${docker__select_dockerfile_out__filename}
 
     docker__show_choose_add_del_from_cache_out__filename="docker_show_choose_add_del_from_cache.out"
     docker__show_choose_add_del_from_cache_out__fpath=${docker__tmp_dir}/${docker__show_choose_add_del_from_cache_out__filename}
@@ -4402,11 +4490,21 @@ docker__environmental_variables__sub() {
     docker__show_pathContent_w_selection_func_out__filename="show_pathContent_w_selection__func.out"
     docker__show_pathContent_w_selection_func_out__fpath=${docker__tmp_dir}/${docker__show_pathContent_w_selection_func_out__filename}
 
+    git__git_create_checkout_local_branch_out__filename="git_create_checkout_local_branch.out"
+    git__git_create_checkout_local_branch_out__fpath=${docker__tmp_dir}/${git__git_create_checkout_local_branch_out__filename}
+
+    git__git_delete_local_branch_out__filename="git_delete_local_branch.out"
+    git__git_delete_local_branch_out__fpath=${docker__tmp_dir}/${git__git_delete_local_branch_out__filename}
+
+    git__git_readInput_w_autocomplete_out__filename="git_readInput_w_autocomplete.out"
+    git__git_readInput_w_autocomplete_out__fpath=${docker__tmp_dir}/${git__git_readInput_w_autocomplete_out__filename}
+
+
     #OLD VERSION (is temporarily present for backwards compaitibility)
-	docker__dockercontainer_dirlist__filename="dockercontainer_dirlist.sh"
-	docker__dockercontainer_dirlist__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__dockercontainer_dirlist__filename}
-	docker__localhost_dirlist__filename="localhost_dirlist.sh"
-	docker__localhost_dirlist__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__localhost_dirlist__filename}
+	# docker__dockercontainer_dirlist__filename="dockercontainer_dirlist.sh"
+	# docker__dockercontainer_dirlist__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__dockercontainer_dirlist__filename}
+	# docker__localhost_dirlist__filename="localhost_dirlist.sh"
+	# docker__localhost_dirlist__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__localhost_dirlist__filename}
 }
 
 docker__create_dir__sub() {

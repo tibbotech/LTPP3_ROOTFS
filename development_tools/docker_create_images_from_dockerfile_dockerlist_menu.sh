@@ -1,11 +1,5 @@
 #!/bin/bash -m
 #Remark: by using '-m' the INT will NOT propagate to the PARENT scripts
-#---CONSTANTS
-DOCKER__CREATEIMAGE_MENUTITLE="${DOCKER__FG_LIGHTBLUE}DOCKER: CREATE IMAGE(S)${DOCKER__NOCOLOR}"
-DOCKER__VERSION="v21.03.17-0.0.1"
-
-
-
 #---SUBROUTINES
 docker__load_environment_variables__sub() {
     #Check the number of input args
@@ -59,8 +53,12 @@ docker__load_header__sub() {
     show_header__func "${DOCKER__TITLE}" "${DOCKER__TABLEWIDTH}" "${DOCKER__BG_ORANGE}" "${prepend_numOfLines__input}" "${DOCKER__NUMOFLINES_0}"
 }
 
+docker__load_constants__sub() {
+    DOCKER__CREATEIMAGE_MENUTITLE="${DOCKER__FG_LIGHTBLUE}DOCKER: CREATE IMAGE(S)${DOCKER__NOCOLOR}"
+    DOCKER__VERSION="v21.03.17-0.0.1"
+}
+
 docker__init_variables__sub() {
-    docker__git_remote_origin_url=${DOCKER__EMPTYSTRING}
     docker__myChoice=${DOCKER__EMPTYSTRING}
 
     docker__tibboHeader_prepend_numOfLines=0
@@ -70,7 +68,7 @@ docker__run_mandatory_commands__sub() {
     git config --global --add safe.directory ${docker__LTPP3_ROOTFS__dir}
 }
 
-docker__create_images_menu__sub() {
+docker__menu__sub() {
     #Initialization
     docker__tibboHeader_prepend_numOfLines=${DOCKER__NUMOFLINES_2}
 
@@ -177,7 +175,7 @@ docker__show_repositoryList_handler__sub() {
     docker__load_header__sub "${docker__tibboHeader_prepend_numOfLines}"
 
     #Show repo-list
-    show_repository_or_container_list__func "${DOCKER__MENUTITLE_REPOSITORYLIST}" \
+    show_repoList_or_containerList_w_menuTitle_w_confirmation__func "${DOCKER__MENUTITLE_REPOSITORYLIST}" \
                         "${DOCKER__ERRMSG_NO_IMAGES_FOUND}" \
                         "${docker__images_cmd}" \
                         "${DOCKER__NUMOFLINES_1}" \
@@ -191,7 +189,7 @@ docker__show_containerList_handler__sub() {
     docker__load_header__sub "${docker__tibboHeader_prepend_numOfLines}"
 
     #Show container-list
-    show_repository_or_container_list__func "${DOCKER__MENUTITLE_CONTAINERLIST}" \
+    show_repoList_or_containerList_w_menuTitle_w_confirmation__func "${DOCKER__MENUTITLE_CONTAINERLIST}" \
                         "${DOCKER__ERRMSG_NO_CONTAINERS_FOUND}" \
                         "${docker__ps_a_cmd}" \
                         "${DOCKER__NUMOFLINES_1}" \
@@ -208,13 +206,13 @@ main__sub() {
 
     docker__load_source_files__sub
 
-    # docker__load_header__sub
+    docker__load_constants__sub
 
     docker__init_variables__sub
 
     docker__run_mandatory_commands__sub
 
-    docker__create_images_menu__sub
+    docker__menu__sub
 }
 
 

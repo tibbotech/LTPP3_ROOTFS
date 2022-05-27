@@ -921,6 +921,7 @@ docker__enter_add_link_checkout_or_profile_handler__sub() {
             #Show error message and output answer to extern variable 'extern__ret'
             show_msg_wo_menuTitle_w_confirmation__func "${ERRMSG_CHOSEN_WEBLINK_IS_NOTACCESSIBLE}" \
                     "${DOCKER__Y_SLASH_N}" \
+                    "${DOCKER__REGEX_YN}" \
                     "${DOCKER__NUMOFLINES_2}" \
                     "${DOCKER__TIMEOUT_10}" \
                     "${DOCKER__NUMOFLINES_1}" \

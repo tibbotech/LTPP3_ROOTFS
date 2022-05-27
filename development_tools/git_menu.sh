@@ -1,9 +1,3 @@
-#---CONSTANTS
-GIT__MENUTITLE="${DOCKER__FG_LIGHTBLUE}GIT MENU${DOCKER__NOCOLOR}"
-GIT__VERSION="v21.03.17-0.0.1"
-
-
-
 #---SUBROUTINES
 docker__environmental_variables__sub() {
     #Check the number of input args
@@ -41,37 +35,43 @@ docker__environmental_variables__sub() {
         docker__global__filename="docker_global.sh"
         docker__global__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__global__filename}
     fi
-
-    git__git_push_filename="git_push.sh"
-    git__git_pull_filename="git_pull.sh"
-    git__git_pull_origin_otherBranch_filename="git_pull_origin_otherbranch.sh"
-    git__git_create_checkout_local_branch_filename="git_create_checkout_local_branch.sh"
-    git__git_delete_local_branch_filename="git_delete_local_branch.sh"
-    git__git_push_fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${git__git_push_filename}
-    git__git_pull_fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${git__git_pull_filename}
-    git__git_pull_origin_otherBranch_fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${git__git_pull_origin_otherBranch_filename}
-    git__git_create_checkout_local_branch_fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${git__git_create_checkout_local_branch_filename}
-    git__git_delete_local_branch_fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${git__git_delete_local_branch_filename}
 }
 
 docker__load_source_files__sub() {
     source ${docker__global__fpath}
 }
 
+docker__load_constants__sub() {
+    GIT__MENUTITLE="${DOCKER__FG_LIGHTBLUE}GIT MENU${DOCKER__NOCOLOR}"
+    GIT__VERSION="v21.03.17-0.0.2"
+}
+
 docker__load_header__sub() {
-    show_header__func "${DOCKER__TITLE}" "${DOCKER__TABLEWIDTH}" "${DOCKER__BG_ORANGE}" "${DOCKER__NUMOFLINES_2}" "${DOCKER__NUMOFLINES_0}"
+    #Input args
+    local prepend_numOfLines__input=${1}
+
+    #Print
+    show_header__func "${DOCKER__TITLE}" "${DOCKER__TABLEWIDTH}" "${DOCKER__BG_ORANGE}" "${prepend_numOfLines__input}" "${DOCKER__NUMOFLINES_0}"
 }
 
 docker__init_variables__sub() {
     docker__myChoice=""
+
+    docker__tibboHeader_prepend_numOfLines=0
 
     docker__childWhileLoop_isExit=false
     docker__parentWhileLoop_isExit=false
 }
 
 git__menu_sub() {
+    #Initialization
+    docker__tibboHeader_prepend_numOfLines=${DOCKER__NUMOFLINES_2}
+
     while true
     do
+        #Load header
+        docker__load_header__sub "${docker__tibboHeader_prepend_numOfLines}"
+
         #Get current CHECKOUT BRANCH
         local git_current_checkout_branch=`git branch | grep "*" | cut -d"*" -f2 | xargs`
 
@@ -128,23 +128,19 @@ git__menu_sub() {
         #Goto the selected option
         case ${docker__myChoice} in
             1)  
-                ${git__git_push_fpath}
+                ${git__git_push__fpath}
                 ;;
-
             2)  
-                ${git__git_pull_fpath}
+                ${git__git_pull__fpath}
                 ;;
-
             3)
-                ${git__git_pull_origin_otherBranch_fpath}
+                ${git__git_pull_origin_otherBranch__fpath}
                 ;;
-
             4)
-                ${git__git_create_checkout_local_branch_fpath}
+                ${git__git_create_checkout_local_branch__fpath}
                 ;;
-
             5)
-                ${git__git_delete_local_branch_fpath}
+                ${git__git_delete_local_branch__fpath}
                 ;;
             0)
                 ${docker__enter_cmdline_mode__fpath} "${DOCKER__EMPTYSTRING}"
@@ -158,6 +154,9 @@ git__menu_sub() {
         if [[ ${docker__parentWhileLoop_isExit} == true ]]; then
             break
         fi
+
+        #Set 'docker__tibboHeader_prepend_numOfLines'
+        docker__tibboHeader_prepend_numOfLines=${DOCKER__NUMOFLINES_0}
     done
 }
 
@@ -178,7 +177,7 @@ main__sub() {
 
     docker__load_source_files__sub
 
-    docker__load_header__sub
+    docker__load_constants__sub
 
     docker__init_variables__sub
 

@@ -1,9 +1,3 @@
-#---CONSTANTS
-DOCKER__MENUTITLE="${DOCKER__FG_LIGHTBLUE}DOCKER MAIN-MENU${DOCKER__NOCOLOR}"
-DOCKER__CREATEIMAGE_SUBMENUTITLE="${DOCKER__FG_LIGHTBLUE}DOCKER SUB-MENU: CREATE IMAGE(S)${DOCKER__NOCOLOR}"
-DOCKER__GIT_SUBMENUTITLE="${DOCKER__FG_LIGHTBLUE}DOCKER SUB-MENU: GIT${DOCKER__NOCOLOR}"
-DOCKER__VERSION="v21.03.17-0.0.1"
-
 #---SUBROUTINES
 docker__load_environment_variables__sub() {
     # #---Defin FOLDER
@@ -54,6 +48,11 @@ docker__load_source_files__sub() {
     source ${docker__global__fpath}
 }
 
+docker__load_constants__sub() {
+    DOCKER__MENUTITLE="${DOCKER__FG_LIGHTBLUE}DOCKER MAIN-MENU${DOCKER__NOCOLOR}"
+    DOCKER__VERSION="v21.03.17-0.0.2"
+}
+
 docker__load_header__sub() {
     #Input args
     local prepend_numOfLines__input=${1}
@@ -78,6 +77,7 @@ docker__checkIf_user_is_root__sub()
 }
 
 docker__init_variables__sub() {
+    docker__regEx="[1-3890rcseipgq]"
     docker__myChoice=""
 }
 
@@ -102,27 +102,23 @@ docker__mainmenu__sub() {
         show_leadingAndTrailingStrings_separatedBySpaces__func "${DOCKER__MENUTITLE}" "${DOCKER__VERSION}" "${DOCKER__TABLEWIDTH}"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
 
-        echo -e "${DOCKER__FOURSPACES}1. Create ${DOCKER__FG_BORDEAUX}images${DOCKER__NOCOLOR} using a ${DOCKER__FG_DARKBLUE}docker-file${DOCKER__NOCOLOR}/${DOCKER__FG_LIGHTBLUE}docker-list${DOCKER__NOCOLOR}"
-        echo -e "${DOCKER__FOURSPACES}2. Create an ${DOCKER__FG_BORDEAUX}image${DOCKER__NOCOLOR} from a ${DOCKER__FG_PURPLE}repository${DOCKER__NOCOLOR}"
-        echo -e "${DOCKER__FOURSPACES}3. Create an ${DOCKER__FG_BORDEAUX}image${DOCKER__NOCOLOR} from a ${DOCKER__FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
-        echo -e "${DOCKER__FOURSPACES}4. Run ${DOCKER__FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR} from a ${DOCKER__FG_PURPLE}repository${DOCKER__NOCOLOR}"
-        echo -e "${DOCKER__FOURSPACES}5. Run an *exited* ${DOCKER__FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
-        echo -e "${DOCKER__FOURSPACES}6. Remove ${DOCKER__FG_BORDEAUX}image${DOCKER__NOCOLOR}/${DOCKER__FG_PURPLE}repository${DOCKER__NOCOLOR}"
-        echo -e "${DOCKER__FOURSPACES}7. Remove ${DOCKER__FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
-        echo -e "${DOCKER__FOURSPACES}8. Copy a ${DOCKER__FG_ORANGE}file${DOCKER__NOCOLOR} from/to a ${DOCKER__FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
-        echo -e "${DOCKER__FOURSPACES}9. ${DOCKER__FG_GREEN}Chroot${DOCKER__NOCOLOR} (from in/outside a container)"
+        echo -e "${DOCKER__FOURSPACES}1. (Menu) create ${DOCKER__FG_BORDEAUX}image(s)${DOCKER__NOCOLOR} using docker-${DOCKER__FG_DARKBLUE}file${DOCKER__NOCOLOR}/${DOCKER__FG_LIGHTBLUE}list${DOCKER__NOCOLOR}"
+        echo -e "${DOCKER__FOURSPACES}2. (Menu) create${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}remove${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}rename ${DOCKER__FG_BORDEAUX}image${DOCKER__NOCOLOR}"
+        echo -e "${DOCKER__FOURSPACES}3. (Menu) run${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}Remove ${DOCKER__FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
+        echo -e "${DOCKER__FOURSPACES}8. Copy a ${DOCKER__FG_ORANGE}file${DOCKER__NOCOLOR} from${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}to ${DOCKER__FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
+        echo -e "${DOCKER__FOURSPACES}9. ${DOCKER__FG_GREEN}Chroot${DOCKER__NOCOLOR} from inside/outside ${DOCKER__FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}" 
         echo -e "${DOCKER__FOURSPACES}0. Enter Command Prompt"
 
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
         echo -e "${DOCKER__FOURSPACES}r. ${DOCKER__FG_PURPLE}Repository${DOCKER__NOCOLOR}-list"
         echo -e "${DOCKER__FOURSPACES}c. ${DOCKER__FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}-list"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-        echo -e "${DOCKER__FOURSPACES}s. ${DOCKER__FG_YELLOW}SSH${DOCKER__NOCOLOR} to a ${DOCKER__FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
+        echo -e "${DOCKER__FOURSPACES}s. ${DOCKER__FG_YELLOW}SSH${DOCKER__NOCOLOR} to ${DOCKER__FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-        echo -e "${DOCKER__FOURSPACES}i. Load an ${DOCKER__FG_BORDEAUX}image${DOCKER__NOCOLOR} file"
-        echo -e "${DOCKER__FOURSPACES}e. Save an ${DOCKER__FG_BORDEAUX}image${DOCKER__NOCOLOR} file"
+        echo -e "${DOCKER__FOURSPACES}i. Load from ${DOCKER__FG_BORDEAUX}image${DOCKER__NOCOLOR} file"
+        echo -e "${DOCKER__FOURSPACES}e. Save to ${DOCKER__FG_BORDEAUX}image${DOCKER__NOCOLOR} file"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-        echo -e "${DOCKER__FOURSPACES}g. ${DOCKER__FG_LIGHTGREY}Git${DOCKER__NOCOLOR} Menu"
+        echo -e "${DOCKER__FOURSPACES}g. (menu) Git"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
         echo -e "${DOCKER__FOURSPACES}q. ${DOCKER__QUIT_CTRL_C}"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
@@ -136,7 +132,7 @@ docker__mainmenu__sub() {
 
             #Only continue if a valid option is selected
             if [[ ! -z ${docker__myChoice} ]]; then
-                if [[ ${docker__myChoice} =~ [1-90rcseipgq] ]]; then
+                if [[ ${docker__myChoice} =~ ${docker__regEx} ]]; then
                     # moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
                     break
@@ -155,31 +151,15 @@ docker__mainmenu__sub() {
         #Goto the selected option
         case ${docker__myChoice} in
             1)
-                ${docker__create_images_menu__fpath}
+                ${docker_create_images_from_dockerfile_dockerlist_menu__fpath}
                 ;;
 
             2)
-                ${docker__create_image_from_existing_repository__fpath}
+                ${docker_image_create_remove_rename_menu__fpath}
                 ;;
 
             3)
-                ${docker__create_image_from_container__fpath}
-                ;;
-
-            4)
-                ${docker__run_container_from_a_repository__fpath}
-                ;;
-
-            5)
-                ${docker__run_exited_container__fpath}
-                ;;
-
-            6)
-                ${docker__remove_image__fpath}
-                ;;
-
-            7)
-                ${docker__remove_container__fpath}
+                ${docker__container_run_remove__fpath}
                 ;;
 
             8)
@@ -233,7 +213,7 @@ docker__show_repositoryList_handler__sub() {
     docker__load_header__sub "${DOCKER__NUMOFLINES_2}"
 
     #Show repo-list
-    show_repository_or_container_list__func "${DOCKER__MENUTITLE_REPOSITORYLIST}" \
+    show_repoList_or_containerList_w_menuTitle_w_confirmation__func "${DOCKER__MENUTITLE_REPOSITORYLIST}" \
                         "${DOCKER__ERRMSG_NO_IMAGES_FOUND}" \
                         "${docker__images_cmd}" \
                         "${DOCKER__NUMOFLINES_0}" \
@@ -247,7 +227,7 @@ docker__show_containerList_handler__sub() {
     docker__load_header__sub "${DOCKER__NUMOFLINES_2}"
 
     #Show container-list
-    show_repository_or_container_list__func "${DOCKER__MENUTITLE_CONTAINERLIST}" \
+    show_repoList_or_containerList_w_menuTitle_w_confirmation__func "${DOCKER__MENUTITLE_CONTAINERLIST}" \
                         "${DOCKER__ERRMSG_NO_CONTAINERS_FOUND}" \
                         "${docker__ps_a_cmd}" \
                         "${DOCKER__NUMOFLINES_0}" \
@@ -264,7 +244,7 @@ main__sub() {
 
     docker__load_source_files__sub
 
-    # docker__load_header__sub
+    docker__load_constants__sub
 
     docker__checkIf_user_is_root__sub
 

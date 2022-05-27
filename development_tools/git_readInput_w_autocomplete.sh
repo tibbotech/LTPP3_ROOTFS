@@ -3,16 +3,10 @@
 #---INPUT ARGS
 menuTitle__input=${1}
 readMsg__input=${2}
-readMsgUpdate__input=${3}
-readMsgRemarks__input=${4}
-errorMsg__input=${5}
-errorMsg2__input=${6}
-dockerCmd__input=${7}
-colNo__input=${8}
-pattern__input=${9}
-showTable__input=${10}
-onEnter_breakLoop__input=${11}
-
+errorMsg__input=${3}
+cmd__input=${4}
+showTable__input=${5}
+onEnter_breakLoop__input=${6}
 
 
 #---FUNCTIONS
@@ -84,30 +78,42 @@ function autocomplete__func() {
     #Remark:
     #1. non-array parameter(s) precede(s) array-parameter
     #2. For each non-array parameter, the 'shift' operator has to be added an array-parameter
-    local keyWord=${1}
+    local keyWord__input=${1}
     shift
-    local dataArr=("$@")
+    local dataArr__input=("$@")
 
-
-    #Define and update keyWord
+    #Define and update keyWord__input
     local dataArr_filtered_1stElement_len=0
     local keyWord_bck=${DOCKER__EMPTYSTRING}
+    local keyWord_incr=${DOCKER__EMPTYSTRING}
     local keyWord_len=0
     local numOfMatch=0
     local numOfMatch_init=0
     local ret=${DOCKER__EMPTYSTRING}
 
-    #Get only array-elements containing 'keyWord__input'
+    #Remove asterisks (*) from 'keyWord__input'
+    local keyWord_clean=`echo "${keyWord__input}" | sed 's/*//g'`
+
+    #Remove asterisks (*) from 'dataArr__input'
     #Explanation:
-    #   printf '%s\n' "${dataArr[@]}": print each array-element separated by a (\n)
-    #   grep "^${keyWord__input}": get only array-elements matching 'keyWord__input'
+    #   printf '%s\n' "${dataArr__input[@]}": print each array-element separated by a (\n)
+    #   sed 's/*//g': substitute asterisk (*) with 'Empty String'
     #   sed 's/\n/ /g': substitute (\n) with space ( )
-    local dataArr_filtered_string=`printf '%s\n' "${dataArr[@]}" | grep "^${keyWord__input}" | sed 's/\n/ /g'`
+    local dataArr_clean_string=`printf '%s\n' "${dataArr__input[@]}" | sed 's/*//g' | sed 's/\n/ /g'`
+    local dataArr_clean=(`echo "${dataArr_clean_string}"`)
+
+    #Get only array-elements containing 'keyWord_clean'
+    #Explanation:
+    #   printf '%s\n' "${dataArr_clean[@]}": print each array-element separated by a (\n)
+    #   grep "^${keyWord_clean}": get only array-elements matching 'keyWord_clean'
+    #   sed 's/\n/ /g': substitute (\n) with space ( )
+    local dataArr_filtered_string=`printf '%s\n' "${dataArr_clean[@]}" | grep "^${keyWord_clean}" | sed 's/\n/ /g'`
     local dataArr_filtered=(`echo "${dataArr_filtered_string}"`)
 
     #initialization
     dataArr_filtered_1stElement_len=${#dataArr_filtered[0]}
-    numOfMatch_init=`printf '%s\n' "${dataArr_filtered[@]}" | grep "^${keyWord}" | wc -l`
+    keyWord_incr=${keyWord_clean}
+    numOfMatch_init=${#dataArr_filtered[@]}
     numOfMatch=${numOfMatch_init}
 
     #Find the closest match
@@ -118,22 +124,22 @@ function autocomplete__func() {
             break
         elif [[ ${numOfMatch_init} -eq 1 ]]; then  #only 1 match
             #Update variable
-            ret=`printf '%s\n' "${dataArr_filtered[@]}" | grep "^${keyWord}"`
+            ret=`printf '%s\n' "${dataArr_filtered[@]}" | grep "^${keyWord_incr}"`
 
             #Exit loop
             break
         else    #multiple matches
-            #Backup keyWord
-            keyWord_bck=${keyWord}
+            #Backup 'keyWord_incr'
+            keyWord_bck=${keyWord_incr}
 
-            #Get keyWord length
+            #Get 'keyWord_bck' length
             keyWord_bck_len=${#keyWord_bck}
 
-            #Increment keyWord length by 1
+            #Increment 'keyWord_len' length by 1
             keyWord_len=$((keyWord_bck_len + 1))
 
-            #Get the next keyWord (by using the 1st array-element as base)
-            keyWord=${dataArr_filtered[0]:0:keyWord_len}
+            #Get the next 'keyWord_incr' (by using the 1st array-element as base)
+            keyWord_incr=${dataArr_filtered[0]:0:keyWord_len}
 
             #Check if the total length of the 1st array-element has been reached
             if [[ ${keyWord_bck_len} -eq ${dataArr_filtered_1stElement_len} ]]; then
@@ -143,7 +149,7 @@ function autocomplete__func() {
             fi
 
             #Get the new number of matches
-            numOfMatch=`printf '%s\n' "${dataArr_filtered[@]}" | grep "^${keyWord}" | wc -l`
+            numOfMatch=`printf '%s\n' "${dataArr_filtered[@]}" | grep "^${keyWord_incr}" | wc -l`
 
             #Compare the new 'numOfMatch' with the initial 'numOfMatch_init'
             #If there is a difference, then set 'ret = keyWord_bck' and exit the loop.
@@ -187,9 +193,7 @@ function backspace_handler__func() {
 
 function run_cmd_and_read_output_into_array__func() {
     #Input args
-    local dockerCmd__input=${1}
-    local colNo__input=${2}
-    local pattern__input=${3}
+    local cmd__input=${1}
 
     #Define local variables
     local cachedInputArr_string=${DOCKER__EMPTYSTRING}
@@ -201,18 +205,8 @@ function run_cmd_and_read_output_into_array__func() {
     cachedInput_ArrIndex=0
     cachedInput_ArrIndex_max=0
 
-    #Get all values stored under the specified column 'colNo__input' (excluding header)
-    if [[ -z ${pattern__input} ]]; then
-        cachedInputArr_raw_string=`${dockerCmd__input} | awk -vcolNo=${colNo__input} '{print $colNo}' | tail -n+2`
-    else
-        cachedInputArr_raw_string=`${dockerCmd__input} | grep "${pattern__input}" | awk -vcolNo=${colNo__input} '{print $colNo}'`
-    fi
-
-    #Get only UNIQUE values
-    cachedInputArr_string=`echo ${cachedInputArr_raw_string} | tr ' ' '\n' | awk '!a[$0]++'`
-
-    #Convert string to array
-    cachedInput_Arr=(`echo ${cachedInputArr_string}`)
+    #Run command and read into Array
+    readarray -t cachedInput_Arr < <(${cmd__input} | tr -d "[:blank:]")
 
     #Update array-length
     cachedInput_ArrLen=${#cachedInput_Arr[@]}
@@ -254,19 +248,18 @@ docker__load_source_files__sub() {
 
 docker__init_variables__sub() {
     docker__1stTimeUse=true
+
+    #***ASSUMPTION:
+    #   
+    docker__isDockerCmd=true
 }
 
 docker__readInput_handler__sub() {
     #Get read-input value
     docker__readInput_w_autocomplete__sub "${menuTitle__input}" \
                         "${readMsg__input}" \
-                        "${readMsgUpdate__input}" \
-                        "${readMsgRemarks__input}" \
                         "${errorMsg__input}" \
-                        "${errorMsg2__input}" \
-                        "${dockerCmd__input}" \
-                        "${colNo__input}" \
-                        "${pattern__input}" \
+                        "${cmd__input}" \
                         "${showTable__input}" \
                         "${onEnter_breakLoop__input}"
 
@@ -278,15 +271,10 @@ docker__readInput_w_autocomplete__sub() {
     #Input args
     local menuTitle__input=${1}
     local readMsg__input=${2}
-    local readMsgUpdate__input=${3}
-    local readMsgRemarks__input=${4}
-    local errorMsg__input=${5}
-    local errorMsg2__input=${6}
-    local dockerCmd__input=${7}
-    local colNo__input=${8}
-    local pattern__input=${9}
-    local showTable__input=${10}
-    local onEnter_breakLoop__input=${11}
+    local errorMsg__input=${3}
+    local cmd__input=${4}
+    local showTable__input=${5}
+    local onEnter_breakLoop__input=${6}
 
     #Define variables
     local keyInput=${DOCKER__EMPTYSTRING}
@@ -305,8 +293,8 @@ docker__readInput_w_autocomplete__sub() {
         rm ${docker__readInput_w_autocomplete_out__fpath}
     fi
 
-#---Load ContainerIDs into Array 'cachedInput_Arr'
-    run_cmd_and_read_output_into_array__func "${dockerCmd__input}" "${colNo__input}" "${pattern__input}"
+#---Run command and read output into 'cachedInput_Arr'
+    run_cmd_and_read_output_into_array__func "${cmd__input}"
 
 #---Show Docker Container's List
     #Calculate number of lines to be cleaned
@@ -314,14 +302,7 @@ docker__readInput_w_autocomplete__sub() {
     if [[ ! -z ${readMsg__input} ]]; then    #this condition is important
         readMsg_numOfLines=`echo -e ${readMsg__input} | wc -l`      
     fi
-    local remarks_numOfLines=0
-    if [[ ! -z ${readMsgRemarks__input} ]]; then    #this condition is important
-        remarks_numOfLines=`echo -e ${readMsgRemarks__input} | wc -l`      
-    fi
     local update_numOfLines=0
-    if [[ ! -z ${readMsgUpdate__input} ]]; then    #this condition is important
-        update_numOfLines=`echo -e ${readMsgUpdate__input} | wc -l`      
-    fi
 
     local numOfLines_noError_tot=$((readMsg_numOfLines + update_numOfLines))
     local numOfLines_wError_tot=$((DOCKER__NUMOFLINES_5 +  update_numOfLines))
@@ -331,14 +312,8 @@ docker__readInput_w_autocomplete__sub() {
     #   This way we can control whether to show the Image-list Table or not.
     if [[ ${showTable__input} == true ]]; then
         docker__show_infoTable__sub "${menuTitle__input}" \
-                        "${dockerCmd__input}" \
-                        "${errorMsg__input}" #\
-                        # "${DOCKER__NUMOFLINES_0}"
-
-        #Show current input
-        if [[ ! -z ${readMsgRemarks__input} ]]; then
-            echo -e "${readMsgRemarks__input}"
-        fi
+                        "${errorMsg__input}" \
+                        "${cachedInput_Arr[@]}"
     fi
 
     #Start automcomplete
@@ -356,9 +331,6 @@ docker__readInput_w_autocomplete__sub() {
             onBackSpacePressed=false    #set flag back to false
         fi
 
-        if [[ ! -z ${readMsgUpdate__input} ]]; then
-            echo -e "${readMsgUpdate__input}"
-        fi
         echo -e "${readMsg__input}${ret}"
 
         #Move cursor up
@@ -377,32 +349,10 @@ docker__readInput_w_autocomplete__sub() {
                 ret=`get_endResult_ofString_with_semiColonChar__func ${ret_bck}` 
                 
                 if [[ ! -z ${ret} ]]; then    #'ret' contains data
-                    #Break immeidiately if ';b' or ';h' was found.
-                    if [[ ${ret} == ${DOCKER__SEMICOLON_BACK} ]] || [[ ${ret} == ${DOCKER__SEMICOLON_HOME} ]]; then
-                        break
-                    fi
+                    #Remove asterisks (*) from 'ret'
+                    ret=`echo "${ret}" | sed 's/*//g'`
 
-                    if [[ ! -z ${errorMsg2__input} ]]; then #not an Empty String
-                        #Check if 'ret' is found in the image-/container-list
-                        stdOutput=`${dockerCmd__input} | awk -vcolNo=${colNo__input} '{print $colNo}' | grep -w ${ret}`
-                        if [[ ! -z ${stdOutput} ]] || [[ ${ret} == ${DOCKER__REMOVE_ALL} ]]; then    #match
-                            break
-                        else    #no match
-                            #Update error message
-                            errMsg="${errorMsg2__input}'${DOCKER__FG_LIGHTGREY}${ret}${DOCKER__NOCOLOR}'"
-
-                            #Show error message
-                            show_msg_wo_menuTitle_w_PressAnyKey__func "${errMsg}" "${DOCKER__NUMOFLINES_2}"
-
-                            #Reset return value
-                            ret=${DOCKER__EMPTYSTRING}
-
-                            #Move Up and Clean
-                            moveUp_and_cleanLines__func "${numOfLines_wError_tot}"
-                        fi
-                    else    #is an Empty String 
-                        break
-                    fi
+                    break
                 else    #'ret' is an Empty String
                     #Reset variable
                     ret=${DOCKER__EMPTYSTRING}
@@ -447,7 +397,6 @@ docker__readInput_w_autocomplete__sub() {
             ${DOCKER__TAB})
                 #This subroutine will also update 'ret'
                 ret=`autocomplete__func "${ret}" "${cachedInput_Arr[@]}"`
-                # autocomplete__func "${ret}" "${cachedInput_Arr[@]}"
 
                 #First Move-down, then Move-up, after that clean line
                 moveDown_oneLine_then_moveUp_and_clean__func "${numOfLines_noError_tot}"
@@ -473,27 +422,16 @@ docker__readInput_w_autocomplete__sub() {
     done
 
     #Write to file
-    echo -e "${ret}" > ${docker__readInput_w_autocomplete_out__fpath}
+    echo -e "${ret}" > ${git__git_readInput_w_autocomplete_out__fpath}
 }
 
 docker__show_infoTable__sub() {
     #Input args
     local menuTitle__input=${1}
-    local dockerCmd__input=${2}
-    local errorMsg__input=${3}
-    # local numOfLines_toMoveDown=${4}
-
-    # #Print empty lines (if applicable)
-    # local counter=1
-    # while [[ ${counter} -le ${numOfLines_toMoveDown} ]];
-    # do
-    #     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-
-    #     counter=$((counter+1))
-    # done
-
-    # #Get number of containers
-    # local numOf_items=`${dockerCmd__input} | head -n -1 | wc -l`
+    local errorMsg__input=${2}
+    shift
+    shift
+    local dataArr__input=("$@")
 
     #Show Table
     if [[ ${cachedInput_ArrLen} -eq 0 ]]; then
@@ -507,7 +445,7 @@ docker__show_infoTable__sub() {
             exit__func "${exitCode__input}" "${DOCKER__NUMOFLINES_0}"
         fi
     else
-        show_repoList_or_containerList_w_menuTitle__func "${menuTitle__input}" "${dockerCmd__input}"
+        show_array_elements_w_menuTitle__func "${menuTitle__input}" "${dataArr__input[@]}"
     fi
 }
 

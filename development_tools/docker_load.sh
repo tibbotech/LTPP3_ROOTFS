@@ -189,7 +189,7 @@ docker__load_handler__sub() {
                 ;;
             ${DOCKER__SHOW_UPDATED_IMAGE_LIST_PHASE})
                 #Show repo-list
-                show_repository_or_container_list__func "${DOCKER__MENUTITLE_UPDATED_REPOSITORYLIST}" \
+                show_repoList_or_containerList_w_menuTitle_w_confirmation__func "${DOCKER__MENUTITLE_UPDATED_REPOSITORYLIST}" \
                                     "${DOCKER__ERRMSG_NO_IMAGES_FOUND}" \
                                     "${docker__images_cmd}" \
                                     "${DOCKER__NUMOFLINES_2}" \

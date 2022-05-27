@@ -124,7 +124,7 @@ docker__start_exited_container__sub() {
     #Show Container's list
     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
     
-    show_cmdOutput_w_menuTitle__func "${MENUTITLE_UPDATED_CONTAINER_LIST}" "${docker__ps_a_cmd}"
+    show_repoList_or_containerList_w_menuTitle__func "${MENUTITLE_UPDATED_CONTAINER_LIST}" "${docker__ps_a_cmd}"
     
     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
 }

@@ -422,10 +422,10 @@ docker__create_image_exec__sub() {
             # moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
             # #Show Docker Image List
-            # show_cmdOutput_w_menuTitle__func "${DOCKER__MENUTITLE_UPDATED_REPOSITORYLIST}" "${docker__images_cmd}"
+            # show_repoList_or_containerList_w_menuTitle__func "${DOCKER__MENUTITLE_UPDATED_REPOSITORYLIST}" "${docker__images_cmd}"
 
             #Show repo-list
-            show_repository_or_container_list__func "${DOCKER__MENUTITLE_UPDATED_REPOSITORYLIST}" \
+            show_repoList_or_containerList_w_menuTitle_w_confirmation__func "${DOCKER__MENUTITLE_UPDATED_REPOSITORYLIST}" \
                                 "${DOCKER__ERRMSG_NO_IMAGES_FOUND}" \
                                 "${docker__images_cmd}" \
                                 "${DOCKER__NUMOFLINES_2}" \

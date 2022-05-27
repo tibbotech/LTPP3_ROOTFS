@@ -1,26 +1,8 @@
 #!/bin/bash -m
 #Remark: by using '-m' the INT will NOT propagate to the PARENT scripts
-#---VARIABLES
-git__gitBranchList_arr=()
-git__branchName_isNew=${DOCKER__FALSE}
-
 
 #---FUNCTIONS
-function checkForMatch_subString_in_string__func() {
-    #Input args
-    local str_input=${1}
-    local subStr_input=${2}
-
-    #Check if 'subStr_input' is found in 'str_input'
-    local stdOutput=`echo "${str_input}" | grep "${subStr_input}"`
-    if [[ ! -z ${stdOutput} ]]; then
-        echo ${DOCKER__TRUE}
-    else
-        echo ${DOCKER__FALSE}
-    fi
-}
-
-function checkIf_branch_alreadyExists__func() {
+function docker__checkIf_branch_alreadyExists__func() {
     #Input args
     local branchName_input=${1}
 
@@ -33,7 +15,7 @@ function checkIf_branch_alreadyExists__func() {
     fi
 }
 
-function checkIf_branch_isCheckedOut__func() {
+function docker__checkIf_branch_isCheckedOut__func() {
     #Input args
     local branchName_input=${1}
 
@@ -46,53 +28,10 @@ function checkIf_branch_isCheckedOut__func() {
     fi
 }
 
-function get_git_branchList__func() {
-    #Disable File-expansion
-    #REMARK: this is a MUST because otherwise an Asterisk would be treated as a NON-string
-    set -f
-
-    #Get Git Branch-list and write directly to an array
-    readarray -t git__gitBranchList_arr <<< "$(git branch | tr -d ' ')"
-
-    #Enable File-expansion
-    set +f
-}
-
-function show_git_branchList__func() {
-    #Define local constants
-    local CHECKED_OUT="checked out"
-
-    #Define local variables
-    local gitBranchList_arrItem=${DOCKER__EMPTYSTRING}
-    local gitBranchList_arrItem_wo_asterisk=${DOCKER__EMPTYSTRING} 
-    local asterisk_isFound=${DOCKER__FALSE}
-
-    #Print Status Message
-    echo -e "---:${DOCKER__FG_ORANGE}${PRINTF_LIST_LOCAL}${DOCKER__NOCOLOR}: git branch"
-
-    #Show Array items
-    for gitBranchList_arrItem in "${git__gitBranchList_arr[@]}"
-    do 
-        #Check if asterisk is present
-        asterisk_isFound=`checkForMatch_subString_in_string__func "${gitBranchList_arrItem}" "${DOCKER__ESCAPED_ASTERISK}"`
-        if [[ ${asterisk_isFound} == ${DOCKER__TRUE} ]]; then
-            gitBranchList_arrItem_wo_asterisk=`echo ${gitBranchList_arrItem} | cut -d"${DOCKER__ASTERISK}" -f2-`
-
-            echo -e "${DOCKER__FOURSPACES}${DOCKER__ASTERISK} ${DOCKER__FG_GREEN}${gitBranchList_arrItem_wo_asterisk}${DOCKER__NOCOLOR} (${CHECKED_OUT})"
-        else
-            echo -e "${DOCKER__FOURSPACES}${gitBranchList_arrItem}"
-        fi
-    done
-
-
-    #Move-down and clean line
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-}
-
 
 
 #---SUBROUTINES
-git__environmental_variables__sub() {
+docker__environmental_variables__sub() {
     #Check the number of input args
     if [[ -z ${docker__global__fpath} ]]; then   #must be equal to 3 input args
         #---Defin FOLDER
@@ -130,19 +69,36 @@ git__environmental_variables__sub() {
     fi
 }
 
-git__load_source_files__sub() {
+docker__load_source_files__sub() {
     source ${docker__global__fpath}
 }
 
-git__load_header__sub() {
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-    echo -e "${DOCKER__BG_ORANGE}                                 ${DOCKER__TITLE}${DOCKER__BG_ORANGE}                                ${DOCKER__NOCOLOR}"
+docker__load_header__sub() {
+    #Input args
+    local prepend_numOfLines__input=${1}
+
+    #Print
+    show_header__func "${DOCKER__TITLE}" "${DOCKER__TABLEWIDTH}" "${DOCKER__BG_ORANGE}" "${prepend_numOfLines__input}" "${DOCKER__NUMOFLINES_0}"
 }
 
-git__git_pull__sub() {
-    #Define local constants
-    local MENUTITLE="Git ${DOCKER__FG_SOFTLIGHTRED}Delete${DOCKER__NOCOLOR} ${DOCKER__FG_LIGHTGREY}Local${DOCKER__NOCOLOR} Branch"
+docker__load_constants__sub() {
+    DOCKER__MENUTITLE="Git ${DOCKER__FG_SOFTLIGHTRED}Delete${DOCKER__NOCOLOR} ${DOCKER__FG_LIGHTGREY}Local${DOCKER__NOCOLOR} Branch"
+    DOCKER__READDIALOG="Input: "
+}
 
+docker__init_variables__sub() {
+    docker__branch_chosen=${DOCKER__EMPTYSTRING}
+    docker__git_cmd=${DOCKER__EMPTYSTRING}
+    docker__stdErr=${DOCKER__EMPTYSTRING}
+
+    docker__tibboHeader_prepend_numOfLines=0
+
+    docker__branch_chosen_isFound=false
+    docker__onEnter_breakLoop=false
+    docker__showTable=true
+}
+
+docker__delete_local_branch_handler__sub() {
     #Define local message constants
     local PRINTF_COMPLETED="${DOCKER__FG_ORANGE}COMPLETED${DOCKER__NOCOLOR}"
     local PRINTF_LIST_LOCAL="${DOCKER__FG_ORANGE}LIST${DOCKER__NOCOLOR} (${DOCKER__FG_ORANGE}LOCAL${DOCKER__NOCOLOR})"
@@ -154,8 +110,10 @@ git__git_pull__sub() {
     local PRINTF_BRANCH_TOBE_DELETED="Branch ${DOCKER__FG_LIGHTGREY}to-be-deleted${DOCKER__NOCOLOR}"
     local PRINTF_ERROR="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}"
 
+    local PRINTF_NO_ACTION_TAKEN="No action taken"
+
     #Define local question constants
-    local QUESTION_PROCEED="Proceed (y/n/q)? "
+    local QUESTION_PROCEED="Delete selected branch (y/n/q)? "
 
     #Define local read-input constants
     local READ_YOURINPUT="${DOCKER__FG_LIGHTBLUE}Your input${DOCKER__NOCOLOR}: "
@@ -169,6 +127,7 @@ git__git_pull__sub() {
 
     #Define local message variables
     local printf_msg=${DOCKER__EMPTYSTRING}
+    local question_msg=${DOCKER__EMPTYSTRING}
 
 
 
@@ -178,14 +137,9 @@ goto__func START
 
 
 @START:
-    #Show menu-title
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-    show_centered_string__func "${MENUTITLE}" "${DOCKER__TABLEWIDTH}"
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-    echo -e "${DOCKER__FOURSPACES}${DOCKER__QUIT_CTRL_C}"
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    docker__tibboHeader_prepend_numOfLines=${DOCKER__NUMOFLINES_2}
 
-    goto__func PRECHECK    #goto next-phase
+    goto__func PRECHECK
 
 
 
@@ -195,67 +149,72 @@ goto__func START
     if [[ ! -z ${git__stdErr} ]]; then   #not a git-repository
         goto__func EXIT_PRECHECK_FAILED  #goto next-phase
     else    #is a git-repository
-        goto__func BRANCH_LIST    #goto next-phase
+        goto__func BRANCH_SHOW_AND_INPUT
     fi
 
 
 
-@BRANCH_LIST:
-    #Get Branch List
-    get_git_branchList__func
+@BRANCH_SHOW_AND_INPUT:
+    #Output: docker__branch_chosen
+    docker__show_and_input_git_branch__sub
 
-    #Show Branch List
-    show_git_branchList__func
+    #Move-down and clean
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
-    goto__func BRANCH_INPUT    #goto next-phase
+    #Check if 'docker__branch_chosen' already exists
+    docker__branch_chosen_isFound=`docker__checkIf_branch_alreadyExists__func "${docker__branch_chosen}"`
+    if [[ ${docker__branch_chosen_isFound} == ${DOCKER__TRUE} ]]; then
+        #Check if asterisk is present
+        isCheckedOut=`docker__checkIf_branch_isCheckedOut__func "${docker__branch_chosen}"`
+        if [[ ${isCheckedOut} == ${DOCKER__FALSE} ]]; then  #asterisk is NOT found
+            #Update message
+            printf_msg="Branch '${DOCKER__FG_LIGHTGREY}${docker__branch_chosen}${DOCKER__NOCOLOR}' exists"
 
+            #Print message
+            echo -e "---:${PRINTF_STATUS}: ${printf_msg}"
 
+            #Update variable
+            question_msg=${QUESTION_PROCEED}
+        else    #asterisk is found            
+            #Update message
+            printf_msg="Branch '${DOCKER__FG_LIGHTGREY}${docker__branch_chosen}${DOCKER__NOCOLOR}' is checked out"
 
-@BRANCH_INPUT:
-    #Input Branch name
-    echo -e "---:${PRINTF_INPUT}: ${PRINTF_BRANCH_TOBE_DELETED}"
-    
-    while true
-    do
-        read -e -p "${DOCKER__FOURSPACES}${READ_YOURINPUT}" myBranchName
-        if [[ ! -z ${myBranchName} ]]; then #contains data
-            #Check if 'myBranchName' already exists
-            myBranchName_isFound=`checkIf_branch_alreadyExists__func "${myBranchName}"`
-            if [[ ${myBranchName_isFound} == ${DOCKER__TRUE} ]]; then
-                #Check if asterisk is present
-                isCheckedOut=`checkIf_branch_isCheckedOut__func "${myBranchName}"`
-                if [[ ${isCheckedOut} == ${DOCKER__FALSE} ]]; then  #asterisk is NOT found
-                    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+            #Print message
+            echo -e "---:${PRINTF_STATUS}: ${printf_msg}"
 
-                    break
-                else    #asterisk is found
-                    #Move-up 1 line
-                    tput cuu1
+            #Print message
+            echo -e "---:${PRINTF_STATUS}: ${PRINTF_NO_ACTION_TAKEN}"
 
-                    #Show message with error
-                    echo -e "${DOCKER__FOURSPACES}${READ_YOURINPUT}${myBranchName} (${READERR_CURRENTLY_CHECKEDOUT_NOTALLOWED})"
-                fi
-            else
-                #Move-up 1 line
-                tput cuu1
+            #Add an empty-line
+            moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
 
-                #Show message with error
-                echo -e "${DOCKER__FOURSPACES}${READ_YOURINPUT}${myBranchName} (${READERR_NOT_FOUND})"
-            fi
-        else
-            tput cuu1   #move-up without cleaning
+            #Goto next-phase
+            goto__func BRANCH_SHOW_AND_INPUT
         fi
-    done
+    else
+        #Update message
+        printf_msg="Branch '${DOCKER__FG_LIGHTGREY}${docker__branch_chosen}${DOCKER__NOCOLOR}' does NOT exist"
 
+        #Print message
+        echo -e "---:${PRINTF_STATUS}: ${printf_msg}"
 
-    #Update message
-    printf_msg="About to Delete (local) branch '${DOCKER__FG_LIGHTGREY}${myBranchName}${DOCKER__NOCOLOR}'"
+        #Print message
+        echo -e "---:${PRINTF_STATUS}: ${PRINTF_NO_ACTION_TAKEN}"
+
+        #Add an empty-line
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
+
+        #Goto next-phase
+        goto__func BRANCH_SHOW_AND_INPUT
+    fi
+
+    #Move-down and clean
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
     #Show question
     while true
     do
-        echo -e "---:${PRINTF_WARNING}: ${printf_msg}"
-        read -N1 -p "${DOCKER__FOURSPACES}${QUESTION_PROCEED}" myAnswer
+        read -N1 -p "${question_msg}" myAnswer
 
         if [[ ! -z ${myAnswer} ]]; then #contains data
             #Handle 'myAnswer'
@@ -265,9 +224,9 @@ goto__func START
 
                     goto__func EXIT_SUCCESSFUL  #goto next-phase
                 elif [[ ${myAnswer} == "n" ]]; then
-                    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
+                    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_3}"
 
-                    goto__func BRANCH_LIST    #goto next-phase
+                    goto__func BRANCH_SHOW_AND_INPUT    #goto next-phase
                 else
                     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
 
@@ -290,19 +249,19 @@ goto__func START
 
 
 @DELETE_BRANCH:
-    echo -e "---:${PRINTF_START}: git branch -d ${DOCKER__FG_LIGHTGREY}${myBranchName}${DOCKER__NOCOLOR}"
+    echo -e "---:${PRINTF_START}: git branch -d ${DOCKER__FG_LIGHTGREY}${docker__branch_chosen}${DOCKER__NOCOLOR}"
 
     #Execute
-    git branch -d ${myBranchName}
+    git branch -d ${docker__branch_chosen}
 
     #Check exit-code
     exitCode=$?
     if [[ ${exitCode} -eq 0 ]]; then
-        echo -e "---:${PRINTF_COMPLETED}: git branch -d ${DOCKER__FG_LIGHTGREY}${myBranchName}${DOCKER__NOCOLOR}"
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+        echo -e "---:${PRINTF_COMPLETED}: git branch -d ${DOCKER__FG_LIGHTGREY}${docker__branch_chosen}${DOCKER__NOCOLOR}"
         
-        #Goto next-phase
-        goto__func GET_AND_SHOW_BRANCH_LIST
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
+
+        goto__func BRANCH_SHOW_AND_INPUT
     else
         #Goto next-phase
         goto__func EXIT_FAILED
@@ -310,49 +269,77 @@ goto__func START
 
 
 
-@GET_AND_SHOW_BRANCH_LIST:
-    #Get Branch List
-    get_git_branchList__func
-
-    #Show Branch List
-    show_git_branchList__func
-
-    #Goto next-phase
-    goto__func EXIT_SUCCESSFUL
-
-
-
 @EXIT_SUCCESSFUL:
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+    exit__func "${DOCKER__EXITCODE_0}" "${DOCKER__NUMOFLINES_2}"
 
-    exit 0
+
 
 @EXIT_PRECHECK_FAILED:
     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
     echo -e "${PRINTF_ERROR}: ${git__stdErr}"
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_0}"
     
-    exit 99
+    exit__func "${DOCKER__EXITCODE_99}" "${DOCKER__NUMOFLINES_2}"
+
+
 
 @EXIT_FAILED:
     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-    echo -e "${PRINTF_ERROR}: git branch -d ${DOCKER__FG_LIGHTGREY}${myBranchName}${DOCKER__NOCOLOR}"
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+    echo -e "${PRINTF_ERROR}: git branch -d ${DOCKER__FG_LIGHTGREY}${docker__branch_chosen}${DOCKER__NOCOLOR}"
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
 
-    exit 99
+    goto__func BRANCH_SHOW_AND_INPUT
+}
+
+
+
+docker__show_and_input_git_branch__sub() {
+    #Show Tibbo-header
+    docker__load_header__sub "${docker__tibboHeader_prepend_numOfLines}"
+
+    #Define command
+    docker__git_cmd="git branch"
+
+    #Show file-content
+    ${git__git_readInput_w_autocomplete__fpath} "${DOCKER__MENUTITLE}" \
+            "${DOCKER__READDIALOG}" \
+            "${DOCKER__ECHOMSG_NORESULTS_FOUND}" \
+            "${docker__git_cmd}" \
+            "${docker__showTable}" \
+            "${docker__onEnter_breakLoop}"
+
+    #Get the exitcode just in case:
+    #   1. Ctrl-C was pressed in script 'docker__readInput_w_autocomplete__fpath'.
+    #   2. An error occured in script 'docker__readInput_w_autocomplete__fpath',...
+    #      ...and exit-code = 99 came from function...
+    #      ...'show_msg_w_menuTitle_w_pressAnyKey_w_ctrlC_func' (in script: docker__global.sh).
+    docker__exitCode=$?
+    if [[ ${docker__exitCode} -eq ${DOCKER__EXITCODE_99} ]]; then
+        exit__func "${docker__exitCode}" "${DOCKER__NUMOFLINES_2}"
+    else
+        #Retrieve the selected container-ID from file
+        docker__branch_chosen=`get_output_from_file__func \
+                        "${git__git_readInput_w_autocomplete_out__fpath}" \
+                        "${DOCKER__LINENUM_1}"`
+    fi
+
+    #Set 'docker__tibboHeader_prepend_numOfLines' to '0'
+    docker__tibboHeader_prepend_numOfLines=${DOCKER__NUMOFLINES_0}
 }
 
 
 
 #---MAIN SUBROUTINE
 main_sub() {
-    git__environmental_variables__sub
+    docker__environmental_variables__sub
 
-    git__load_source_files__sub
+    docker__load_source_files__sub
 
-    git__load_header__sub
+    docker__load_constants__sub
 
-    git__git_pull__sub
+    docker__init_variables__sub
+
+    docker__delete_local_branch_handler__sub
 }
 
 

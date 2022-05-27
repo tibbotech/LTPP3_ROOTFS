@@ -475,7 +475,7 @@ dirlist__initial_file_cleanup__sub() {
 }
 
 dirlist__initialize_variables__sub() {
-    docker__exec_cmd="docker exec -t ${containerID__input} ${bin_bash_dir} -c"
+    docker__exec_cmd="docker exec -t ${containerID__input} ${docker__bin_bash__dir} -c"
     docker__containerid_state=false
 }
 

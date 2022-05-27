@@ -82,7 +82,7 @@ function create_image__func() {
     #Print docker image list
     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
-    show_cmdOutput_w_menuTitle__func "${DOCKER__MENUTITLE_UPDATED_REPOSITORYLIST}" "${docker__images_cmd}"
+    show_repoList_or_containerList_w_menuTitle__func "${DOCKER__MENUTITLE_UPDATED_REPOSITORYLIST}" "${docker__images_cmd}"
     
     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
 }
