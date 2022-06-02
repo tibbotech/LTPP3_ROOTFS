@@ -172,7 +172,7 @@ docker__add_comment_push__sub() {
                 if [[ ${exitCode} -eq 0 ]]; then
                     echo -e "---:${PRINTF_STAGE2}: ${PRINTF_GIT_COMMIT_CMD} (${STATUS_DONE})"
 
-                    phase="${GITCONFIRM_NEW_COMMIT_PHASE}"
+                    phase="${GIT_CONFIRM_NEW_COMMIT_PHASE}"
                 else
                     #Get the unpushed commits
                     #Remark:
