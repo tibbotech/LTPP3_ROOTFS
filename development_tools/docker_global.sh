@@ -1678,7 +1678,7 @@ function git_log_for_pushed_and_unpushed_commits__func() {
     echo "${ret}"
 }
 
-git_get_current_branchName__func() {
+function git_get_current_branchName__func() {
     #Get branch-name
     local ret=`git symbolic-ref --short -q HEAD`
 
