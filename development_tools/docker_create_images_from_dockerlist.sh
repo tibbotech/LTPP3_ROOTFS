@@ -275,6 +275,7 @@ docker__show_dockerList_files_handler__sub() {
                         "${DOCKER__FILE_MENUOPTIONS}" \
                         "${DOCKER__FILE_ERRMSG}" \
                         "${DOCKER__FILE_READDIALOG}" \
+                        "${DOCKER__REGEX_YNB}" \
                         "${docker__show_fileContent_wo_select_func_out__fpath}" \
                         "${DOCKER__TABLEROWS_10}" \
                         "${DOCKER__EMPTYSTRING}" \

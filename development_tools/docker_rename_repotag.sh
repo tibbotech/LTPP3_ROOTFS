@@ -503,25 +503,19 @@ docker__rename_image_handler__sub() {
                     docker__summaryTitle="${SUMMARYTITLE} w/ overwrite"
                 fi
 
-
-                #Show summary
-                show_msg_w_menuTitle_only_func "${docker__summaryTitle}" \
-                                    "${docker__renameMsg_fromTo}" \
-                                    "${DOCKER__NUMOFLINES_1}" \
-                                    "${DOCKER__NUMOFLINES_0}"
-                
                 #Go to next phase
                 phase=${RENAME_REPOTAG_PHASE}
                 ;;
             ${RENAME_REPOTAG_PHASE})
                 #Show question
-                show_msg_wo_menuTitle_w_confirmation__func "${DOCKER__EMPTYSTRING}" \
+                show_msg_w_menuTitle_w_confirmation__func "${docker__summaryTitle}" \
+                        "${docker__renameMsg_fromTo}" \
                         "${DOCKER__Y_SLASH_N_SLASH_H}" \
                         "${DOCKER__REGEX_YNH}" \
                         "${DOCKER__NUMOFLINES_0}" \
                         "${DOCKER__TIMEOUT_30}" \
                         "${DOCKER__NUMOFLINES_0}" \
-                        "${DOCKER__NUMOFLINES_0}"            
+                        "${DOCKER__NUMOFLINES_0}"          
 
                 #Get answer
                 answer=${extern__ret}
@@ -617,12 +611,12 @@ docker__rename_repoTag__sub() {
     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_3}"
 
     #Update 'startMsg'
-    local startMsg=":-->${DOCKER__FG_ORANGE}START${DOCKER__NOCOLOR}: rename "
+    local startMsg="---:${DOCKER__FG_ORANGE}START${DOCKER__NOCOLOR}: rename "
     startMsg+="${DOCKER__FG_PURPLE}${docker__repo_chosen}${DOCKER__NOCOLOR}:"
     startMsg+="${DOCKER__FG_PINK}${docker__tag_chosen}${DOCKER__NOCOLOR}"
 
     #Update 'completedMsg'
-    local completedMsg=":-->${DOCKER__FG_ORANGE}COMPLETED${DOCKER__NOCOLOR}: rename "
+    local completedMsg="---:${DOCKER__FG_ORANGE}COMPLETED${DOCKER__NOCOLOR}: rename "
     completedMsg+="${DOCKER__FG_PURPLE}${docker__repo_chosen}${DOCKER__NOCOLOR}:"
     completedMsg+="${DOCKER__FG_PINK}${docker__tag_chosen}${DOCKER__NOCOLOR}"
 
@@ -657,13 +651,13 @@ docker__rename_repoTag_w_overwrite__sub() {
     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_3}"
 
     #Update 'startMsg'
-    local startMsg=":-->${DOCKER__FG_ORANGE}START${DOCKER__NOCOLOR}: rename "
+    local startMsg="---:${DOCKER__FG_ORANGE}START${DOCKER__NOCOLOR}: rename "
     startMsg+="${DOCKER__FG_PURPLE}${docker__repo_chosen}${DOCKER__NOCOLOR}:"
     startMsg+="${DOCKER__FG_PINK}${docker__tag_chosen}${DOCKER__NOCOLOR} "
     startMsg+="w/ OVERWRITE"
 
     #Update 'completedMsg'
-    local completedMsg=":-->${DOCKER__FG_ORANGE}COMPLETED${DOCKER__NOCOLOR}: rename "
+    local completedMsg="---:${DOCKER__FG_ORANGE}COMPLETED${DOCKER__NOCOLOR}: rename "
     completedMsg+="${DOCKER__FG_PURPLE}${docker__repo_chosen}${DOCKER__NOCOLOR}:"
     completedMsg+="${DOCKER__FG_PINK}${docker__tag_chosen}${DOCKER__NOCOLOR} "
     completedMsg+="w/ OVERWRITE"
@@ -707,13 +701,13 @@ docker__rename_repoTag_wo_overwrite__sub() {
     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_3}"
 
     #Update 'startMsg'
-    local startMsg=":-->${DOCKER__FG_ORANGE}START${DOCKER__NOCOLOR}: rename "
+    local startMsg="---:${DOCKER__FG_ORANGE}START${DOCKER__NOCOLOR}: rename "
     startMsg+="${DOCKER__FG_PURPLE}${docker__repo_chosen}${DOCKER__NOCOLOR}:"
     startMsg+="${DOCKER__FG_PINK}${docker__tag_chosen}${DOCKER__NOCOLOR} "
     startMsg+="w/o OVERWRITE"
 
     #Update 'completedMsg'
-    local completedMsg=":-->${DOCKER__FG_ORANGE}COMPLETED${DOCKER__NOCOLOR}: rename "
+    local completedMsg="---:${DOCKER__FG_ORANGE}COMPLETED${DOCKER__NOCOLOR}: rename "
     completedMsg+="${DOCKER__FG_PURPLE}${docker__repo_chosen}${DOCKER__NOCOLOR}:"
     completedMsg+="${DOCKER__FG_PINK}${docker__tag_chosen}${DOCKER__NOCOLOR} "
     completedMsg+="w/o OVERWRITE"

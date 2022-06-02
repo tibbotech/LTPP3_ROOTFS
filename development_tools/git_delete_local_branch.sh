@@ -100,11 +100,12 @@ docker__init_variables__sub() {
 
 docker__delete_local_branch_handler__sub() {
     #Define local message constants
-    local PRINTF_COMPLETED="${DOCKER__FG_ORANGE}COMPLETED${DOCKER__NOCOLOR}"
     local PRINTF_LIST_LOCAL="${DOCKER__FG_ORANGE}LIST${DOCKER__NOCOLOR} (${DOCKER__FG_ORANGE}LOCAL${DOCKER__NOCOLOR})"
-    local PRINTF_INPUT="${DOCKER__FG_ORANGE}INPUT${DOCKER__NOCOLOR}"
+
+    local PRINTF_COMPLETED="${DOCKER__FG_ORANGE}COMPLETED${DOCKER__NOCOLOR}"
+    local PRINTF_INFO="${DOCKER__FG_ORANGE}INFO${DOCKER__NOCOLOR}"
+    local PRINTF_PRECHECK="${DOCKER__FG_ORANGE}PRECHECK${DOCKER__NOCOLOR}"
     local PRINTF_START="${DOCKER__FG_ORANGE}START${DOCKER__NOCOLOR}"
-    local PRINTF_STATUS="${DOCKER__FG_ORANGE}STATUS${DOCKER__NOCOLOR}"
     local PRINTF_WARNING="${DOCKER__FG_BORDEAUX}WARNING${DOCKER__NOCOLOR}"
 
     local PRINTF_BRANCH_TOBE_DELETED="Branch ${DOCKER__FG_LIGHTGREY}to-be-deleted${DOCKER__NOCOLOR}"
@@ -168,10 +169,10 @@ goto__func START
         isCheckedOut=`docker__checkIf_branch_isCheckedOut__func "${docker__branch_chosen}"`
         if [[ ${isCheckedOut} == ${DOCKER__FALSE} ]]; then  #asterisk is NOT found
             #Update message
-            printf_msg="Branch '${DOCKER__FG_LIGHTGREY}${docker__branch_chosen}${DOCKER__NOCOLOR}' exists"
+            printf_msg="Branch '${DOCKER__FG_LIGHTGREY}${docker__branch_chosen}${DOCKER__NOCOLOR}' is present"
 
             #Print message
-            echo -e "---:${PRINTF_STATUS}: ${printf_msg}"
+            echo -e "---:${PRINTF_PRECHECK}: ${printf_msg}"
 
             #Update variable
             question_msg=${QUESTION_PROCEED}
@@ -180,10 +181,10 @@ goto__func START
             printf_msg="Branch '${DOCKER__FG_LIGHTGREY}${docker__branch_chosen}${DOCKER__NOCOLOR}' is checked out"
 
             #Print message
-            echo -e "---:${PRINTF_STATUS}: ${printf_msg}"
+            echo -e "---:${PRINTF_PRECHECK}: ${printf_msg}"
 
             #Print message
-            echo -e "---:${PRINTF_STATUS}: ${PRINTF_NO_ACTION_TAKEN}"
+            echo -e "---:${PRINTF_INFO}: ${PRINTF_NO_ACTION_TAKEN}"
 
             #Add an empty-line
             moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
@@ -196,10 +197,10 @@ goto__func START
         printf_msg="Branch '${DOCKER__FG_LIGHTGREY}${docker__branch_chosen}${DOCKER__NOCOLOR}' does NOT exist"
 
         #Print message
-        echo -e "---:${PRINTF_STATUS}: ${printf_msg}"
+        echo -e "---:${PRINTF_PRECHECK}: ${printf_msg}"
 
         #Print message
-        echo -e "---:${PRINTF_STATUS}: ${PRINTF_NO_ACTION_TAKEN}"
+        echo -e "---:${PRINTF_INFO}: ${PRINTF_NO_ACTION_TAKEN}"
 
         #Add an empty-line
         moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
@@ -249,15 +250,15 @@ goto__func START
 
 
 @DELETE_BRANCH:
-    echo -e "---:${PRINTF_START}: git branch -d ${DOCKER__FG_LIGHTGREY}${docker__branch_chosen}${DOCKER__NOCOLOR}"
-
+    echo -e "---:${PRINTF_START}: deletion of local branch"
     #Execute
     git branch -d ${docker__branch_chosen}
 
     #Check exit-code
     exitCode=$?
     if [[ ${exitCode} -eq 0 ]]; then
-        echo -e "---:${PRINTF_COMPLETED}: git branch -d ${DOCKER__FG_LIGHTGREY}${docker__branch_chosen}${DOCKER__NOCOLOR}"
+        echo -e "...executing: git branch -d ${DOCKER__FG_LIGHTGREY}${docker__branch_chosen}${DOCKER__NOCOLOR}"
+        echo -e "---:${PRINTF_COMPLETED}:  deletion of local branch"
         
         moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
 
@@ -284,8 +285,9 @@ goto__func START
 
 
 @EXIT_FAILED:
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+    # moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
     echo -e "${PRINTF_ERROR}: git branch -d ${DOCKER__FG_LIGHTGREY}${docker__branch_chosen}${DOCKER__NOCOLOR}"
+    echo -e "---:${PRINTF_COMPLETED}:  git delete of local branch"
     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
 
     goto__func BRANCH_SHOW_AND_INPUT
@@ -302,6 +304,7 @@ docker__show_and_input_git_branch__sub() {
 
     #Show file-content
     ${git__git_readInput_w_autocomplete__fpath} "${DOCKER__MENUTITLE}" \
+            "${DOCKER__FOURSPACES_QUIT_CTRL_C}" \
             "${DOCKER__READDIALOG}" \
             "${DOCKER__ECHOMSG_NORESULTS_FOUND}" \
             "${docker__git_cmd}" \

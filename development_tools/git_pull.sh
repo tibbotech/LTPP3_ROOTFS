@@ -1,7 +1,7 @@
 #!/bin/bash -m
 #Remark: by using '-m' the INT will NOT propagate to the PARENT scripts
 #---SUBROUTINES
-git__environmental_variables__sub() {
+docker__environmental_variables__sub() {
     #Check the number of input args
     if [[ -z ${docker__global__fpath} ]]; then   #must be equal to 3 input args
         #---Defin FOLDER
@@ -39,55 +39,133 @@ git__environmental_variables__sub() {
     fi
 }
 
-git__load_source_files__sub() {
+docker__load_source_files__sub() {
     source ${docker__global__fpath}
 }
 
-git__load_header__sub() {
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-    echo -e "${DOCKER__BG_ORANGE}                                 ${DOCKER__TITLE}${DOCKER__BG_ORANGE}                                ${DOCKER__NOCOLOR}"
+docker__load_constants__sub() {
+    DOCKER__MENUTITLE="Git Pull"
+
+    DOCKER__READDIALOG_YN="Pull from remote (${DOCKER__Y_SLASH_N})?"
 }
 
-git__git_pull__sub() {
-    #Define local constants
-    local MENUTITLE="Git ${DOCKER__BG_WHITE}${DOCKER__FG_LIGHTGREY}Pull${DOCKER__NOCOLOR}"
+docker__init_variables__sub() {
+    docker__tibboHeader_prepend_numOfLines=${DOCKER__NUMOFLINES_2}
+}
 
-    #Show menu-title
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-    show_centered_string__func "${MENUTITLE}" "${DOCKER__TABLEWIDTH}"
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+docker__load_header__sub() {
+    #Input args
+    local prepend_numOfLines__input=${1}
 
-    #Execute command
-    git pull
+    #Print
+    show_header__func "${DOCKER__TITLE}" "${DOCKER__TABLEWIDTH}" "${DOCKER__BG_ORANGE}" "${prepend_numOfLines__input}" "${DOCKER__NUMOFLINES_0}"
+}
 
-    #Check exit-code
-    exitCode=$?
-    if [[ ${exitCode} -eq 0 ]]; then
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-        echo -e "---:${DOCKER__FG_ORANGE}STATUS${DOCKER__NOCOLOR}: git pull (${DOCKER__FG_GREEN}done${DOCKER__NOCOLOR})"
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+docker__git_pull__sub() {
+    #Define constants
+    local TIBBOHEADER_PHASE=1
+    local MENUTITLE_PHASE=2
+    local GIT_CONFIRM_PULL_PHASE=3
+    local GIT_PULL_PHASE=4
+    local EXIT_PHASE=5
 
-        exit 0
-    else
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-        echo -e "***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: git pull (${DOCKER__FG_LIGHTRED}failed${DOCKER__NOCOLOR})"
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-        
-        exit 99
-    fi
+    local PRINTF_GIT_PULL_CMD="Git pull"    
+
+    local PRINTF_QUESTION="${DOCKER__FG_YELLOW}QUESTION${DOCKER__NOCOLOR}"
+    local PRINTF_RESULT="${DOCKER__FG_ORANGE}RESULT${DOCKER__NOCOLOR}"
+
+    local STATUS_DONE="${DOCKER__FG_GREEN}done${DOCKER__NOCOLOR}"
+    local STATUS_FAILED="${DOCKER__FG_LIGHTRED}failed${DOCKER__NOCOLOR}"
+
+    #Define variables
+    local answer=${DOCKER__NO}
+    local phase=${TIBBOHEADER_PHASE}
+
+
+    #Handle 'phase'
+    while true
+    do
+        case "${phase}" in
+            ${TIBBOHEADER_PHASE})
+                docker__load_header__sub "${docker__tibboHeader_prepend_numOfLines}"
+
+                phase="${MENUTITLE_PHASE}"
+                ;;
+            ${MENUTITLE_PHASE})
+                show_menuTitle_w_adjustable_indent__func "${DOCKER__MENUTITLE}" "${DOCKER__EMPTYSTRING}"
+
+                phase="${GIT_CONFIRM_PULL_PHASE}"
+                ;;
+            ${GIT_CONFIRM_PULL_PHASE})
+                moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+                while true
+                do
+                    read -N1 -r -p "---:${PRINTF_QUESTION}:${DOCKER__READDIALOG_YN}" answer
+
+                    case "${answer}" in
+                        ${DOCKER__YES})
+                            moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+                            phase="${GIT_PULL_PHASE}"
+
+                            break
+                            ;;
+                        ${DOCKER__NO})
+                            moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+                            phase="${EXIT_PHASE}"
+
+                            break
+                            ;;
+                        ${DOCKER__ENTER})
+                            moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+                            ;;
+                        *)
+                            moveToBeginning_and_cleanLine__func
+                            ;;
+                    esac
+                done
+                ;;
+            ${GIT_PULL_PHASE})
+                #Move-down and clean
+                moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+                #Execute command
+                git pull
+
+                #Check exit-code
+                exitCode=$?
+                if [[ ${exitCode} -eq 0 ]]; then
+                    echo -e "---:${PRINTF_RESULT}: ${PRINTF_GIT_PULL_CMD} (${STATUS_DONE})"
+                else
+                    echo -e "---:${PRINTF_RESULT}: ${PRINTF_GIT_PULL_CMD} (${STATUS_FAILED})"
+                fi
+
+                phase="${EXIT_PHASE}"
+                ;;
+            ${EXIT_PHASE})
+                exit__func "${DOCKER__EXITCODE_99}" "${DOCKER__NUMOFLINES_2}"
+
+                break
+                ;;
+        esac
+    done
 }
 
 
 
 #---MAIN SUBROUTINE
 main_sub() {
-    git__environmental_variables__sub
+    docker__environmental_variables__sub
 
-    git__load_source_files__sub
+    docker__load_source_files__sub
 
-    git__load_header__sub
+    docker__load_constants__sub
 
-    git__git_pull__sub
+    docker__init_variables__sub
+
+    docker__git_pull__sub
 }
 
 

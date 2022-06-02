@@ -48,7 +48,6 @@ docker__load_source_files__sub() {
 
 docker__load_constants__sub() {
     DOCKER__MENUTITLE="${DOCKER__FG_LIGHTBLUE}DOCKER: CREATE/REMOVE/RENAME IMAGE${DOCKER__NOCOLOR}"
-    DOCKER__VERSION="v22.05.22-0.0.1"
 }
 
 docker__load_header__sub() {
@@ -71,17 +70,22 @@ docker__menu__sub() {
 
     while true
     do
+        #Get Git-information
+        #Output:
+        #   docker_git_current_info_msg
+        docker__get_git_info__sub
+
         #Load header
         docker__load_header__sub "${docker__tibboHeader_prepend_numOfLines}"
 
         #Print menu-options
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-        show_leadingAndTrailingStrings_separatedBySpaces__func "${DOCKER__MENUTITLE}" "${DOCKER__VERSION}" "${DOCKER__TABLEWIDTH}"
+        show_leadingAndTrailingStrings_separatedBySpaces__func "${DOCKER__MENUTITLE}" "${docker_git_current_info_msg}" "${DOCKER__TABLEWIDTH}"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-        echo -e "${DOCKER__FOURSPACES}1. Create ${DOCKER__FG_BORDEAUX}image${DOCKER__NOCOLOR} from repository"
-        echo -e "${DOCKER__FOURSPACES}2. Create ${DOCKER__FG_BORDEAUX}image${DOCKER__NOCOLOR} from container"
+        echo -e "${DOCKER__FOURSPACES}1. Create ${DOCKER__FG_BORDEAUX}image${DOCKER__NOCOLOR} from ${DOCKER__FG_PURPLE}Repository${DOCKER__NOCOLOR}"
+        echo -e "${DOCKER__FOURSPACES}2. Create ${DOCKER__FG_BORDEAUX}image${DOCKER__NOCOLOR} from ${DOCKER__FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}"
         echo -e "${DOCKER__FOURSPACES}3. Remove ${DOCKER__FG_BORDEAUX}image${DOCKER__NOCOLOR}"
-        echo -e "${DOCKER__FOURSPACES}4. Rename ${DOCKER__FG_BORDEAUX}image${DOCKER__NOCOLOR} repository:tag"
+        echo -e "${DOCKER__FOURSPACES}4. Rename ${DOCKER__FG_BORDEAUX}image${DOCKER__NOCOLOR} ${DOCKER__FG_PURPLE}Repository${DOCKER__NOCOLOR}:${DOCKER__FG_PINK}Tag${DOCKER__NOCOLOR}"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
         echo -e "${DOCKER__FOURSPACES}r. ${DOCKER__FG_PURPLE}Repository${DOCKER__NOCOLOR}-list"
         echo -e "${DOCKER__FOURSPACES}c. ${DOCKER__FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}-list"
@@ -188,6 +192,35 @@ docker__show_containerList_handler__sub() {
                         "${DOCKER__TIMEOUT_10}" \
                         "${DOCKER__NUMOFLINES_0}" \
                         "${DOCKER__NUMOFLINES_0}"
+}
+
+docker__get_git_info__sub() {
+    #Get information
+    docker__git_current_branchName=`git_get_current_branchName__func`
+
+    docker__git_current_abbrevCommitHash=`git_log_for_pushed_and_unpushed_commits__func "${docker__git_current_branchName}" \
+                        "${GIT__LAST_COMMIT}" \
+                        "${GIT__PLACEHOLDER_ABBREV_COMMIT_HASH}"`
+    
+    docker__git_current_unpushed_abbrevCommitHash=`git_log_for_unpushed_local_commits__func "${docker__git_current_branchName}" \
+                        "${DOCKER__EMPTYSTRING}" \
+                        "${GIT__PLACEHOLDER_ABBREV_COMMIT_HASH}"`
+    
+    docker__git_push_status="${GIT__PUSHED}"
+    if [[ "${docker__git_current_abbrevCommitHash}" == "${docker__git_current_unpushed_abbrevCommitHash}" ]]; then
+        docker__git_push_status="${GIT__UNPUSHED}"
+    fi
+
+    docker__git_current_tag=`git_get_tag_for_specified_commitHash__func "${docker__git_current_abbrevCommitHash}"`
+    if [[ -z "${docker__git_current_tag}" ]]; then
+        docker__git_current_tag="${GIT__NOT_TAGGED}"
+    fi
+
+    #Generate message to be shown
+    docker_git_current_info_msg="${DOCKER__FG_LIGHTBLUE}${docker__git_current_branchName}${DOCKER__NOCOLOR}:"
+    docker_git_current_info_msg+="${DOCKER__FG_DARKBLUE}${docker__git_current_abbrevCommitHash}${DOCKER__NOCOLOR}"
+    docker_git_current_info_msg+="(${DOCKER__FG_DARKBLUE}${docker__git_push_status}${DOCKER__NOCOLOR}):"
+    docker_git_current_info_msg+="${DOCKER__FG_LIGHTBLUE}${docker__git_current_tag}${DOCKER__NOCOLOR}"
 }
 
 

@@ -48,7 +48,7 @@ docker__init_variables__sub() {
     docker__keyInput=${DOCKER__EMPTYSTRING}
     docker__keyInput_add=${DOCKER__EMPTYSTRING}
 
-    docker__myAnswer=${DOCKER__EMPTYSTRING}
+    # docker__myAnswer=${DOCKER__EMPTYSTRING}
 
     docker__currDir=${DOCKER__EMPTYSTRING}
     docker__currDir_colored=${DOCKER__EMPTYSTRING}
@@ -117,15 +117,21 @@ docker__show_fileContent_handler__sub() {
                     "${DOCKER__ENTER_CMD_MENUOPTIONS}" \
                     "${DOCKER__ENTER_CMD_ERRORMSG}" \
                     "${DOCKER__EMPTYSTRING}" \
+                    "${DOCKER__REGEX_YNB}" \
                     "${docker__show_fileContent_wo_select_func_out__fpath}" \
                     "${DOCKER__TABLEROWS_20}" \
                     "${DOCKER__FOURSPACES}" \
                     "${DOCKER__TRUE}"
 
     #Get result from file.
-    docker__myAnswer=`get_output_from_file__func \
+    get_output_from_file__func \
                         "${docker__show_fileContent_wo_select_func_out__fpath}" \
-                        "${DOCKER__LINENUM_1}"`
+                        "${DOCKER__LINENUM_1}"
+
+    #In function 'show_fileContent_wo_select__func',...
+    #...after press-any-key, the cursor moves down 1 line.
+    #To fix this, the cursor has to be moved up 1 line.
+    moveUp_and_cleanLines__func "${DOCKER__LINENUM_1}"
 }
 
 docker__cmd_readinput_handler__sub() {

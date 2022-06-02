@@ -1,35 +1,6 @@
 #!/bin/bash -m
 #Remark: by using '-m' the INT will NOT propagate to the PARENT scripts
 
-#---FUNCTIONS
-function docker__checkIf_branch_alreadyExists__func() {
-    #Input args
-    local branchName_input=${1}
-
-    #Check if 'branchName_input' already exists
-    local stdOutput=`git branch | grep -w "${branchName_input}" 2>&1`
-    if [[ ! -z ${stdOutput} ]]; then #contains data
-        echo ${DOCKER__TRUE}
-    else    #contains no data
-        echo ${DOCKER__FALSE}
-    fi
-}
-
-function docker__checkIf_branch_isCheckedOut__func() {
-    #Input args
-    local branchName_input=${1}
-
-    #Check if 'branchName_input' already exists
-    local stdOutput=`git branch | grep -w "${branchName_input}" | grep "${DOCKER__ESCAPED_ASTERISK}" 2>&1`
-    if [[ ! -z ${stdOutput} ]]; then #contains data
-        echo ${DOCKER__TRUE}
-    else    #contains no data
-        echo ${DOCKER__FALSE}
-    fi
-}
-
-
-
 #---SUBROUTINES
 docker__environmental_variables__sub() {
     #Check the number of input args
@@ -82,7 +53,9 @@ docker__load_header__sub() {
 }
 
 docker__load_constants__sub() {
-    DOCKER__MENUTITLE="Git ${DOCKER__FG_LIGHTGREEN}Create${DOCKER__NOCOLOR}${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}${DOCKER__FG_LIGHTSOFTYELLOW}Checkout${DOCKER__NOCOLOR} ${DOCKER__FG_LIGHTGREY}Local${DOCKER__NOCOLOR} Branch"
+    DOCKER__MENUTITLE="Git ${DOCKER__FG_LIGHTGREEN}Create${DOCKER__NOCOLOR}${DOCKER__FG_LIGHTGREY}/"
+    DOCKER__MENUTITLE+="${DOCKER__NOCOLOR}${DOCKER__FG_LIGHTSOFTYELLOW}Checkout${DOCKER__NOCOLOR} "
+    DOCKER__MENUTITLE+="${DOCKER__FG_LIGHTGREY}Local${DOCKER__NOCOLOR} Branch"
     DOCKER__READDIALOG="Input: "
 }
 
@@ -91,7 +64,7 @@ docker__init_variables__sub() {
     docker__git_cmd=${DOCKER__EMPTYSTRING}
     docker__stdErr=${DOCKER__EMPTYSTRING}
 
-    docker__tibboHeader_prepend_numOfLines=0
+    docker__tibboHeader_prepend_numOfLines=${DOCKER__NUMOFLINES_0}
 
     docker__branch_chosen_isFound=false
     docker__onEnter_breakLoop=false
@@ -101,8 +74,9 @@ docker__init_variables__sub() {
 docker__create_checkout_local_branch_handler__sub() {
     #Define local message constants
     local PRINTF_COMPLETED="${DOCKER__FG_ORANGE}COMPLETED${DOCKER__NOCOLOR}"
+    local PRINTF_INFO="${DOCKER__FG_ORANGE}INFO${DOCKER__NOCOLOR}"
+    local PRINTF_PRECHECK="${DOCKER__FG_ORANGE}PRECHECK${DOCKER__NOCOLOR}"
     local PRINTF_START="${DOCKER__FG_ORANGE}START${DOCKER__NOCOLOR}"
-    local PRINTF_STATUS="${DOCKER__FG_ORANGE}STATUS${DOCKER__NOCOLOR}"
     
     local PRINTF_ERROR="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}"
     local PRINTF_NO_ACTION_REQUIRED="No action required"
@@ -149,13 +123,13 @@ goto__func START
     docker__show_and_input_git_branch__sub
 
     #Check if 'docker__branch_chosen' already exists
-    docker__branch_chosen_isFound=`docker__checkIf_branch_alreadyExists__func "${docker__branch_chosen}"`
+    docker__branch_chosen_isFound=`checkIf_branch_alreadyExists__func "${docker__branch_chosen}"`
     if [[ ${docker__branch_chosen_isFound} == ${DOCKER__TRUE} ]]; then
         #Check if asterisk is present
-        isCheckedOut=`docker__checkIf_branch_isCheckedOut__func "${docker__branch_chosen}"`
+        isCheckedOut=`checkIf_branch_isCheckedOut__func "${docker__branch_chosen}"`
         if [[ ${isCheckedOut} == ${DOCKER__FALSE} ]]; then  #asterisk is NOT found
             #Update message
-            printf_msg="Branch '${DOCKER__FG_LIGHTGREY}${docker__branch_chosen}${DOCKER__NOCOLOR}' Already exist"
+            printf_msg="Branch '${DOCKER__FG_LIGHTGREY}${docker__branch_chosen}${DOCKER__NOCOLOR}' is present"
 
             #Update variable
             question_msg=${QUESTION_CHECKOUT_BRANCH}
@@ -164,13 +138,13 @@ goto__func START
             moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
             
             #Update message
-            printf_msg="Branch '${DOCKER__FG_LIGHTGREY}${docker__branch_chosen}${DOCKER__NOCOLOR}' Already exist and checked out"
+            printf_msg="Branch '${DOCKER__FG_LIGHTGREY}${docker__branch_chosen}${DOCKER__NOCOLOR}' is present and already checked out"
 
             #Print message
-            echo -e "---:${PRINTF_STATUS}: ${printf_msg}"
+            echo -e "---:${PRINTF_PRECHECK}: ${printf_msg}"
 
             #Print message
-            echo -e "---:${PRINTF_STATUS}: ${PRINTF_NO_ACTION_REQUIRED}"
+            echo -e "---:${PRINTF_INFO}: ${PRINTF_NO_ACTION_REQUIRED}"
 
             #Add an empty-line
             moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
@@ -180,7 +154,7 @@ goto__func START
         fi
     else
         #Update message
-        printf_msg="Branch '${DOCKER__FG_LIGHTGREY}${docker__branch_chosen}${DOCKER__NOCOLOR}' is New"
+        printf_msg="Branch '${DOCKER__FG_LIGHTGREY}${docker__branch_chosen}${DOCKER__NOCOLOR}' is new"
 
         #Update variable
         question_msg=${QUESTION_CREATE_AND_CHECKOUT_BRANCH}
@@ -192,7 +166,7 @@ goto__func START
     #Show question
     while true
     do
-        echo -e "---:${PRINTF_STATUS}: ${printf_msg}"
+        echo -e "---:${PRINTF_PRECHECK}: ${printf_msg}"
         moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
         read -N1 -p "${question_msg}" myAnswer
 
@@ -232,7 +206,7 @@ goto__func START
 
 
 @CHECKOUT_BRANCH:
-    echo -e "---:${PRINTF_START}: git checkout ${DOCKER__FG_LIGHTGREY}${docker__branch_chosen}${DOCKER__NOCOLOR}"
+    echo -e "---:${PRINTF_START}: checkout of existing branch"
 
     #Execute
     git checkout ${docker__branch_chosen}
@@ -240,7 +214,8 @@ goto__func START
     #Check exit-code
     exitCode=$?
     if [[ ${exitCode} -eq 0 ]]; then
-        echo -e "---:${PRINTF_COMPLETED}: git checkout ${DOCKER__FG_LIGHTGREY}${docker__branch_chosen}${DOCKER__NOCOLOR}"
+        echo -e "...executing: git checkout ${DOCKER__FG_LIGHTGREY}${docker__branch_chosen}${DOCKER__NOCOLOR}"
+        echo -e "---:${PRINTF_COMPLETED}: checkout of existing branch"
         moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
         
         #Goto next-phase
@@ -253,7 +228,7 @@ goto__func START
 
 
 @CREATE_AND_CHECKOUT_BRANCH:
-    echo -e "---:${PRINTF_START}: git checkout -b ${DOCKER__FG_LIGHTGREY}${docker__branch_chosen}${DOCKER__NOCOLOR}"
+    echo -e "---:${PRINTF_START}: checkout of new branch"
 
     #Execute
     git checkout -b ${docker__branch_chosen}
@@ -261,7 +236,8 @@ goto__func START
     #Check exit-code
     exitCode=$?
     if [[ ${exitCode} -eq 0 ]]; then
-        echo -e "---:${PRINTF_COMPLETED}: git checkout -b ${DOCKER__FG_LIGHTGREY}${docker__branch_chosen}${DOCKER__NOCOLOR}"
+        echo -e "...executing: git checkout -b ${DOCKER__FG_LIGHTGREY}${docker__branch_chosen}${DOCKER__NOCOLOR}"
+        echo -e "---:${PRINTF_COMPLETED}: checkout of new branch"
         moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
         
         #Goto next-phase
@@ -270,6 +246,7 @@ goto__func START
         #Goto next-phase
         goto__func EXIT_FAILED
     fi
+
 
 
 @EXIT_SUCCESSFUL:
@@ -288,14 +265,18 @@ goto__func START
 
 @EXIT_FAILED:
     if [[ ${docker__branch_chosen_isFound} == ${DOCKER__TRUE} ]]; then 
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+        # moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
         echo -e "${PRINTF_ERROR}: git checkout ${DOCKER__FG_LIGHTGREY}${docker__branch_chosen}${DOCKER__NOCOLOR} (${DOCKER__FG_LIGHTRED}failed${DOCKER__NOCOLOR})"
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
+        
+        echo -e "---:${PRINTF_COMPLETED}: checkout of existing branch"
     else
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+        # moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
         echo -e "${PRINTF_ERROR}: git checkout -b ${DOCKER__FG_LIGHTGREY}${docker__branch_chosen}${DOCKER__NOCOLOR} (${DOCKER__FG_LIGHTRED}failed${DOCKER__NOCOLOR})"
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
+        
+        echo -e "---:${PRINTF_COMPLETED}: checkout of new branch"
     fi
+
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
 
     #Goto next-phase
     goto__func BRANCH_SHOW_AND_INPUT
@@ -312,6 +293,7 @@ docker__show_and_input_git_branch__sub() {
 
     #Show file-content
     ${git__git_readInput_w_autocomplete__fpath} "${DOCKER__MENUTITLE}" \
+            "${DOCKER__FOURSPACES_QUIT_CTRL_C}" \
             "${DOCKER__READDIALOG}" \
             "${DOCKER__ECHOMSG_NORESULTS_FOUND}" \
             "${docker__git_cmd}" \

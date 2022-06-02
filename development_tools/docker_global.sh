@@ -159,7 +159,7 @@ DOCKER__READINPUTDIALOG_CHOOSE_IMAGEID_FROM_LIST="Choose an ${DOCKER__FG_BORDEAU
 DOCKER__READDIALOG_DO_YOU_WISH_TO_CONTINUE_YNR="Do you wish to continue (y/n/r)? "
 DOCKER__READDIALOG_DO_YOU_WISH_TO_CONTINUE_YN="Do you wish to continue (y/n)? "
 
-DOCKER__ECHOMSG_NORESULTS_FOUND="${FOUR_SPACES}=:${FG_YELLOW}No results found${NOCOLOR}:="
+DOCKER__ECHOMSG_NORESULTS_FOUND="${FOUR_SPACES}-:${FG_YELLOW}No results found${NOCOLOR}:-"
 
 DOCKER__ERRMSG_CHOSEN_CONTAINERID_DOESNOT_EXISTS="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Invalid input value "
 DOCKER__ERRMSG_CHOSEN_IMAGEID_DOESNOT_EXISTS="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Invalid input value "
@@ -238,6 +238,18 @@ DOCKER__FUNC_19="19"
 DOCKER__FUNC_20="20"
 DOCKER__FUNC_21="21"
 DOCKER__FUNC_24="24"
+
+
+
+#---GIT CONSTANTS
+GIT__LAST_COMMIT=1
+
+GIT__PLACEHOLDER_ABBREV_COMMIT_HASH="%h"
+GIT__PLACEHOLDER_SUBJECT="%s"
+
+GIT__NOT_TAGGED="<not-tagged>"
+GIT__PUSHED="pushed"
+GIT__UNPUSHED="unpushed"
 
 
 
@@ -329,6 +341,7 @@ DOCKER__Y_SLASH_N="${DOCKER__Y}/${DOCKER__N}"
 DOCKER__Y_SLASH_N_SLASH_B="${DOCKER__Y_SLASH_N}/${DOCKER__BACK}${DOCKER__FG_LIGHTGREY}ack${DOCKER__NOCOLOR}"
 DOCKER__Y_SLASH_N_SLASH_H="${DOCKER__Y_SLASH_N}/${DOCKER__HOME}${DOCKER__FG_LIGHTGREY}ome${DOCKER__NOCOLOR}"
 DOCKER__Y_SLASH_N_SLASH_O="${DOCKER__Y_SLASH_N}/${DOCKER__OVERWRITE}${DOCKER__FG_LIGHTGREY}verwrite${DOCKER__NOCOLOR}"
+DOCKER__Y_SLASH_N_SLASH_R="${DOCKER__Y_SLASH_N}/${DOCKER__REDO}${DOCKER__FG_LIGHTGREY}edo${DOCKER__NOCOLOR}"
 
 DOCKER__Y_SLASH_N_SLASH_O_SLASH_B_SLASH_H="${DOCKER__Y_SLASH_N_SLASH_O}/${DOCKER__BACK}${DOCKER__FG_LIGHTGREY}ack${DOCKER__NOCOLOR}/"
 DOCKER__Y_SLASH_N_SLASH_O_SLASH_B_SLASH_H+="${DOCKER__HOME}${DOCKER__FG_LIGHTGREY}ome${DOCKER__NOCOLOR}"
@@ -342,7 +355,9 @@ DOCKER__SEMICOLON_HOME=";h"
 
 #---REGEX CONSTANTS
 DOCKER__REGEX_YN="[yn]"
+DOCKER__REGEX_YNB="[ynb]"
 DOCKER__REGEX_YNH="[ynh]"
+DOCKER__REGEX_YNR="[ynr]"
 DOCKER__REGEX_YNOBH="[ynobh]"
 DOCKER__REGEX_0_TO_9="[1-90]"
 DOCKER__REGEX_0_TO_9_COMMA_DASH="[1-90,-]"
@@ -781,6 +796,116 @@ function array_subst_string__func() {
     echo "${ret[@]}"
 }
 
+function combine_two_arrays_of_same_length__func() {
+    #Input args
+    local delimiterChar__input=${1}
+    local delimiterColor__input=${2}
+    shift
+    shift
+    #Remark:
+    #   When passing two arrays into this function,...
+    #   These two arrays are combined into one array.
+    #Example:
+    #   arr1=("one" "two" "three")
+    #   arr2=("four" "five" "six")
+    #   arrTot__input=("one" "two" "three" "four" "five" "six")
+    local arrTot__input=("$@")
+
+    #Split 'arrTot__input' into two arrays
+    #First half:
+    local arr1=(`echo "${arrTot__input[@]:0:$((${#arrTot__input[@]} / 2 ))}"`)
+    #Second half:
+    local arr2=(`echo "${arrTot__input[@]:$((${#arrTot__input[@]} / 2 ))}"`)
+
+    #Get array-lengths
+    local arr1Len=${#arr1[@]}
+    local arr2Len=${#arr2[@]}
+
+    #Define variables
+    local ret=()
+
+    #Check if 'arr1Len != arr2Len'
+    if [[ ${arr1Len} -ne ${arr2Len} ]]; then
+        echo "${ret[@]}"
+
+        return
+    fi
+
+    #Check if 'delimiterColor__input' is an Empty String
+    if [[ -z "${delimiterChar__input}" ]]; then
+        delimiterChar__input=${DOCKER__ONESPACE}
+    fi
+
+    #Check if 'delimiterColor__input' is an Empty String
+
+
+    #Combine arrays
+    for ((i=0; i<${arr1Len}; i++ ))
+    do 
+        if [[ -z "${delimiterColor__input}" ]]; then
+            ret[i]="${arr1[${i}]}${delimiterChar__input}${arr2[${i}]}"
+        else
+            ret[i]="${arr1[${i}]}${delimiterColor__input}${delimiterChar__input}${DOCKER__NOCOLOR}${arr2[${i}]}"
+        fi
+    done
+
+    #Output
+    #Remark:
+    #   The output is a string instead of an array!
+    echo "${ret[@]}"
+}
+
+function show_array_w_menuTitle_w_confirmation__func() {
+    #Input args
+    local menuTitle__input=${1}
+    local confirmation_choices__input=${2}
+    local confirmation_regEx__input=${3}
+    local prepend_numOfLines__input=${4}
+    local confirmation_timeout__input=${5}
+    local confirmation_prepend_numOfLines__input=${6}
+    local confirmation_append_numOfLines__input=${7}
+    shift
+    shift
+    shift
+    shift
+    shift
+    shift
+    shift
+    local dataArr__input=("$@")
+
+    #Move-down cursor
+    moveDown_and_cleanLines__func "${prepend_numOfLines__input}"
+
+    #Print horizontal line
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+
+    #Print menu-title
+    show_centered_string__func "${menuTitle__input}" "${DOCKER__TABLEWIDTH}"
+
+    #Print horizontal line
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+
+    #Print message
+    for dataArrItem in "${dataArr__input[@]}"
+    do
+        echo -e "${DOCKER__FOURSPACES}${dataArrItem}"
+    done
+
+    #Move-down and clean 1 line
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+    #Print horizontal line
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+
+    #Show press-any-key dialog
+    confirmation_w_timer__func "${confirmation_choices__input}" \
+                        "${confirmation_regEx__input}" \
+                        "${confirmation_timeout__input}" \
+                        "${confirmation_prepend_numOfLines__input}" \
+                        "${confirmation_append_numOfLines__input}"
+}
+
+
 
 #---DOCKER RELATED FUNCTIONS
 function check_containerID_state__func() {
@@ -833,6 +958,32 @@ function checkIf_repoTag_isUniq__func() {
 
     #Output
     echo "${ret}"
+}
+
+function docker__checkIf_branch_alreadyExists__func() {
+    #Input args
+    local branchName_input=${1}
+
+    #Check if 'branchName_input' already exists
+    local stdOutput=`git branch | grep -w "${branchName_input}" 2>&1`
+    if [[ ! -z ${stdOutput} ]]; then #contains data
+        echo ${DOCKER__TRUE}
+    else    #contains no data
+        echo ${DOCKER__FALSE}
+    fi
+}
+
+function docker__checkIf_branch_isCheckedOut__func() {
+    #Input args
+    local branchName_input=${1}
+
+    #Check if 'branchName_input' already exists
+    local stdOutput=`git branch | grep -w "${branchName_input}" | grep "${DOCKER__ESCAPED_ASTERISK}" 2>&1`
+    if [[ ! -z ${stdOutput} ]]; then #contains data
+        echo ${DOCKER__TRUE}
+    else    #contains no data
+        echo ${DOCKER__FALSE}
+    fi
 }
 
 function createAndWrite_data_to_cacheFiles_ifNotExist__func() {
@@ -1001,7 +1152,7 @@ function functionKey_detection__func() {
 
 
 
-#---FILES-RELATED FUNCTIONS
+#---FILE RELATED FUNCTIONS
 function append_caretReturn_ifNotPresent_within_file__func() {
     disable_expansion__func
 
@@ -1426,6 +1577,25 @@ function subst_trailing_string_with_another_string_within_file__func() {
     sed -i "s/${oldSubString__input}$/${newSubString__input}/g" "${targetFpath__input}"
 }
 
+function write_array_to_file__func() {
+    #Input args
+    local outputFpath__input=${1}
+    shift
+    local dataArr__input=("$@")
+
+    #Remove file (if present)
+    if [[ -f ${outputFpath__input} ]]; then
+        rm ${outputFpath__input}
+    fi
+
+    #Write
+    local dataArrItem=${DOCKER__EMPTYSTRING}
+    for dataArrItem in "${dataArr__input[@]}"
+    do
+        echo "${dataArrItem}" >> ${outputFpath__input}
+    done
+}
+
 function write_data_to_file__func() {
     #Input args
     string__input=${1}
@@ -1433,6 +1603,98 @@ function write_data_to_file__func() {
 
     #Write
     echo "${string__input}" > ${targetFpath__input}
+}
+
+
+
+#---GIT FUNCTIONS
+function git_log_for_unpushed_local_commits__func() {
+    #Remark:
+    #   1. This function retrieves the git-information
+    #      for UNPUSHED commits to REMOTE
+    #   2. branchName__input -> can NOT be an Empty String
+    #   3. last_nth_commit__input: last (n) commits -> can be an Empty String
+    #   4. placeHolder__input -> can be an Empty String
+    #Reference:
+    #   See link: https://git-scm.com/docs/pretty-formats
+    #Input args
+    local branchName__input=${1}
+    local last_nth_commit__input=${2} 
+    local placeHolder__input=${3}
+
+    #Define variables
+    local ret=${DOCKER__EMPTYSTRING}
+
+    #Check if 'branchName__input' and 'last_nth_commit__input' are Empty Strings
+    if [[ -z ${branchName__input} ]]; then
+        echo "${ret}"
+
+        return
+    fi
+
+    #Retrieve info
+    if [[ -z "${last_nth_commit__input}" ]]; then
+        ret=`git log ${branchName__input} --not --remotes --pretty=format:${placeHolder__input}`
+    else
+        ret=`git log -${last_nth_commit__input} ${branchName__input} --not --remotes --pretty=format:${placeHolder__input}`
+    fi
+     
+    #Output
+    echo "${ret}"
+}
+
+function git_log_for_pushed_and_unpushed_commits__func() {
+    #Remark:
+    #   1. This function retrieves the git-information
+    #      for PUSHED and UNPUSHED commits.
+    #   2. branchName__input -> can be an Empty String
+    #   3. last_nth_commit__input: last (n) commits -> can be an Empty String
+    #   4. placeHolder__input -> can NOT be an Empty String
+    #Reference:
+    #   See link: https://git-scm.com/docs/pretty-formats
+    #Input args
+    local branchName__input=${1}
+    local last_nth_commit__input=${2} 
+    local placeHolder__input=${3}
+
+    #Compose command
+    local cmd="git log"
+    if [[ ! -z "${last_nth_commit__input}" ]]; then
+        cmd="${cmd} -${last_nth_commit__input}"
+    fi
+
+    if [[ ! -z "${last_nth_commit__input}" ]]; then
+        cmd="${cmd} ${branchName__input}"
+    fi
+
+    if [[ ! -z "${last_nth_commit__input}" ]]; then
+        cmd="${cmd} --pretty=format:${placeHolder__input}"
+    fi
+
+    #Retrieve info
+    local ret=`eval ${cmd}`
+
+    #Output
+    echo "${ret}"
+}
+
+git_get_current_branchName__func() {
+    #Get branch-name
+    local ret=`git symbolic-ref --short -q HEAD`
+
+    #Output
+    echo "${ret}"
+}
+
+function git_get_tag_for_specified_commitHash__func() {
+    #Input args
+    local abbrevCommitHash__input=${1}
+
+    #Get tag
+    local ret=`git log -a --pretty=oneline --graph | git name-rev --stdin --tag | grep "${abbrevCommitHash__input}"| grep "tags" | cut -d"(" -f2 | cut -d")" -f1 | cut -d"/" -f2- | cut -d"^" -f1 | cut -d"~" -f1`
+
+    #Output
+    echo "${ret}"
 }
 
 
@@ -1680,6 +1942,7 @@ function show_pathContent_w_selection__func() {
     local fpath_relArrLen=0
     local fpath_relArrItem_sel=${DOCKER__EMPTYSTRING}
 
+    local keyInput=${DOCKER__EMPTYSTRING}
     local keyOutput=${DOCKER__EMPTYSTRING}
     local pattern1_result=${DOCKER__EMPTYSTRING}
     local pattern2_result=${DOCKER__EMPTYSTRING}
@@ -1688,7 +1951,8 @@ function show_pathContent_w_selection__func() {
     local table_index=0
     local table_index_base=0
     local table_index_base_try_next=0
-    local keyInput=${DOCKER__EMPTYSTRING}
+
+    local table_index_max_bck=0
 
     local lineNum_range_relMax=0
     local lineNum_range_relMin=0
@@ -1697,7 +1961,7 @@ function show_pathContent_w_selection__func() {
     local lineNum_range_msg=${DOCKER__EMPTYSTRING}
 
     local flag_break_main_whileLoop=false
-    local flag_break_forLoop=false
+    local flag_isSet_toBreak_loop=false
     local flag_matched_fkey_isPressed=false
 
 
@@ -1723,7 +1987,7 @@ function show_pathContent_w_selection__func() {
     readDialog_numOfLines=`get_numOfLines_for_specified_string_or_file__func "${readDialog__input}"`
 
     #fixed objects
-    fixed_numOfLines=${DOCKER__NUMOFLINES_5}    #due to a fixed number of horizontal and empty lines
+    fixed_numOfLines=${DOCKER__NUMOFLINES_4}    #due to a fixed number of horizontal and empty lines
     if [[ ${remark_numOfLines} -gt ${DOCKER__NUMOFMATCH_0} ]]; then
         fixed_numOfLines=$((fixed_numOfLines + 1))  #due to the preceding horizontal line
     fi
@@ -1750,6 +2014,7 @@ function show_pathContent_w_selection__func() {
 
     local docker_space_between_leftBoundary_and_next_len=$(( DOCKER__TABLEWIDTH - oneSpacePrev_len - 1 ))
     local docker_space_between_leftBoundary_and_next=`duplicate_char__func "${DOCKER__ONESPACE}" "${docker_space_between_leftBoundary_and_next_len}"`
+
     local next_only_print="${docker_space_between_leftBoundary_and_next}${DOCKER__ONESPACE_NEXT}"
 
 
@@ -1763,27 +2028,12 @@ function show_pathContent_w_selection__func() {
         fpath_arrTmp_string=`retrieve_files_from_specified_dir_basedOn_matching_patterns__func "${path__input}" \
                             "${pattern1__input}" \
                             "${pattern2__input}"`
+
 #-------Convert string to array
         read -a fpath_arrTmp <<< "${fpath_arrTmp_string}"
     else    #is a file or...
         if [[ -s ${path__input} ]]; then    #file contains data
             readarray -t fpath_arrTmp < <(cat "${path__input}")
-        fi
-    fi
-
-
-
-#---Set 'table_index_max__input' (if needed)
-    #Note: 
-    #   The condition to check whether 'array contains no data' is preferred over...
-    #   ...checking whether the 'array-length is zero', because...
-    #   ...should the array contains empty lines then the array-length is non-zero.
-    #   This is behavior is unwanted.
-    if [[ -z "${fpath_arr[@]}" ]]; then   #array contains no data
-        table_index_max__input=${DOCKER__NUMOFLINES_5}
-    else    #array contains data
-        if [[ ${fpath_arrLen} -le ${table_index_max__input} ]]; then
-            table_index_max__input=${fpath_arrLen}
         fi
     fi
 
@@ -1814,6 +2064,29 @@ function show_pathContent_w_selection__func() {
     #Get 'fpath_arrLen'
     fpath_arrLen=${#fpath_arr[@]}
 
+
+
+#---Backup 'table_index_max__input'
+    table_index_max_bck=${table_index_max__input}
+
+
+
+#---Set 'table_index_max__input' (if needed)
+    #Note: 
+    #   The condition to check whether 'array contains no data' is preferred over...
+    #   ...checking whether the 'array-length is zero', because...
+    #   ...should the array contains empty lines then the array-length is non-zero.
+    #   This is behavior is unwanted.
+    if [[ -z "${fpath_arrTmp[@]}" ]]; then   #array contains no data
+        table_index_max__input=${DOCKER__NUMOFLINES_5}
+    else    #array contains data
+        if [[ ${fpath_arrLen} -le ${table_index_max__input} ]]; then
+            table_index_max__input=${fpath_arrLen}
+        fi
+    fi
+
+
+
 #---Show directory content
     while true
     do
@@ -1830,7 +2103,7 @@ function show_pathContent_w_selection__func() {
 
         if [[ ! -z ${fpath_arr[@]} ]]; then
             #Initialization
-            flag_break_forLoop=false
+            flag_isSet_toBreak_loop=false
             fpath_relArr=()
             fpath_relArrIndex=0
             fpath_arrIndex=0
@@ -1850,10 +2123,10 @@ function show_pathContent_w_selection__func() {
                     #Check if 'table_index = table_index_max__input'
                     #Remark:
                     #   If true, set 'table_index = 0'
-                    if [[ ${table_index} -eq ${table_index_max__input} ]]; then
+                    if [[ ${table_index} -eq ${table_index_max_bck} ]]; then
                         table_index=${DOCKER__NUMOFMATCH_0}
 
-                        flag_break_forLoop=true
+                        flag_isSet_toBreak_loop=true
                     fi
 
 #-------------------Get 'fpath_arrItem_base' without directory
@@ -1912,7 +2185,7 @@ function show_pathContent_w_selection__func() {
                 #Prevously 'table_index' was set to '0'.
                 #This means that the maximum number of items allowed to-be-shown has been reached.
                 #In this case, break the for-loop.
-                if [[ ${flag_break_forLoop} == true ]]; then
+                if [[ ${flag_isSet_toBreak_loop} == true ]]; then
                     break
                 fi
             done    #end of for
@@ -1930,11 +2203,11 @@ function show_pathContent_w_selection__func() {
 
 
 #-------Fill up table with Empty Lines (if needed)
-        #Check if 'flag_break_forLoop = false'
+        #Check if 'flag_isSet_toBreak_loop = false'
         #Remark:
-        #   Remember that if 'flag_break_forLoop = true', then...
+        #   Remember that if 'flag_isSet_toBreak_loop = true', then...
         #   ...the for-loop was broken due to 'table_index = table_index_max__input'.
-        if [[ ${flag_break_forLoop} == false ]]; then
+        if [[ ${flag_isSet_toBreak_loop} == false ]]; then
             while [[ ${table_index} -lt ${table_index_max__input} ]]
             do
                 #increment line-number
@@ -1975,6 +2248,7 @@ function show_pathContent_w_selection__func() {
 
 #-------Show line-number range between 'prev' and 'next'
         lineNum_range_relMax=$((table_index_base + table_index_max__input))
+
         #Check if 'lineNum_range_relMax' has exceeded the maximum number array-items
         if [[ ${lineNum_range_relMax} -gt ${fpath_arrLen} ]]; then
             lineNum_range_relMax=${fpath_arrLen}
@@ -1994,19 +2268,19 @@ function show_pathContent_w_selection__func() {
         lineNum_range_msg+="to ${DOCKER__FG_LIGHTGREY}${lineNum_range_relMax}${DOCKER__NOCOLOR} "
         lineNum_range_msg+="(${DOCKER__FG_SOFTLIGHTRED}${lineNum_range_max_abs}${DOCKER__NOCOLOR})"
 
-        show_centered_string__func "${lineNum_range_msg}" "${DOCKER__TABLEWIDTH}"
+        # show_centered_string__func "${lineNum_range_msg}" "${DOCKER__TABLEWIDTH}"
 
-        # #Caclulate the length of 'lineNum_range_msg' without regEx
-        # lineNum_range_msg_wo_regEx_len=`get_stringlen_wo_regEx__func "${lineNum_range_msg}"`
+        #Caclulate the length of 'lineNum_range_msg' without regEx
+        lineNum_range_msg_wo_regEx_len=`get_stringlen_wo_regEx__func "${lineNum_range_msg}"`
 
-        # #Determine the start-position of where to place 'lineNum_range_msg'
-        # lineNum_range_msg_startPos=$(( (DOCKER__TABLEWIDTH/2) - (lineNum_range_msg_wo_regEx_len/2) ))
+        #Determine the start-position of where to place 'lineNum_range_msg'
+        lineNum_range_msg_startPos=$(( (DOCKER__TABLEWIDTH/2) - (lineNum_range_msg_wo_regEx_len/2) ))
 
-        # #Move cursor to start-position 'lineNum_range_msg_startPos'
-        # tput cuu1 && tput cuf ${lineNum_range_msg_startPos}
+        #Move cursor to start-position 'lineNum_range_msg_startPos'
+        tput cuu1 && tput cuf ${lineNum_range_msg_startPos}
 
-        # #Print 'lineNum_range_msg'
-        # echo -e "${lineNum_range_msg}"
+        #Print 'lineNum_range_msg'
+        echo -e "${lineNum_range_msg}"
 
 
 
@@ -2220,10 +2494,11 @@ function show_fileContent_wo_select__func() {
     local menuOptions__input=${5}
     local errMsg__input=${6}
     local readDialog__input=${7}
-    local outputFpath__input=${8}
-    local table_index_max__input=${9}
-    local menuTitle_indent__input=${10}  #leading spaces to-be-added before 'menuTitle__input'
-    local flag_pressAnyKey_isEnabled=${11}
+    local regEx__input=${8}
+    local outputFpath__input=${9}
+    local table_index_max__input=${10}
+    local menuTitle_indent__input=${11}  #leading spaces to-be-added before 'menuTitle__input'
+    local flag_pressAnyKey_isEnabled=${12}
 
 
 
@@ -2241,7 +2516,7 @@ function show_fileContent_wo_select__func() {
     local table_index_base_try_next=0
 
     local flag_break_main_whileLoop=false
-    local flag_break_forLoop=false
+    local flag_isSet_toBreak_loop=false
 
 
 
@@ -2265,7 +2540,7 @@ function show_fileContent_wo_select__func() {
     readDialog_numOfLines=`get_numOfLines_for_specified_string_or_file__func "${readDialog__input}"`
 
     #fixed objects
-    fixed_numOfLines=${DOCKER__NUMOFLINES_5}    #due to a fixed number of horizontal and empty lines
+    fixed_numOfLines=${DOCKER__NUMOFLINES_4}    #due to a fixed number of horizontal and empty lines
     if [[ ${remark_numOfLines} -gt ${DOCKER__NUMOFMATCH_0} ]]; then
         fixed_numOfLines=$((fixed_numOfLines + 1))  #due to the preceding horizontal line
     fi
@@ -2340,12 +2615,12 @@ function show_fileContent_wo_select__func() {
 
 #-------Show menu-title
         # duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-        show_menuTitle_only__func "${menuTitle__input}" "${menuTitle_indent__input}"
+        show_menuTitle_w_adjustable_indent__func "${menuTitle__input}" "${menuTitle_indent__input}"
         # duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
 
         if [[ ! -z ${fpath_arr[@]} ]]; then
             #Initialization
-            flag_break_forLoop=false
+            flag_isSet_toBreak_loop=false
             fpath_arrIndex=0
             keyInput=0
             table_index=0
@@ -2367,7 +2642,7 @@ function show_fileContent_wo_select__func() {
                     if [[ ${table_index} -eq ${table_index_max__input} ]]; then
                         table_index=${DOCKER__NUMOFMATCH_0}
 
-                        flag_break_forLoop=true
+                        flag_isSet_toBreak_loop=true
                     fi
 
                     #Print fpath_arrItem
@@ -2377,7 +2652,7 @@ function show_fileContent_wo_select__func() {
                 #Prevously 'table_index' was set to '0'.
                 #This means that the maximum number of items allowed to-be-shown has been reached.
                 #In this case, break the for-loop.
-                if [[ ${flag_break_forLoop} == true ]]; then
+                if [[ ${flag_isSet_toBreak_loop} == true ]]; then
                     break
                 fi
             done    #end of for
@@ -2390,11 +2665,11 @@ function show_fileContent_wo_select__func() {
 
 
 #-------Fill up table with Empty Lines (if needed)
-        #Check if 'flag_break_forLoop = false'
+        #Check if 'flag_isSet_toBreak_loop = false'
         #Remark:
-        #   Remember that if 'flag_break_forLoop = true', then...
+        #   Remember that if 'flag_isSet_toBreak_loop = true', then...
         #   ...the for-loop was broken due to 'table_index = table_index_max__input'.
-        if [[ ${flag_break_forLoop} == false ]]; then
+        if [[ ${flag_isSet_toBreak_loop} == false ]]; then
             while [[ ${table_index} -lt ${table_index_max__input} ]]
             do
                 #increment line-number
@@ -2454,19 +2729,19 @@ function show_fileContent_wo_select__func() {
         lineNum_range_msg+="to ${DOCKER__FG_LIGHTGREY}${lineNum_range_relMax}${DOCKER__NOCOLOR} "
         lineNum_range_msg+="(${DOCKER__FG_SOFTLIGHTRED}${lineNum_range_max_abs}${DOCKER__NOCOLOR})"
 
-        show_centered_string__func "${lineNum_range_msg}" "${DOCKER__TABLEWIDTH}"
+        # show_centered_string__func "${lineNum_range_msg}" "${DOCKER__TABLEWIDTH}"
 
-        # #Caclulate the length of 'lineNum_range_msg' without regEx
-        # lineNum_range_msg_wo_regEx_len=`get_stringlen_wo_regEx__func "${lineNum_range_msg}"`
+        #Caclulate the length of 'lineNum_range_msg' without regEx
+        lineNum_range_msg_wo_regEx_len=`get_stringlen_wo_regEx__func "${lineNum_range_msg}"`
 
-        # #Determine the start-position of where to place 'lineNum_range_msg'
-        # lineNum_range_msg_startPos=$(( (DOCKER__TABLEWIDTH - lineNum_range_msg_wo_regEx_len)/2 ))
+        #Determine the start-position of where to place 'lineNum_range_msg'
+        lineNum_range_msg_startPos=$(( (DOCKER__TABLEWIDTH - lineNum_range_msg_wo_regEx_len)/2 ))
 
-        # #Move cursor to start-position 'lineNum_range_msg_startPos'
-        # tput cuu1 && tput cuf ${lineNum_range_msg_startPos}
+        #Move cursor to start-position 'lineNum_range_msg_startPos'
+        tput cuu1 && tput cuf ${lineNum_range_msg_startPos}
 
-        # #Print 'lineNum_range_msg'
-        # echo -e "${lineNum_range_msg}"
+        #Print 'lineNum_range_msg'
+        echo -e "${lineNum_range_msg}"
 
 
 
@@ -2582,7 +2857,7 @@ function show_fileContent_wo_select__func() {
 
                     #Check if 'flag_pressAnyKey_isEnabled = true'
                     #Remarks:
-                    #   1. If true, then exit upon pressing other function-keys (F1 to F11)
+                    #   1. If true, then exit upon pressing other function-keys (F1 to F12)
                     #   2. In order to remove the unwanted escaped chars,...
                     #      ...function 'functionKey_detection__func' should be executed...
                     #      ...BEFORE this condtion, 
@@ -2618,7 +2893,7 @@ function show_fileContent_wo_select__func() {
                         return
                     fi
 
-                    if [[ ${keyInput} =~ [ynb] ]]; then
+                    if [[ ${keyInput} =~ ${regEx__input} ]]; then
                             # if [[ ${keyInput} =~ [yn] ]]; then
                             #     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
                             # else
@@ -2801,27 +3076,158 @@ function show_msg_wo_menuTitle_w_PressAnyKey__func() {
 function show_array_elements_w_menuTitle__func() {
     #Input args
     local menuTitle__input=${1}
+    local menuOptions__input=${2}
+    local dataArr_pageNum__input=${3}    #page-number
+    local dataArr_pageSize__input=${4}  #number of lines to be shown
+    shift
+    shift
+    shift
     shift
     local dataArr__input=("$@")
 
-    #Show list
+
+    #Hide cursor
+    cursor_hide__func
+
+    #Disable keyboard-input
+    disable_keyboard_input__func
+
+
+    #Print horizontal line
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    #Print menu-title
     show_centered_string__func "${menuTitle__input}" "${DOCKER__TABLEWIDTH}"
+    #Print horizontal line
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-    
-    #Loop thru array-elements
+
+
+    #Get the array-length
+    local dataArrLen=${#dataArr__input[@]}
+
+
+    #set the default flag value
+    local flag_showAll=false
+
+    #Check if 'dataArr_pageNum__input' and 'dataArr_pageSize__input' are Empty Strings
+    if [[ -z ${dataArr_pageNum__input} ]] || [[ -z ${dataArr_pageSize__input} ]]; then
+        flag_showAll=true
+    fi
+
+    #Check if 'dataArr_pageSize__input => dataArrLen'
+    if [[ ${dataArr_pageSize__input} -ge ${dataArrLen} ]]; then
+        flag_showAll=true
+    fi
+
+
+    #Calculate the 'dataArr_lineNum_start' and 'dataArr_lineNum_end'
+    local dataArr_lineNum_start=$((((dataArr_pageNum__input - 1)*dataArr_pageSize__input) + 1))
+    local dataArr_lineNum_end=$((dataArr_pageNum__input*dataArr_pageSize__input))
+    if [[ ${dataArr_lineNum_end} -gt ${dataArrLen} ]]; then
+        dataArr_lineNum_end=${dataArrLen}
+    fi
+
+
+    #Show array-elements
+    local dataArr_lineNum=${DOCKER__LINENUM_0}
+    local print_lineNum=${DOCKER__LINENUM_0}
     for dataArrItem in "${dataArr__input[@]}"
     do
-        echo "${DOCKER__FOURSPACES}${dataArrItem}"
+        #Increment array-linenumber
+        dataArr_lineNum=$((dataArr_lineNum + 1))
+ 
+        #Check if 'dataArr_lineNum > dataArr_lineNum_end'
+        if [[ ${dataArr_lineNum} -gt ${dataArr_lineNum_end} ]] && [[ ${flag_showAll} == false ]]; then
+            break
+        fi
+
+        #Check if 'dataArr_lineNum => dataArr_lineNum_start'
+        if [[ ${dataArr_lineNum} -ge ${dataArr_lineNum_start} ]]; then
+            echo "${DOCKER__FOURSPACES}${dataArrItem}"
+
+            print_lineNum=$((print_lineNum + 1))
+        fi
     done
+
+
+    #Fill-up table with empty lines
+    while [[ ${print_lineNum} -lt ${dataArr_pageSize__input} ]]
+    do
+        #Print an Empty Line
+        echo "${DOCKER__EMPTYSTRING}"
+
+        #increment line-number
+        print_lineNum=$((print_lineNum + 1))
+    done
+
 
     #Move-down cursor
     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
-    #Print
+
+    #Show 'prev' and 'next'
+    if [[ ${flag_showAll} == false ]]; then
+        local prev_only_print="${DOCKER__ONESPACE_PREV}"
+
+        local oneSpacePrev_len=`get_stringlen_wo_regEx__func "${DOCKER__ONESPACE_PREV}"`
+        local oneSpaceNext_len=`get_stringlen_wo_regEx__func "${DOCKER__ONESPACE_NEXT}"`
+        local space_between_prev_and_next_len=$(( DOCKER__TABLEWIDTH - (oneSpacePrev_len + oneSpaceNext_len) - 1 ))
+        local space_between_prev_and_next=`duplicate_char__func "${DOCKER__ONESPACE}" "${space_between_prev_and_next_len}"`
+        local prev_spaces_next_print="${DOCKER__ONESPACE_PREV}${space_between_prev_and_next}${DOCKER__ONESPACE_NEXT}"
+
+        local docker_space_between_leftBoundary_and_next_len=$(( DOCKER__TABLEWIDTH - oneSpacePrev_len - 1 ))
+        local docker_space_between_leftBoundary_and_next=`duplicate_char__func "${DOCKER__ONESPACE}" "${docker_space_between_leftBoundary_and_next_len}"`
+        local next_only_print="${docker_space_between_leftBoundary_and_next}${DOCKER__ONESPACE_NEXT}"
+
+        if [[ ${dataArr_lineNum_start} -eq ${DOCKER__NUMOFMATCH_1} ]]; then
+            echo "${next_only_print}"
+        else
+            if [[ ${dataArr_lineNum_end} -eq ${dataArrLen} ]]; then 
+                echo "${prev_only_print}"
+            else
+                echo "${prev_spaces_next_print}"
+            fi
+        fi
+
+        #Show line-number range between 'prev' and 'next'
+        lineNum_range_msg="${DOCKER__FG_LIGHTGREY}${dataArr_pageNum__input}${DOCKER__NOCOLOR} "
+        lineNum_range_msg+="to ${DOCKER__FG_LIGHTGREY}${dataArr_pageSize__input}${DOCKER__NOCOLOR} "
+        lineNum_range_msg+="(${DOCKER__FG_SOFTLIGHTRED}${dataArrLen}${DOCKER__NOCOLOR})"
+
+        #Caclulate the length of 'lineNum_range_msg' without regEx
+        lineNum_range_msg_wo_regEx_len=`get_stringlen_wo_regEx__func "${lineNum_range_msg}"`
+
+        #Determine the start-position of where to place 'lineNum_range_msg'
+        lineNum_range_msg_startPos=$(( (DOCKER__TABLEWIDTH/2) - (lineNum_range_msg_wo_regEx_len/2) ))
+
+        #Move-up
+        if [[ ${flag_showAll} == false ]]; then
+            moveUp__func "${DOCKER__LINENUM_1}"
+        fi
+
+        #Move cursor to start-position 'lineNum_range_msg_startPos'
+        tput cuf ${lineNum_range_msg_startPos}
+
+        #Print 'lineNum_range_msg'
+        echo -e "${lineNum_range_msg}"
+    fi
+
+    if [[ ! -z ${menuOptions__input} ]]; then
+        ##Print horizontal line
+        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+
+        #Print menu-options
+        echo -e "${menuOptions__input}"
+    fi
+
+    #Print horizontal line
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-    echo -e "${DOCKER__FOURSPACES_QUIT_CTRL_C}"
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+
+
+    #Show cursor
+    cursor_show__func
+
+    #Enable keyboard-input
+    enable_keyboard_input__func
 }
 
 function show_repoList_or_containerList_w_menuTitle__func() {
@@ -2908,6 +3314,47 @@ function show_repoList_or_containerList_w_menuTitle_w_confirmation__func() {
 }
 
 
+function show_msg_w_menuTitle_w_confirmation__func() {
+    #Input args
+    local menuTitle__input=${1}
+    local msg__input=${2}
+    local confirmation_choices__input=${3}
+    local confirmation_regEx__input=${4}
+    local prepend_numOfLines__input=${5}
+    local confirmation_timeout__input=${6}
+    local confirmation_prepend_numOfLines__input=${7}
+    local confirmation_append_numOfLines__input=${8}
+
+    #Move-down cursor
+    moveDown_and_cleanLines__func "${prepend_numOfLines__input}"
+
+    #Print horizontal line
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+
+    #Print menu-title
+    show_centered_string__func "${menuTitle__input}" "${DOCKER__TABLEWIDTH}"
+
+    #Print horizontal line
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+
+    #Print message
+    echo -e "${msg__input}"
+
+    #Move-down and clean 1 line
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+    #Print horizontal line
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+
+    #Show press-any-key dialog
+    confirmation_w_timer__func "${confirmation_choices__input}" \
+                        "${confirmation_regEx__input}" \
+                        "${confirmation_timeout__input}" \
+                        "${confirmation_prepend_numOfLines__input}" \
+                        "${confirmation_append_numOfLines__input}"
+}
+
+
 function show_msg_wo_menuTitle_w_confirmation__func() {
     #Input args
     local msg__input=${1}
@@ -2934,7 +3381,7 @@ function show_msg_wo_menuTitle_w_confirmation__func() {
                         "${confirmation_append_numOfLines__input}"
 }
 
-function show_menuTitle_only__func() {
+function show_menuTitle_w_adjustable_indent__func() {
     #Input args
     local menuTitle__input=${1}
     local menuTitle_indent__input=${2}
@@ -4319,8 +4766,8 @@ docker__environmental_variables__sub() {
     docker__containerlist_tableinfo__filename="docker_containerlist_tableinfo.sh"
     docker__containerlist_tableinfo__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__containerlist_tableinfo__filename}
 
-    docker__container_run_remove__filename="docker_container_run_remove.sh"
-    docker__container_run_remove__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__container_run_remove__filename}
+    docker__container_run_remove_menu__filename="docker_container_run_remove_menu.sh"
+    docker__container_run_remove_menu__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__container_run_remove_menu__filename}
 
     docker__cp_fromto_container__filename="docker_cp_fromto_container.sh"
     docker__cp_fromto_container__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__cp_fromto_container__filename}
@@ -4415,6 +4862,9 @@ docker__environmental_variables__sub() {
     git__git_readInput_w_autocomplete__filename="git_readInput_w_autocomplete.sh"
     git__git_readInput_w_autocomplete__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${git__git_readInput_w_autocomplete__filename}
 
+    git__undo_last_pending_commit__filename="git_undo_last_pending_commit.sh"
+    git__undo_last_pending_commit__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${git__undo_last_pending_commit__filename}
+
 
 
 #---docker__LTPP3_ROOTFS_docker__dir - contents
@@ -4495,6 +4945,9 @@ docker__environmental_variables__sub() {
 
     git__git_delete_local_branch_out__filename="git_delete_local_branch.out"
     git__git_delete_local_branch_out__fpath=${docker__tmp_dir}/${git__git_delete_local_branch_out__filename}
+
+    git__git_push_out__filename="git_push.out"
+    git__git_push_out__fpath=${docker__tmp_dir}/${git__git_push_out__filename}
 
     git__git_readInput_w_autocomplete_out__filename="git_readInput_w_autocomplete.out"
     git__git_readInput_w_autocomplete_out__fpath=${docker__tmp_dir}/${git__git_readInput_w_autocomplete_out__filename}

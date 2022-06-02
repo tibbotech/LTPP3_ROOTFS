@@ -1,10 +1,5 @@
 #!/bin/bash -m
 #Remark: by using '-m' the INT will NOT propagate to the PARENT scripts
-#---CONSTANTS
-DOCKER__EXPORT_ENVIRONMENT_VARIABLES_MENUTITLE="${DOCKER__FG_LIGHTBLUE}DOCKER: EXPORT ENVIRONMENT VARIABLES${DOCKER__NOCOLOR}"
-DOCKER__VERSION="v22.04.22-0.0.1"
-
-
 
 #---SUBROUTINES
 docker__load_environment_variables__sub() {
@@ -58,6 +53,8 @@ docker__load_header__sub() {
 }
 
 docker__load_constants__sub() {
+    DOCKER__EXPORT_ENVIRONMENT_VARIABLES_MENUTITLE="${DOCKER__FG_LIGHTBLUE}DOCKER: EXPORT ENVIRONMENT VARIABLES${DOCKER__NOCOLOR}"
+
     DOCKER__DIRLIST_MENUTITLE="Choose ${DOCKER__FG_DARKBLUE}docker-file${DOCKER__NOCOLOR}"
     DOCKER__DIRLIST_LOCATION_INFO="${DOCKER__FOURSPACES}${DOCKER__FG_VERYLIGHTORANGE}Location${DOCKER__NOCOLOR}: ${docker__LTPP3_ROOTFS_docker_dockerfiles__dir}"
     DOCKER__DIRLIST_REMARK="${DOCKER__FOURSPACES}${DOCKER__FG_LIGHTGREY}NOTE: only files containing pattern '${DOCKER__CONTAINER_ENV1}'...\n"
@@ -240,6 +237,11 @@ docker__export_env_var_menu__sub() {
 
     while true
     do
+        #Get Git-information
+        #Output:
+        #   docker_git_current_info_msg
+        docker__get_git_info__sub
+
         #Retrieve & prep variables
         docker__retrieve_and_prep_variables__sub
 
@@ -251,7 +253,7 @@ docker__export_env_var_menu__sub() {
 
         #Show menu-title
         show_leadingAndTrailingStrings_separatedBySpaces__func "${DOCKER__EXPORT_ENVIRONMENT_VARIABLES_MENUTITLE}" \
-                        "${DOCKER__VERSION}" \
+                        "${docker_git_current_info_msg}" \
                         "${DOCKER__TABLEWIDTH}"
 
         #Draw horizontal lines
@@ -340,6 +342,7 @@ docker__export_env_var_menu__sub() {
         docker__tibboHeader_prepend_numOfLines=${DOCKER__NUMOFLINES_0}
     done
 }
+
 docker__retrieve_and_prep_variables__sub() {
     #Retrieve data from 'docker__export_env_var_menu_cfg__fpath'
     docker__retrieve_data_from_configFile__sub
@@ -353,6 +356,36 @@ docker__retrieve_and_prep_variables__sub() {
     #Trim strings to fit within table-size
     docker__trim_strings_toFit_within_specified_tableSize__sub
 }
+
+docker__get_git_info__sub() {
+    #Get information
+    docker__git_current_branchName=`git_get_current_branchName__func`
+
+    docker__git_current_abbrevCommitHash=`git_log_for_pushed_and_unpushed_commits__func "${docker__git_current_branchName}" \
+                        "${GIT__LAST_COMMIT}" \
+                        "${GIT__PLACEHOLDER_ABBREV_COMMIT_HASH}"`
+    
+    docker__git_current_unpushed_abbrevCommitHash=`git_log_for_unpushed_local_commits__func "${docker__git_current_branchName}" \
+                        "${DOCKER__EMPTYSTRING}" \
+                        "${GIT__PLACEHOLDER_ABBREV_COMMIT_HASH}"`
+    
+    docker__git_push_status="${GIT__PUSHED}"
+    if [[ "${docker__git_current_abbrevCommitHash}" == "${docker__git_current_unpushed_abbrevCommitHash}" ]]; then
+        docker__git_push_status="${GIT__UNPUSHED}"
+    fi
+
+    docker__git_current_tag=`git_get_tag_for_specified_commitHash__func "${docker__git_current_abbrevCommitHash}"`
+    if [[ -z "${docker__git_current_tag}" ]]; then
+        docker__git_current_tag="${GIT__NOT_TAGGED}"
+    fi
+
+    #Generate message to be shown
+    docker_git_current_info_msg="${DOCKER__FG_LIGHTBLUE}${docker__git_current_branchName}${DOCKER__NOCOLOR}:"
+    docker_git_current_info_msg+="${DOCKER__FG_DARKBLUE}${docker__git_current_abbrevCommitHash}${DOCKER__NOCOLOR}"
+    docker_git_current_info_msg+="(${DOCKER__FG_DARKBLUE}${docker__git_push_status}${DOCKER__NOCOLOR}):"
+    docker_git_current_info_msg+="${DOCKER__FG_LIGHTBLUE}${docker__git_current_tag}${DOCKER__NOCOLOR}"
+}
+
 
 
 #---MAIN SUBROUTINE

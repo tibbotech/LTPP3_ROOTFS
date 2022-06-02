@@ -50,7 +50,6 @@ docker__load_source_files__sub() {
 
 docker__load_constants__sub() {
     DOCKER__MENUTITLE="${DOCKER__FG_LIGHTBLUE}DOCKER MAIN-MENU${DOCKER__NOCOLOR}"
-    DOCKER__VERSION="v21.03.17-0.0.2"
 }
 
 docker__load_header__sub() {
@@ -79,6 +78,12 @@ docker__checkIf_user_is_root__sub()
 docker__init_variables__sub() {
     docker__regEx="[1-3890rcseipgq]"
     docker__myChoice=""
+
+    docker__git_current_branchName=${DOCKER__EMPTYSTRING}
+    docker__git_current_abbrevCommitHash=${DOCKER__EMPTYSTRING}
+	docker__git_current_unpushed_abbrevCommitHash=${DOCKER__EMPTYSTRING}
+	docker__git_current_push_status=${DOCKER__EMPTYSTRING}
+    docker__git_current_tag=${DOCKER__EMPTYSTRING}
 }
 
 docker__enable_objects__sub() {
@@ -95,14 +100,19 @@ docker__mainmenu__sub() {
 
     while true
     do
+        #Get Git-information
+        #Output:
+        #   docker_git_current_info_msg
+        docker__get_git_info__sub
+
         #Print header
         docker__load_header__sub "${docker__tibboHeader_prepend_numOfLines}"
-    
+
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-        show_leadingAndTrailingStrings_separatedBySpaces__func "${DOCKER__MENUTITLE}" "${DOCKER__VERSION}" "${DOCKER__TABLEWIDTH}"
+        show_leadingAndTrailingStrings_separatedBySpaces__func "${DOCKER__MENUTITLE}" "${docker_git_current_info_msg}" "${DOCKER__TABLEWIDTH}"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
 
-        echo -e "${DOCKER__FOURSPACES}1. (Menu) create ${DOCKER__FG_BORDEAUX}image(s)${DOCKER__NOCOLOR} using docker-${DOCKER__FG_DARKBLUE}file${DOCKER__NOCOLOR}/${DOCKER__FG_LIGHTBLUE}list${DOCKER__NOCOLOR}"
+        echo -e "${DOCKER__FOURSPACES}1. (Menu) create ${DOCKER__FG_BORDEAUX}image(s)${DOCKER__NOCOLOR} using docker-${DOCKER__FG_LIGHTBLUE}file${DOCKER__NOCOLOR}/${DOCKER__FG_LIGHTBLUE}list${DOCKER__NOCOLOR}"
         echo -e "${DOCKER__FOURSPACES}2. (Menu) create${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}remove${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}rename ${DOCKER__FG_BORDEAUX}image${DOCKER__NOCOLOR}"
         echo -e "${DOCKER__FOURSPACES}3. (Menu) run${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}Remove ${DOCKER__FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
         echo -e "${DOCKER__FOURSPACES}8. Copy a ${DOCKER__FG_ORANGE}file${DOCKER__NOCOLOR} from${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}to ${DOCKER__FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
@@ -118,7 +128,7 @@ docker__mainmenu__sub() {
         echo -e "${DOCKER__FOURSPACES}i. Load from ${DOCKER__FG_BORDEAUX}image${DOCKER__NOCOLOR} file"
         echo -e "${DOCKER__FOURSPACES}e. Save to ${DOCKER__FG_BORDEAUX}image${DOCKER__NOCOLOR} file"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-        echo -e "${DOCKER__FOURSPACES}g. (menu) Git"
+        echo -e "${DOCKER__FOURSPACES}g. (Menu) Git"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
         echo -e "${DOCKER__FOURSPACES}q. ${DOCKER__QUIT_CTRL_C}"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
@@ -159,7 +169,7 @@ docker__mainmenu__sub() {
                 ;;
 
             3)
-                ${docker__container_run_remove__fpath}
+                ${docker__container_run_remove_menu__fpath}
                 ;;
 
             8)
@@ -234,6 +244,35 @@ docker__show_containerList_handler__sub() {
                         "${DOCKER__TIMEOUT_10}" \
                         "${DOCKER__NUMOFLINES_0}" \
                         "${DOCKER__NUMOFLINES_0}"
+}
+
+docker__get_git_info__sub() {
+    #Get information
+    docker__git_current_branchName=`git_get_current_branchName__func`
+
+    docker__git_current_abbrevCommitHash=`git_log_for_pushed_and_unpushed_commits__func "${docker__git_current_branchName}" \
+                        "${GIT__LAST_COMMIT}" \
+                        "${GIT__PLACEHOLDER_ABBREV_COMMIT_HASH}"`
+    
+    docker__git_current_unpushed_abbrevCommitHash=`git_log_for_unpushed_local_commits__func "${docker__git_current_branchName}" \
+                        "${DOCKER__EMPTYSTRING}" \
+                        "${GIT__PLACEHOLDER_ABBREV_COMMIT_HASH}"`
+    
+    docker__git_push_status="${GIT__PUSHED}"
+    if [[ "${docker__git_current_abbrevCommitHash}" == "${docker__git_current_unpushed_abbrevCommitHash}" ]]; then
+        docker__git_push_status="${GIT__UNPUSHED}"
+    fi
+
+    docker__git_current_tag=`git_get_tag_for_specified_commitHash__func "${docker__git_current_abbrevCommitHash}"`
+    if [[ -z "${docker__git_current_tag}" ]]; then
+        docker__git_current_tag="${GIT__NOT_TAGGED}"
+    fi
+
+    #Generate message to be shown
+    docker_git_current_info_msg="${DOCKER__FG_LIGHTBLUE}${docker__git_current_branchName}${DOCKER__NOCOLOR}:"
+    docker_git_current_info_msg+="${DOCKER__FG_DARKBLUE}${docker__git_current_abbrevCommitHash}${DOCKER__NOCOLOR}"
+    docker_git_current_info_msg+="(${DOCKER__FG_DARKBLUE}${docker__git_push_status}${DOCKER__NOCOLOR}):"
+    docker_git_current_info_msg+="${DOCKER__FG_LIGHTBLUE}${docker__git_current_tag}${DOCKER__NOCOLOR}"
 }
 
 

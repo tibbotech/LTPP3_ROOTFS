@@ -2,11 +2,12 @@
 #Remark: by using '-m' the INT will NOT propagate to the PARENT scripts
 #---INPUT ARGS
 menuTitle__input=${1}
-readMsg__input=${2}
-errorMsg__input=${3}
-cmd__input=${4}
-showTable__input=${5}
-onEnter_breakLoop__input=${6}
+menuOptions__input=${2}
+readMsg__input=${3}
+errorMsg__input=${4}
+cmd__input=${5}
+showTable__input=${6}
+onEnter_breakLoop__input=${7}
 
 
 #---FUNCTIONS
@@ -33,10 +34,10 @@ function arrowKeys_upDown_handler__func() {
     #Flush "stdin" with 0.1  sec timeout.
     read -rsn5 -t 0.1
 
-    #Check if 'cachedInput_ArrLen > 0'
+    #Check if 'docker__cachedInput_ArrLen > 0'
     #Remark:
     #   If false, then exit this function right away.
-    if [[ ${cachedInput_ArrLen} -eq 0 ]]; then
+    if [[ ${docker__cachedInput_ArrLen} -eq 0 ]]; then
         return
     fi
 
@@ -45,26 +46,26 @@ function arrowKeys_upDown_handler__func() {
     #*********************************************************
     if [[ ${arrow_direction} == ${DOCKER__ARROWUP} ]]; then
         if [[ ${docker__1stTimeUse} == true ]]; then
-            cachedInput_ArrIndex=0
+            docker__cachedInput_ArrIndex=0
 
             docker__1stTimeUse=false
         else
-            if [[ ${cachedInput_ArrIndex} -eq 0 ]]; then    #index is already leveled to 0
-                cachedInput_ArrIndex=${cachedInput_ArrIndex_max}    #set index to the max. value
+            if [[ ${docker__cachedInput_ArrIndex} -eq 0 ]]; then    #index is already leveled to 0
+                docker__cachedInput_ArrIndex=${docker__cachedInput_ArrIndex_max}    #set index to the max. value
             else    #for all other indexes
-                cachedInput_ArrIndex=$((cachedInput_ArrIndex-1))
+                docker__cachedInput_ArrIndex=$((docker__cachedInput_ArrIndex-1))
             fi
         fi
     elif [[ ${arrow_direction} == ${DOCKER__ARROWDOWN} ]]; then
         if [[ ${docker__1stTimeUse} == true ]]; then
-            cachedInput_ArrIndex=0
+            docker__cachedInput_ArrIndex=0
 
             docker__1stTimeUse=false
         else
-            if [[ ${cachedInput_ArrIndex} -eq ${cachedInput_ArrIndex_max} ]]; then  #index is already maxed out
-                cachedInput_ArrIndex=0
+            if [[ ${docker__cachedInput_ArrIndex} -eq ${docker__cachedInput_ArrIndex_max} ]]; then  #index is already maxed out
+                docker__cachedInput_ArrIndex=0
             else    #for all other indexes
-                cachedInput_ArrIndex=$((cachedInput_ArrIndex+1))
+                docker__cachedInput_ArrIndex=$((docker__cachedInput_ArrIndex+1))
             fi
         fi
     fi
@@ -191,33 +192,6 @@ function backspace_handler__func() {
     echo "${str_output}"
 }
 
-function run_cmd_and_read_output_into_array__func() {
-    #Input args
-    local cmd__input=${1}
-
-    #Define local variables
-    local cachedInputArr_string=${DOCKER__EMPTYSTRING}
-    local cachedInputArr_raw_string=${DOCKER__EMPTYSTRING}
-
-    #These are global variables
-    cachedInput_Arr=()
-    cachedInput_ArrLen=0
-    cachedInput_ArrIndex=0
-    cachedInput_ArrIndex_max=0
-
-    #Run command and read into Array
-    readarray -t cachedInput_Arr < <(${cmd__input} | tr -d "[:blank:]")
-
-    #Update array-length
-    cachedInput_ArrLen=${#cachedInput_Arr[@]}
-
-    #Index starts with 0, therefore deduct array-length by 1
-    cachedInput_ArrIndex_max=$((cachedInput_ArrLen-1))
-
-    #Update current array-index
-    cachedInput_ArrIndex=${cachedInput_ArrIndex_max}
-}
-
 
 
 #---SUBROUTINES
@@ -247,16 +221,13 @@ docker__load_source_files__sub() {
 }
 
 docker__init_variables__sub() {
-    docker__1stTimeUse=true
-
-    #***ASSUMPTION:
-    #   
-    docker__isDockerCmd=true
+    docker__1stTimeUse=true 
 }
 
 docker__readInput_handler__sub() {
     #Get read-input value
     docker__readInput_w_autocomplete__sub "${menuTitle__input}" \
+                        "${menuOptions__input}" \
                         "${readMsg__input}" \
                         "${errorMsg__input}" \
                         "${cmd__input}" \
@@ -270,11 +241,12 @@ docker__readInput_handler__sub() {
 docker__readInput_w_autocomplete__sub() {
     #Input args
     local menuTitle__input=${1}
-    local readMsg__input=${2}
-    local errorMsg__input=${3}
-    local cmd__input=${4}
-    local showTable__input=${5}
-    local onEnter_breakLoop__input=${6}
+    local menuOptions__input=${2}
+    local readMsg__input=${3}
+    local errorMsg__input=${4}
+    local cmd__input=${5}
+    local showTable__input=${6}
+    local onEnter_breakLoop__input=${7}
 
     #Define variables
     local keyInput=${DOCKER__EMPTYSTRING}
@@ -289,31 +261,58 @@ docker__readInput_w_autocomplete__sub() {
     local errMsg=${DOCKER__EMPTYSTRING}
  
     #Remove file
-    if [[ -f ${docker__readInput_w_autocomplete_out__fpath} ]]; then
-        rm ${docker__readInput_w_autocomplete_out__fpath}
+    if [[ -f ${git__git_readInput_w_autocomplete_out__fpath} ]]; then
+        rm ${git__git_readInput_w_autocomplete_out__fpath}
     fi
 
-#---Run command and read output into 'cachedInput_Arr'
-    run_cmd_and_read_output_into_array__func "${cmd__input}"
 
-#---Show Docker Container's List
-    #Calculate number of lines to be cleaned
-    local readMsg_numOfLines=0
-    if [[ ! -z ${readMsg__input} ]]; then    #this condition is important
-        readMsg_numOfLines=`echo -e ${readMsg__input} | wc -l`      
+
+#---Run command and read output into 'docker__cachedInput_Arr'
+    docker__run_cmd_and_read_output_into_array__sub "${cmd__input}"
+
+
+
+#---Update table-input variables
+    local dataArr_pageNum=${DOCKER__LINENUM_1}
+
+    local dataArr_pageSize=${DOCKER__TABLEROWS_20}
+    if [[ ${docker__cachedInput_ArrLen} -le ${DOCKER__TABLEROWS_20} ]]; then
+        dataArr_pageSize=${docker__cachedInput_ArrLen}
     fi
-    local update_numOfLines=0
 
-    local numOfLines_noError_tot=$((readMsg_numOfLines + update_numOfLines))
-    local numOfLines_wError_tot=$((DOCKER__NUMOFLINES_5 +  update_numOfLines))
+    local dataArr_pageNumMax=$((docker__cachedInput_ArrLen/dataArr_pageSize))
+    local mod_remainder=$((docker__cachedInput_ArrLen%dataArr_pageSize))
+    if [[ ${mod_remainder} -ne ${DOCKER__NUMOFMATCH_0} ]]; then #there are leftovers after division
+        dataArr_pageNumMax=$((dataArr_pageNumMax + 1))
+    fi
 
-    #Only execute this condition if 'menuTitle__input' is not an Empty String
-    #Remark:
-    #   This way we can control whether to show the Image-list Table or not.
+
+
+#---Calculate number of lines to be cleaned
+    local empty_NumOfLines=${DOCKER__NUMOFLINES_1}  #empty line
+    local horiz_numOfLines=${DOCKER__NUMOFLINES_4}  #horizontal lines
+    local prev_next_numOfLines=${DOCKER__NUMOFLINES_1}  #prev and next line
+    local menuOptions_numOfLines=0  
+    if [[ ! -z ${menuOptions__input} ]]; then
+        menuOptions_numOfLines=`echo -e ${menuOptions__input} | wc -l`  #menu-options lines  
+    fi
+    local readMsg_numOfLines=0 
+    if [[ ! -z ${readMsg__input} ]]; then
+        readMsg_numOfLines=`echo -e ${readMsg__input} | wc -l`  #read-dialog lines
+    fi
+    #Total number of lines to be cleaned
+    local tot_numOfLines_toClean=$((empty_NumOfLines + horiz_numOfLines + menuOptions_numOfLines + prev_next_numOfLines + readMsg_numOfLines + dataArr_pageSize))
+    
+
+
+#---Show array-elements
     if [[ ${showTable__input} == true ]]; then
         docker__show_infoTable__sub "${menuTitle__input}" \
+                        "${menuOptions__input}" \
                         "${errorMsg__input}" \
-                        "${cachedInput_Arr[@]}"
+                        "${dataArr_pageNum}" \
+                        "${dataArr_pageSize}" \
+                        "${docker__cachedInput_Arr[@]}"
     fi
 
     #Start automcomplete
@@ -323,8 +322,8 @@ docker__readInput_w_autocomplete__sub() {
         #Remark:
         #   If that is the case, then set 'ret' to that value.
         # if [[ ${onBackSpacePressed} == false ]]; then  #no backspace pressed
-            # if [[ ${cachedInput_ArrLen} -eq 1 ]]; then  #only 1 result found
-            #     ret=${cachedInput_Arr[0]}
+            # if [[ ${docker__cachedInput_ArrLen} -eq 1 ]]; then  #only 1 result found
+            #     ret=${docker__cachedInput_Arr[0]}
             # fi
         # else    #backspace was pressed
         if [[ ${onBackSpacePressed} == true ]]; then  #no backspace pressed
@@ -349,8 +348,12 @@ docker__readInput_w_autocomplete__sub() {
                 ret=`get_endResult_ofString_with_semiColonChar__func ${ret_bck}` 
                 
                 if [[ ! -z ${ret} ]]; then    #'ret' contains data
-                    #Remove asterisks (*) from 'ret'
-                    ret=`echo "${ret}" | sed 's/*//g'`
+                    #Check if 'ret' has a leading asterisk (*)
+                    local asterisk_isFound=`checkIf_string_contains_a_leading_specified_chars__func "${ret}" "${DOCKER__NUMOFMATCH_1}" "${DOCKER__ASTERISK}"`
+                    if [[ ${asterisk_isFound} == true  ]]; then
+                        #Remove asterisk (*)
+                        ret=`echo "${ret}" | sed 's/*//g'`
+                    fi
 
                     break
                 else    #'ret' is an Empty String
@@ -363,7 +366,7 @@ docker__readInput_w_autocomplete__sub() {
                     fi
 
                     #First Move-down, then Move-up, after that clean line
-                    moveDown_oneLine_then_moveUp_and_clean__func "${numOfLines_noError_tot}"
+                    moveDown_oneLine_then_moveUp_and_clean__func "${readMsg_numOfLines}"
                 fi
                 ;;
             ${DOCKER__BACKSPACE})
@@ -374,32 +377,80 @@ docker__readInput_w_autocomplete__sub() {
                 onBackSpacePressed=true
 
                 #First Move-down, then Move-up, after that clean line
-                moveDown_oneLine_then_moveUp_and_clean__func "${numOfLines_noError_tot}"
+                moveDown_oneLine_then_moveUp_and_clean__func "${readMsg_numOfLines}"
+                ;;
+            ${DOCKER__ESCAPED_HOOKLEFT})
+                if [[ ${dataArr_pageNum} -gt ${DOCKER__NUMOFMATCH_2} ]]; then
+                    #Update variable
+                    dataArr_pageNum=$((dataArr_pageNum - 1))
+
+                    #Move-up and clean
+                    moveUp_and_cleanLines__func "${tot_numOfLines_toClean}"
+
+                    #Show array-elements
+                    docker__show_infoTable__sub "${menuTitle__input}" \
+                            "${menuOptions__input}" \
+                            "${errorMsg__input}" \
+                            "${dataArr_pageNum}" \
+                            "${dataArr_pageSize}" \
+                            "${docker__cachedInput_Arr[@]}"
+                fi
+
+                #Move-to-beginning of line and clean
+                moveToBeginning_and_cleanLine__func
+
+                ;;
+            ${DOCKER__ESCAPED_HOOKRIGHT})
+                if [[ ${dataArr_pageNum} -lt ${dataArr_pageNumMax} ]]; then
+                    #Update variable
+                    dataArr_pageNum=$((dataArr_pageNum + 1))
+
+                    #Move-up and clean
+                    moveUp_and_cleanLines__func "${tot_numOfLines_toClean}"
+
+                    #Show array-elements
+                    docker__show_infoTable__sub "${menuTitle__input}" \
+                            "${menuOptions__input}" \
+                            "${errorMsg__input}" \
+                            "${dataArr_pageNum}" \
+                            "${dataArr_pageSize}" \
+                            "${docker__cachedInput_Arr[@]}"
+                fi
+
+                #Move-to-beginning of line and clean
+                moveToBeginning_and_cleanLine__func
                 ;;
             ${DOCKER__ESCAPEKEY})
                 #Handle Arrowkey-press
                 arrowKeys_upDown_handler__func
 
                 #Update variable
-                if [[ ${cachedInput_ArrLen} -gt ${DOCKER__NUMOFMATCH_0} ]]; then
-                    ret=${cachedInput_Arr[cachedInput_ArrIndex]}
+                if [[ ${docker__cachedInput_ArrLen} -gt ${DOCKER__NUMOFMATCH_0} ]]; then
+                    ret=${docker__cachedInput_Arr[docker__cachedInput_ArrIndex]}
+
+                    #Check if 'ret' has a leading asterisk (*)
+                    local asterisk_isFound=`checkIf_string_contains_a_leading_specified_chars__func "${ret}" "${DOCKER__NUMOFMATCH_1}" "${DOCKER__ASTERISK}"`
+                    if [[ ${asterisk_isFound} == true  ]]; then
+                        #Remove asterisk (*)
+                        ret=`echo "${ret}" | sed 's/*//g'`
+                    fi
                 else
                     ret=${DOCKER__EMPTYSTRING}
                 fi
 
                 #First Move-down, then Move-up, after that clean line
-                moveDown_oneLine_then_moveUp_and_clean__func "${numOfLines_noError_tot}"
+                moveDown_oneLine_then_moveUp_and_clean__func "${readMsg_numOfLines}"
                 ;;
             ${DOCKER__ONESPACE})
                 #First Move-down, then Move-up, after that clean line
-                moveDown_oneLine_then_moveUp_and_clean__func "${numOfLines_noError_tot}"
+                moveDown_oneLine_then_moveUp_and_clean__func "${readMsg_numOfLines}"
                 ;;
             ${DOCKER__TAB})
                 #This subroutine will also update 'ret'
-                ret=`autocomplete__func "${ret}" "${cachedInput_Arr[@]}"`
+                ret=`autocomplete__func "${ret}" "${docker__cachedInput_Arr[@]}"`
 
                 #First Move-down, then Move-up, after that clean line
-                moveDown_oneLine_then_moveUp_and_clean__func "${numOfLines_noError_tot}"
+                moveDown_oneLine_then_moveUp_and_clean__func "${readMsg_numOfLines}"
                 ;;
             *)
                 #wait for another 0.5 seconds to capture additional characters.
@@ -416,7 +467,7 @@ docker__readInput_w_autocomplete__sub() {
                 fi
 
                 #First Move-down, then Move-up, after that clean line
-                moveDown_oneLine_then_moveUp_and_clean__func "${numOfLines_noError_tot}"
+                moveDown_oneLine_then_moveUp_and_clean__func "${readMsg_numOfLines}"
                 ;;
         esac
     done
@@ -425,16 +476,45 @@ docker__readInput_w_autocomplete__sub() {
     echo -e "${ret}" > ${git__git_readInput_w_autocomplete_out__fpath}
 }
 
+docker__run_cmd_and_read_output_into_array__sub() {
+    #Input args
+    local cmd__input=${1}
+
+    #These are global variables
+    docker__cachedInput_Arr=()
+    docker__cachedInput_ArrLen=0
+    docker__cachedInput_ArrIndex=0
+    docker__cachedInput_ArrIndex_max=0
+
+    #Run command and read into Array
+    readarray -t docker__cachedInput_Arr < <(${cmd__input} | tr -d "[:blank:]")
+
+    #Update array-length
+    docker__cachedInput_ArrLen=${#docker__cachedInput_Arr[@]}
+
+    #Index starts with 0, therefore deduct array-length by 1
+    docker__cachedInput_ArrIndex_max=$((docker__cachedInput_ArrLen-1))
+
+    #Update current array-index
+    docker__cachedInput_ArrIndex=${docker__cachedInput_ArrIndex_max}
+}
+
 docker__show_infoTable__sub() {
     #Input args
     local menuTitle__input=${1}
-    local errorMsg__input=${2}
+    local menuOptions__input=${2}
+    local errorMsg__input=${3}
+    local dataArr_pageNum__input=${4}    #page-number
+    local dataArr_pageSize__input=${5}  #number of lines to be shown
+    shift
+    shift
+    shift
     shift
     shift
     local dataArr__input=("$@")
 
     #Show Table
-    if [[ ${cachedInput_ArrLen} -eq 0 ]]; then
+    if [[ ${docker__cachedInput_ArrLen} -eq 0 ]]; then
         show_msg_w_menuTitle_w_pressAnyKey_w_ctrlC_func "${menuTitle__input}" \
                         "${errorMsg__input}" \
                         "${DOCKER__EXITCODE_99}"
@@ -445,7 +525,11 @@ docker__show_infoTable__sub() {
             exit__func "${exitCode__input}" "${DOCKER__NUMOFLINES_0}"
         fi
     else
-        show_array_elements_w_menuTitle__func "${menuTitle__input}" "${dataArr__input[@]}"
+        show_array_elements_w_menuTitle__func "${menuTitle__input}" \
+                        "${menuOptions__input}" \
+                        "${dataArr_pageNum__input}" \
+                        "${dataArr_pageSize__input}" \
+                        "${dataArr__input[@]}"
     fi
 }
 

@@ -888,7 +888,7 @@ dirlist__show_dirContent_handler__sub() {
 
     #Move down one line
     if [[ ! -z ${menuTitle__input} ]]; then
-        show_menuTitle_only__func "${menuTitle__input}" "${DOCKER__EMPTYSTRING}"
+        show_menuTitle_w_adjustable_indent__func "${menuTitle__input}" "${DOCKER__EMPTYSTRING}"
     # else
     #     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
     fi
