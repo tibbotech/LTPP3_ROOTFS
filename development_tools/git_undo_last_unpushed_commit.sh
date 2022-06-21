@@ -48,24 +48,19 @@ docker__load_source_files__sub() {
     source ${docker__global__fpath}
 }
 
-docker__load_header__sub() {
-    #Input args
-    local prepend_numOfLines__input=${1}
-
-    #Print
-    show_header__func "${DOCKER__TITLE}" "${DOCKER__TABLEWIDTH}" "${DOCKER__BG_ORANGE}" "${prepend_numOfLines__input}" "${DOCKER__NUMOFLINES_0}"
-}
-
 docker__load_constants__sub() {
-    DOCKER__MENUTITLE="Git Undo Last Pending Commit"
+    DOCKER__MENUTITLE="Git Undo Last Unpushed Commit"
+    DOCKER__UNDO_LAST_UNPUSHED_COMMIT="undo last unpushed commit"
 
-    DOCKER__REMARKS="${DOCKER__FG_ORANGE}Remarks${DOCKER__NOCOLOR}:\n"
-    DOCKER__REMARKS+="${DOCKER__FOURSPACES}1. The ${DOCKER__FG_LIGHTGREY}last${DOCKER__NOCOLOR} "
-    DOCKER__REMARKS+="pending commit coincide with the ${DOCKER__FG_LIGHTGREY}top${DOCKER__NOCOLOR} "
-    DOCKER__REMARKS+="item in the table\n"
-    DOCKER__REMARKS+="${DOCKER__FOURSPACES}2. Only the ${DOCKER__FG_LIGHTGREY}last${DOCKER__NOCOLOR} "
-    DOCKER__REMARKS+="pending commit can be undo'ed"
-    DOCKER__READDIALOG_YN="Undo *last* pending commit (${DOCKER__Y_SLASH_N})?"
+    DOCKER__REMARKS="${DOCKER__FG_ORANGE}Remark${DOCKER__NOCOLOR}:\n"
+    DOCKER__REMARKS+="${DOCKER__FOURSPACES}${DOCKER__FG_LIGHTGREY}last${DOCKER__NOCOLOR} "
+    DOCKER__REMARKS+="unpushed commit = ${DOCKER__FG_LIGHTGREY}top${DOCKER__NOCOLOR} table-item"
+
+    DOCKER__MENUOPTIONS="${DOCKER__FOURSPACES_Y_YES}\n"
+    DOCKER__MENUOPTIONS+="${DOCKER__FOURSPACES_N_NO}\n"
+    DOCKER__MENUOPTIONS+="${DOCKER__FOURSPACES_Q_QUIT}"
+
+    DOCKER__READDIALOG="Undo ${DOCKER__FG_LIGHTGREY}last${DOCKER__NOCOLOR} unpushed commit (${DOCKER__Y_SLASH_N_SLASH_Q})? "
 }
 
 docker__init_variables__sub() {
@@ -73,11 +68,16 @@ docker__init_variables__sub() {
 
     docker__abbrevCommitHash_arr=()
     docker__commitSubj_arr=()
-    docker__combined_arr=()
-    docker__combined_string=${DOCKER__EMPTYSTRING}
 
-    docker__numOf_pendingCommits=0
+    docker__combined_arrIndex=0
+
+    docker__numOf_unpushedCommits=0
     docker__tableRows_max=${DOCKER__TABLEROWS_10}
+}
+
+docker__reset_variables__sub() {
+    docker__abbrevCommitHash_arr=()
+    docker__commitSubj_arr=()
 }
 
 docker__undo_last_unpushed_commit_handler__sub() {
@@ -88,8 +88,6 @@ docker__undo_last_unpushed_commit_handler__sub() {
     local GIT_SHOW_AND_CONFIRM_PHASE=4
     local GIT_UNDO_COMMIT_PHASE=5
     local EXIT_PHASE=6
-
-    local PRINTF_EXECUTING="${DOCKER__FG_YELLOW}EXECUTING${DOCKER__NOCOLOR}"
 
 
     #Define variables
@@ -102,7 +100,7 @@ docker__undo_last_unpushed_commit_handler__sub() {
     do
         case "${phase}" in
             ${TIBBOHEADER_PHASE})
-                docker__load_header__sub "${docker__tibboHeader_prepend_numOfLines}"
+                # load_tibbo_title__func "${docker__tibboHeader_prepend_numOfLines}"
 
                 phase="${GIT_RETRIEVE_PENDING_COMMITS_PHASE}"
                 ;;
@@ -110,44 +108,62 @@ docker__undo_last_unpushed_commit_handler__sub() {
                 #Get the unpushed commits
                 #Remark:
                 #   If no 'branchName__input' is given, then NO results will be found
-                readarray -t docker__abbrevCommitHash_arr < <(git_log_for_unpushed_local_commits__func "${branchName__input}" "${DOCKER__EMPTYSTRING}" "${GIT__PLACEHOLDER_ABBREV_COMMIT_HASH}")
-                readarray -t docker__commitSubj_arr < <(git_log_for_unpushed_local_commits__func "${branchName__input}" "${DOCKER__EMPTYSTRING}" "${GIT__PLACEHOLDER_SUBJECT}")
+                readarray -t docker__abbrevCommitHash_arr < <(git__log_for_unpushed_local_commits__func \
+                        "${branchName__input}" \
+                        "${DOCKER__EMPTYSTRING}" \
+                        "${GIT__PLACEHOLDER_ABBREV_COMMIT_HASH}")
+                readarray -t docker__commitSubj_arr < <(git__log_for_unpushed_local_commits__func \
+                        "${branchName__input}" \
+                        "${DOCKER__EMPTYSTRING}" \
+                        "${GIT__PLACEHOLDER_SUBJECT}")
 
                 #Get the number of unpush commits
-                docker__numOf_pendingCommits=${#docker__abbrevCommitHash_arr[@]}
+                docker__numOf_unpushedCommits=`array_count_numOf_elements__func "${docker__abbrevCommitHash_arr[@]}"`
 
+                #Goto next-phase
                 phase="${GIT_COMBINE_ARRAYS_AND_WRITE_TO_FILE_PHASE}"
                 ;;
             ${GIT_COMBINE_ARRAYS_AND_WRITE_TO_FILE_PHASE})
-                #Combine the two arrays 'docker__abbrevCommitHash_arr' and 'docker__commitSubj_arr'
-                #Remark:
-                #   Also fore-color the values with 'DOCKER__FG_LIGHTGREY'
-                docker__combined_string=`combine_two_arrays_of_same_length__func  "${DOCKER__COLON}" \
-                        "${DOCKER__BG_LIGHTGREY}" \
-                        "${docker__abbrevCommitHash_arr[@]}" \
-                        "${docker__commitSubj_arr[@]}"`
-                #Convert string to array
-                docker__combined_arr=(`echo ${docker__combined_string}`)
+                if [[ ${docker__numOf_unpushedCommits} -gt ${DOCKER__NUMOFMATCH_0} ]]; then
+                    #Combine the two arrays 'docker__abbrevCommitHash_arr' and 'docker__commitSubj_arr'...
+                    #...and write the output to a specified file (e.g. git__git_undo_last_unpushed_commit_out__fpath).
+                    #Remark:
+                    #   Also fore-color the values with 'DOCKER__FG_LIGHTGREY'
+                    combine_two_arrays_of_same_length_and_writeTo_file__func  "${DOCKER__COLON}" \
+                            "${DOCKER__BG_LIGHTGREY}" \
+                            "${git__git_undo_last_unpushed_commit_out__fpath}" \
+                            "${DOCKER__FALSE}" \
+                            "${docker__abbrevCommitHash_arr[@]}" \
+                            "${docker__commitSubj_arr[@]}"
+                else
+                    #Remove file (if present)
+                    if [[ -f ${git__git_undo_last_unpushed_commit_out__fpath} ]]; then
+                        rm ${git__git_undo_last_unpushed_commit_out__fpath}
+                    fi
 
-                #Write array to file
-                write_array_to_file__func "${git__git_push_out__fpath}" "${docker__combined_arr[@]}"
+                    #Create an empty file
+                    touch ${git__git_undo_last_unpushed_commit_out__fpath}
+                fi
 
+                #Goto next-phase
                 phase="${GIT_SHOW_AND_CONFIRM_PHASE}"
                 ;;
             ${GIT_SHOW_AND_CONFIRM_PHASE})
                 #Show file content
-                show_fileContent_wo_select__func "${git__git_push_out__fpath}" \
+                show_fileContent_wo_select__func "${git__git_undo_last_unpushed_commit_out__fpath}" \
                                 "${DOCKER__MENUTITLE}" \
                                 "${DOCKER__REMARKS}" \
                                 "${DOCKER__EMPTYSTRING}" \
                                 "${DOCKER__MENUOPTIONS}" \
                                 "${DOCKER__ECHOMSG_NORESULTS_FOUND}" \
-                                "${DOCKER__READDIALOG_YN}" \
-                                "${DOCKER__REGEX_YN}" \
+                                "${DOCKER__READDIALOG}" \
+                                "${DOCKER__REGEX_YNQ}" \
                                 "${docker__show_fileContent_wo_select_func_out__fpath}" \
                                 "${docker__tableRows_max}" \
                                 "${DOCKER__EMPTYSTRING}" \
-                                "${DOCKER__FALSE}"
+                                "${DOCKER__FALSE}" \
+                                "${docker__tibboHeader_prepend_numOfLines}" \
+                                "${DOCKER__TRUE}"
 
                 #Get the exitcode just in case a Ctrl-C was pressed in function 'show_fileContent_wo_select__func' (in script 'docker_global.sh')
                 docker__exitCode=$?
@@ -162,13 +178,16 @@ docker__undo_last_unpushed_commit_handler__sub() {
 
                 #Check if 'answer' is a numeric value
                 case "${answer}" in
+                    ${DOCKER__QUIT})
+                        phase="${EXIT_PHASE}"
+                        ;;
                     ${DOCKER__YES})
                         moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
                         phase="${GIT_UNDO_COMMIT_PHASE}"
                         ;;
                     ${DOCKER__NO})
-                        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+                        # moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
                         phase="${EXIT_PHASE}"
                         ;;
@@ -179,6 +198,8 @@ docker__undo_last_unpushed_commit_handler__sub() {
                 ;;
             ${GIT_UNDO_COMMIT_PHASE})
                 docker__undo_last_unpushed_commit__sub
+
+                docker__reset_variables__sub
 
                 phase="${TIBBOHEADER_PHASE}"
                 ;;
@@ -192,37 +213,38 @@ docker__undo_last_unpushed_commit_handler__sub() {
 }
 
 docker__undo_last_unpushed_commit__sub() {
-    #Define constants
-    local PRINTF_COMPLETED="${DOCKER__FG_ORANGE}COMPLETED${DOCKER__NOCOLOR}"
-    local PRINTF_START="${DOCKER__FG_ORANGE}START${DOCKER__NOCOLOR}"
-
     #Define command
-    local git_cmd="git reset --soft HEAD~"
+    local git_cmd="${GIT__CMD_GIT_RESET} --soft HEAD~"
 
     #Define messages
-    local startMsg="---:${PRINTF_START}: undo last pending commit"
-    local executingMsg="\n"
-    executingMsg+="---:${PRINTF_EXECUTING}: ${DOCKER__FG_LIGHTGREY}${git_cmd}${DOCKER__NOCOLOR}\n"
-    executingMsg+=""
-    local completedMsg="---:${PRINTF_COMPLETED}: undo last pending commit"
+    local printf_msg=${DOCKER__EMPTYSTRING}
+    local printf_subjectMsg=${DOCKER__EMPTYSTRING}
 
-    #Move-down and clean
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
-
-    #Show start message
-    echo -e "${startMsg}"
-
-    #Show executing message
-    echo -e "${executingMsg}"
+    #Update message
+    printf_subjectMsg="---:${DOCKER__START}: ${DOCKER__UNDO_LAST_UNPUSHED_COMMIT}"
+    #Show message
+    show_msg_only__func "${printf_subjectMsg}" "${DOCKER__NUMOFLINES_2}" "${DOCKER__NUMOFLINES_0}"
 
     #Execute undo commit
-    ${git_cmd}
+    eval ${git_cmd}
 
-    #Show 'completedMsg'
-    echo -e "${completedMsg}"
+    #Check exit-code
+    exitCode=$?
+    if [[ ${exitCode} -eq 0 ]]; then
+        #Update message
+        printf_msg="------:${DOCKER__EXECUTED}: ${git_cmd} (${DOCKER__STATUS_DONE})"
+    else
+        #Update message
+        printf_msg="------:${DOCKER__EXECUTED}: ${git_cmd} (${DOCKER__STATUS_FAILED})"
+    fi
 
-    #Exit
-    # exit__func "${DOCKER__EXITCODE_0}" "${DOCKER__NUMOFLINES_2}"
+    #Show message
+    show_msg_only__func "${printf_msg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+
+    #Update message
+    printf_subjectMsg="---:${DOCKER__COMPLETED}: ${DOCKER__UNDO_LAST_UNPUSHED_COMMIT}"
+    #Show message
+    show_msg_only__func "${printf_subjectMsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
 }
 
 

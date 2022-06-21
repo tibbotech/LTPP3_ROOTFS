@@ -109,15 +109,9 @@ docker__load_source_files__sub() {
     source ${docker__global__fpath}
 }
 
-docker__load_header__sub() {
-    #Input args
-    local prepend_numOfLines__input=${1}
-
-    #Print
-    show_header__func "${DOCKER__TITLE}" "${DOCKER__TABLEWIDTH}" "${DOCKER__BG_ORANGE}" "${prepend_numOfLines__input}" "${DOCKER__NUMOFLINES_0}"
-}
-
 docker__init_variables__sub() {
+    docker__tibboHeader_prepend_numOfLines=${DOCKER__NUMOFLINES_2}
+
     docker__imageID_chosen=${DOCKER__EMPTYSTRING}
     docker__repo_chosen=${DOCKER__EMPTYSTRING}
     docker__tag_chosen=${DOCKER__EMPTYSTRING}
@@ -205,14 +199,11 @@ docker__rename_image_handler__sub() {
 
 
     #Initialization
-    docker__tibboHeader_prepend_numOfLines=${DOCKER__NUMOFLINES_2}
     phase=${IMAGEID_SELECT_PHASE}
     while true
     do
         case "${phase}" in
             ${IMAGEID_SELECT_PHASE})
-                docker__load_header__sub "${docker__tibboHeader_prepend_numOfLines}"
-
                 ${docker__readInput_w_autocomplete__fpath} "${MENUTITLE}" \
                             "${DOCKER__READINPUTDIALOG_CHOOSE_IMAGEID_FROM_LIST}" \
                             "${DOCKER__EMPTYSTRING}" \
@@ -223,18 +214,19 @@ docker__rename_image_handler__sub() {
                             "${docker__images_IDColNo}" \
                             "${DOCKER__EMPTYSTRING}" \
                             "${docker__showTable}" \
-                            "${docker__onEnter_breakLoop}"
+                            "${docker__onEnter_breakLoop}" \
+                            "${docker__tibboHeader_prepend_numOfLines}"
 
-                #Get the exitcode just in case:
+                #Get the exit-code just in case:
                 #   1. Ctrl-C was pressed in script 'docker__readInput_w_autocomplete__fpath'.
                 #   2. An error occured in script 'docker__readInput_w_autocomplete__fpath',...
                 #      ...and exit-code = 99 came from function...
                 #      ...'show_msg_w_menuTitle_w_pressAnyKey_w_ctrlC_func' (in script: docker__global.sh).
                 docker__exitCode=$?
                 if [[ ${docker__exitCode} -eq ${DOCKER__EXITCODE_99} ]]; then
-                    exit__func "${docker__exitCode}" "${DOCKER__NUMOFLINES_2}"
+                    exit__func "${docker__exitCode}" "${DOCKER__NUMOFLINES_0}"
                 else
-                    #Retrieve the selected container-ID from file
+                    #Get the result
                     docker__imageID_chosen=`get_output_from_file__func \
                                     "${docker__readInput_w_autocomplete_out__fpath}" \
                                     "${DOCKER__LINENUM_1}"`
@@ -257,7 +249,7 @@ docker__rename_image_handler__sub() {
                 if [[ -z ${docker__repo_chosen} ]] || [[ -z ${docker__tag_chosen} ]]; then
                     phase=${EXIT_PHASE}
                 else
-                    tot_numOfLines_toMoveDown=${DOCKER__NUMOFLINES_1}
+                    docker__tibboHeader_prepend_numOfLines=${DOCKER__NUMOFLINES_1}
 
                     phase=${NEW_REPO_INPUT_PHASE}
                 fi
@@ -273,9 +265,10 @@ docker__rename_image_handler__sub() {
                             "${docker__images_repoColNo}" \
                             "${DOCKER__EMPTYSTRING}" \
                             "${docker__showTable}" \
-                            "${docker__onEnter_breakLoop}"
+                            "${docker__onEnter_breakLoop}" \
+                            "${docker__tibboHeader_prepend_numOfLines}"
 
-                #Get the exitcode just in case:
+                #Get the exit-code just in case:
                 #   1. Ctrl-C was pressed in script 'docker__readInput_w_autocomplete__fpath'.
                 #   2. An error occured in script 'docker__readInput_w_autocomplete__fpath',...
                 #      ...and exit-code = 99 came from function...
@@ -307,7 +300,7 @@ docker__rename_image_handler__sub() {
                         if [[ -z ${docker__repo_new} ]]; then
                             phase=${EXIT_PHASE}
                         else
-                            tot_numOfLines_toMoveDown=${DOCKER__NUMOFLINES_1}
+                            # tot_numOfLines_toMoveDown=${DOCKER__NUMOFLINES_1}
 
                             phase=${NEW_TAG_INPUT_PHASE}
                         fi
@@ -325,9 +318,10 @@ docker__rename_image_handler__sub() {
                             "${docker__images_tagColNo}" \
                             "${DOCKER__EMPTYSTRING}" \
                             "${docker__showTable}" \
-                            "${docker__onEnter_breakLoop}"
+                            "${docker__onEnter_breakLoop}" \
+                            "${docker__tibboHeader_prepend_numOfLines}"
             
-                #Get the exitcode just in case:
+                #Get the exit-code just in case:
                 #   1. Ctrl-C was pressed in script 'docker__readInput_w_autocomplete__fpath'.
                 #   2. An error occured in script 'docker__readInput_w_autocomplete__fpath',...
                 #      ...and exit-code = 99 came from function...
@@ -350,7 +344,7 @@ docker__rename_image_handler__sub() {
                         phase=${IMAGEID_SELECT_PHASE}
                         ;;
                     ${DOCKER__SEMICOLON_BACK})
-                        tot_numOfLines_toMoveDown=${DOCKER__NUMOFLINES_1}
+                        # tot_numOfLines_toMoveDown=${DOCKER__NUMOFLINES_1}
 
                         phase=${NEW_REPO_INPUT_PHASE}
                         ;;
@@ -382,7 +376,7 @@ docker__rename_image_handler__sub() {
                     moveUp_and_cleanLines__func "${tot_numOfLines_toClean}"
 
                     #Set 'tot_numOfLines_toMoveDown'
-                    tot_numOfLines_toMoveDown=${DOCKER__NUMOFLINES_2}
+                    # tot_numOfLines_toMoveDown=${DOCKER__NUMOFLINES_2}
 
                     #Go back to the beginning
                     phase=${NEW_REPO_INPUT_PHASE}
@@ -408,16 +402,22 @@ docker__rename_image_handler__sub() {
                     #Unset extern variable
                     unset extern__ret
 
-                    #Total number of lines
-                    tot_numOfLines_toClean=`get_numOfLines_to_clean "${WARNINGMSG_NEW_REPOTAG_PAIR_ALREADY_EXISTS}" \
-                            "${DOCKER__NUMOFLINES_2}"`
+                    # #Total number of lines
+                    # tot_numOfLines_toClean=`get_numOfLines_to_clean "${WARNINGMSG_NEW_REPOTAG_PAIR_ALREADY_EXISTS}" \
+                    #         "${DOCKER__NUMOFLINES_2}"`
 
-                    #Move-up and clean the WARNING message
-                    moveUp_and_cleanLines__func "${tot_numOfLines_toClean}"
+                    # #Move-up and clean the WARNING message
+                    # moveUp_and_cleanLines__func "${tot_numOfLines_toClean}"
+
+                    #Update 'docker__tibboHeader_prepend_numOfLines'
+                    docker__tibboHeader_prepend_numOfLines=${DOCKER__NUMOFLINES_3}
 
                     #Take action based on 'answer'
                     case "${answer}" in
                         ${DOCKER__YES})
+                            #Update 'docker__tibboHeader_prepend_numOfLines'
+                            docker__tibboHeader_prepend_numOfLines=${DOCKER__NUMOFLINES_3}
+
                             #Update varariables
                             #Remark:
                             #   Since the 'docker__repo_new' and 'docker__tag_new' is...
@@ -428,37 +428,28 @@ docker__rename_image_handler__sub() {
                             docker__repo_renamed="${docker__repo_existing}"
                             docker__tag_renamed=$(date +%s)
 
-                            tot_numOfLines_toMoveDown=${DOCKER__NUMOFLINES_1}
-
                             action=${ACTION_RENAME_REPOTAG_WO_OVERWRITE}
 
                             phase=${SUMMARY_PHASE}
                             ;;
                         ${DOCKER__NO})
-                            docker__tibboHeader_prepend_numOfLines=${DOCKER__NUMOFLINES_2}
-
                             phase=${IMAGEID_SELECT_PHASE}
                             ;;
                         ${DOCKER__OVERWRITE})
-                            tot_numOfLines_toMoveDown=${DOCKER__NUMOFLINES_1}
-
                             action=${ACTION_RENAME_REPOTAG_W_OVERWRITE}
 
                             phase=${SUMMARY_PHASE}
                             ;;
                         ${DOCKER__HOME})
-                            docker__tibboHeader_prepend_numOfLines=${DOCKER__NUMOFLINES_2}
-
                             phase=${IMAGEID_SELECT_PHASE}
                             ;;
                         ${DOCKER__BACK})
-                            tot_numOfLines_toMoveDown=${DOCKER__NUMOFLINES_2}
-
                             phase=${NEW_TAG_INPUT_PHASE}
                             ;;
                     esac
                 else
-                    #  tot_numOfLines_toMoveDown=${DOCKER__NUMOFLINES_1}
+                    docker__tibboHeader_prepend_numOfLines=${DOCKER__NUMOFLINES_1}
+
                     action=${ACTION_RENAME_REPOTAG}
 
                     phase=${SUMMARY_PHASE}
@@ -507,6 +498,9 @@ docker__rename_image_handler__sub() {
                 phase=${RENAME_REPOTAG_PHASE}
                 ;;
             ${RENAME_REPOTAG_PHASE})
+                #Print Tibbo-title
+                load_tibbo_title__func "${docker__tibboHeader_prepend_numOfLines}"
+                
                 #Show question
                 show_msg_w_menuTitle_w_confirmation__func "${docker__summaryTitle}" \
                         "${docker__renameMsg_fromTo}" \
@@ -543,7 +537,7 @@ docker__rename_image_handler__sub() {
                         phase=${IMAGEID_SELECT_PHASE}      
                         ;;
                     ${DOCKER__NO})
-                        docker__tibboHeader_prepend_numOfLines=${DOCKER__NUMOFLINES_2}
+                        docker__tibboHeader_prepend_numOfLines=${DOCKER__NUMOFLINES_3}
 
                         phase=${IMAGEID_SELECT_PHASE}
                         ;;
@@ -561,10 +555,10 @@ docker__rename_image_handler__sub() {
         esac
 
         #Move-down and clean
-        moveDown_and_cleanLines__func "${tot_numOfLines_toMoveDown}"
+        # moveDown_and_cleanLines__func "${tot_numOfLines_toMoveDown}"
 
         #Reset variable
-        tot_numOfLines_toMoveDown=${DOCKER__NUMOFLINES_0}
+        # tot_numOfLines_toMoveDown=${DOCKER__NUMOFLINES_0}
     done
 }
 
@@ -766,7 +760,7 @@ main_sub() {
 
     docker__load_source_files__sub
 
-    # docker__load_header__sub
+    # load_tibbo_title__func
 
     docker__init_variables__sub
 

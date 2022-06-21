@@ -43,10 +43,6 @@ docker__load_source_files__sub() {
     source ${docker__global__fpath}
 }
 
-docker__load_header__sub() {
-    show_header__func "${DOCKER__TITLE}" "${DOCKER__TABLEWIDTH}" "${DOCKER__BG_ORANGE}" "${DOCKER__NUMOFLINES_2}" "${DOCKER__NUMOFLINES_0}"
-}
-
 docker__load_constants__sub() {
     #Define phase constants
     DOCKER__IMAGEID_SELECT_PHASE=0
@@ -65,6 +61,8 @@ docker__load_constants__sub() {
 }
 
 docker__init_variables__sub() {
+    docker__tibboHeader_prepend_numOfLines=${DOCKER__NUMOFLINES_2}
+
     docker__answer=${DOCKER__EMPTYSTRING}
     docker__image_fpath=${DOCKER__EMPTYSTRING}
     docker__image_fpath_print=${DOCKER__EMPTYSTRING}
@@ -114,9 +112,10 @@ docker__save_handler__sub() {
                         "${docker__images_IDColNo}" \
                         "${DOCKER__EMPTYSTRING}" \
                         "${docker__showTable}" \
-                        "${docker__onEnter_breakLoop}"
+                        "${docker__onEnter_breakLoop}" \
+                        "${docker__tibboHeader_prepend_numOfLines}"
 
-                #Get the exitcode just in case:
+                #Get the exit-code just in case:
                 #   1. Ctrl-C was pressed in script 'docker__readInput_w_autocomplete__fpath'.
                 #   2. An error occured in script 'docker__readInput_w_autocomplete__fpath',...
                 #      ...and exit-code = 99 came from function...
@@ -163,14 +162,14 @@ docker__save_handler__sub() {
                         "${dirlist__dst_ls_1aA_output__fpath}" \
                         "${dirlist__dst_ls_1aA_tmp__fpath}" \
 						"${DOCKER__EMPTYSTRING}" \
-                        "${DOCKER__FALSE}"
+                        "${DOCKER__NUMOFLINES_1}"
 
-                #Get the exitcode just in case a Ctrl-C was pressed in script 'docker__readInput_w_autocomplete__fpath'.
+                #Get the exitcode just in case a Ctrl-C was pressed in script 'dirlist__readInput_w_autocomplete__fpath'.
                 docker__exitCode=$?
                 if [[ ${docker__exitCode} -eq ${DOCKER__EXITCODE_99} ]]; then
                     exit__func "${docker__exitCode}" "${DOCKER__NUMOFLINES_2}"
                 else
-                    #Retrieve the selected container-ID from file
+                    #Get the result
                     docker__path_output=`get_output_from_file__func "${dirlist__readInput_w_autocomplete_out__fpath}" "${DOCKER__LINENUM_1}"`
                     docker__numOfMatches_output=`get_output_from_file__func "${dirlist__readInput_w_autocomplete_out__fpath}" "${DOCKER__LINENUM_2}"`
                 fi
@@ -208,29 +207,38 @@ docker__save_handler__sub() {
                 fi
                 ;;
             ${DOCKER__SAVE_PHASE})
-                moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
+                #Move-down and clean
+                moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
                 while true
                 do
                     read -N1 -p "${DOCKER__READDIALOG_DO_YOU_WISH_TO_CONTINUE_YN}" docker__answer
                     if  [[ "${docker__answer}" == "${DOCKER__Y}" ]]; then
+                        #Move-down and clean
                         moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_3}"
 
+                        #Compose echo-message
                         echomsg="---:${DOCKER__FG_ORANGE}START${DOCKER__NOCOLOR}: Exporting image '${DOCKER__FG_LIGHTGREY}${docker__image_fpath_print}${DOCKER__NOCOLOR}'\n"
                         echomsg+="------:${DOCKER__FG_ORANGE}INFO${DOCKER__NOCOLOR}: Depending on the image size...\n"
                         echomsg+="------:${DOCKER__FG_ORANGE}INFO${DOCKER__NOCOLOR}: This may take a while...\n"
                         echomsg+="------:${DOCKER__FG_ORANGE}INFO${DOCKER__NOCOLOR}: Please wait..."
+
+                        #Show echo-message
                         show_msg_only__func "${echomsg}" "${DOCKER__NUMOFLINES_0}"
 
                         #Save image to 'docker__image_fpath'
                         docker image save --output ${docker__image_fpath} ${docker__repo_chosen}:${docker__tag_chosen} > /dev/null
 
+                        #Compose echo-message
                         echomsg="---:${DOCKER__FG_ORANGE}COMPLETED${DOCKER__NOCOLOR}: Exporting image '${DOCKER__FG_LIGHTGREY}${docker__image_fpath_print}${DOCKER__NOCOLOR}'"
+                        
+                        #Show echo-message
                         show_msg_only__func "${echomsg}" "${DOCKER__NUMOFLINES_0}"
 
+                        #Exit
                         exit__func "${DOCKER__EXITCODE_0}" "${DOCKER__NUMOFLINES_1}"
                     elif  [[ "${docker__answer}" == "${DOCKER__N}" ]]; then
-                        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_3}"
+                        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
                         #Goto next-phase
                         phase=${DOCKER__IMAGEID_SELECT_PHASE}
@@ -247,8 +255,6 @@ docker__save_handler__sub() {
                 ;;
         esac
     done
-
-
 }
 
 docker__get_and_check_repoTag__sub() {
@@ -284,8 +290,6 @@ main_sub() {
     docker__load_environment_variables__sub
 
     docker__load_source_files__sub
-
-    docker__load_header__sub
 
     docker__load_constants__sub
 

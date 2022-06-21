@@ -73,11 +73,6 @@ docker__load_source_files__sub() {
     source ${docker__global__fpath}
 }
 
-docker__load_header__sub() {
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-    echo -e "${DOCKER__BG_ORANGE}                                 ${DOCKER__TITLE}${DOCKER__BG_ORANGE}                                ${DOCKER__NOCOLOR}"
-}
-
 docker__init_variables__sub() {
     docker__LICENSE_filename="LICENSE"
     docker__README_md_filename="README.md"
@@ -318,7 +313,7 @@ docker__handle_chosen_dockerfile_list__sub() {
             else
                 moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
                 echo -e "***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: non-existing file: ${dockerfile_fpath}"
-                moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"       
+                moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
             fi
         fi
 
@@ -332,7 +327,7 @@ main_sub() {
 
     docker__load_source_files__sub
 
-    docker__load_header__sub
+    load_tibbo_title__func "${DOCKER__NUMOFLINES_2}"
 
     docker__init_variables__sub
 

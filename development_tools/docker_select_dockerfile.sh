@@ -50,16 +50,14 @@ docker__load_source_files__sub() {
     source ${docker__global__fpath}
 }
 
-docker__load_header__sub() {
-    show_header__func "${DOCKER__TITLE}" "${DOCKER__TABLEWIDTH}" "${DOCKER__BG_ORANGE}" "${DOCKER__NUMOFLINES_2}" "${DOCKER__NUMOFLINES_0}"
-}
-
 docker__load_constants__sub() {
-    DOCKER__DIRLIST_MENUTITLE="Choose ${DOCKER__FG_DARKBLUE}docker-file${DOCKER__NOCOLOR}"
+    DOCKER__DIRLIST_MENUTITLE="${DOCKER__FG_DARKBLUE}Docker-file${DOCKER__NOCOLOR} selection"
     DOCKER__DIRLIST_LOCATION_INFO="${DOCKER__FOURSPACES}${DOCKER__FG_VERYLIGHTORANGE}Location${DOCKER__NOCOLOR}: ${docker__LTPP3_ROOTFS_docker_dockerfiles__dir}"
-    DOCKER__DIRLIST_REMARK="${DOCKER__FOURSPACES}${DOCKER__FG_LIGHTGREY}NOTE: only files containing pattern '${DOCKER__CONTAINER_ENV1}'...\n"
-    DOCKER__DIRLIST_REMARK+="${DOCKER__TENSPACES}...and '${DOCKER__CONTAINER_ENV2}' are shown${DOCKER__NOCOLOR}"
-	DOCKER__DIRLIST_READ_DIALOG="Choose a file: "
+    DOCKER__DIRLIST_REMARKS="${DOCKER__FOURSPACES}NOTE: only files containing patterns ${DOCKER__FG_LIGHTGREY}${DOCKER__CONTAINER_ENV1}${DOCKER__NOCOLOR} "
+    DOCKER__DIRLIST_REMARKS+="and ${DOCKER__FG_LIGHTGREY}${DOCKER__CONTAINER_ENV2}${DOCKER__NOCOLOR} are shown"
+    DOCKER__DIRLIST_MENUOPTIONS="${DOCKER__FOURSPACES_F12_QUIT}"
+    DOCKER__DIRLIST_MATCHPATTERNS="${DOCKER__ENUM_FUNC_F12}"
+	DOCKER__DIRLIST_READDIALOG="Choose file: "
     DOCKER__DIRLIST_ERRMSG="${DOCKER__FOURSPACES}-:${DOCKER__FG_LIGHTRED}directory is Empty${DOCKER__NOCOLOR}:-"
 }
 
@@ -72,16 +70,19 @@ docker__select_dockerfile__sub() {
     show_pathContent_w_selection__func "${dockerfiles_dir__input}" \
                         "${DOCKER__EMPTYSTRING}" \
                         "${DOCKER__DIRLIST_MENUTITLE}" \
-                        "${DOCKER__DIRLIST_REMARK}" \
+                        "${DOCKER__DIRLIST_REMARKS}" \
                         "${DOCKER__DIRLIST_LOCATION_INFO}" \
-                        "${DOCKER__FOURSPACES_F12_QUIT}" \
-                        "${DOCKER__EMPTYSTRING}" \
+                        "${DOCKER__DIRLIST_MENUOPTIONS}" \
+                        "${DOCKER__DIRLIST_MATCHPATTERNS}" \
                         "${DOCKER__DIRLIST_ERRMSG}" \
-                        "${DOCKER__DIRLIST_READ_DIALOG}" \
+                        "${DOCKER__DIRLIST_READDIALOG}" \
                         "${DOCKER__CONTAINER_ENV1}" \
                         "${DOCKER__CONTAINER_ENV2}" \
                         "${DOCKER__TABLEROWS_10}" \
-                        "${docker__show_pathContent_w_selection_func_out__fpath}"
+                        "${DOCKER__FALSE}" \
+                        "${docker__show_pathContent_w_selection_func_out__fpath}" \
+                        "${DOCKER__NUMOFLINES_2}" \
+                        "${DOCKER__TRUE}"
 
     #Get the exitcode just in case a Ctrl-C was pressed in function 'DOCKER__FOURSPACES_F4_ABORT' (in script 'docker_global.sh')
     docker__exitCode=$?
@@ -96,7 +97,7 @@ docker__select_dockerfile__sub() {
 
     #if 'docker__dockerFile_fpath = F12', then exit this subroutine
     if [[ ${docker__dockerFile_fpath} == ${DOCKER__ENUM_FUNC_F12} ]]; then
-        exit__func "${DOCKER__EXITCODE_0}" "${DOCKER__NUMOFLINES_2}"
+        exit__func "${DOCKER__EXITCODE_0}" "${DOCKER__NUMOFLINES_1}"
     else
         moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_3}"
     fi
@@ -112,8 +113,6 @@ main__sub() {
     docker__load_environment_variables__sub
 
     docker__load_source_files__sub
-
-    docker__load_header__sub
 
     docker__load_constants__sub
 

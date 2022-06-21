@@ -47,10 +47,6 @@ docker__load_source_files__sub() {
     source ${docker__global__fpath}
 }
 
-docker__load_header__sub() {
-    show_header__func "${DOCKER__TITLE}" "${DOCKER__TABLEWIDTH}" "${DOCKER__BG_ORANGE}" "${DOCKER__NUMOFLINES_2}" "${DOCKER__NUMOFLINES_0}"
-}
-
 docker__init_variables__sub() {
     docker__ipv4List_string=${DOCKER__EMPTYSTRING}
     docker__ipv4List_arr=()
@@ -280,7 +276,7 @@ main_sub() {
 
     docker__load_source_files__sub
 
-    docker__load_header__sub
+    load_tibbo_title__func "${DOCKER__NUMOFLINES_2}"
 
     docker__init_variables__sub
 

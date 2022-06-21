@@ -46,10 +46,6 @@ docker__load_source_files__sub() {
     source ${docker__global__fpath}
 }
 
-docker__load_header__sub() {
-    show_header__func "${DOCKER__TITLE}" "${DOCKER__TABLEWIDTH}" "${DOCKER__BG_ORANGE}" "${DOCKER__NUMOFLINES_2}" "${DOCKER__NUMOFLINES_0}"
-}
-
 docker__load_constants__sub() {
 	#---CASE SELECTION CONSTANTS
 	DOCKER__CASE_SRC_PATH=0
@@ -108,6 +104,8 @@ docker__load_constants__sub() {
 }
 
 docker__init_variables__sub() {
+	docker__tibboHeader_prepend_numOfLines=${DOCKER__NUMOFLINES_2}
+
 	#Variables for 'docker__readInput_w_autocomplete__fpath'
 	# docker__ps_a_containerIdColno=1
 	docker__onEnter_breakLoop=false
@@ -117,7 +115,7 @@ docker__init_variables__sub() {
 	docker__case_option=${DOCKER__CASE_SRC_PATH}
 
 	#Message variables
-	docker__summary_msg=${DOCKER__EMPTYSTRING}
+	docker__summaryMsg=${DOCKER__EMPTYSTRING}
 	docker__copy_msg=${DOCKER__EMPTYSTRING}
 
 	#Misc variables
@@ -171,7 +169,7 @@ docker__choose_copy_direction__sub() {
 					docker__mycopychoice=${DOCKER__HOST_TO_CONTAINER}
 				fi
 
-				moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_3}"
+				moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
 				break
 			else
@@ -203,18 +201,21 @@ docker__choose_containerid__sub() {
 						"${docker__ps_a_containerIdColno}" \
 						"${DOCKER__EMPTYSTRING}" \
 						"${docker__showTable}" \
-						"${docker__onEnter_breakLoop}"
+						"${docker__onEnter_breakLoop}" \
+						"${docker__tibboHeader_prepend_numOfLines}"
 
-    #Get the exitcode just in case:
+
+
+    #Get the exit-code just in case:
     #   1. Ctrl-C was pressed in script 'docker__readInput_w_autocomplete__fpath'.
     #   2. An error occured in script 'docker__readInput_w_autocomplete__fpath',...
     #      ...and exit-code = 99 came from function...
     #      ...'show_msg_w_menuTitle_w_pressAnyKey_w_ctrlC_func' (in script: docker__global.sh).
 	docker__exitCode=$?
 	if [[ ${docker__exitCode} -eq ${DOCKER__EXITCODE_99} ]]; then
-		exit__func "${docker__exitCode}" "${DOCKER__NUMOFLINES_2}"
+		exit__func "${docker__exitCode}" "${DOCKER__NUMOFLINES_0}"
 	else
-		#Retrieve the selected container-ID from file
+		#Get the result
 		docker__containerID_chosen=`get_output_from_file__func \
 						"${docker__readInput_w_autocomplete_out__fpath}" \
 						"${DOCKER__LINENUM_1}"`
@@ -229,6 +230,9 @@ docker__choose_containerid__sub() {
 		#Set next-phase
 		goto__func CHOOSE_COPY_DIRECTION
 	fi
+
+	#Move-up and clean (corrective action)
+	moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 }
 
 docker__dirlist_show_dirContent_handler__sub() {
@@ -240,7 +244,7 @@ docker__dirlist_show_dirContent_handler__sub() {
 	local dir__input=${2}
 
     #Move down one line
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+    # moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
     #Show directory content
 	if [[ -z ${containerID__input} ]]; then	#LOCAL machine (aka HOST)
@@ -249,7 +253,7 @@ docker__dirlist_show_dirContent_handler__sub() {
 						"${DOCKER__TABLECOLS_0}" \
 						"${DOCKER__EMPTYSTRING}" \
 						"${DOCKER__EMPTYSTRING}" \
-						"${DOCKER__TRUE}"
+						"${DOCKER__NUMOFLINES_2}"
 	else	#REMOTE machine (aka Container)
 		${dclcau_dc_ls__fpath} \
 						"${containerID__input}" \
@@ -258,7 +262,7 @@ docker__dirlist_show_dirContent_handler__sub() {
 						"${DOCKER__TABLECOLS_0}" \
 						"${DOCKER__EMPTYSTRING}" \
 						"${DOCKER__EMPTYSTRING}" \
-						"${DOCKER__TRUE}"
+						"${DOCKER__NUMOFLINES_2}"
 	fi
 }
 
@@ -328,14 +332,14 @@ docker__src_path_selection__sub() {
                         "${dirlist__src_ls_1aA_output__fpath}" \
                         "${dirlist__src_ls_1aA_tmp__fpath}" \
 						"${DOCKER__EMPTYSTRING}" \
-						"${DOCKER__TRUE}"
+						"${DOCKER__NUMOFLINES_2}"
 
-	#Get the exitcode just in case a Ctrl-C was pressed in script 'docker__readInput_w_autocomplete__fpath'.
+	#Get the exitcode just in case a Ctrl-C was pressed in script 'dirlist__readInput_w_autocomplete__fpath'.
 	docker__exitCode=$?
 	if [[ ${docker__exitCode} -eq ${DOCKER__EXITCODE_99} ]]; then
-		exit__func "${docker__exitCode}" "${DOCKER__NUMOFLINES_2}"
+		exit__func "${docker__exitCode}" "${DOCKER__NUMOFLINES_0}"
 	else
-		#Retrieve the selected container-ID from file
+		#Get the result
 		docker__path_output=`get_output_from_file__func "${dirlist__readInput_w_autocomplete_out__fpath}" "${DOCKER__LINENUM_1}"`
 		docker__numOfMatches_output=`get_output_from_file__func "${dirlist__readInput_w_autocomplete_out__fpath}" "${DOCKER__LINENUM_2}"`
 	fi
@@ -364,11 +368,11 @@ docker__src_path_selection__sub() {
 
 	#Handle 'Back' and 'Home'
 	if [[ ${docker__path_output} == ${DOCKER__SEMICOLON_HOME} ]]; then
-		moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_3}"
+		moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
 		goto__func PHASE_CHOOSE_COPY_DIRECTION
 	elif [[ ${docker__path_output} == ${DOCKER__SEMICOLON_BACK} ]]; then
-		moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_3}"
+		moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
 		goto__func PHASE_CHOOSE_CONTAINERID
 	fi
@@ -381,8 +385,9 @@ docker__src_path_selection__sub() {
 
 		#Set 'docker__src_file' to 'asterisk'
 		#Remark:
-		#	This means that 'dirlist__src_ls_1aA_output__fpath', which contains the files & folders
-		#		of directory 'docker__src_dir', will be used as reference when copying from source to destination.
+		#	Output file 'dirlist__src_ls_1aA_output__fpath', which holds the contents of
+		#	...of directory 'docker__src_dir', will be used as reference when...
+		#	...copying from source to destination.
 		docker__src_file=`get_basename_from_specified_path__func "${docker__path_output}"`
 	else	#no asterisk found
 		#Check if 'docker__path_output' is a file
@@ -447,15 +452,15 @@ docker__dst_path_selection__sub() {
                         "${dirlist__dst_ls_1aA_output__fpath}" \
                         "${dirlist__dst_ls_1aA_tmp__fpath}" \
 						"${DOCKER__EMPTYSTRING}" \
-						"${DOCKER__TRUE}"
+						"${DOCKER__NUMOFLINES_2}"
 
 
-	#Get the exitcode just in case a Ctrl-C was pressed in script 'docker__readInput_w_autocomplete__fpath'.
+	#Get the exitcode just in case a Ctrl-C was pressed in script 'dirlist__readInput_w_autocomplete__fpath'.
 	docker__exitCode=$?
 	if [[ ${docker__exitCode} -eq ${DOCKER__EXITCODE_99} ]]; then
 		exit__func "${DOCKER__EXITCODE_99}" "${DOCKER__NUMOFLINES_2}"
 	else
-		#Retrieve the selected container-ID from file
+		#Get the result
 		docker__path_output=`get_output_from_file__func "${dirlist__readInput_w_autocomplete_out__fpath}" "${DOCKER__LINENUM_1}"`
 		docker__numOfMatches_output=`get_output_from_file__func "${dirlist__readInput_w_autocomplete_out__fpath}" "${DOCKER__LINENUM_2}"`
 	fi
@@ -516,20 +521,23 @@ docker__dst_path_selection__sub() {
 
 
 docker__show_summary__sub() {
-	#Compose 'docker__summary_msg'
+	#Compose 'docker__summaryMsg'
 	if [[ ${docker__mycopychoice} == ${DOCKER__CONTAINER_TO_HOST} ]]; then
-		docker__summary_msg="Direction:\t${DOCKER__FG_LIGHTGREY}${DOCKER__DIRECTION_CONTAINER_TO_LOCAL}${DOCKER__NOCOLOR}\n"
+		docker__summaryMsg="Direction:\t${DOCKER__FG_LIGHTGREY}${DOCKER__DIRECTION_CONTAINER_TO_LOCAL}${DOCKER__NOCOLOR}\n"
 	else
-		docker__summary_msg="Direction:\t${DOCKER__FG_LIGHTGREY}${DOCKER__DIRECTION_LOCAL_TO_CONTAINER}${DOCKER__NOCOLOR}\n"
+		docker__summaryMsg="Direction:\t${DOCKER__FG_LIGHTGREY}${DOCKER__DIRECTION_LOCAL_TO_CONTAINER}${DOCKER__NOCOLOR}\n"
 	fi
-	docker__summary_msg+="Source:\t\t${DOCKER__FG_LIGHTGREY}${docker__src_dir_print}${DOCKER__NOCOLOR}\n"
-	docker__summary_msg+="Destination:\t${DOCKER__FG_LIGHTGREY}${docker__dst_dir_print}${DOCKER__NOCOLOR}"
-	
+	docker__summaryMsg+="Source:\t\t${DOCKER__FG_LIGHTGREY}${docker__src_dir_print}${DOCKER__NOCOLOR}\n"
+	docker__summaryMsg+="Destination:\t${DOCKER__FG_LIGHTGREY}${docker__dst_dir_print}${DOCKER__NOCOLOR}"
+
 	#Show summary
 	show_msg_w_menuTitle_only_func "${DOCKER__SUMMARY_TITLE}" \
-						"${docker__summary_msg}" \
-						"${DOCKER__NUMOFLINES_2}" \
-						"${DOCKER__NUMOFLINES_0}"
+						"${docker__summaryMsg}" \
+						"${DOCKER__ZEROSPACE}" \
+						"${DOCKER__NUMOFLINES_0}" \
+						"${DOCKER__NUMOFLINES_0}" \
+						"${DOCKER__NUMOFLINES_0}" \
+						"${DOCKER__NUMOFLINES_2}"
 }
 
 docker__confirmation__sub() {
@@ -543,29 +551,33 @@ docker__confirmation__sub() {
 		if [[ ! -z ${docker__myanswer} ]]; then	#contains data
 			if [[ ${docker__myanswer} =~ [ynpih] ]]; then
 				#Move-down cursor
-				moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+				# moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
 				case "${docker__myanswer}" in
 					y)
+						moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
 						goto__func PHASE_COPY_FROM_SRC_TO_DST
 						;;
 					n)
+						docker__exit_numOfLines=${DOCKER__NUMOFLINES_2}
+
 						goto__func PHASE_EXIT
 						;;
 					p)
-						# moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
+						moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 	
 						docker__case_option=${DOCKER__CASE_SRC_PATH}
 
 						goto__func PHASE_GET_SRC_DST_FPATH
 						;;
 					i)
-						moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
+						moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
 						goto__func PHASE_CHOOSE_CONTAINERID
 						;;
 					h)
-						moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
+						moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
 						goto__func PHASE_CHOOSE_COPY_DIRECTION
 						;;
@@ -590,20 +602,23 @@ docker__copy_from_src_to_dst__sub() {
 	local src_path=${DOCKER__EMPTYSTRING}
 	local dst_path=${DOCKER__EMPTYSTRING}
 
-	#Set message
+	#Compose 'docker__copy_msg'
 	docker__copy_msg="Container-ID: ${DOCKER__FG_LIGHTGREY}${docker__containerID_chosen}${DOCKER__NOCOLOR}\n"
 	docker__copy_msg+="Source: ${DOCKER__FG_LIGHTGREY}${docker__src_dir}${DOCKER__NOCOLOR}\n"
 	docker__copy_msg+="Destination: ${DOCKER__FG_LIGHTGREY}${docker__dst_dir}${DOCKER__NOCOLOR}"
 
-	#Check if 'asterisk' is found
+	#Check if 'asterisk' is found (MUST BE DONE HERE!)
 	asterisk_isFound=`checkForMatch_of_pattern_within_string__func "${DOCKER__ASTERISK}" "${docker__src_file}"`
 
 	if [[ ${docker__mycopychoice} -eq ${DOCKER__CONTAINER_TO_HOST} ]]; then	#Container to Local Host
 		#Show Title
 		show_msg_w_menuTitle_only_func "${DOCKER__DIRECTION_CONTAINER_TO_LOCAL}" \
 							"${docker__copy_msg}" \
-							"${DOCKER__NUMOFLINES_2}" \
-							"${DOCKER__NUMOFLINES_0}"
+							"${DOCKER__ZEROSPACE}" \
+							"${DOCKER__NUMOFLINES_0}" \
+							"${DOCKER__NUMOFLINES_0}" \
+							"${DOCKER__NUMOFLINES_0}" \
+							"${DOCKER__NUMOFLINES_2}"
 
 		if [[ ${asterisk_isFound} == true ]]; then	#asterisk is found
 			while read -r line
@@ -625,8 +640,11 @@ docker__copy_from_src_to_dst__sub() {
 		#Show Title
 		show_msg_w_menuTitle_only_func "${DOCKER__DIRECTION_LOCAL_TO_CONTAINER}" \
 							"${docker__copy_msg}" \
-							"${DOCKER__NUMOFLINES_2}" \
-							"${DOCKER__NUMOFLINES_0}"
+							"${DOCKER__ZEROSPACE}" \
+							"${DOCKER__NUMOFLINES_0}" \
+							"${DOCKER__NUMOFLINES_0}" \
+							"${DOCKER__NUMOFLINES_0}" \
+							"${DOCKER__NUMOFLINES_2}"
 
 		if [[ ${asterisk_isFound} == true ]]; then	#asterisk is found
 			while read -r line
@@ -649,31 +667,31 @@ docker__copy_from_src_to_dst__sub() {
 
 
 docker__exit__sub() {
-	exit__func "${DOCKER__EXITCODE_0}" "${DOCKER__NUMOFLINES_2}"
+	exit__func "${DOCKER__EXITCODE_0}" "${docker__exit_numOfLines}"
 }
 
 
 
 #---MAIN SUBROUTINE
 main__sub() {
+	#Then the source file(s) must be loaded.
+	docker__load_source_files__sub
+
 	#Disable EXPANSION
 	#Remark:
 	#	This is necessary, because otherwise an asterisk '*' won't be treated as a character.
-	set -f
+	disable_expansion__func
 
 	#Environmental variables must be defined and set first.
 	docker__environmental_variables__sub
 
-	#Then the source file(s) must be loaded.
-	docker__load_source_files__sub
-
 	#Goto FIRST-Phase
-	goto__func PHASE_LOAD_HEADER
+	goto__func PHASE_START
 
 
 
-@PHASE_LOAD_HEADER:
-    docker__load_header__sub
+@PHASE_START:
+	docker__tibboHeader_prepend_numOfLines="${DOCKER__NUMOFLINES_2}"
 
 	#Goto Next-Phase
 	goto__func PHASE_CHOOSE_COPY_DIRECTION
@@ -681,6 +699,8 @@ main__sub() {
 
 
 @PHASE_CHOOSE_COPY_DIRECTION:
+	load_tibbo_title__func "${docker__tibboHeader_prepend_numOfLines}"
+
 	docker__choose_copy_direction__sub
 
 	#Goto Next-Phase
@@ -724,14 +744,17 @@ main__sub() {
 	#Remark: the Next-Phase is determined in this function.
 	docker__copy_from_src_to_dst__sub
 
+	#Set 'docker__exit_numOfLines'
+	docker__exit_numOfLines=${DOCKER__NUMOFLINES_1}
+
 	#Goto Next-Phase
 	goto__func PHASE_EXIT
 
 
 
 @PHASE_EXIT:
-	#Enable Expansion
-	set +f
+	#Remark:
+	#	'enable_expansion__func' is already done in exit__func)
 
 	docker__exit__sub
 

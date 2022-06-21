@@ -44,14 +44,6 @@ docker__load_source_files__sub() {
     source ${docker__global__fpath}
 }
 
-docker__load_header__sub() {
-    #Input args
-    local prepend_numOfLines__input=${1}
-
-    #Print
-    show_header__func "${DOCKER__TITLE}" "${DOCKER__TABLEWIDTH}" "${DOCKER__BG_ORANGE}" "${prepend_numOfLines__input}" "${DOCKER__NUMOFLINES_0}"
-}
-
 docker__load_constants__sub() {
     DOCKER__EXPORT_ENVIRONMENT_VARIABLES_MENUTITLE="${DOCKER__FG_LIGHTBLUE}DOCKER: EXPORT ENVIRONMENT VARIABLES${DOCKER__NOCOLOR}"
 
@@ -75,7 +67,7 @@ docker__load_constants__sub() {
     DOCKER__MENU_CHOOSE_ADD_DEL_LINKCHECKOUT_PROFILE="Choose${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}"
     DOCKER__MENU_CHOOSE_ADD_DEL_LINKCHECKOUT_PROFILE+="Add${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}Del "
     DOCKER__MENU_CHOOSE_ADD_DEL_LINKCHECKOUT_PROFILE+="${DOCKER__FG_GREEN41}link${DOCKER__NOCOLOR}-${DOCKER__FG_GREEN119}checkout${DOCKER__NOCOLOR} "
-    DOCKER__MENU_CHOOSE_ADD_DEL_LINKCHECKOUT_PROFILE+="${DOCKER__FG_GREEN}Profile${DOCKER__NOCOLOR}"
+    DOCKER__MENU_CHOOSE_ADD_DEL_LINKCHECKOUT_PROFILE+="profile"
 }
 
 docker__init_variables__sub() {
@@ -246,7 +238,10 @@ docker__export_env_var_menu__sub() {
         docker__retrieve_and_prep_variables__sub
 
         #Print header
-        docker__load_header__sub "${docker__tibboHeader_prepend_numOfLines}"
+        load_tibbo_title__func "${docker__tibboHeader_prepend_numOfLines}"
+
+        #Set 'docker__tibboHeader_prepend_numOfLines'
+        docker__tibboHeader_prepend_numOfLines=${DOCKER__NUMOFLINES_0}
 
         #Draw horizontal lines
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
@@ -311,6 +306,8 @@ docker__export_env_var_menu__sub() {
                 ${docker__select_dockerfile__fpath} "${docker__LTPP3_ROOTFS_docker_dockerfiles__dir}" \
                         "${DOCKER__CFG_NAME1}" \
                         "${docker__export_env_var_menu_cfg__fpath}"
+
+                docker__tibboHeader_prepend_numOfLines=${DOCKER__NUMOFLINES_1}
                 ;;
             2)
                 ${docker__repo_link_checkout_menu_select__fpath} "${docker__dockerFile_fpath}" \
@@ -334,12 +331,9 @@ docker__export_env_var_menu__sub() {
                         "${DOCKER__MENU_CHOOSE_ADD_DEL_LINKCHECKOUT_PROFILE}"
                 ;;
             q)
-                exit__func "${DOCKER__EXITCODE_99}" "${DOCKER__NUMOFLINES_2}"
+                exit__func "${DOCKER__EXITCODE_99}" "${DOCKER__NUMOFLINES_1}"
                 ;;
         esac
-
-        #Set 'docker__tibboHeader_prepend_numOfLines'
-        docker__tibboHeader_prepend_numOfLines=${DOCKER__NUMOFLINES_0}
     done
 }
 
@@ -359,22 +353,15 @@ docker__retrieve_and_prep_variables__sub() {
 
 docker__get_git_info__sub() {
     #Get information
-    docker__git_current_branchName=`git_get_current_branchName__func`
+    docker__git_current_branchName=`git__get_current_branchName__func`
 
-    docker__git_current_abbrevCommitHash=`git_log_for_pushed_and_unpushed_commits__func "${docker__git_current_branchName}" \
+    docker__git_current_abbrevCommitHash=`git__log_for_pushed_and_unpushed_commits__func "${DOCKER__EMPTYSTRING}" \
                         "${GIT__LAST_COMMIT}" \
                         "${GIT__PLACEHOLDER_ABBREV_COMMIT_HASH}"`
-    
-    docker__git_current_unpushed_abbrevCommitHash=`git_log_for_unpushed_local_commits__func "${docker__git_current_branchName}" \
-                        "${DOCKER__EMPTYSTRING}" \
-                        "${GIT__PLACEHOLDER_ABBREV_COMMIT_HASH}"`
-    
-    docker__git_push_status="${GIT__PUSHED}"
-    if [[ "${docker__git_current_abbrevCommitHash}" == "${docker__git_current_unpushed_abbrevCommitHash}" ]]; then
-        docker__git_push_status="${GIT__UNPUSHED}"
-    fi
+      
+    docker__git_push_status=`git__checkIf_branch_isPushed__func "${docker__git_current_branchName}"`
 
-    docker__git_current_tag=`git_get_tag_for_specified_commitHash__func "${docker__git_current_abbrevCommitHash}"`
+    docker__git_current_tag=`git__get_tag_for_specified_branchName__func "${docker__git_current_branchName}" "${DOCKER__FALSE}"`
     if [[ -z "${docker__git_current_tag}" ]]; then
         docker__git_current_tag="${GIT__NOT_TAGGED}"
     fi

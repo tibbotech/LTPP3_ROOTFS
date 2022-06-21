@@ -27,14 +27,6 @@ docker__load_source_files__sub() {
     source ${docker__global__fpath}
 }
 
-docker__load_header__sub() {
-    #Input args
-    local prepend_numOfLines__input=${1}
-
-    #Print
-    show_header__func "${DOCKER__TITLE}" "${DOCKER__TABLEWIDTH}" "${DOCKER__BG_ORANGE}" "${prepend_numOfLines__input}" "${DOCKER__NUMOFLINES_0}"
-}
-
 docker__init_variables__sub() {
     docker__cachedInput_arr=()
     docker__cachedInput_arrLen=0
@@ -79,7 +71,7 @@ docker__load_constants__sub() {
     DOCKER__ENTER_CMD_REMARKS+="${DOCKER__FOURSPACES}${DOCKER__FG_YELLOW}TAB${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}auto-complete${DOCKER__NOCOLOR}\n"
     DOCKER__ENTER_CMD_REMARKS+="${DOCKER__FOURSPACES}${DOCKER__FG_YELLOW};c${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}clear${DOCKER__NOCOLOR}"
 
-    DOCKER__ENTER_CMD_LOCATIONINFO="${DOCKER__FOURSPACES}${DOCKER__FG_VERYLIGHTORANGE}Location${DOCKER__NOCOLOR}: ${docker__enter_cmdline_mode_out__fpath}"
+    DOCKER__ENTER_CMD_LOCATIONINFO="${DOCKER__FOURSPACES}${DOCKER__FG_VERYLIGHTORANGE}Location${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}${docker__enter_cmdline_mode_out__fpath}${DOCKER__NOCOLOR}"
     DOCKER__ENTER_CMD_MENUOPTIONS="${DOCKER__FOURSPACES}${DOCKER__FG_YELLOW}Press-any-key${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}go back to cmd-input${DOCKER__NOCOLOR}"
     DOCKER__ENTER_CMD_ERRORMSG="-:${DOCKER__FG_LIGHTRED}No results${DOCKER__NOCOLOR}:-" #this message will be centered within the function
 }
@@ -102,9 +94,6 @@ docker__show_fileContent_handler__sub() {
     #Input args
     local cmd__input=${1}
 
-    #Print header
-    docker__load_header__sub "${docker__tibboHeader_prepend_numOfLines}"
-
     #Update 'menuTitle'
     local menuTitle="${DOCKER__FG_DEEPORANGE}Output of command ${DOCKER__NOCOLOR} "
     menuTitle+="<${DOCKER__FG_REDORANGE}${cmd__input}${DOCKER__NOCOLOR}>"
@@ -117,10 +106,12 @@ docker__show_fileContent_handler__sub() {
                     "${DOCKER__ENTER_CMD_MENUOPTIONS}" \
                     "${DOCKER__ENTER_CMD_ERRORMSG}" \
                     "${DOCKER__EMPTYSTRING}" \
-                    "${DOCKER__REGEX_YNB}" \
+                    "${DOCKER__EMPTYSTRING}" \
                     "${docker__show_fileContent_wo_select_func_out__fpath}" \
                     "${DOCKER__TABLEROWS_20}" \
                     "${DOCKER__FOURSPACES}" \
+                    "${DOCKER__TRUE}" \
+                    "${docker__tibboHeader_prepend_numOfLines}" \
                     "${DOCKER__TRUE}"
 
     #Get result from file.
@@ -538,9 +529,6 @@ docker__tab_handler__sub() {
         return
     fi
 
-    #Print header
-    docker__load_header__sub "${docker__tibboHeader_prepend_numOfLines}"
-
     #Get the closest match
     #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     # IMPORTANT:
@@ -551,10 +539,11 @@ docker__tab_handler__sub() {
                     "${DOCKER__TABLEROWS_20}" \
                     "${DOCKER__TABLECOLS_0}" \
                     "${docker__menuTitle_indent}" \
-                    "${compgen__query_w_autocomplete_out__fpath}"
+                    "${compgen__query_w_autocomplete_out__fpath}" \
+                    "${docker__tibboHeader_prepend_numOfLines}"
 
 
-    #Get the exitcode just in case a Ctrl-C was pressed in script 'docker__readInput_w_autocomplete__fpath'.
+    #Get the exitcode just in case a Ctrl-C was pressed in script 'compgen__query_w_autocomplete__fpath'.
     docker__exitCode=$?
     if [[ ${docker__exitCode} -eq ${DOCKER__EXITCODE_99} ]]; then
         exit__func "${docker__exitCode}" "${DOCKER__NUMOFLINES_2}"

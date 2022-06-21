@@ -7,6 +7,7 @@ table_numOfRows__input="${3}"
 table_numOfCols__input="${4}"
 table_leadingSpace__input="${5}"
 output_fPath__input="${6}"
+tibboHeader_prepend_numOfLines__input=${7}
 
 
 
@@ -936,6 +937,14 @@ compgen__get_closest_match__sub() {
 }
 
 compgen__show_handler__sub() {
+    #Check if 'tibboHeader_prepend_numOfLines__input' is an Empty String
+    if [[ -z ${tibboHeader_prepend_numOfLines__input} ]]; then
+        tibboHeader_prepend_numOfLines__input=${DOCKER__NUMOFLINES_2}
+    fi
+
+    #Print Tibbo-title
+    load_tibbo_title__func "${tibboHeader_prepend_numOfLines__input}"
+
     #Write results to file
     compgen__prep_print__sub
 
@@ -1153,13 +1162,15 @@ compgen__prep_header_print__sub() {
     compgen__numOfItems_max=`cat ${compgen__raw_all_tmp__fpath} | wc -l`
 
     #Update variable
-    compgen__print_numOfItems_shown="(${DOCKER__FG_DEEPORANGE}${compgen__numOfItems_toBeShown}${DOCKER__NOCOLOR} out-of ${DOCKER__FG_REDORANGE}${compgen__numOfItems_max}${DOCKER__NOCOLOR})"
+    compgen__print_numOfItems_shown="(${DOCKER__FG_DEEPORANGE}${compgen__numOfItems_toBeShown}${DOCKER__NOCOLOR} "
+    compgen__print_numOfItems_shown+="out-of ${DOCKER__FG_REDORANGE}${compgen__numOfItems_max}${DOCKER__NOCOLOR})"
+
+    compgen__listOfKeyWord="${table_leadingSpace__input}${DOCKER__FG_DEEPORANGE}List of keyword ${DOCKER__NOCOLOR} "
+    compgen__listOfKeyWord+="<${DOCKER__FG_REDORANGE}${query__input}${DOCKER__NOCOLOR}> ${compgen__print_numOfItems_shown}"
 
     #Print message showing which directory's content is being shown
-    # echo "${DOCKER__EMPTYSTRING}" >> ${compgen__tablized_tmp__fpath}
-    # echo "${DOCKER__EMPTYSTRING}" >> ${compgen__tablized_tmp__fpath}
     echo "${compgen__dup_horizLine}" >> ${compgen__tablized_tmp__fpath}
-    echo "${table_leadingSpace__input}${DOCKER__FG_DEEPORANGE}List of keyword ${DOCKER__NOCOLOR} <${DOCKER__FG_REDORANGE}${query__input}${DOCKER__NOCOLOR}> ${compgen__print_numOfItems_shown}" >> ${compgen__tablized_tmp__fpath}
+    echo "${compgen__listOfKeyWord}" >> ${compgen__tablized_tmp__fpath}
     echo "${compgen__dup_horizLine}" >> ${compgen__tablized_tmp__fpath}
 }
 compgen__prep_print_rem_subString_onLeftSideOf_last_slash__sub() {

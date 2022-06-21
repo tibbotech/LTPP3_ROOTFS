@@ -11,7 +11,7 @@ function checkIf_remoteBranch_exists__func() {
     local branchName_input=${1}
 
     #Check if 'branchName_input' already exists
-    local stdOutput=`git branch -r | grep -w "${branchName_input}" 2>&1`
+    local stdOutput=`${GIT__CMD_GIT_BRANCH} -r | grep -w "${branchName_input}" 2>&1`
     if [[ ! -z ${stdOutput} ]]; then #contains data
         echo ${DOCKER__TRUE}
     else    #contains no data
@@ -39,10 +39,10 @@ function get_git_branchList__func() {
     set -f
 
     #Get Git Local Branch-list and write directly to an array
-    # readarray -t git__local_branchList_arr <<< "$(git branch | tr -d ' ')"
+    # readarray -t git__local_branchList_arr <<< "$(${GIT__CMD_GIT_BRANCH} | tr -d ' ')"
 
     #Get Git Remote Branch-list and write directly to an array
-    readarray -t git__remote_branchList_arr <<< "$(git branch -r | tr -d ' ')"
+    readarray -t git__remote_branchList_arr <<< "$(${GIT__CMD_GIT_BRANCH} -r | tr -d ' ')"
 
     #Enable File-expansion
     set +f
@@ -64,7 +64,7 @@ function show_git_branchList__func() {
     local asterisk_isFound=${DOCKER__FALSE}
 
     # #Print Status Message
-    # echo -e "---:${DOCKER__FG_ORANGE}${PRINTF_LIST_LOCAL}${DOCKER__NOCOLOR}: git branch"
+    # echo -e "---:${DOCKER__FG_ORANGE}${PRINTF_LIST_LOCAL}${DOCKER__NOCOLOR}: ${GIT__CMD_GIT_BRANCH}"
 
     # #Show Array items
     # for gitBranchList_arrItem in "${git__local_branchList_arr[@]}"
@@ -87,7 +87,7 @@ function show_git_branchList__func() {
 
     #Re-using variable 'gitBranchList_arrItem'
     #Print Status Message
-    echo -e "---:${DOCKER__FG_ORANGE}${PRINTF_LIST_REMOTE}${DOCKER__NOCOLOR}: git branch"
+    echo -e "---:${DOCKER__FG_ORANGE}${PRINTF_LIST_REMOTE}${DOCKER__NOCOLOR}: ${GIT__CMD_GIT_BRANCH}"
 
     #Show Array items
     for gitBranchList_arrItem in "${git__remote_branchList_arr[@]}"
@@ -154,19 +154,11 @@ git__git_pull__sub() {
     #Define local constants
     local MENUTITLE="Git ${DOCKER__BG_WHITE}${DOCKER__FG_LIGHTGREY}Pull${DOCKER__NOCOLOR} Origin Other-Branch"
 
-    #Define local message constants
-    local PRINTF_COMPLETED="${DOCKER__FG_ORANGE}COMPLETED${DOCKER__NOCOLOR}"
-    local PRINTF_QUESTION="${DOCKER__FG_ORANGE}QUESTION${DOCKER__NOCOLOR}"
-    local PRINTF_START="${DOCKER__FG_ORANGE}START${DOCKER__NOCOLOR}"
-    local PRINTF_STATUS="${DOCKER__FG_ORANGE}STATUS${DOCKER__NOCOLOR}"
-    
     local PRINTF_PULL_FROM_WHICH_BRANCH="Pull from which branch?"
-    local PRINTF_ERROR="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}"
-    local PRINTF_NO_ACTION_REQUIRED="No Action Required."
 
     #Define local Question constants
-    local QUESTION_CHECKOUT_BRANCH="Check out this Branch (y/n/q)? "
-    local QUESTION_CREATE_AND_CHECKOUT_BRANCH="Create & Check out this Branch (y/n/q)? "
+    local QUESTION_CHECKOUT_BRANCH="Check out this Branch (${DOCKER__Y_SLASH_N_SLASH_Q})? "
+    local QUESTION_CREATE_AND_CHECKOUT_BRANCH="Create & Check out this Branch (${DOCKER__Y_SLASH_N_SLASH_Q})? "
 
     #Define local read-input constants
     local READ_YOURINPUT="${DOCKER__FG_LIGHTBLUE}Your choice${DOCKER__NOCOLOR}: "
@@ -204,7 +196,7 @@ goto__func START
 
 @PRECHECK:
     #Check if the current directory is a git-repository
-    git__stdErr=`git branch 2>&1 > /dev/null`
+    git__stdErr=`${GIT__CMD_GIT_BRANCH} 2>&1 > /dev/null`
     if [[ ! -z ${git__stdErr} ]]; then   #not a git-repository
         goto__func EXIT_PRECHECK_FAILED  #goto next-phase
     else    #is a git-repository
@@ -227,7 +219,7 @@ goto__func START
 
 @BRANCH_INPUT:
     #Input Branch name
-    echo -e "---:${PRINTF_QUESTION}: ${PRINTF_PULL_FROM_WHICH_BRANCH}"
+    echo -e "---:${DOCKER__QUESTION}: ${PRINTF_PULL_FROM_WHICH_BRANCH}"
     
     while true
     do
@@ -297,7 +289,7 @@ goto__func START
 
 
 @GIT_PULL:
-    echo -e "---:${PRINTF_START}: git pull origin ${DOCKER__FG_LIGHTGREY}${myChosen_remoteBranch}${DOCKER__NOCOLOR}"
+    echo -e "---:${DOCKER__START}: git pull origin ${DOCKER__FG_LIGHTGREY}${myChosen_remoteBranch}${DOCKER__NOCOLOR}"
 
     # #Git fetch
     # git fetch origin ${myChosen_remoteBranch}
@@ -307,7 +299,7 @@ goto__func START
 
     git pull origin ${myChosen_remoteBranch}
 
-    echo -e "---:${PRINTF_COMPLETED}: git pull origin ${DOCKER__FG_LIGHTGREY}${myChosen_remoteBranch}${DOCKER__NOCOLOR}"
+    echo -e "---:${DOCKER__COMPLETED}: git pull origin ${DOCKER__FG_LIGHTGREY}${myChosen_remoteBranch}${DOCKER__NOCOLOR}"
 
     #Print empty line
     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
@@ -335,8 +327,8 @@ goto__func START
     exit 0
 
 @EXIT_PRECHECK_FAILED:
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-    echo -e "${PRINTF_ERROR}: ${git__stdErr}"
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
+    echo -e "${DOCKER__ERROR}: ${git__stdErr}"
     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
     
     exit 99
@@ -344,13 +336,13 @@ goto__func START
 @EXIT_FAILED:
     if [[ ${myChosen_remoteBranch_isFound} == ${DOCKER__TRUE} ]]; then 
         moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-        echo -e "${PRINTF_ERROR}: git checkout ${DOCKER__FG_LIGHTGREY}${myChosen_remoteBranch}${DOCKER__NOCOLOR} (${DOCKER__FG_LIGHTRED}failed${DOCKER__NOCOLOR})"
+        echo -e "${DOCKER__ERROR}: git checkout ${DOCKER__FG_LIGHTGREY}${myChosen_remoteBranch}${DOCKER__NOCOLOR} (${DOCKER__STATUS_FAILED})"
         moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
         
         exit 99
     else
         moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-        echo -e "${PRINTF_ERROR}: git checkout -b ${DOCKER__FG_LIGHTGREY}${myChosen_remoteBranch}${DOCKER__NOCOLOR} (${DOCKER__FG_LIGHTRED}failed${DOCKER__NOCOLOR})"
+        echo -e "${DOCKER__ERROR}: git checkout -b ${DOCKER__FG_LIGHTGREY}${myChosen_remoteBranch}${DOCKER__NOCOLOR} (${DOCKER__STATUS_FAILED})"
         moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
         
         exit 99

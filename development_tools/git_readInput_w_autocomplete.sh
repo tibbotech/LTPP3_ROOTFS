@@ -3,11 +3,13 @@
 #---INPUT ARGS
 menuTitle__input=${1}
 menuOptions__input=${2}
-readMsg__input=${3}
+readDialog__input=${3}
 errorMsg__input=${4}
 cmd__input=${5}
 showTable__input=${6}
 onEnter_breakLoop__input=${7}
+tibboHeader_prepend_numOfLines__input=${8}
+
 
 
 #---FUNCTIONS
@@ -228,11 +230,12 @@ docker__readInput_handler__sub() {
     #Get read-input value
     docker__readInput_w_autocomplete__sub "${menuTitle__input}" \
                         "${menuOptions__input}" \
-                        "${readMsg__input}" \
+                        "${readDialog__input}" \
                         "${errorMsg__input}" \
                         "${cmd__input}" \
                         "${showTable__input}" \
-                        "${onEnter_breakLoop__input}"
+                        "${onEnter_breakLoop__input}" \
+                        "${tibboHeader_prepend_numOfLines__input}"
 
     #Print empty lines
     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
@@ -242,11 +245,12 @@ docker__readInput_w_autocomplete__sub() {
     #Input args
     local menuTitle__input=${1}
     local menuOptions__input=${2}
-    local readMsg__input=${3}
+    local readDialog__input=${3}
     local errorMsg__input=${4}
     local cmd__input=${5}
     local showTable__input=${6}
     local onEnter_breakLoop__input=${7}
+    local tibboHeader_prepend_numOfLines__input=${8}
 
     #Define variables
     local keyInput=${DOCKER__EMPTYSTRING}
@@ -275,13 +279,17 @@ docker__readInput_w_autocomplete__sub() {
 #---Update table-input variables
     local dataArr_pageNum=${DOCKER__LINENUM_1}
 
-    local dataArr_pageSize=${DOCKER__TABLEROWS_20}
-    if [[ ${docker__cachedInput_ArrLen} -le ${DOCKER__TABLEROWS_20} ]]; then
-        dataArr_pageSize=${docker__cachedInput_ArrLen}
+    local dataArr_pageLines=${DOCKER__TABLEROWS_20}
+    if [[ ${docker__cachedInput_ArrLen} -eq 0 ]]; then
+        dataArr_pageLines=${DOCKER__NUMOFLINES_1}
+    else 
+        if [[ ${docker__cachedInput_ArrLen} -le ${DOCKER__TABLEROWS_20} ]]; then
+            dataArr_pageLines=${docker__cachedInput_ArrLen}
+        fi
     fi
 
-    local dataArr_pageNumMax=$((docker__cachedInput_ArrLen/dataArr_pageSize))
-    local mod_remainder=$((docker__cachedInput_ArrLen%dataArr_pageSize))
+    local dataArr_pageNumMax=$((docker__cachedInput_ArrLen/dataArr_pageLines))
+    local mod_remainder=$((docker__cachedInput_ArrLen%dataArr_pageLines))
     if [[ ${mod_remainder} -ne ${DOCKER__NUMOFMATCH_0} ]]; then #there are leftovers after division
         dataArr_pageNumMax=$((dataArr_pageNumMax + 1))
     fi
@@ -297,21 +305,30 @@ docker__readInput_w_autocomplete__sub() {
         menuOptions_numOfLines=`echo -e ${menuOptions__input} | wc -l`  #menu-options lines  
     fi
     local readMsg_numOfLines=0 
-    if [[ ! -z ${readMsg__input} ]]; then
-        readMsg_numOfLines=`echo -e ${readMsg__input} | wc -l`  #read-dialog lines
+    if [[ ! -z ${readDialog__input} ]]; then
+        readMsg_numOfLines=`echo -e ${readDialog__input} | wc -l`  #read-dialog lines
     fi
     #Total number of lines to be cleaned
-    local tot_numOfLines_toClean=$((empty_NumOfLines + horiz_numOfLines + menuOptions_numOfLines + prev_next_numOfLines + readMsg_numOfLines + dataArr_pageSize))
+    local tot_numOfLines_toClean=$((empty_NumOfLines + horiz_numOfLines + menuOptions_numOfLines + prev_next_numOfLines + readMsg_numOfLines + dataArr_pageLines))
     
 
 
 #---Show array-elements
     if [[ ${showTable__input} == true ]]; then
+        #Check if 'tibboHeader_prepend_numOfLines__input' is an Empty String
+        if [[ -z ${tibboHeader_prepend_numOfLines__input} ]]; then
+            tibboHeader_prepend_numOfLines__input=${DOCKER__NUMOFLINES_2}
+        fi
+
+        #Print Tibbo-title
+        load_tibbo_title__func "${tibboHeader_prepend_numOfLines__input}"
+
+        #Show array-elements
         docker__show_infoTable__sub "${menuTitle__input}" \
                         "${menuOptions__input}" \
                         "${errorMsg__input}" \
                         "${dataArr_pageNum}" \
-                        "${dataArr_pageSize}" \
+                        "${dataArr_pageLines}" \
                         "${docker__cachedInput_Arr[@]}"
     fi
 
@@ -330,10 +347,10 @@ docker__readInput_w_autocomplete__sub() {
             onBackSpacePressed=false    #set flag back to false
         fi
 
-        echo -e "${readMsg__input}${ret}"
+        echo -e "${readDialog__input}${ret}"
 
         #Move cursor up
-        moveUp_oneLine_then_moveRight__func "${readMsg__input}" "${ret}"
+        moveUp_oneLine_then_moveRight__func "${readDialog__input}" "${ret}"
         
         #Execute read-input
         read -N1 -rs -p "" keyInput
@@ -345,7 +362,7 @@ docker__readInput_w_autocomplete__sub() {
                 #If that's the case then function 'get_endResult_ofString_with_semiColonChar__func'
                 #   will handle and return a modified 'ret'.
                 ret_bck=${ret}  #set value
-                ret=`get_endResult_ofString_with_semiColonChar__func ${ret_bck}` 
+                ret=`get_endResult_ofString_with_semiColonChar__func "${ret_bck}"` 
                 
                 if [[ ! -z ${ret} ]]; then    #'ret' contains data
                     #Check if 'ret' has a leading asterisk (*)
@@ -392,7 +409,7 @@ docker__readInput_w_autocomplete__sub() {
                             "${menuOptions__input}" \
                             "${errorMsg__input}" \
                             "${dataArr_pageNum}" \
-                            "${dataArr_pageSize}" \
+                            "${dataArr_pageLines}" \
                             "${docker__cachedInput_Arr[@]}"
                 fi
 
@@ -413,7 +430,7 @@ docker__readInput_w_autocomplete__sub() {
                             "${menuOptions__input}" \
                             "${errorMsg__input}" \
                             "${dataArr_pageNum}" \
-                            "${dataArr_pageSize}" \
+                            "${dataArr_pageLines}" \
                             "${docker__cachedInput_Arr[@]}"
                 fi
 
@@ -505,7 +522,7 @@ docker__show_infoTable__sub() {
     local menuOptions__input=${2}
     local errorMsg__input=${3}
     local dataArr_pageNum__input=${4}    #page-number
-    local dataArr_pageSize__input=${5}  #number of lines to be shown
+    local dataArr_pageLines__input=${5}  #number of lines to be shown
     shift
     shift
     shift
@@ -515,9 +532,14 @@ docker__show_infoTable__sub() {
 
     #Show Table
     if [[ ${docker__cachedInput_ArrLen} -eq 0 ]]; then
-        show_msg_w_menuTitle_w_pressAnyKey_w_ctrlC_func "${menuTitle__input}" \
+        show_msg_w_menuTitle_only_func "${menuTitle__input}" \
                         "${errorMsg__input}" \
-                        "${DOCKER__EXITCODE_99}"
+                        "${DOCKER__EMPTYSTRING}" \
+                        "${DOCKER__NUMOFLINES_0}" \
+                        "${DOCKER__NUMOFLINES_4}" \
+                        "${DOCKER__NUMOFLINES_0}" \
+                        "${DOCKER__EMPTYSTRING}"
+
 
         #IMPORTANT: this will make sure that this script is exited upon error
         docker__exitCode=$?
@@ -528,7 +550,7 @@ docker__show_infoTable__sub() {
         show_array_elements_w_menuTitle__func "${menuTitle__input}" \
                         "${menuOptions__input}" \
                         "${dataArr_pageNum__input}" \
-                        "${dataArr_pageSize__input}" \
+                        "${dataArr_pageLines__input}" \
                         "${dataArr__input[@]}"
     fi
 }

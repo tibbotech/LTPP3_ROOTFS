@@ -43,10 +43,6 @@ docker__load_source_files__sub() {
     source ${docker__global__fpath}
 }
 
-docker__load_header__sub() {
-    show_header__func "${DOCKER__TITLE}" "${DOCKER__TABLEWIDTH}" "${DOCKER__BG_ORANGE}" "${DOCKER__NUMOFLINES_2}" "${DOCKER__NUMOFLINES_0}"
-}
-
 docker__load_constants__sub() {
     #Define phase constants
     DOCKER__SELECT_SRC_DIR=0
@@ -100,17 +96,18 @@ docker__load_handler__sub() {
                         "${dirlist__dst_ls_1aA_output__fpath}" \
                         "${dirlist__dst_ls_1aA_tmp__fpath}" \
 						"${DOCKER__EMPTYSTRING}" \
-                        "${DOCKER__FALSE}"
-                #Get the exitcode just in case:
-                #   1. Ctrl-C was pressed in script 'docker__readInput_w_autocomplete__fpath'.
-                #   2. An error occured in script 'docker__readInput_w_autocomplete__fpath',...
+                        "${DOCKER__NUMOFLINES_2}"
+
+                #Get the exit-code just in case:
+                #   1. Ctrl-C was pressed in script 'dirlist__readInput_w_autocomplete__fpath'.
+                #   2. An error occured in script 'dirlist__readInput_w_autocomplete__fpath',...
                 #      ...and exit-code = 99 came from function...
                 #      ...'show_msg_w_menuTitle_w_pressAnyKey_w_ctrlC_func' (in script: docker__global.sh).
                 docker__exitCode=$?
                 if [[ ${docker__exitCode} -eq ${DOCKER__EXITCODE_99} ]]; then
                     exit__func "${docker__exitCode}" "${DOCKER__NUMOFLINES_2}"
                 else
-                    #Retrieve the selected container-ID from file
+                    #Get the result
                     docker__path_output=`get_output_from_file__func "${dirlist__readInput_w_autocomplete_out__fpath}" "${DOCKER__LINENUM_1}"`
                     docker__numOfMatches_output=`get_output_from_file__func "${dirlist__readInput_w_autocomplete_out__fpath}" "${DOCKER__LINENUM_2}"`
                 fi
@@ -143,7 +140,7 @@ docker__load_handler__sub() {
                                 "${DOCKER__NUMOFLINES_1}" \
                                 "${DOCKER__TIMEOUT_10}" \
                                 "${DOCKER__NUMOFLINES_1}" \
-                                "${DOCKER__NUMOFLINES_1}"  
+                                "${DOCKER__NUMOFLINES_2}"  
                 fi
                 ;;
             ${DOCKER__LOAD_PHASE})
@@ -172,7 +169,7 @@ docker__load_handler__sub() {
 
                         break
                     elif  [[ "${docker__answer}" == "${DOCKER__N}" ]]; then
-                        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_3}"
+                        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
                         #Goto next-phase
                         phase=${DOCKER__SELECT_SRC_DIR}
@@ -188,14 +185,14 @@ docker__load_handler__sub() {
                 done
                 ;;
             ${DOCKER__SHOW_UPDATED_IMAGE_LIST_PHASE})
-                #Show repo-list
                 show_repoList_or_containerList_w_menuTitle_w_confirmation__func "${DOCKER__MENUTITLE_UPDATED_REPOSITORYLIST}" \
                                     "${DOCKER__ERRMSG_NO_IMAGES_FOUND}" \
                                     "${docker__images_cmd}" \
-                                    "${DOCKER__NUMOFLINES_2}" \
+                                    "${DOCKER__NUMOFLINES_0}" \
                                     "${DOCKER__TIMEOUT_10}" \
                                     "${DOCKER__NUMOFLINES_0}" \
-                                    "${DOCKER__NUMOFLINES_0}"
+                                    "${DOCKER__NUMOFLINES_0}" \
+                                    "${DOCKER__NUMOFLINES_2}"
 
                 exit__func "${DOCKER__EXITCODE_0}" "${DOCKER__NUMOFLINES_0}"
                 ;;
@@ -213,7 +210,7 @@ main_sub() {
 
     docker__load_source_files__sub
 
-    docker__load_header__sub
+    # load_tibbo_title__func
 
     docker__load_constants__sub
 

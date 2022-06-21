@@ -45,18 +45,10 @@ docker__load_constants__sub() {
     GIT__MENUTITLE="${DOCKER__FG_LIGHTBLUE}GIT MENU${DOCKER__NOCOLOR}"
 }
 
-docker__load_header__sub() {
-    #Input args
-    local prepend_numOfLines__input=${1}
-
-    #Print
-    show_header__func "${DOCKER__TITLE}" "${DOCKER__TABLEWIDTH}" "${DOCKER__BG_ORANGE}" "${prepend_numOfLines__input}" "${DOCKER__NUMOFLINES_0}"
-}
-
 docker__init_variables__sub() {
-    docker__current_checkOut_branch=${DOCKER__EMPTYSTRING}
+    # docker__current_checkOut_branch=${DOCKER__EMPTYSTRING}
     docker__myChoice=""    
-    docker__regEx="[01-5hq]"
+    docker__regEx="[01-6hq]"
 
     docker__tibboHeader_prepend_numOfLines=0
 
@@ -76,21 +68,25 @@ git__menu_sub() {
         docker__get_git_info__sub
 
         #Load header
-        docker__load_header__sub "${docker__tibboHeader_prepend_numOfLines}"
+        load_tibbo_title__func "${docker__tibboHeader_prepend_numOfLines}"
 
-        #Get current CHECKOUT BRANCH
-        docker__current_checkOut_branch=`git symbolic-ref --short -q HEAD`
+        #Set 'docker__tibboHeader_prepend_numOfLines'
+        docker__tibboHeader_prepend_numOfLines=${DOCKER__NUMOFLINES_1}
+
+        # #Get current CHECKOUT BRANCH
+        # docker__current_checkOut_branch=`git symbolic-ref --short -q HEAD`
 
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
         show_leadingAndTrailingStrings_separatedBySpaces__func "${GIT__MENUTITLE}" "${docker_git_current_info_msg}" "${DOCKER__TABLEWIDTH}"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-        echo -e "${DOCKER__FOURSPACES}Current Checkout Branch: ${DOCKER__FG_LIGHTSOFTYELLOW}${docker__current_checkOut_branch}${DOCKER__NOCOLOR}"
-        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+        # echo -e "${DOCKER__FOURSPACES}Current Checkout Branch: ${DOCKER__FG_LIGHTSOFTYELLOW}${docker__git_current_branchName}${DOCKER__NOCOLOR}"
+        # duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
         echo -e "${DOCKER__FOURSPACES}1. Push"
         echo -e "${DOCKER__FOURSPACES}2. Pull"
-        echo -e "${DOCKER__FOURSPACES}3. Undo last commit (unpushed only)"
-        echo -e "${DOCKER__FOURSPACES}4. ${DOCKER__FG_GREEN41}Create${DOCKER__NOCOLOR}/${DOCKER__FG_LIGHTSOFTYELLOW}checkout${DOCKER__NOCOLOR} ${DOCKER__FG_LIGHTGREY}local${DOCKER__NOCOLOR} branch"
-        echo -e "${DOCKER__FOURSPACES}5. ${DOCKER__FG_SOFTLIGHTRED}Delete${DOCKER__NOCOLOR} ${DOCKER__FG_LIGHTGREY}local${DOCKER__NOCOLOR} branch"
+        echo -e "${DOCKER__FOURSPACES}3. Undo last unpushed commit"
+        echo -e "${DOCKER__FOURSPACES}4. Create${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}checkout ${DOCKER__FG_BROWN94}local${DOCKER__NOCOLOR} branch"
+        echo -e "${DOCKER__FOURSPACES}5. Delete ${DOCKER__FG_BROWN94}local${DOCKER__NOCOLOR} branch"
+        echo -e "${DOCKER__FOURSPACES}6. ${DOCKER__MENU} create${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}rename${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}remove tag"
         echo -e "${DOCKER__FOURSPACES}0. Enter Command Prompt"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
         echo -e "${DOCKER__FOURSPACES}q. $DOCKER__QUIT_CTRL_C"
@@ -134,19 +130,26 @@ git__menu_sub() {
         #Goto the selected option
         case ${docker__myChoice} in
             1)  
-                ${git__git_push__fpath} "${docker__current_checkOut_branch}"
+                ${git__git_push__fpath} "${docker__git_current_branchName}"
                 ;;
             2)  
                 ${git__git_pull__fpath}
                 ;;
             3)
-                ${git__undo_last_pending_commit__fpath} "${docker__current_checkOut_branch}"
+                ${git__git_undo_last_unpushed_commit__fpath} "${docker__git_current_branchName}"
                 ;;
             4)
                 ${git__git_create_checkout_local_branch__fpath}
+
+                moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
                 ;;
             5)
                 ${git__git_delete_local_branch__fpath}
+
+                moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
+                ;;
+            6)
+                ${git__git_tag_menu__fpath} "${docker__git_current_branchName}"
                 ;;
             0)
                 ${docker__enter_cmdline_mode__fpath} "${DOCKER__EMPTYSTRING}"
@@ -160,9 +163,6 @@ git__menu_sub() {
         if [[ ${docker__parentWhileLoop_isExit} == true ]]; then
             break
         fi
-
-        #Set 'docker__tibboHeader_prepend_numOfLines'
-        docker__tibboHeader_prepend_numOfLines=${DOCKER__NUMOFLINES_0}
     done
 }
 
@@ -177,22 +177,15 @@ docker__exit_handler__sub() {
 
 docker__get_git_info__sub() {
     #Get information
-    docker__git_current_branchName=`git_get_current_branchName__func`
+    docker__git_current_branchName=`git__get_current_branchName__func`
 
-    docker__git_current_abbrevCommitHash=`git_log_for_pushed_and_unpushed_commits__func "${docker__git_current_branchName}" \
+    docker__git_current_abbrevCommitHash=`git__log_for_pushed_and_unpushed_commits__func "${DOCKER__EMPTYSTRING}" \
                         "${GIT__LAST_COMMIT}" \
                         "${GIT__PLACEHOLDER_ABBREV_COMMIT_HASH}"`
-    
-    docker__git_current_unpushed_abbrevCommitHash=`git_log_for_unpushed_local_commits__func "${docker__git_current_branchName}" \
-                        "${DOCKER__EMPTYSTRING}" \
-                        "${GIT__PLACEHOLDER_ABBREV_COMMIT_HASH}"`
-    
-    docker__git_push_status="${GIT__PUSHED}"
-    if [[ "${docker__git_current_abbrevCommitHash}" == "${docker__git_current_unpushed_abbrevCommitHash}" ]]; then
-        docker__git_push_status="${GIT__UNPUSHED}"
-    fi
+  
+    docker__git_push_status=`git__checkIf_branch_isPushed__func "${docker__git_current_branchName}"`
 
-    docker__git_current_tag=`git_get_tag_for_specified_commitHash__func  "${docker__git_current_abbrevCommitHash}"`
+    docker__git_current_tag=`git__get_tag_for_specified_branchName__func "${docker__git_current_branchName}" "${DOCKER__FALSE}"`
     if [[ -z "${docker__git_current_tag}" ]]; then
         docker__git_current_tag="${GIT__NOT_TAGGED}"
     fi

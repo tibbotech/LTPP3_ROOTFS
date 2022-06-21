@@ -82,6 +82,8 @@ DOCKER__NOCOLOR=$'\e[0;0m'
 DOCKER__FG_BORDEAUX=$'\e[30;38;5;198m'
 DOCKER__FG_BRIGHTPRUPLE=$'\e[30;38;5;141m'
 DOCKER__FG_BRIGHTLIGHTPURPLE=$'\e[30;38;5;147m'
+DOCKER__FG_BROWN94=$'\e[30;38;5;94m'
+DOCKER__FG_BROWN137=$'\e[30;38;5;137m'
 DOCKER__FG_DARKBLUE=$'\e[30;38;5;33m'
 DOCKER__FG_RED1=$'\e[30;38;5;1m'
 DOCKER__FG_DEEPORANGE=$'\e[30;38;5;208m'
@@ -161,14 +163,18 @@ DOCKER__READDIALOG_DO_YOU_WISH_TO_CONTINUE_YN="Do you wish to continue (y/n)? "
 
 DOCKER__ECHOMSG_NORESULTS_FOUND="${FOUR_SPACES}-:${FG_YELLOW}No results found${NOCOLOR}:-"
 
-DOCKER__ERRMSG_CHOSEN_CONTAINERID_DOESNOT_EXISTS="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Invalid input value "
-DOCKER__ERRMSG_CHOSEN_IMAGEID_DOESNOT_EXISTS="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Invalid input value "
+DOCKER__ERROR="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}"
+
+DOCKER__ERRMSG_CHOSEN_CONTAINERID_DOESNOT_EXISTS="${DOCKER__ERROR}: Invalid input value "
+DOCKER__ERRMSG_CHOSEN_IMAGEID_DOESNOT_EXISTS="${DOCKER__ERROR}: Invalid input value "
 DOCKER__ERRMSG_NO_CONTAINERS_FOUND="=:${DOCKER__FG_LIGHTRED}NO CONTAINERS FOUND${DOCKER__NOCOLOR}:="
 DOCKER__ERRMSG_NO_EXITED_CONTAINERS_FOUND="=:${DOCKER__FG_LIGHTRED}NO *EXITED* CONTAINERS FOUND${DOCKER__NOCOLOR}:="
 DOCKER__ERRMSG_NO_IMAGES_FOUND="=:${DOCKER__FG_LIGHTRED}NO IMAGES FOUND${DOCKER__NOCOLOR}:="
 
-DOCKER__INVALID_OR_NOT_A_DIRECTORY="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Invalid or not a directory"
-DOCKER__INVALID_OR_NOT_A_FILE="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Invalid or not a file"
+DOCKER__INVALID_OR_NOT_A_DIRECTORY="${DOCKER__ERROR}: Invalid or not a directory"
+DOCKER__INVALID_OR_NOT_A_FILE="${DOCKER__ERROR}: Invalid or not a file"
+
+DOCKER__WARNING="***${DOCKER__FG_BORDEAUX}WARNING${DOCKER__NOCOLOR}"
 
 DOCKER__CONFIGNAME____DOCKER__DOCKERFILE_FPATH="docker__dockerFile_fpath"
 
@@ -251,6 +257,31 @@ GIT__NOT_TAGGED="<not-tagged>"
 GIT__PUSHED="pushed"
 GIT__UNPUSHED="unpushed"
 
+GIT__PATTERN_REMOTES="remotes"
+GIT__PATTERN_TAGS="tags"
+GIT__PATTERN_HEADS="heads"
+
+GIT__CMD_GIT_ADD_DOT="git add ."
+GIT__CMD_GIT_BRANCH="git branch"
+GIT__CMD_GIT_CHECKOUT="git checkout"
+GIT__CMD_GIT_COMMIT_DASH_M="git commit -m"
+GIT__CMD_GIT_LS_REMOTE="git ls-remote"
+GIT__CMD_GIT_PULL="git pull"
+GIT__CMD_GIT_PUSH="git push"
+GIT__CMD_GIT_RESET="git reset"
+GIT__CMD_GIT_SHOW_REF="git show-ref"
+GIT__CMD_GIT_TAG="git tag"
+
+GIT__LOCATION_LOCAL="local"
+GIT__LOCATION_REMOTE="remote"
+
+GIT__ERROR_MALFORMED_OBJECT_NAME_TAGS="error: malformed object name tags/"
+
+
+
+#---MENU CONSTANTS
+DOCKER__MENU="(${DOCKER__FG_LIGHTGREY}Menu${DOCKER__NOCOLOR})"
+
 
 
 #---NUMERIC CONSTANTS
@@ -325,6 +356,26 @@ PHASE_SHOW_KEYINPUT_HANDLER=2
 DOCKER__PREV="prev"
 DOCKER__NEXT="next"
 
+DOCKER__CHECK="${DOCKER__FG_ORANGE}CHECK${DOCKER__NOCOLOR}"
+DOCKER__CHECK_LOCAL="${DOCKER__FG_ORANGE}CHECK (LOCAL)${DOCKER__NOCOLOR}"
+DOCKER__CHECK_REMOTE="${DOCKER__FG_ORANGE}CHECK (REMOTE)${DOCKER__NOCOLOR}"
+DOCKER__COMPLETED="${DOCKER__FG_ORANGE}COMPLETED${DOCKER__NOCOLOR}"
+DOCKER__EXECUTED="${DOCKER__FG_ORANGE}EXECUTED${DOCKER__NOCOLOR}"
+DOCKER__INFO="${DOCKER__FG_ORANGE}INFO${DOCKER__NOCOLOR}"
+DOCKER__INPUT="${DOCKER__FG_YELLOW}INPUT${DOCKER__NOCOLOR}"
+DOCKER__QUESTION="${DOCKER__FG_YELLOW}QUESTION${DOCKER__NOCOLOR}"
+DOCKER__REQUEST="${DOCKER__FG_ORANGE}REQUEST${DOCKER__NOCOLOR}"
+DOCKER__RESULT="${DOCKER__FG_ORANGE}RESULT${DOCKER__NOCOLOR}"
+DOCKER__START="${DOCKER__FG_ORANGE}START${DOCKER__NOCOLOR}"
+DOCKER__STATUS="${DOCKER__FG_ORANGE}STATUS${DOCKER__NOCOLOR}"
+DOCKER__STOPPED="${DOCKER__FG_ORANGE}STOPPED${DOCKER__NOCOLOR}"
+DOCKER__SUGGESTION="${DOCKER__FG_ORANGE}SUGGESTION${DOCKER__NOCOLOR}"
+
+DOCKER__STATUS_DONE="${DOCKER__FG_GREEN}done${DOCKER__NOCOLOR}"
+DOCKER__STATUS_FAILED="${DOCKER__FG_LIGHTRED}failed${DOCKER__NOCOLOR}"
+
+DOCKER__NO_ACTION_REQUIRED="No action required"
+
 
 
 #---READ-INPUT CONSTANTS
@@ -341,9 +392,19 @@ DOCKER__Y_SLASH_N="${DOCKER__Y}/${DOCKER__N}"
 DOCKER__Y_SLASH_N_SLASH_B="${DOCKER__Y_SLASH_N}/${DOCKER__BACK}${DOCKER__FG_LIGHTGREY}ack${DOCKER__NOCOLOR}"
 DOCKER__Y_SLASH_N_SLASH_H="${DOCKER__Y_SLASH_N}/${DOCKER__HOME}${DOCKER__FG_LIGHTGREY}ome${DOCKER__NOCOLOR}"
 DOCKER__Y_SLASH_N_SLASH_O="${DOCKER__Y_SLASH_N}/${DOCKER__OVERWRITE}${DOCKER__FG_LIGHTGREY}verwrite${DOCKER__NOCOLOR}"
+DOCKER__Y_SLASH_N_SLASH_Q="${DOCKER__Y_SLASH_N}/${DOCKER__QUIT}${DOCKER__FG_LIGHTGREY}uit${DOCKER__NOCOLOR}"
 DOCKER__Y_SLASH_N_SLASH_R="${DOCKER__Y_SLASH_N}/${DOCKER__REDO}${DOCKER__FG_LIGHTGREY}edo${DOCKER__NOCOLOR}"
 
-DOCKER__Y_SLASH_N_SLASH_O_SLASH_B_SLASH_H="${DOCKER__Y_SLASH_N_SLASH_O}/${DOCKER__BACK}${DOCKER__FG_LIGHTGREY}ack${DOCKER__NOCOLOR}/"
+DOCKER__Y_SLASH_N_SLASH_B_SLASH_Q="${DOCKER__Y_SLASH_N}/"
+DOCKER__Y_SLASH_N_SLASH_B_SLASH_Q+="${DOCKER__BACK}${DOCKER__FG_LIGHTGREY}ack${DOCKER__NOCOLOR}/"
+DOCKER__Y_SLASH_N_SLASH_B_SLASH_Q+="${DOCKER__QUIT}${DOCKER__FG_LIGHTGREY}uit${DOCKER__NOCOLOR}"
+
+DOCKER__Y_SLASH_N_SLASH_R_SLASH_Q="${DOCKER__Y_SLASH_N}/"
+DOCKER__Y_SLASH_N_SLASH_R_SLASH_Q+="${DOCKER__REDO}${DOCKER__FG_LIGHTGREY}edo${DOCKER__NOCOLOR}/"
+DOCKER__Y_SLASH_N_SLASH_R_SLASH_Q+="${DOCKER__QUIT}${DOCKER__FG_LIGHTGREY}uit${DOCKER__NOCOLOR}"
+
+DOCKER__Y_SLASH_N_SLASH_O_SLASH_B_SLASH_H="${DOCKER__Y_SLASH_N_SLASH_O}/"
+DOCKER__Y_SLASH_N_SLASH_O_SLASH_B_SLASH_H+="${DOCKER__BACK}${DOCKER__FG_LIGHTGREY}ack${DOCKER__NOCOLOR}/"
 DOCKER__Y_SLASH_N_SLASH_O_SLASH_B_SLASH_H+="${DOCKER__HOME}${DOCKER__FG_LIGHTGREY}ome${DOCKER__NOCOLOR}"
 
 DOCKER__SEMICOLON_BACK=";b"
@@ -351,13 +412,21 @@ DOCKER__SEMICOLON_CLEAR=";c"
 DOCKER__SEMICOLON_DELETE=";d"
 DOCKER__SEMICOLON_HOME=";h"
 
+DOCKER__SEMICOLON_BACK_COLORED="${DOCKER__FG_YELLOW}${DOCKER__SEMICOLON_BACK}${DOCKER__NOCOLOR}ack"
+DOCKER__SEMICOLON_CLEAR_COLORED="${DOCKER__FG_YELLOW}${DOCKER__SEMICOLON_CLEAR}${DOCKER__NOCOLOR}lear"
+
+DOCKER__COMMA_COLORED="${DOCKER__FG_LIGHTGREY},${DOCKER__NOCOLOR}"
+DOCKER__SEMICOLON_BACK_SEMICOLON_CLEAR_COLORED="${DOCKER__SEMICOLON_BACK_COLORED}${DOCKER__COMMA_COLORED}${DOCKER__SEMICOLON_CLEAR_COLORED}"
+
 
 
 #---REGEX CONSTANTS
 DOCKER__REGEX_YN="[yn]"
 DOCKER__REGEX_YNB="[ynb]"
 DOCKER__REGEX_YNH="[ynh]"
+DOCKER__REGEX_YNQ="[ynq]"
 DOCKER__REGEX_YNR="[ynr]"
+DOCKER__REGEX_YNBQ="[ynbq]"
 DOCKER__REGEX_YNOBH="[ynobh]"
 DOCKER__REGEX_0_TO_9="[1-90]"
 DOCKER__REGEX_0_TO_9_COMMA_DASH="[1-90,-]"
@@ -405,6 +474,7 @@ DOCKER__REMOVE_ALL="REMOVE-ALL"
 
 
 #---SPACE CONSTANTS
+DOCKER__ZEROSPACE="${SED__STX}" #used in function 'show_msg_w_menuTitle_only_func'
 DOCKER__ONESPACE=" "
 DOCKER__TWOSPACES=${DOCKER__ONESPACE}${DOCKER__ONESPACE}
 DOCKER__THREESPACES=${DOCKER__TWOSPACES}${DOCKER__ONESPACE}
@@ -584,6 +654,14 @@ function goto__func() {
     exit
 }
 
+function load_tibbo_title__func() {
+    #Input args
+    local prepend_numOfLines__input=${1}
+
+    #Print
+    show_header__func "${DOCKER__TITLE}" "${DOCKER__TABLEWIDTH}" "${DOCKER__BG_ORANGE}" "${prepend_numOfLines__input}" "${DOCKER__NUMOFLINES_0}"
+}
+
 function press_any_key__func() {
     #Input args
     local timeout__input=${1}
@@ -711,6 +789,115 @@ function confirmation_w_timer__func() {
 
 
 #---ARRAY FUNCTIONS
+# function array_find_and_move_element_toTop__func() {
+#     #Input args
+#     local pattern__input=${1}
+#     shift
+#     local arr__input=("$@")
+
+#     #Define variables
+#     local arr_leftOfMatch=()
+#     local arr_rightOfMatch=()
+#     local arr_new=()
+
+#     local arrLen=0
+#     local arrIndex_max=0
+#     local index_match=0
+#     local lineNum_match=0
+#     local numOfElements_leftOfMatch=0
+#     local startIndex_rightOfMatch=0
+
+#     #Get length of array 'arr__input'
+#     local arrLen=${#arr__input[@]}
+#     local arrIndex_max=$((arrLen - 1))
+
+#     #Check if there is an EXACT MATCH of 'pattern__input' within 'arr__input'.
+#     #If true, then get the array-index.
+#     #1. Get the line-number:
+#     lineNum_match=`echo "${arr__input[@]}" | xargs -n1 | grep -nw "${pattern__input}" | cut -d"${DOCKER__COLON}" -f1`
+
+#     #Check if 'lineNum_match = 0'.
+#     #If true, then exit function, because no match was found.
+#     if [[ ${lineNum_match} -eq ${DOCKER__NUMOFMATCH_0} ]]; then
+#         echo "${arr__input[@]}"
+
+#         return
+#     fi
+
+#     #2. Get the array-index:
+#     index_match=$((lineNum_match - 1))
+
+#     #Check if 'index_match = 0'.
+#     #If true, then exit function, because 'pattern__input' is already on the top.
+#     if [[ ${index_match} -eq ${DOCKER__NUMOFMATCH_0} ]]; then
+#         echo "${arr__input[@]}"
+
+#         return
+#     fi
+
+#     #Get the 'numOfElements_leftOfMatch' and 'startIndex_rightOfMatch'
+#     numOfElements_leftOfMatch=$((lineNum_match - 1))
+#     startIndex_rightOfMatch=$((index_match + 1))
+
+#     #Get 'arr_leftOfMatch'
+#     arr_leftOfMatch=("${arr__input[@]:0:numOfElements_leftOfMatch}")
+
+#     #Check if 'startIndex_rightOfMatch <= arrIndex_max'
+#     #If false, then no need to get 'arr_rightOfMatch'
+#     if [[ ${startIndex_rightOfMatch} -le ${arrIndex_max} ]]; then
+#         #Get 'arr_rightOfMatch'
+#         arr_rightOfMatch=("${arr__input[@]:startIndex_rightOfMatch}")
+#     fi
+
+#     #Compose 'arr_new'
+#     arr_new[0]=${arr__input[index_match]}
+#     arr_new+=(${arr_leftOfMatch[@]})
+#     arr_new+=(${arr_rightOfMatch[@]})
+
+#     #Output
+#     echo "${arr_new[@]}"
+# }
+
+function checkFor_leading_partialMatch_of_pattern_within_array__func() {
+    #Turn-off Expansion
+    disable_expansion__func
+
+    #Input Args
+    local pattern__input="${1}"
+    shift
+    local arr__input=("$@")
+
+    #Define variables
+    local arrItem=${DOCKER__EMPTYSTRING}
+    local isFound=${DOCKER__EMPTYSTRING}
+    local ret="false"
+
+    #Loop thru array
+    for arrItem in "${arr__input[@]}"
+    do   
+        isFound=`echo "${pattern__input}" | grep "^${arrItem}"`
+        if [[ ! -z "${isFound}" ]]; then
+            ret="true"
+
+            break
+        fi
+    done
+
+    #Output
+    echo "${ret}"
+}
+
+function array_count_numOf_elements__func() {
+    #Input args
+    local dataArr__input=("$@")
+
+    #Check number of elements WITHOUT empty lines!!!
+    local ret=`printf "%s\n" ${dataArr__input[@]} | grep -c '[^[:space:]]'`
+
+    #Output
+    echo "${ret}"
+}
+
 function array_find_and_move_element_toTop__func() {
     #Input args
     local pattern__input=${1}
@@ -796,10 +983,36 @@ function array_subst_string__func() {
     echo "${ret[@]}"
 }
 
-function combine_two_arrays_of_same_length__func() {
+function checkForMatch_of_pattern_within_array__func() {
+    #Input args
+    local pattern__input=${1}
+    shift
+    local dataArr__input=("$@")
+
+    #Loop thru array-elements and find a match
+    local dataArrItem=${DOCKER__EMPTYSTRING}
+    local ret=false
+    for dataArrItem in "${dataArr__input[@]}"
+    do
+        if [[ "${pattern__input}" == "${dataArrItem}" ]]; then
+            ret=true
+
+            break
+        fi
+    done
+
+    #Output
+    echo "${ret}"
+}
+
+function combine_two_arrays_of_same_length_and_writeTo_file__func() {
     #Input args
     local delimiterChar__input=${1}
     local delimiterColor__input=${2}
+    local outputFpath__input=${3}   #write the output to this file
+    local flag_count_emptyLines_isEnabled__input=${4}
+    shift
+    shift
     shift
     shift
     #Remark:
@@ -811,18 +1024,61 @@ function combine_two_arrays_of_same_length__func() {
     #   arrTot__input=("one" "two" "three" "four" "five" "six")
     local arrTot__input=("$@")
 
+
+    #Remove file (if present)
+    if [[ -f ${outputFpath__input} ]]; then
+        rm ${outputFpath__input}
+    fi
+
+
+    #Get length of 'arrTot__input'
+    local arrTotLen=${#arrTot__input[@]}
+
+    #Check if flag is set to 'false'
+    if [[ ${flag_count_emptyLines_isEnabled__input} == false ]]; then
+        #Recalculate array-length (without empty lines)
+        arrTotLen=`array_count_numOf_elements__func "${arrTot__input[@]}"`
+    fi
+    local arrTotLen_half=$((arrTotLen/2))
+
+
+    #Initialization
+    local arr1=()
+    local arr2=()
+    local count=0
+    local index=0
+
     #Split 'arrTot__input' into two arrays
-    #First half:
-    local arr1=(`echo "${arrTot__input[@]:0:$((${#arrTot__input[@]} / 2 ))}"`)
-    #Second half:
-    local arr2=(`echo "${arrTot__input[@]:$((${#arrTot__input[@]} / 2 ))}"`)
+    # #First half:
+    # local arr1=(`echo "${arrTot__input[@]:0:$((${#arrTot__input[@]} / 2 ))}"`)
+    # #Second half:
+    # local arr2=(`echo "${arrTot__input[@]:$((${#arrTot__input[@]} / 2 ))}"`)
+    for arrTotItem in "${arrTot__input[@]}"
+    do
+        #Add 'arrTotItem' to 'arr1/arr2'
+        if [[ ${count} -lt ${arrTotLen_half} ]]; then
+            arr1[index]="${arrTotItem}"
+        else
+            arr2[index]="${arrTotItem}"
+        fi
+
+        #Incremenet counter
+        count=$((count + 1))
+
+        #Handle 'index'
+        if [[ ${count} -eq ${arrTotLen_half} ]]; then
+            #Reset index
+            index=0
+        else
+            #Increment index
+            index=$((index + 1))
+        fi
+    done
+
 
     #Get array-lengths
     local arr1Len=${#arr1[@]}
     local arr2Len=${#arr2[@]}
-
-    #Define variables
-    local ret=()
 
     #Check if 'arr1Len != arr2Len'
     if [[ ${arr1Len} -ne ${arr2Len} ]]; then
@@ -831,28 +1087,24 @@ function combine_two_arrays_of_same_length__func() {
         return
     fi
 
-    #Check if 'delimiterColor__input' is an Empty String
-    if [[ -z "${delimiterChar__input}" ]]; then
-        delimiterChar__input=${DOCKER__ONESPACE}
-    fi
 
     #Check if 'delimiterColor__input' is an Empty String
+    if [[ -z "${delimiterChar__input}" ]]; then
+        delimiterChar__input=${DOCKER__COLON}
+    fi
 
 
     #Combine arrays
     for ((i=0; i<${arr1Len}; i++ ))
     do 
         if [[ -z "${delimiterColor__input}" ]]; then
-            ret[i]="${arr1[${i}]}${delimiterChar__input}${arr2[${i}]}"
+            echo "${arr1[${i}]}${delimiterChar__input}${arr2[${i}]}" >> \
+                        ${outputFpath__input}
         else
-            ret[i]="${arr1[${i}]}${delimiterColor__input}${delimiterChar__input}${DOCKER__NOCOLOR}${arr2[${i}]}"
+            echo "${arr1[${i}]}${delimiterColor__input}${delimiterChar__input}${DOCKER__NOCOLOR}${arr2[${i}]}" >> \
+                        ${outputFpath__input}
         fi
     done
-
-    #Output
-    #Remark:
-    #   The output is a string instead of an array!
-    echo "${ret[@]}"
 }
 
 function show_array_w_menuTitle_w_confirmation__func() {
@@ -958,32 +1210,6 @@ function checkIf_repoTag_isUniq__func() {
 
     #Output
     echo "${ret}"
-}
-
-function docker__checkIf_branch_alreadyExists__func() {
-    #Input args
-    local branchName_input=${1}
-
-    #Check if 'branchName_input' already exists
-    local stdOutput=`git branch | grep -w "${branchName_input}" 2>&1`
-    if [[ ! -z ${stdOutput} ]]; then #contains data
-        echo ${DOCKER__TRUE}
-    else    #contains no data
-        echo ${DOCKER__FALSE}
-    fi
-}
-
-function docker__checkIf_branch_isCheckedOut__func() {
-    #Input args
-    local branchName_input=${1}
-
-    #Check if 'branchName_input' already exists
-    local stdOutput=`git branch | grep -w "${branchName_input}" | grep "${DOCKER__ESCAPED_ASTERISK}" 2>&1`
-    if [[ ! -z ${stdOutput} ]]; then #contains data
-        echo ${DOCKER__TRUE}
-    else    #contains no data
-        echo ${DOCKER__FALSE}
-    fi
 }
 
 function createAndWrite_data_to_cacheFiles_ifNotExist__func() {
@@ -1434,6 +1660,25 @@ function get_dirname_from_specified_path__func() {
     echo -e "${ret}"
 }
 
+function get_numOfLines_wo_emptyLines_in_file__func() {
+    #Input args
+    local targetFpath__input=${1}
+
+    #Define variables
+    local ret=0
+
+    #Check if file exists
+    if [[ ! -f ${targetFpath__input} ]]; then
+        echo "${ret}"
+    fi
+
+    #Check number of lines WITHOUT empty lines!!!
+    ret=`<${targetFpath__input} grep -c '[^[:space:]]'`
+
+    #Output
+    echo "${ret}"
+}
+
 function get_output_from_file__func() {
     #Input args
     outputFpath__input=${1}
@@ -1608,7 +1853,274 @@ function write_data_to_file__func() {
 
 
 #---GIT FUNCTIONS
-function git_log_for_unpushed_local_commits__func() {
+function git__checkIf_branch_alreadyExists__func() {
+    #Input args
+    local branchName_input=${1}
+
+    #Check if 'branchName_input' already exists
+    local stdOutput=`${GIT__CMD_GIT_BRANCH} | grep -w "${branchName_input}" 2>&1`
+    if [[ ! -z ${stdOutput} ]]; then #contains data
+        echo ${DOCKER__TRUE}
+    else    #contains no data
+        echo ${DOCKER__FALSE}
+    fi
+}
+
+function git__checkIf_branch_isCheckedOut__func() {
+    #Input args
+    local branchName_input=${1}
+
+    #Check if 'branchName_input' already exists
+    local stdOutput=`${GIT__CMD_GIT_BRANCH} | grep -w "${branchName_input}" | grep "${DOCKER__ESCAPED_ASTERISK}" 2>&1`
+    if [[ ! -z ${stdOutput} ]]; then #contains data
+        echo ${DOCKER__TRUE}
+    else    #contains no data
+        echo ${DOCKER__FALSE}
+    fi
+}
+
+function git__checkIf_branch_isPushed__func() {
+    #Input args
+    local branchName_input=${1}
+
+    #Check if 'branchName_input' already exists
+    # local stdOutput=`${GIT__CMD_GIT_LS_REMOTE} | grep "${GIT__PATTERN_HEADS}" | rev | cut -d"/" -f1 | rev | grep "^${branchName_input}$"`
+    local stdOutput=`${GIT__CMD_GIT_BRANCH} -r | cut -d"/" -f2 | awk '{print $1}' | grep "^${branchName_input}$"`
+    if [[ ! -z ${stdOutput} ]]; then #contains data
+        echo ${GIT__PUSHED}
+    else    #contains no data
+        echo ${GIT__UNPUSHED}
+    fi
+}
+
+function git__checkIf_tag_contains_specified_branchName__func() {
+    #Input args
+    local branchName__input=${1}
+    local tag__input=${2}
+
+    #Check
+    #Remarks:
+    #   sed 's/*//g': convert asterisk (*) to Empty String
+    #   sed sed 's/^ *//g': convert leading spaces to Empty String
+    #   sed 's/ *$//g': convert trailing spaces to Empty String
+    local stdOutput=`${GIT__CMD_GIT_BRANCH} --contains tags/${tag__input} | \
+                        sed 's/*//g' | \
+                        sed 's/^ *//g' | \
+                        sed 's/ *$//g' | \
+                        grep "^${branchName__input}$"`
+    if [[ ! -z ${stdOutput} ]]; then #contains data
+        echo ${DOCKER__TRUE}
+    else    #contains no data
+        echo ${DOCKER__FALSE}
+    fi
+}
+
+function git__check_local_if_tag_isAlready_inUse___func() {
+    local tag__input=${1}
+
+    #Check if 'branchName_input' already exists
+    local stdOutput=`${GIT__CMD_GIT_TAG} | grep "^${tag__input}$" 2>&1`
+    if [[ ! -z ${stdOutput} ]]; then #contains data
+        echo ${DOCKER__TRUE}
+    else    #contains no data
+        echo ${DOCKER__FALSE}
+    fi   
+}
+
+function git__check_remote_if_tag_isAlready_inUse__func() {
+    local tag__input=${1}
+
+    #Check if 'branchName_input' already exists
+    local stdOutput=`${GIT__CMD_GIT_LS_REMOTE} --tags origin | \
+                        grep "${GIT__PATTERN_TAGS}" | \
+                        rev | \
+                        cut -d"/" -f1 | \
+                        rev | \
+                        grep "^${tag__input}$" 2>&1`
+    if [[ ! -z ${stdOutput} ]]; then #contains data
+        echo ${DOCKER__TRUE}
+    else    #contains no data
+        echo ${DOCKER__FALSE}
+    fi   
+}
+
+function git__get_current_branchName__func() {
+    #Get branch-name
+    local ret=`git symbolic-ref --short -q HEAD`
+
+    #Output
+    echo "${ret}"
+}
+
+function git__get_full_commitHash_for_specified_tag__func() {
+    #Input args
+    local tag__input=${1}
+    local location__input=${2}  #GIT__LOCATION_LOCAL or GIT__LOCATION_REMOTE
+
+    #Define variables
+    local ret=${DOCKER__EMPTYSTRING}
+
+    #Check if 'tag__input' is an Empty String
+    if [[ -z ${tag__input} ]]; then
+        echo "${ret}"
+
+        return
+    fi
+
+    #Check if 'location__input' is NOT 'GIT__LOCATION_LOCAL' and 'GIT__LOCATION_REMOTE'
+    if [[ "${location__input}" != "${GIT__LOCATION_LOCAL}" ]] && \
+            [[ "${location__input}" != "${GIT__LOCATION_REMOTE}" ]]; then
+        echo "${ret}"
+
+        return
+    fi
+
+    #FIRST: try to retrieve the full commit-hash by including the dereference-pattern (^{})
+    if [[ ${location__input} == ${GIT__LOCATION_LOCAL} ]]; then
+        ret=`${GIT__CMD_GIT_SHOW_REF} --tags | grep "\^{}" | grep "${tag__input}" | awk '{print $1}'`
+    else
+        ret=`${GIT__CMD_GIT_LS_REMOTE} --tags | grep "\^{}" | grep "${tag__input}" | awk '{print $1}'`
+    fi
+
+    #SECOND: if including the dereference-pattern (^{}) does NOT give any result, then...
+    #        ...try without the dereference-pattern (^{}).
+    if [[ -z ${ret} ]]; then
+        if [[ ${location__input} == ${GIT__LOCATION_LOCAL} ]]; then
+            ret=`${GIT__CMD_GIT_SHOW_REF} --tags | grep "${tag__input}" | awk '{print $1}'`
+        else
+            ret=`${GIT__CMD_GIT_LS_REMOTE} --tags |  grep "${tag__input}" | awk '{print $1}'`
+        fi
+    fi
+
+    #Output
+    echo "${ret}"
+}
+
+function git__get_tag_for_specified_branchName__func() {
+    #Input args
+    local branchName__input=${1}
+    local flag_include_remoteTags_isEnabled__input=${2}
+
+    #Get list of all local tags and write to array
+    local localTags_arr=()
+    readarray -t localTags_arr < <(${GIT__CMD_GIT_SHOW_REF} --tags | rev | cut -d"/" -f1 | rev)
+
+    #Get list of all remote tags and write to array
+    local remoteTags_arr=()
+    if [[ ${flag_include_remoteTags_isEnabled__input} == true ]]; then
+        readarray -t remoteTags_arr < <(${GIT__CMD_GIT_LS_REMOTE} --tags | rev | cut -d"/" -f1 | rev)
+    fi
+
+    #Combine arrays
+    local totalTags_arr=("${localTags_arr[@]}" "${remoteTags_arr[@]}")
+
+    #Sort and Uniq
+    local totalTags_sortUniq_string=`printf "%s\n" "${totalTags_arr[@]}" | sort | uniq | sed 's/\n//g'`
+
+    #Convert string to array
+    local totalTags_sortUniq_arr=(`echo ${totalTags_sortUniq_string}`)
+
+    #Loop thru array and check for each array-element (aka tag) if it contains the 'branchName__input'
+    local match_isFound=false
+    local totalTags_sortUniq_arrItem=${DOCKER__EMPTYSTRING}
+    local ret=${DOCKER__EMPTYSTRING}
+    for totalTags_sortUniq_arrItem in "${totalTags_sortUniq_arr[@]}"
+    do
+        match_isFound=`git__checkIf_tag_contains_specified_branchName__func \
+                        "${branchName__input}" \
+                        "${totalTags_sortUniq_arrItem}"`
+        if [[ ${match_isFound} == true ]]; then
+            ret=${totalTags_sortUniq_arrItem}
+
+            break
+        fi
+    done
+
+    #Output
+    echo "${ret}"
+}
+
+function git__get_tag_for_specified_commitHash__func() {
+    #Input args
+    local abbrevCommitHash__input=${1}
+
+    #Get tag
+    local ret=`git log -a --pretty=oneline --graph | git name-rev --stdin --tag | \
+                        grep "${abbrevCommitHash__input}"| \
+                        grep "tags" | \
+                        cut -d"(" -f2 | \
+                        cut -d")" -f1 | \
+                        cut -d"/" -f2- | \
+                        cut -d"^" -f1 | \
+                        cut -d"~" -f1 | \
+                        sort | \
+                        uniq`
+
+    #Output
+    echo "${ret}"
+}
+
+function git__get_tags__func() {
+    #Input args
+    local location__input=${1}  #GIT__LOCATION_LOCAL or GIT__LOCATION_REMOTE
+
+    #Check if 'location__input' is NOT 'GIT__LOCATION_LOCAL' and 'GIT__LOCATION_REMOTE'
+    if [[ "${location__input}" != "${GIT__LOCATION_LOCAL}" ]] && \
+            [[ "${location__input}" != "${GIT__LOCATION_REMOTE}" ]]; then
+        echo "${ret}"
+
+        return
+    fi
+
+    #Get all tags
+    local ret=${DOCKER__EMPTYSTRING}
+    if [[ ${location__input} == ${GIT__LOCATION_LOCAL} ]]; then
+        ret=`${GIT__CMD_GIT_SHOW_REF} --tags | rev | cut -d"/" -f1 | rev | sort | uniq | tr -d "[:blank:]"`
+    else    #git_location__input = GIT__LOCATION_REMOTE
+        #Remark:
+        #   cut -d "^" -f2-: used to remove the derefenced symbols (^{}) behind the tags (e.g. vtest123^{})
+        ret=`${GIT__CMD_GIT_LS_REMOTE} --tags | rev | cut -d "^" -f2- | cut -d"/" -f1 | rev | sort | uniq | tr -d "[:blank:]"`
+    fi
+
+    #Output
+    echo "${ret}"
+}
+
+function git__get_branches_for_specified_commitHash__func() {
+    #Input args
+    local abbrevCommitHash__input=${1}
+    local location__input=${2}  #GIT__LOCATION_LOCAL or GIT__LOCATION_REMOTE
+
+    #Check if 'location__input' is NOT 'GIT__LOCATION_LOCAL' and 'GIT__LOCATION_REMOTE'
+    if [[ "${location__input}" != "${GIT__LOCATION_LOCAL}" ]] && \
+            [[ "${location__input}" != "${GIT__LOCATION_REMOTE}" ]]; then
+        echo "${ret}"
+
+        return
+    fi
+
+    #Choose command
+    if [[ ${git_location__input} == ${GIT__LOCATION_LOCAL} ]]; then
+        grep_cmd="grep -v"  #-v means exclude
+    else    #git_location__input = GIT__LOCATION_REMOTE
+        grep_cmd="grep"
+    fi
+
+    #Get all tags
+    local ret=`${GIT__CMD_GIT_BRANCH} -a --contains "${docker__full_commitHash}" | \
+                        ${grep_cmd} "${GIT__PATTERN_REMOTES}" | \
+                        rev | \
+                        cut -d"/" -f1 | \
+                        rev | \
+                        sort | \
+                        uniq | \
+                        tr -d "[:blank:]"`
+
+    #Output
+    echo "${ret}"
+}
+
+function git__log_for_unpushed_local_commits__func() {
     #Remark:
     #   1. This function retrieves the git-information
     #      for UNPUSHED commits to REMOTE
@@ -1643,7 +2155,7 @@ function git_log_for_unpushed_local_commits__func() {
     echo "${ret}"
 }
 
-function git_log_for_pushed_and_unpushed_commits__func() {
+function git__log_for_pushed_and_unpushed_commits__func() {
     #Remark:
     #   1. This function retrieves the git-information
     #      for PUSHED and UNPUSHED commits.
@@ -1663,11 +2175,11 @@ function git_log_for_pushed_and_unpushed_commits__func() {
         cmd="${cmd} -${last_nth_commit__input}"
     fi
 
-    if [[ ! -z "${last_nth_commit__input}" ]]; then
+    if [[ ! -z "${branchName__input}" ]]; then
         cmd="${cmd} ${branchName__input}"
     fi
 
-    if [[ ! -z "${last_nth_commit__input}" ]]; then
+    if [[ ! -z "${placeHolder__input}" ]]; then
         cmd="${cmd} --pretty=format:${placeHolder__input}"
     fi
 
@@ -1678,20 +2190,44 @@ function git_log_for_pushed_and_unpushed_commits__func() {
     echo "${ret}"
 }
 
-function git_get_current_branchName__func() {
-    #Get branch-name
-    local ret=`git symbolic-ref --short -q HEAD`
+function git__retrieve_parent_branchName__func() {
+    #Retrieve parent branch-name
+    local ret=$(git show-branch -a | \
+                        grep '\*' | \
+                        grep -v `git rev-parse --abbrev-ref HEAD` | \
+                        head -n1 | \
+                        sed 's/.*\[\(.*\)\].*/\1/' | \
+                        sed 's/[\^~].*//')
 
     #Output
     echo "${ret}"
 }
 
-function git_get_tag_for_specified_commitHash__func() {
+function git__retrieve_branchName_for_specified_tag__func() {
     #Input args
-    local abbrevCommitHash__input=${1}
+    local tag__input=${1}
+
+    #Get branch-name
+    local ret=${DOCKER__EMPTYSTRING}
+    ret=`${GIT__CMD_GIT_BRANCH} --contains tags/${tag__input} | \
+                        sed 's/*//g' | \
+                        sed 's/^ *//g' | \
+                        sed 's/ *$//g'`
+    #Output
+    echo "${ret}"
+}
+
+function git__retrieve_tag_for_specified_branchName__func() {
+    #Input args
+    local branchName__input=${1}
+
+    #Get abbreviated commit hash
+    local abbrevCommitHash=`git__log_for_pushed_and_unpushed_commits__func "${DOCKER__EMPTYSTRING}" \
+                        "${DOCKER__EMPTYSTRING}" \
+                        "${GIT__PLACEHOLDER_ABBREV_COMMIT_HASH}"`
 
     #Get tag
-    local ret=`git log -a --pretty=oneline --graph | git name-rev --stdin --tag | grep "${abbrevCommitHash__input}"| grep "tags" | cut -d"(" -f2 | cut -d")" -f1 | cut -d"/" -f2- | cut -d"^" -f1 | cut -d"~" -f1`
+    local ret=`git__get_tag_for_specified_commitHash__func "${abbrevCommitHash}"`
 
     #Output
     echo "${ret}"
@@ -1901,1030 +2437,6 @@ function show_errMsg_wo_menuTitle_and_exit_func() {
     exit__func "${DOCKER__EXITCODE_99}" "${DOCKER__NUMOFLINES_0}"
 }
 
-function show_pathContent_w_selection__func() {
-#---Input args
-    local path__input=${1}  #could be a directory or file
-    local selItem__input=${2}
-    local menuTitle__input=${3}
-    local remark__input=${4}
-    local info__input=${5}
-    local menuOptions__input=${6}
-    local matchPattern__input=${7}  #match pattern of 'menuOptions__input'
-    local errMsg__input=${8}
-    local readDialog__input=${9}
-    local pattern1__input=${10}
-    local pattern2__input=${11}
-    local table_index_max__input=${12}
-    local outputFpath__input=${13}
-
-
-
-#---Define variables
-    local fpath_arr=()
-    local fpath_arrIndex=0
-    local fpath_arrLen=0
-    local fpath_arrItem=${DOCKER__EMPTYSTRING}
-    local fpath_arrItem_base=${DOCKER__EMPTYSTRING}
-    local fpath_arrItem_marked=${DOCKER__EMPTYSTRING}
-    local fpath_arrItem_conv=${DOCKER__EMPTYSTRING}
-    local fpath_arrItem_print=${DOCKER__EMPTYSTRING}
-    local fpath_arr_string=${DOCKER__EMPTYSTRING}
-
-    local fpath_arrTmp=()
-    local fpath_arrTmpLen=0
-    local fpath_arrTmp_string=${DOCKER__EMPTYSTRING}
-
-    #Relative array, which contains only the number of elements equal to 'table_index_max__input'.
-    #This array is renewed with each loop.
-    local fpath_relArr=()
-    local fpath_relArrIndex=0
-    local fpath_relArrIndex_sel=0
-    local fpath_relArrLen=0
-    local fpath_relArrItem_sel=${DOCKER__EMPTYSTRING}
-
-    local keyInput=${DOCKER__EMPTYSTRING}
-    local keyOutput=${DOCKER__EMPTYSTRING}
-    local pattern1_result=${DOCKER__EMPTYSTRING}
-    local pattern2_result=${DOCKER__EMPTYSTRING}
-    local ret=${DOCKER__EMPTYSTRING}
-
-    local table_index=0
-    local table_index_base=0
-    local table_index_base_try_next=0
-
-    local table_index_max_bck=0
-
-    local lineNum_range_relMax=0
-    local lineNum_range_relMin=0
-    local lineNum_range_msg_startPos=0
-    local lineNum_range_msg_wo_regEx_len=0
-    local lineNum_range_msg=${DOCKER__EMPTYSTRING}
-
-    local flag_break_main_whileLoop=false
-    local flag_isSet_toBreak_loop=false
-    local flag_matched_fkey_isPressed=false
-
-
-
-#---Remove file (if present)
-    if [[ -f ${outputFpath__input} ]]; then
-        rm ${outputFpath__input}
-    fi
-
-
-
-#---Trim message to fit within the specified terminal window-size 'DOCKER__TABLEWIDTH'
-    info__input=`trim_string_toFit_specified_windowSize__func "${info__input}" "${DOCKER__TABLEWIDTH}" "${DOCKER__TRUE}"`
-
-
-
-#---Calculate num-of-lines of input-args
-    #Each input-args
-    menuTitle_numOfLines=`get_numOfLines_for_specified_string_or_file__func "${menuTitle__input}"`
-    remark_numOfLines=`get_numOfLines_for_specified_string_or_file__func "${remark__input}"`
-    info_numOfLines=`get_numOfLines_for_specified_string_or_file__func "${info__input}"`
-    menuOptions_numOfLines=`get_numOfLines_for_specified_string_or_file__func "${menuOptions__input}"`
-    readDialog_numOfLines=`get_numOfLines_for_specified_string_or_file__func "${readDialog__input}"`
-
-    #fixed objects
-    fixed_numOfLines=${DOCKER__NUMOFLINES_4}    #due to a fixed number of horizontal and empty lines
-    if [[ ${remark_numOfLines} -gt ${DOCKER__NUMOFMATCH_0} ]]; then
-        fixed_numOfLines=$((fixed_numOfLines + 1))  #due to the preceding horizontal line
-    fi
-    if [[ ${info_numOfLines} -gt ${DOCKER__NUMOFMATCH_0} ]]; then
-        fixed_numOfLines=$((fixed_numOfLines + 1))  #due to the preceding horizontal line
-    fi
-    if [[ ${menuOptions_numOfLines} -gt ${DOCKER__NUMOFMATCH_0} ]]; then
-        fixed_numOfLines=$((fixed_numOfLines + 1))  #due to the preceding horizontal line
-    fi
-
-    #total
-    tot_numOfLines=$((menuTitle_numOfLines + remark_numOfLines + info_numOfLines + menuOptions_numOfLines + readDialog_numOfLines + fixed_numOfLines + table_index_max__input))
-
-
-
-#---Define 'prev' and 'next' variables
-    local prev_only_print="${DOCKER__ONESPACE_PREV}"
-
-    local oneSpacePrev_len=`get_stringlen_wo_regEx__func "${DOCKER__ONESPACE_PREV}"`
-    local oneSpaceNext_len=`get_stringlen_wo_regEx__func "${DOCKER__ONESPACE_NEXT}"`
-    local space_between_prev_and_next_len=$(( DOCKER__TABLEWIDTH - (oneSpacePrev_len + oneSpaceNext_len) - 1 ))
-    local space_between_prev_and_next=`duplicate_char__func "${DOCKER__ONESPACE}" "${space_between_prev_and_next_len}"`
-    local prev_spaces_next_print="${DOCKER__ONESPACE_PREV}${space_between_prev_and_next}${DOCKER__ONESPACE_NEXT}"
-
-    local docker_space_between_leftBoundary_and_next_len=$(( DOCKER__TABLEWIDTH - oneSpacePrev_len - 1 ))
-    local docker_space_between_leftBoundary_and_next=`duplicate_char__func "${DOCKER__ONESPACE}" "${docker_space_between_leftBoundary_and_next_len}"`
-
-    local next_only_print="${docker_space_between_leftBoundary_and_next}${DOCKER__ONESPACE_NEXT}"
-
-
-
-#---Retrieve array containing matching elements based on the specified patterns
-    #Remarks:
-    #   1. Only do this if 'path__input' is a directory.
-    #   2. if 'path__input' is a file, then no matching required, in this case...
-    #      ...just read the content of the file into array 'fpath_arrTmp'.
-    if [[ -d ${path__input} ]]; then    #is a directory
-        fpath_arrTmp_string=`retrieve_files_from_specified_dir_basedOn_matching_patterns__func "${path__input}" \
-                            "${pattern1__input}" \
-                            "${pattern2__input}"`
-
-#-------Convert string to array
-        read -a fpath_arrTmp <<< "${fpath_arrTmp_string}"
-    else    #is a file or...
-        if [[ -s ${path__input} ]]; then    #file contains data
-            readarray -t fpath_arrTmp < <(cat "${path__input}")
-        fi
-    fi
-
-
-
-#---Get Length of 'fpath_arrTmp'
-    fpath_arrTmpLen=${#fpath_arrTmp[@]}
-
-
-
-#---Check if a match string 'selItem__input' is provided
-    if [[ ${fpath_arrTmpLen} -gt ${DOCKER__NUMOFMATCH_0} ]]; then
-        if [[ ! -z ${selItem__input} ]]; then   #contains data
-            #Rearrange array and place 'selItem__input' on top of the array.
-            #Note: the output 'fpath_arr_string' is a string.
-            fpath_arr_string=`array_find_and_move_element_toTop__func "${selItem__input}" "${fpath_arrTmp[@]}"`
-
-            #Convert string to array
-            #Remark:
-            #   Even though the array has been re-arranged,
-            #   still 'fpath_arr' will not be written to a file!
-            read -a fpath_arr <<< "${fpath_arr_string}"
-        else    #contains no data
-            fpath_arr=("${fpath_arrTmp[@]}")
-        fi
-    fi
-
-    #Get 'fpath_arrLen'
-    fpath_arrLen=${#fpath_arr[@]}
-
-
-
-#---Backup 'table_index_max__input'
-    table_index_max_bck=${table_index_max__input}
-
-
-
-#---Set 'table_index_max__input' (if needed)
-    #Note: 
-    #   The condition to check whether 'array contains no data' is preferred over...
-    #   ...checking whether the 'array-length is zero', because...
-    #   ...should the array contains empty lines then the array-length is non-zero.
-    #   This is behavior is unwanted.
-    if [[ -z "${fpath_arrTmp[@]}" ]]; then   #array contains no data
-        table_index_max__input=${DOCKER__NUMOFLINES_5}
-    else    #array contains data
-        if [[ ${fpath_arrLen} -le ${table_index_max__input} ]]; then
-            table_index_max__input=${fpath_arrLen}
-        fi
-    fi
-
-
-
-#---Show directory content
-    while true
-    do
-#-------Show cursor
-        cursor_hide__func
-
-#-------Disable keyboard-input
-        disable_keyboard_input__func
-        
-#-------Show menu-title
-        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-        show_centered_string__func "${menuTitle__input}" "${DOCKER__TABLEWIDTH}"
-        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-
-        if [[ ! -z ${fpath_arr[@]} ]]; then
-            #Initialization
-            flag_isSet_toBreak_loop=false
-            fpath_relArr=()
-            fpath_relArrIndex=0
-            fpath_arrIndex=0
-            keyInput=0
-            table_index=0
-
-            #Loop thru array
-            for fpath_arrItem in "${fpath_arr[@]}"
-            do
-                #Increment array-index
-                fpath_arrIndex=$((fpath_arrIndex + 1))
-
-                if [[ ${fpath_arrIndex} -gt ${table_index_base} ]]; then
-                    #increment table-index
-                    table_index=$((table_index + 1))
-
-                    #Check if 'table_index = table_index_max__input'
-                    #Remark:
-                    #   If true, set 'table_index = 0'
-                    if [[ ${table_index} -eq ${table_index_max_bck} ]]; then
-                        table_index=${DOCKER__NUMOFMATCH_0}
-
-                        flag_isSet_toBreak_loop=true
-                    fi
-
-#-------------------Get 'fpath_arrItem_base' without directory
-                    if [[ -d ${path__input} ]]; then    #is a directory
-                        fpath_arrItem_base=`basename ${fpath_arrItem}`  
-                    else    #is a file
-                        fpath_arrItem_base=${fpath_arrItem}
-                    fi
-        
-#-------------------Convert 'SED_SUBST_SPACE' back to '<space>'
-                    fpath_arrItem_conv=`echo "${fpath_arrItem_base}" | sed "s/${SED_SUBST_SPACE}/${DOCKER__ONESPACE}/g"`
-
-#-------------------Increment relative index 'fpath_relArrIndex'
-                    if [[ ${table_index} -eq ${DOCKER__NUMOFMATCH_0} ]]; then   #when a turnover has happened
-                        fpath_relArrIndex=$((table_index_max__input - 1))
-                    else    #in normal conditions
-                        fpath_relArrIndex=$((table_index - 1))
-                    fi
-
-#-------------------Add 'fpath_arrItem_conv' to 'fpath_relArr'
-                    #Remark:
-                    #   This array contains only data which matches both patterns...
-                    #   ...'pattern1__input' and 'pattern2__input'.
-                    fpath_relArr[${fpath_relArrIndex}]=${fpath_arrItem_conv}
-
-#-------------------Set 'fpath_arrItem_marked' (default)
-                    fpath_arrItem_marked=${fpath_arrItem_conv}
-
-#-------------------Mark the 1st array-element 'fpath_arrItem_marked' with 'DOCKER__BG_LIGHTSOFTYELLOW' (if applicable)
-                    if [[ ${fpath_relArrIndex} -eq ${DOCKER__NUMOFMATCH_0} ]]; then #true
-                        #Check if 'selItem__input' contains data?
-                        if [[ ! -z ${selItem__input} ]]; then   #true
-                            #Color 'fpath_arrItem_conv' if 'selItem__input != DOCKER__EMPTYSTRING'
-                            fpath_arrItem_marked="${DOCKER__BG_LIGHTSOFTYELLOW}${fpath_arrItem_marked}${DOCKER__NOCOLOR}"
-                        fi
-                    fi
-
-                    #Define and set 'fpath_arrItem_print'
-                    if [[ ${table_index} -ne ${DOCKER__NUMOFMATCH_0} ]]; then
-                        fpath_arrItem_print="${DOCKER__FOURSPACES}${table_index}. ${fpath_arrItem_marked}"
-                    else
-                        fpath_arrItem_print="${DOCKER__THREESPACES}${DOCKER__FG_LIGHTGREY}${DOCKER__LINENUM_1}${DOCKER__NOCOLOR}${table_index}. ${fpath_arrItem_marked}"
-                    fi
-
-                    #Substitute 'http' with 'hxxp' (if present)
-                    #Remark:
-                    #   This substitution is required in order to eliminate the underlines for hyperlinks
-                    fpath_arrItem_print=`subst_string_with_another_string__func "${fpath_arrItem_print}" \
-                            "${SED__HTTP}" \
-                            "${SED__HXXP}"`
-                                
-                    #Show fpath_arrItem_conv
-                    echo "${fpath_arrItem_print}"
-                fi
-
-                #Prevously 'table_index' was set to '0'.
-                #This means that the maximum number of items allowed to-be-shown has been reached.
-                #In this case, break the for-loop.
-                if [[ ${flag_isSet_toBreak_loop} == true ]]; then
-                    break
-                fi
-            done    #end of for
-        else
-            moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-
-            show_centered_string__func "${errMsg__input}" "${DOCKER__TABLEWIDTH}"
-        fi
-
-
-
-#-------Get array-length
-        fpath_relArrLen=${#fpath_relArr[@]}
-
-
-
-#-------Fill up table with Empty Lines (if needed)
-        #Check if 'flag_isSet_toBreak_loop = false'
-        #Remark:
-        #   Remember that if 'flag_isSet_toBreak_loop = true', then...
-        #   ...the for-loop was broken due to 'table_index = table_index_max__input'.
-        if [[ ${flag_isSet_toBreak_loop} == false ]]; then
-            while [[ ${table_index} -lt ${table_index_max__input} ]]
-            do
-                #increment line-number
-                table_index=$((table_index + 1))
-
-                #Print an Empty Line
-                echo "${DOCKER__EMPTYSTRING}"
-            done
-        fi
-
-
-
-#------Show 'prev' and 'next'
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-
-        #Calculate the 'table_index_base_try_next'
-        #Remark:
-        #   By doing this it can be determined whether the last-page has been reached or not.
-        table_index_base_try_next=$((table_index_base + table_index_max__input))
-
-        #Check if the specified file contains less than or equal to 10 lines
-        if [[ ${fpath_arrLen} -le ${table_index_max__input} ]]; then #less than 10 lines
-            #Don't show anything
-            echo -e "${EMPTYSTRING}"
-        else    #file contains more than 10 lines
-            if [[ ${table_index_base} -eq ${DOCKER__NUMOFMATCH_0} ]]; then   #range 1-10
-                echo -e "${next_only_print}"
-            else    #all other ranges
-                if [[ ${table_index_base_try_next} -ge ${fpath_arrLen} ]]; then  #last range value (e.g. 40-50), assuming 50 is the last-index
-                    echo -e "${prev_only_print}"
-                else   #range 10-20, 20-30, 30-40, etc.
-                    echo -e "${prev_spaces_next_print}"
-                fi
-            fi
-        fi
-
-
-
-#-------Show line-number range between 'prev' and 'next'
-        lineNum_range_relMax=$((table_index_base + table_index_max__input))
-
-        #Check if 'lineNum_range_relMax' has exceeded the maximum number array-items
-        if [[ ${lineNum_range_relMax} -gt ${fpath_arrLen} ]]; then
-            lineNum_range_relMax=${fpath_arrLen}
-        fi
-
-        #Check if 'fpath_arrLen = 0'
-        if [[ ${fpath_arrLen} -eq ${DOCKER__NUMOFMATCH_0} ]]; then  #array contains no data
-            lineNum_range_relMin=${DOCKER__LINENUM_0}
-        else    #array contains data
-            lineNum_range_relMin=$((table_index_base + 1))
-        fi
-
-        lineNum_range_max_abs=${fpath_arrLen}
-
-        #Prepare the line-number range message
-        lineNum_range_msg="${DOCKER__FG_LIGHTGREY}${lineNum_range_relMin}${DOCKER__NOCOLOR} "
-        lineNum_range_msg+="to ${DOCKER__FG_LIGHTGREY}${lineNum_range_relMax}${DOCKER__NOCOLOR} "
-        lineNum_range_msg+="(${DOCKER__FG_SOFTLIGHTRED}${lineNum_range_max_abs}${DOCKER__NOCOLOR})"
-
-        # show_centered_string__func "${lineNum_range_msg}" "${DOCKER__TABLEWIDTH}"
-
-        #Caclulate the length of 'lineNum_range_msg' without regEx
-        lineNum_range_msg_wo_regEx_len=`get_stringlen_wo_regEx__func "${lineNum_range_msg}"`
-
-        #Determine the start-position of where to place 'lineNum_range_msg'
-        lineNum_range_msg_startPos=$(( (DOCKER__TABLEWIDTH/2) - (lineNum_range_msg_wo_regEx_len/2) ))
-
-        #Move cursor to start-position 'lineNum_range_msg_startPos'
-        tput cuu1 && tput cuf ${lineNum_range_msg_startPos}
-
-        #Print 'lineNum_range_msg'
-        echo -e "${lineNum_range_msg}"
-
-
-
-#-------Show info & menu-options
-        # moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-        info__input=`trim_string_toFit_specified_windowSize__func "${info__input}" \
-                        "${DOCKER__TABLEWIDTH}" \
-                        "${DOCKER__TRUE}"`
-        if [[ ! -z ${info__input} ]]; then
-            duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-            echo -e "${info__input}"
-        fi
-        if [[ ! -z ${remark__input} ]]; then
-            duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-            echo -e "${remark__input}"
-        fi
-        if [[ ! -z ${menuOptions__input} ]]; then
-            duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-            echo -e "${menuOptions__input}"
-        fi
-        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-
-
-
-#-------Enable keyboard-input
-        enable_keyboard_input__func
-
-#-------Show cursor
-        cursor_show__func
-
-#-------Read-input
-        while true
-        do
-            #Show read-input
-            read -N1 -p "${readDialog__input}" keyInput
-
-            #Check if 'keyInput' is a numeric value
-            case "${keyInput}" in
-                ${DOCKER__ENTER})
-                    moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-                    ;;
-                ${DOCKER__ESCAPED_HOOKLEFT})
-                    #Only decrement if 'table_index_base > table_index_max__input'
-                    #Remark:
-                    #   Notice that 'table_index_base_try_next' is used here and NOT 'table_index_base'
-                    if [[ ${table_index_base_try_next} -gt ${table_index_max__input} ]]; then
-                        #Set the index-base value (e.g., 0,10,20,etc...)
-                        table_index_base=$((table_index_base - table_index_max__input))
-
-                        #Move-up and clean each line until the top of the table
-                        moveUp_and_cleanLines__func "${tot_numOfLines}"
-
-                        #Break this for-loop
-                        break
-                    else
-                        moveToBeginning_and_cleanLine__func
-                    fi
-
-                    ;;
-                ${DOCKER__ESCAPED_HOOKRIGHT})
-                    #Only decrement if 'table_index_base_try_next < fpath_arrLen'
-                    #Remark:
-                    #   Notice that 'table_index_base_try_next' is used here and NOT 'table_index_base'
-                    if [[ ${table_index_base_try_next} -lt ${fpath_arrLen} ]]; then
-                        #Set the index-base value (e.g., 0,10,20,etc...)
-                        table_index_base=$((table_index_base + table_index_max__input))
-
-                        #Move-up and clean each line until the top of the table
-                        moveUp_and_cleanLines__func "${tot_numOfLines}"
-
-                        #Break this for-loop
-                        break
-                    else
-                        moveToBeginning_and_cleanLine__func
-                    fi
-                    ;;
-                ${DOCKER__ESCAPEKEY})
-                    moveToBeginning_and_cleanLine__func
-
-                    #Get the function-key 'keyOutput' based on the chosen 'keyInput'
-                    keyOutput=`functionKey_detection__func "${keyInput}"`
-                    case "${keyOutput}" in
-                        ${DOCKER__ENUM_FUNC_F12})
-                            #Print read-input dialog with 'keyOutput' value
-                            echo "${readDialog__input}"
-                            
-                            #Important: set flag to true
-                            flag_matched_fkey_isPressed=true
-
-                            # #Exit
-                            # exit__func "${DOCKER__EXITCODE_0}" "${DOCKER__NUMOFLINES_2}"
-                            ;;
-                        *)  #OTHER F-KEYS AS SPECIFIED BY 'matchPattern__input'
-                            if [[ ! -z ${matchPattern__input} ]]; then  #not an Empty String
-                                #Check if the retrieved function-key 'keyOutput' matches the pattern 'matchPattern__input'
-                                flag_matched_fkey_isPressed=`checkForMatch_of_pattern_within_string__func \
-                                        "${keyOutput}" \
-                                        "${matchPattern__input}"`
-                            fi
-                            ;;
-                    esac
-
-                    #Check if a matched function-key was pressed
-                    if [[ ${flag_matched_fkey_isPressed} == true ]]; then  #match was found
-                        #Set output 'ret'
-                        ret=${keyOutput}
-
-                        #Break the main while-loop
-                        flag_break_main_whileLoop=true
-
-                        #Break this for-loop
-                        break
-                    fi
-                    ;;
-                *)
-                    if [[ ${keyInput} =~ [1-90] ]]; then
-                        #IMPORTANT: If 'keyInput = 0', then set 'keyInput = table_index_max__input'
-                        if [[ ${keyInput} -eq ${DOCKER__NUMOFMATCH_0} ]]; then
-                            keyInput=${table_index_max__input}
-                        fi
-
-                        #Only handle the following condition if 'keyInput =< fpath_relArrLen'
-                        if [[ ${keyInput} -le ${fpath_relArrLen} ]]; then
-                            #If 'keyInput = 0', then set 'keyInput = table_index_max__input'
-                            #Remark:
-                            #   This part is actually not necessary since it has been executed already previously.
-                            if [[ ${keyInput} -eq ${DOCKER__NUMOFMATCH_0} ]]; then
-                                keyInput=${table_index_max__input}
-                            fi
-
-                            #Convert to array-index
-                            #Remark:
-                            #   -1 is a correction due to array starting with 'index = 0'
-                            fpath_relArrIndex_sel=$(( keyInput - 1 ))
-
-                            #Get the selected 'fpath_relArrItem_sel'
-                            fpath_relArrItem_sel="${fpath_relArr[fpath_relArrIndex_sel]}"
-
-                            #Determine the output 'ret' based on whether 'path__input' is a 'directory' or 'file' 
-                            if [[ -d ${path__input} ]]; then    #directory
-                                ret=${path__input}/${fpath_relArrItem_sel}
-                            else    #file
-                                ret=${fpath_relArrItem_sel}
-                            fi
-
-                            #Move-down and clean lines
-                            # moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_3}"
-
-                            #Break the main while-loop
-                            flag_break_main_whileLoop=true
-
-                            #Break this for-loop
-                            break
-                        else
-                            moveToBeginning_and_cleanLine__func
-                        fi             
-                    else    #any other keys
-                        #'matchPattern__input' could contain any keys other than function-keys or numbers [1-90]
-                        #Remark:
-                        #   This part has been tested, but NOT thoroughly.                
-                        if [[ ! -z ${matchPattern__input} ]]; then  #not an Empty String
-                            #Check if the retrieved function-key 'keyInput' matches the pattern 'matchPattern__input'
-                            flag_matched_fkey_isPressed=`checkForMatch_of_pattern_within_string__func \
-                                    "${keyInput}" \
-                                    "${matchPattern__input}"`
-
-                            #Check if a matched function-key was pressed
-                            if [[ ${flag_matched_fkey_isPressed} == true ]]; then  #match was found
-                                #Set output 'ret'
-                                ret=${keyInput}
-
-                                #Break the main while-loop
-                                flag_break_main_whileLoop=true
-
-                                #Break this for-loop
-                                break
-                            fi
-                        fi
-
-                        moveToBeginning_and_cleanLine__func
-                    fi
-                    ;;
-            esac
-        done    #end of while
-
-        #Check if 'flag_break_main_whileLoop = true'
-        if [[ ${flag_break_main_whileLoop} == true ]]; then
-            break
-        fi
-    done    #end of main while
-
-
-
-#---Output
-    #write to line-number: 1
-    echo "${ret}" > ${outputFpath__input}
-
-    #write to line-number: 2
-    #Remark:
-    #   This may be useful in case the whole table needs to be cleared...
-    #   ...which was drawn by this subroutine 'show_pathContent_w_selection__func'.
-    echo "${tot_numOfLines}" >> ${outputFpath__input}
-}
-
-function show_fileContent_wo_select__func() {
-#---Input args
-    local fpath__input=${1}
-    local menuTitle__input=${2}
-    local remark__input=${3}
-    local info__input=${4}
-    local menuOptions__input=${5}
-    local errMsg__input=${6}
-    local readDialog__input=${7}
-    local regEx__input=${8}
-    local outputFpath__input=${9}
-    local table_index_max__input=${10}
-    local menuTitle_indent__input=${11}  #leading spaces to-be-added before 'menuTitle__input'
-    local flag_pressAnyKey_isEnabled=${12}
-
-
-
-#---Define variables
-    local fpath_arr=()
-    local fpath_arrIndex=0
-    local fpath_arrLen=0
-    local fpath_arrItem=${DOCKER__EMPTYSTRING}
-
-    local keyInput=${DOCKER__EMPTYSTRING}
-    local keyOutput=${DOCKER__EMPTYSTRING}
-
-    local table_index=0
-    local table_index_base=0
-    local table_index_base_try_next=0
-
-    local flag_break_main_whileLoop=false
-    local flag_isSet_toBreak_loop=false
-
-
-
-#---Remove file (if present)
-    if [[ -f ${outputFpath__input} ]]; then
-        rm ${outputFpath__input}
-    fi
-
-
-
-#---Trim message to fit within the specified terminal window-size 'DOCKER__TABLEWIDTH'
-    info__input=`trim_string_toFit_specified_windowSize__func "${info__input}" "${DOCKER__TABLEWIDTH}" "${DOCKER__TRUE}"`
-
-
-
-#---Calculate num-of-lines of input-args
-    menuTitle_numOfLines=`get_numOfLines_for_specified_string_or_file__func "${menuTitle__input}"`
-    remark_numOfLines=`get_numOfLines_for_specified_string_or_file__func "${remark__input}"`
-    info_numOfLines=`get_numOfLines_for_specified_string_or_file__func "${info__input}"`
-    menuOptions_numOfLines=`get_numOfLines_for_specified_string_or_file__func "${menuOptions__input}"`
-    readDialog_numOfLines=`get_numOfLines_for_specified_string_or_file__func "${readDialog__input}"`
-
-    #fixed objects
-    fixed_numOfLines=${DOCKER__NUMOFLINES_4}    #due to a fixed number of horizontal and empty lines
-    if [[ ${remark_numOfLines} -gt ${DOCKER__NUMOFMATCH_0} ]]; then
-        fixed_numOfLines=$((fixed_numOfLines + 1))  #due to the preceding horizontal line
-    fi
-    if [[ ${info_numOfLines} -gt ${DOCKER__NUMOFMATCH_0} ]]; then
-        fixed_numOfLines=$((fixed_numOfLines + 1))  #due to the preceding horizontal line
-    fi
-    if [[ ${menuOptions_numOfLines} -gt ${DOCKER__NUMOFMATCH_0} ]]; then
-        fixed_numOfLines=$((fixed_numOfLines + 1))  #due to the preceding horizontal line
-    fi
-    if [[ ${flag_pressAnyKey_isEnabled} == true ]]; then
-        fixed_numOfLines=$((fixed_numOfLines + 1))  #due to the preceding horizontal line
-    fi
-
-    #total
-    tot_numOfLines=$((menuTitle_numOfLines + remark_numOfLines + info_numOfLines + menuOptions_numOfLines + readDialog_numOfLines + fixed_numOfLines + table_index_max__input))
-
-
-
-#---Define 'prev' and 'next' variables
-    local prev_only_print="${DOCKER__ONESPACE_PREV}"
-
-    local oneSpacePrev_len=`get_stringlen_wo_regEx__func "${DOCKER__ONESPACE_PREV}"`
-    local oneSpaceNext_len=`get_stringlen_wo_regEx__func "${DOCKER__ONESPACE_NEXT}"`
-    local space_between_prev_and_next_len=$(( DOCKER__TABLEWIDTH - (oneSpacePrev_len + oneSpaceNext_len) - 1 ))
-    local space_between_prev_and_next=`duplicate_char__func "${DOCKER__ONESPACE}" "${space_between_prev_and_next_len}"`
-    local prev_spaces_next_print="${DOCKER__ONESPACE_PREV}${space_between_prev_and_next}${DOCKER__ONESPACE_NEXT}"
-
-    local docker_space_between_leftBoundary_and_next_len=$(( DOCKER__TABLEWIDTH - oneSpacePrev_len - 1 ))
-    local docker_space_between_leftBoundary_and_next=`duplicate_char__func "${DOCKER__ONESPACE}" "${docker_space_between_leftBoundary_and_next_len}"`
-    local next_only_print="${docker_space_between_leftBoundary_and_next}${DOCKER__ONESPACE_NEXT}"
-
-
-
-#---Store directory content in array'
-    #Remark: 
-    #   Also make sure to substitute '<space>' with '${STX}space${ETX}'
-    if [[ -s ${fpath__input} ]]; then   #file contains data
-        readarray -t fpath_arr < ${fpath__input}
-    fi
-
-#---Get 'fpath_arrLen'
-    fpath_arrLen=${#fpath_arr[@]}
-
-
-
-#---Set 'table_index_max__input' (if needed)
-    #Note: 
-    #   The condition to check whether 'array contains no data' is preferred over...
-    #   ...checking whether the 'array-length is zero', because...
-    #   ...should the array contains empty lines then the array-length is non-zero.
-    #   This is behavior is unwanted.
-    if [[ -z "${fpath_arr[@]}" ]]; then   #array contains no data
-        table_index_max__input=${DOCKER__NUMOFLINES_5}
-    else    #array contains data
-        if [[ ${fpath_arrLen} -le ${table_index_max__input} ]]; then
-            table_index_max__input=${fpath_arrLen}
-        fi
-    fi
-
-
-
-#---Show directory content
-    while true
-    do
-#-------Show cursor
-        cursor_hide__func
-
-#-------Disable keyboard-input
-        disable_keyboard_input__func
-
-
-
-#-------Show menu-title
-        # duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-        show_menuTitle_w_adjustable_indent__func "${menuTitle__input}" "${menuTitle_indent__input}"
-        # duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-
-        if [[ ! -z ${fpath_arr[@]} ]]; then
-            #Initialization
-            flag_isSet_toBreak_loop=false
-            fpath_arrIndex=0
-            keyInput=0
-            table_index=0
-
-            #Loop thru array
-            for fpath_arrItem in "${fpath_arr[@]}"
-            do
-                #Increment array-index
-                fpath_arrIndex=$((fpath_arrIndex + 1))
-
-                #Turn
-                if [[ ${fpath_arrIndex} -gt ${table_index_base} ]]; then
-                    #increment table-index
-                    table_index=$((table_index + 1))
-
-                    #Check if 'table_index = table_index_max__input'
-                    #Remark:
-                    #   If true, set 'table_index = 0'
-                    if [[ ${table_index} -eq ${table_index_max__input} ]]; then
-                        table_index=${DOCKER__NUMOFMATCH_0}
-
-                        flag_isSet_toBreak_loop=true
-                    fi
-
-                    #Print fpath_arrItem
-                    echo "${DOCKER__FOURSPACES}${fpath_arrItem}"
-                fi
-
-                #Prevously 'table_index' was set to '0'.
-                #This means that the maximum number of items allowed to-be-shown has been reached.
-                #In this case, break the for-loop.
-                if [[ ${flag_isSet_toBreak_loop} == true ]]; then
-                    break
-                fi
-            done    #end of for
-        else
-            moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-
-            show_centered_string__func "${errMsg__input}" "${DOCKER__TABLEWIDTH}"
-        fi
-
-
-
-#-------Fill up table with Empty Lines (if needed)
-        #Check if 'flag_isSet_toBreak_loop = false'
-        #Remark:
-        #   Remember that if 'flag_isSet_toBreak_loop = true', then...
-        #   ...the for-loop was broken due to 'table_index = table_index_max__input'.
-        if [[ ${flag_isSet_toBreak_loop} == false ]]; then
-            while [[ ${table_index} -lt ${table_index_max__input} ]]
-            do
-                #increment line-number
-                table_index=$((table_index + 1))
-
-                #Print an Empty Line
-                echo "${DOCKER__EMPTYSTRING}"
-            done
-        fi
-
-
-
-#------Show 'prev' and 'next'
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-
-        #Calculate the 'table_index_base_try_next'
-        #Remark:
-        #   By doing this it can be determined whether the last-page has been reached or not.
-        table_index_base_try_next=$((table_index_base + table_index_max__input))
-
-        #Check if the specified file contains less than or equal to 10 lines
-        if [[ ${fpath_arrLen} -le ${table_index_max__input} ]]; then #less than 10 lines
-            #Don't show anything
-            echo -e "${EMPTYSTRING}"
-        else    #file contains more than 10 lines
-            if [[ ${table_index_base} -eq ${DOCKER__NUMOFMATCH_0} ]]; then   #range 1-10
-                echo -e "${next_only_print}"
-            else    #all other ranges
-                if [[ ${table_index_base_try_next} -ge ${fpath_arrLen} ]]; then  #last range value (e.g. 40-50), assuming 50 is the last-index
-                    echo -e "${prev_only_print}"
-                else   #range 10-20, 20-30, 30-40, etc.
-                    echo -e "${prev_spaces_next_print}"
-                fi
-            fi
-        fi
-
-
-
-#-------Show line-number range between 'prev' and 'next'
-        lineNum_range_relMax=$((table_index_base + table_index_max__input))
-        #Check if 'lineNum_range_relMax' has exceeded the maximum number array-items
-        if [[ ${lineNum_range_relMax} -gt ${fpath_arrLen} ]]; then
-            lineNum_range_relMax=${fpath_arrLen}
-        fi
-
-        #Check if 'fpath_arrLen = 0'
-        if [[ ${fpath_arrLen} -eq ${DOCKER__NUMOFMATCH_0} ]]; then  #array contains no data
-            lineNum_range_relMin=${DOCKER__LINENUM_0}
-        else    #array contains data
-            lineNum_range_relMin=$((table_index_base + 1))
-        fi
-
-        lineNum_range_max_abs=${fpath_arrLen}
-
-        #Prepare the line-number range message
-        lineNum_range_msg="${DOCKER__FG_LIGHTGREY}${lineNum_range_relMin}${DOCKER__NOCOLOR} "
-        lineNum_range_msg+="to ${DOCKER__FG_LIGHTGREY}${lineNum_range_relMax}${DOCKER__NOCOLOR} "
-        lineNum_range_msg+="(${DOCKER__FG_SOFTLIGHTRED}${lineNum_range_max_abs}${DOCKER__NOCOLOR})"
-
-        # show_centered_string__func "${lineNum_range_msg}" "${DOCKER__TABLEWIDTH}"
-
-        #Caclulate the length of 'lineNum_range_msg' without regEx
-        lineNum_range_msg_wo_regEx_len=`get_stringlen_wo_regEx__func "${lineNum_range_msg}"`
-
-        #Determine the start-position of where to place 'lineNum_range_msg'
-        lineNum_range_msg_startPos=$(( (DOCKER__TABLEWIDTH - lineNum_range_msg_wo_regEx_len)/2 ))
-
-        #Move cursor to start-position 'lineNum_range_msg_startPos'
-        tput cuu1 && tput cuf ${lineNum_range_msg_startPos}
-
-        #Print 'lineNum_range_msg'
-        echo -e "${lineNum_range_msg}"
-
-
-
-#-------Show info
-        # moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-        if [[ ! -z ${info__input} ]]; then
-            duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-            #Trim 'info__input' (if necessary)
-            info__input=`trim_string_toFit_specified_windowSize__func "${info__input}" \
-                            "${DOCKER__TABLEWIDTH}" \
-                            "${DOCKER__TRUE}"`
-            echo -e "${info__input}"
-        fi
-#-------Show remark
-        if [[ ! -z ${remark__input} ]]; then
-            duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-            echo -e "${remark__input}"
-        fi
-#-------Show menu-options
-        if [[ ! -z ${menuOptions__input} ]]; then
-            duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-            echo -e "${menuOptions__input}"
-        fi
-        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-
-
-#-------Enable keyboard-input
-        enable_keyboard_input__func
-
-
-#-------Show cursor
-        cursor_show__func
-
-
-#-------Check if 'flag_pressAnyKey_isEnabled = true'
-        if [[ "${flag_pressAnyKey_isEnabled}" == true ]]; then
-            #Check if array 'fpath_arr' contains data
-            #Note: 
-            #   The condition to check whether 'array contains no data' is preferred over...
-            #   ...checking whether the 'array-length is zero', because...
-            #   ...should the array contains empty lines then the array-length is non-zero.
-            #   This is behavior is unwanted.
-            if [[ -z "${fpath_arr[@]}" ]]; then   #array contains no data
-                return
-            else    #array contains data
-                if [[ ${fpath_arrLen} -le ${table_index_max__input} ]]; then
-                    return
-                fi
-            fi
-        fi
-
-
-#-------Read-input
-        while true
-        do
-            #Show read-input
-            read -N1 -r -p "${readDialog__input}" keyInput
-
-            #Check if 'keyInput' is a numeric value
-            case "${keyInput}" in
-                ${DOCKER__ENTER})
-                    #Check if 'flag_pressAnyKey_isEnabled = true'
-                    #Remark:
-                    #   If true, then exit upon pressing Enter.
-                    if [[ ${flag_pressAnyKey_isEnabled} == true ]]; then
-                        moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-
-                        return
-                    fi
-
-                    moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-                    ;;
-                ${DOCKER__ESCAPED_HOOKLEFT})
-                    #Only decrement if 'table_index_base > table_index_max__input'
-                    #Remark:
-                    #   Notice that 'table_index_base_try_next' is used here and NOT 'table_index_base'
-                    if [[ ${table_index_base_try_next} -gt ${table_index_max__input} ]]; then
-                        #Set the index-base value (e.g., 0,10,20,etc...)
-                        table_index_base=$((table_index_base - table_index_max__input))
-
-                        #Move-up and clean each line until the top of the table
-                        moveUp_and_cleanLines__func "${tot_numOfLines}"
-
-                        #Break this for-loop
-                        break
-                    else
-                        moveToBeginning_and_cleanLine__func
-                    fi
-
-                    ;;
-                ${DOCKER__ESCAPED_HOOKRIGHT})
-                    #Only decrement if 'table_index_base_try_next < fpath_arrLen'
-                    #Remark:
-                    #   Notice that 'table_index_base_try_next' is used here and NOT 'table_index_base'
-                    if [[ ${table_index_base_try_next} -lt ${fpath_arrLen} ]]; then
-                        #Set the index-base value (e.g., 0,10,20,etc...)
-                        table_index_base=$((table_index_base + table_index_max__input))
-
-                        #Move-up and clean each line until the top of the table
-                        moveUp_and_cleanLines__func "${tot_numOfLines}"
-
-                        #Break this for-loop
-                        break
-                    else
-                        moveToBeginning_and_cleanLine__func
-                    fi
-                    ;;
-                ${DOCKER__ESCAPEKEY})
-                    moveToBeginning_and_cleanLine__func
-
-                    #Get the function-key which was pressed
-                    keyOutput=`functionKey_detection__func "${keyInput}"`
-
-                    #Check if 'flag_pressAnyKey_isEnabled = true'
-                    #Remarks:
-                    #   1. If true, then exit upon pressing other function-keys (F1 to F12)
-                    #   2. In order to remove the unwanted escaped chars,...
-                    #      ...function 'functionKey_detection__func' should be executed...
-                    #      ...BEFORE this condtion, 
-                    if [[ ${flag_pressAnyKey_isEnabled} == true ]]; then
-                        return
-                    fi
-
-                    #Check if function-key F12 was pressed
-                    if [[ ${keyOutput} == ${DOCKER__ENUM_FUNC_F12} ]]; then
-                        #Print read-input dialog
-                        echo "${readDialog__input}"
-
-                        #Update 'keyInput'
-                        keyInput=${keyOutput}
-
-                        #Break the main while-loop
-                        flag_break_main_whileLoop=true
-
-                        #Break this for-loop
-                        break                   
-
-                        # #Exit
-                        # exit__func "${DOCKER__EXITCODE_0}" "${DOCKER__NUMOFLINES_2}"
-                    fi
-                    ;;
-                *)
-                    #Check if 'flag_pressAnyKey_isEnabled = true'
-                    #Remark:
-                    #   If true, then exit upon pressing any other keys (e.g., a,b,@,etc...)
-                    if [[ ${flag_pressAnyKey_isEnabled} == true ]]; then
-                        moveToBeginning_and_cleanLine__func
-
-                        return
-                    fi
-
-                    if [[ ${keyInput} =~ ${regEx__input} ]]; then
-                            # if [[ ${keyInput} =~ [yn] ]]; then
-                            #     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
-                            # else
-                            #     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-                            # fi
-
-                            #Break the main while-loop
-                            flag_break_main_whileLoop=true
-
-                            #Break this for-loop
-                            break
-                    else
-                        moveToBeginning_and_cleanLine__func
-                    fi
-                    ;;
-            esac
-        done    #end of while
-
-        #Check if 'flag_break_main_whileLoop = true'
-        if [[ ${flag_break_main_whileLoop} == true ]]; then
-            break
-        fi
-    done    #end of main while
-
-
-
-#---Output
-    #Write to file
-    echo "${keyInput}" > ${outputFpath__input}  
-}
-
 function show_header__func() {
     #Input args
     local menuTitle__input=${1}
@@ -2971,12 +2483,25 @@ function show_msg_only__func() {
     #Input args
     local msg__input=${1}
     local prepend_numOfLines__input=${2}
+    local append_numOfLines__input=${3}
 
-    #Move-down and clean
+    #Initialization
+    if [[ -z ${prepend_numOfLines__input} ]]; then
+        prepend_numOfLines__input=${DOCKER__NUMOFLINES_0}
+    fi
+
+    if [[ -z ${append_numOfLines__input} ]]; then
+        append_numOfLines__input=${DOCKER__NUMOFLINES_0}
+    fi
+
+    #Prepend empty line
     moveDown_and_cleanLines__func "${prepend_numOfLines__input}"
 
     #Print
     echo -e "${msg__input}"
+
+    #Append empty line
+    moveDown_and_cleanLines__func "${append_numOfLines__input}"
 }
 
 function show_msg_w_menuTitle_w_pressAnyKey_w_ctrlC_func() {
@@ -3022,11 +2547,33 @@ function show_msg_w_menuTitle_only_func() {
     #Input args
     local menuTitle__input=${1}
     local msg__input=${2}
-    local prepend_numOfLines__input=${3}
-    local append_numOfLines__input=${4}
+    local msg_indent__input=${3}    #If NO indent, specify 'DOCKER__ZEROSPACE' (however, DO NOT use DOCKER__EMPTYSTRING)
+    local prepend_numOfLines__input=${4}    #add number of empty lines BEFORE table
+    local afterMsg_numOfLines__input=${5}   #add number of empty lines AFTER 'msg__input'
+    local append_numOfLines__input=${6} #add number of empty lines AFTER table
+    local tibboHeader_prepend_numOfLines__input=${7}
 
-    #Prepend empty lines
-    moveDown_and_cleanLines__func "${prepend_numOfLines__input}"
+
+    #Initialization
+    if [[ -z ${prepend_numOfLines__input} ]]; then
+        prepend_numOfLines__input=${DOCKER__NUMOFLINES_0}
+    fi
+
+    if [[ -z ${afterMsg_numOfLines__input} ]]; then
+        afterMsg_numOfLines__input=${DOCKER__NUMOFLINES_0}
+    fi
+
+
+    if [[ -z ${append_numOfLines__input} ]]; then
+        append_numOfLines__input=${DOCKER__NUMOFLINES_0}
+    fi
+
+    #Print Tibbo-title (if applicable)
+    if [[ ! -z ${tibboHeader_prepend_numOfLines__input} ]]; then
+        load_tibbo_title__func "${tibboHeader_prepend_numOfLines__input}"
+    else
+        moveDown_and_cleanLines__func "${prepend_numOfLines__input}"
+    fi
 
     #Horizontal line
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
@@ -3037,17 +2584,24 @@ function show_msg_w_menuTitle_only_func() {
     #Horizontal line
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
     
-    #Only handle the following condition if 'msg__input' is NOT an Empty String
-    if [[ ! -z ${msg__input} ]]; then
-        #Print 'msg__input'
-        echo -e "${msg__input}"
-        
-        #Append 1 emoty line
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-
-        #Horizontal line
-        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    #CHeck if 'msg_indent__input' is an Empty String or Not
+    if [[ -z ${msg_indent__input} ]]; then  #is an Empty String
+        show_centered_string__func "${msg__input}" "${DOCKER__TABLEWIDTH}"
+    else    #is NOT an Empty String
+        #Check if 'msg_indent__input' is 'DOCKER__ZEROSPACE'
+        #Remark:
+        #   This means that NO indent should be applied
+        if [[ ${msg_indent__input} == ${DOCKER__ZEROSPACE} ]]; then
+            msg_indent__input=${DOCKER__EMPTYSTRING}
+        fi
+        echo -e "${msg_indent__input}${msg__input}"
     fi
+    
+    #Append 1 emoty line
+    moveDown_and_cleanLines__func "${afterMsg_numOfLines__input}"
+
+    #Horizontal line
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
 
     #Append empty lines
     moveDown_and_cleanLines__func "${append_numOfLines__input}"
@@ -3264,9 +2818,14 @@ function show_repoList_or_containerList_w_menuTitle_w_confirmation__func() {
     local confirmation_timeout__input=${5}
     local confirmation_prepend_numOfLines__input=${6}
     local confirmation_append_numOfLines__input=${7}
+    local tibboHeader_prepend_numOfLines__input=${8}
 
-    #Move-down cursor
-    moveDown_and_cleanLines__func "${prepend_numOfLines__input}"
+    #Print Tibbo-title (if applicable)
+    if [[ ! -z ${tibboHeader_prepend_numOfLines__input} ]]; then
+        load_tibbo_title__func "${tibboHeader_prepend_numOfLines__input}"
+    else
+        moveDown_and_cleanLines__func "${prepend_numOfLines__input}"
+    fi
 
     #Horizontal line
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
@@ -3289,7 +2848,7 @@ function show_repoList_or_containerList_w_menuTitle_w_confirmation__func() {
         fi
 
         #Move-down cursor
-        # moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
     else    #no containers found
         #Move-down cursor
         moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
@@ -3354,7 +2913,6 @@ function show_msg_w_menuTitle_w_confirmation__func() {
                         "${confirmation_append_numOfLines__input}"
 }
 
-
 function show_msg_wo_menuTitle_w_confirmation__func() {
     #Input args
     local msg__input=${1}
@@ -3398,106 +2956,1264 @@ function show_menuTitle_w_adjustable_indent__func() {
 
 
 
-#---STRING FUNCTIONS
-function array_find_and_move_element_toTop__func() {
+#---READ-DiALOG FUNCTIONS
+function readDialog_w_Output__func() {
     #Input args
-    local pattern__input=${1}
-    shift
-    local arr__input=("$@")
+    local readMsg__input=${1}
+    local defaultVal__input=${2}
+    local outputFpath__input=${3}
+    local prepend_numOfLines__input=${4}
+    local append_numOfLines__input=${5}
 
-    #Define variables
-    local arr_leftOfMatch=()
-    local arr_rightOfMatch=()
-    local arr_new=()
-
-    local arrLen=0
-    local arrIndex_max=0
-    local index_match=0
-    local lineNum_match=0
-    local numOfElements_leftOfMatch=0
-    local startIndex_rightOfMatch=0
-
-    #Get length of array 'arr__input'
-    local arrLen=${#arr__input[@]}
-    local arrIndex_max=$((arrLen - 1))
-
-    #Check if there is an EXACT MATCH of 'pattern__input' within 'arr__input'.
-    #If true, then get the array-index.
-    #1. Get the line-number:
-    lineNum_match=`echo "${arr__input[@]}" | xargs -n1 | grep -nw "${pattern__input}" | cut -d"${DOCKER__COLON}" -f1`
-
-    #Check if 'lineNum_match = 0'.
-    #If true, then exit function, because no match was found.
-    if [[ ${lineNum_match} -eq ${DOCKER__NUMOFMATCH_0} ]]; then
-        echo "${arr__input[@]}"
-
-        return
+    #Remove file (if present)
+    if [[ -f ${outputFpath__input} ]]; then
+        rm ${outputFpath__input}
     fi
 
-    #2. Get the array-index:
-    index_match=$((lineNum_match - 1))
 
-    #Check if 'index_match = 0'.
-    #If true, then exit function, because 'pattern__input' is already on the top.
-    if [[ ${index_match} -eq ${DOCKER__NUMOFMATCH_0} ]]; then
-        echo "${arr__input[@]}"
-
-        return
+    #Check if 'prepend_numOfLines' is an Empty String
+    if [[ -z ${prepend_numOfLines__input} ]]; then
+        prepend_numOfLines__input=${DOCKER__NUMOFLINES_0}
     fi
 
-    #Get the 'numOfElements_leftOfMatch' and 'startIndex_rightOfMatch'
-    numOfElements_leftOfMatch=$((lineNum_match - 1))
-    startIndex_rightOfMatch=$((index_match + 1))
-
-    #Get 'arr_leftOfMatch'
-    arr_leftOfMatch=("${arr__input[@]:0:numOfElements_leftOfMatch}")
-
-    #Check if 'startIndex_rightOfMatch <= arrIndex_max'
-    #If false, then no need to get 'arr_rightOfMatch'
-    if [[ ${startIndex_rightOfMatch} -le ${arrIndex_max} ]]; then
-        #Get 'arr_rightOfMatch'
-        arr_rightOfMatch=("${arr__input[@]:startIndex_rightOfMatch}")
+    #Check if 'append_numOfLines__input' is an Empty String
+    if [[ -z ${append_numOfLines__input} ]]; then
+        append_numOfLines__input=${DOCKER__NUMOFLINES_0}
     fi
 
-    #Compose 'arr_new'
-    arr_new[0]=${arr__input[index_match]}
-    arr_new+=(${arr_leftOfMatch[@]})
-    arr_new+=(${arr_rightOfMatch[@]})
 
-    #Output
-    echo "${arr_new[@]}"
-}
+    #Move-down and clean
+    moveDown_and_cleanLines__func "${prepend_numOfLines__input}"
 
 
-function checkFor_leading_partialMatch_of_pattern_within_array__func() {
-    #Turn-off Expansion
-    disable_expansion__func
+    #Initialization
+    local ret=${defaultVal__input}
+    local ret_semiColonVal=${DOCKER__EMPTYSTRING}
 
-    #Input Args
-    local pattern__input="${1}"
-    shift
-    local arr__input=("$@")
+    #Start loop
+    while true
+    do
+        echo -e "${readMsg__input}${ret}"
 
-    #Define variables
-    local arrItem=${DOCKER__EMPTYSTRING}
-    local isFound=${DOCKER__EMPTYSTRING}
-    local ret="false"
+        #Move cursor up
+        moveUp_oneLine_then_moveRight__func "${readMsg__input}" "${ret}"
+        
+        #Execute read-input
+        read -N1 -rs -p "" keyInput
 
-    #Loop thru array
-    for arrItem in "${arr__input[@]}"
-    do   
-        isFound=`echo "${pattern__input}" | grep "^${arrItem}"`
-        if [[ ! -z "${isFound}" ]]; then
-            ret="true"
+        case "${keyInput}" in
+            ${DOCKER__ENTER})
+                #Check if there were any ';b', ';c', ';h' issued.
+                #In other words, whether 'ret' contains any of the above semi-colon chars.
+                #If that's the case then function 'get_endResult_ofString_with_semiColonChar__func'
+                #   will handle and return a modified 'ret'.
+                ret_bck=${ret}  #set value
+                ret=`get_endResult_ofString_with_semiColonChar__func "${ret_bck}"`
+         
+                if [[ ! -z ${ret} ]]; then    #'ret' contains data
+                    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
-            break
-        fi
+                    case "${ret}" in
+                        ${DOCKER__SEMICOLON_BACK})
+                            #Retrieve the substring preceding (;b) and write to variable 'ret'
+                            ret=`echo "${ret_bck}" | sed "s/${DOCKER__SEMICOLON_BACK}$//g"`
+
+                            #Set 'ret_semiColonVal'
+                            ret_semiColonVal=${DOCKER__SEMICOLON_BACK}
+                            ;;
+                        ${DOCKER__SEMICOLON_HOME})
+                            #Retrieve the substring preceding (;h) and write to variable 'ret'
+                            ret=`echo "${ret_bck}" | sed "s/${DOCKER__SEMICOLON_HOME}$//g"`
+
+                            #Set 'ret_semiColonVal'
+                            ret_semiColonVal=${DOCKER__SEMICOLON_HOME}
+                            ;;
+                    esac
+
+                    break
+                else    #'ret' is an Empty String
+                    #Reset variable
+                    ret=${DOCKER__EMPTYSTRING}
+
+                    #First Move-down, then Move-up, after that clean line
+                    moveToBeginning_and_cleanLine__func
+                fi
+                ;;
+            ${DOCKER__BACKSPACE})
+                #Update variable
+                ret=`readDialog_w_Output_backSpace_handler__func "${ret}"`
+
+                #First Move-down, then Move-up, after that clean line
+               moveToBeginning_and_cleanLine__func
+                ;;
+            ${DOCKER__ESCAPEKEY})
+                #Handle Arrowkey-press
+                readDialog_w_Output_arrowKeys_handler__func
+
+                #First Move-down, then Move-up, after that clean line
+                moveToBeginning_and_cleanLine__func
+                ;;
+            ${DOCKER__TAB})
+                #First Move-down, then Move-up, after that clean line
+                moveToBeginning_and_cleanLine__func
+                ;;
+            *)
+                #wait for another 0.5 seconds to capture additional characters.
+                #Remark:
+                #   This part has been implemented just in case long text has been copied/pasted.
+                read -rs -t0.01 keyInput_addit
+
+                #Append 'keyInput_addit' to 'keyInput'
+                keyInput="${keyInput}${keyInput_addit}"
+
+                #Append 'keyInput' to 'ret'
+                ret="${ret}${keyInput}"
+
+                #First Move-down, then Move-up, after that clean line
+                moveToBeginning_and_cleanLine__func
+                ;;
+        esac
     done
 
+
+    #Move-down and clean
+    moveDown_and_cleanLines__func "${append_numOfLines__input}"
+
+
     #Output
-    echo "${ret}"
+    echo "${ret}" > ${outputFpath__input}
+    echo "${ret_semiColonVal}" >> ${outputFpath__input}
+}
+function readDialog_w_Output_arrowKeys_handler__func() {
+    # Flush "stdin" with 0.1  sec timeout.
+    read -rsn1 -t 0.1 tmp
+    if [[ "$tmp" == "[" ]]; then
+        # Flush "stdin" with 0.1  sec timeout.
+        read -rsn1 -t 0.1 tmp
+    fi
+
+    #Flush "stdin" with 0.1  sec timeout.
+    read -rsn5 -t 0.1
+}
+function readDialog_w_Output_backSpace_handler__func() {
+    #Input args
+    str_input=${1}
+
+    #CHeck if 'str_input' is an EMPTYSTRING
+    if [[ -z ${str_input} ]]; then
+        return
+    fi
+
+    #Constants
+    OFFSET=0
+
+    #Lengths
+    str_input_len=${#str_input}
+    str_output_len=$((str_input_len-1))
+
+    #Get result
+    str_output=${str_input:${OFFSET}:${str_output_len}}
+
+    #Output
+    echo "${str_output}"
 }
 
+function show_pathContent_w_selection__func() {
+#---Input args
+    local path__input=${1}  #could be a directory or file
+    local selItem__input=${2}
+    local menuTitle__input=${3}
+    local remark__input=${4}
+    local info__input=${5}
+    local menuOptions__input=${6}
+    local matchPattern__input=${7}  #match pattern of 'menuOptions__input'
+    local errMsg__input=${8}
+    local readDialog__input=${9}
+    local pattern1__input=${10}
+    local pattern2__input=${11}
+    local table_index_max__input=${12}
+    local flag_table_index_max_isFixed__input=${13}
+    local outputFpath__input=${14}
+    local tibboHeader_prepend_numOfLines__input=${15}
+    local flag_show_tibboHeader_isEnabled__input=${16}
+
+
+
+#---Define variables
+    local fpath_arr=()
+    local fpath_arrIndex=0
+    local fpath_arrLen=0
+    local fpath_arrItem=${DOCKER__EMPTYSTRING}
+    local fpath_arrItem_base=${DOCKER__EMPTYSTRING}
+    local fpath_arrItem_marked=${DOCKER__EMPTYSTRING}
+    local fpath_arrItem_conv=${DOCKER__EMPTYSTRING}
+    local fpath_arrItem_print=${DOCKER__EMPTYSTRING}
+    local fpath_arr_string=${DOCKER__EMPTYSTRING}
+
+    local fpath_arrTmp=()
+    local fpath_arrTmpLen=0
+    local fpath_arrTmp_string=${DOCKER__EMPTYSTRING}
+
+    #Relative array, which contains only the number of elements equal to 'table_index_max__input'.
+    #This array is renewed with each loop.
+    local fpath_relArr=()
+    local fpath_relArrIndex=0
+    local fpath_relArrIndex_sel=0
+    local fpath_relArrLen=0
+    local fpath_relArrItem_sel=${DOCKER__EMPTYSTRING}
+
+    local keyInput=${DOCKER__EMPTYSTRING}
+    local keyOutput=${DOCKER__EMPTYSTRING}
+    local pattern1_result=${DOCKER__EMPTYSTRING}
+    local pattern2_result=${DOCKER__EMPTYSTRING}
+    local ret=${DOCKER__EMPTYSTRING}
+
+    local table_index=0
+    local table_index_base=0
+    local table_index_base_try_next=0
+
+    local table_index_max_bck=0
+
+    local lineNum_range_relMax=0
+    local lineNum_range_relMin=0
+    local lineNum_range_msg_startPos=0
+    local lineNum_range_msg_wo_regEx_len=0
+    local lineNum_range_msg=${DOCKER__EMPTYSTRING}
+
+    local flag_break_main_whileLoop=false
+    local flag_isSet_toBreak_loop=false
+    local flag_matched_key_isPressed=false
+
+
+
+#---Remove file (if present)
+    if [[ -f ${outputFpath__input} ]]; then
+        rm ${outputFpath__input}
+    fi
+
+
+
+#---Trim message to fit within the specified terminal window-size 'DOCKER__TABLEWIDTH'
+    info__input=`trim_string_toFit_specified_windowSize__func "${info__input}" "${DOCKER__TABLEWIDTH}" "${DOCKER__TRUE}"`
+
+
+
+#---Define 'prev' and 'next' variables
+    local prev_only_print="${DOCKER__ONESPACE_PREV}"
+
+    local oneSpacePrev_len=`get_stringlen_wo_regEx__func "${DOCKER__ONESPACE_PREV}"`
+    local oneSpaceNext_len=`get_stringlen_wo_regEx__func "${DOCKER__ONESPACE_NEXT}"`
+    local space_between_prev_and_next_len=$(( DOCKER__TABLEWIDTH - (oneSpacePrev_len + oneSpaceNext_len) - 1 ))
+    local space_between_prev_and_next=`duplicate_char__func "${DOCKER__ONESPACE}" "${space_between_prev_and_next_len}"`
+    local prev_spaces_next_print="${DOCKER__ONESPACE_PREV}${space_between_prev_and_next}${DOCKER__ONESPACE_NEXT}"
+
+    local docker_space_between_leftBoundary_and_next_len=$(( DOCKER__TABLEWIDTH - oneSpacePrev_len - 1 ))
+    local docker_space_between_leftBoundary_and_next=`duplicate_char__func "${DOCKER__ONESPACE}" "${docker_space_between_leftBoundary_and_next_len}"`
+
+    local next_only_print="${docker_space_between_leftBoundary_and_next}${DOCKER__ONESPACE_NEXT}"
+
+
+
+#---Retrieve array containing matching elements based on the specified patterns
+    #Remarks:
+    #   1. Only do this if 'path__input' is a directory.
+    #   2. if 'path__input' is a file, then no matching required, in this case...
+    #      ...just read the content of the file into array 'fpath_arrTmp'.
+    if [[ -d ${path__input} ]]; then    #is a directory
+        fpath_arrTmp_string=`retrieve_files_from_specified_dir_basedOn_matching_patterns__func "${path__input}" \
+                            "${pattern1__input}" \
+                            "${pattern2__input}"`
+
+#-------Convert string to array
+        read -a fpath_arrTmp <<< "${fpath_arrTmp_string}"
+    else    #is a file or...
+        if [[ -s ${path__input} ]]; then    #file contains data
+            local path_numOfLines=`get_numOfLines_wo_emptyLines_in_file__func "${path__input}"`
+            if [[ ${path_numOfLines} -gt ${DOCKER__NUMOFMATCH_0} ]]; then
+                readarray -t fpath_arrTmp < <(cat "${path__input}")
+            fi
+        fi
+    fi
+
+
+
+#---Get Length of 'fpath_arrTmp'
+    fpath_arrTmpLen=${#fpath_arrTmp[@]}
+
+
+
+#---Check if a match string 'selItem__input' is provided
+    if [[ ${fpath_arrTmpLen} -gt ${DOCKER__NUMOFMATCH_0} ]]; then
+        if [[ ! -z ${selItem__input} ]]; then   #contains data
+            #Rearrange array and place 'selItem__input' on top of the array.
+            #Note: the output 'fpath_arr_string' is a string.
+            fpath_arr_string=`array_find_and_move_element_toTop__func "${selItem__input}" "${fpath_arrTmp[@]}"`
+
+            #Convert string to array
+            #Remark:
+            #   Even though the array has been re-arranged,
+            #   still 'fpath_arr' will not be written to a file!
+            read -a fpath_arr <<< "${fpath_arr_string}"
+        else    #contains no data
+            fpath_arr=("${fpath_arrTmp[@]}")
+        fi
+    fi
+
+    #Get 'fpath_arrLen'
+    fpath_arrLen=${#fpath_arr[@]}
+
+
+#---Backup 'table_index_max__input'
+    table_index_max_bck=${table_index_max__input}
+
+
+
+#---Set 'table_index_max__input' (if needed)
+    #Note: 
+    #   The condition to check whether 'array contains no data' is preferred over...
+    #   ...checking whether the 'array-length is zero', because...
+    #   ...should the array contains empty lines then the array-length is non-zero.
+    #   This is behavior is unwanted.
+    if [[ ${flag_table_index_max_isFixed__input} == false ]]; then
+        if [[ -z "${fpath_arr[@]}" ]]; then   #array contains no data
+            table_index_max__input=${DOCKER__NUMOFLINES_5}
+        else    #array contains data
+            if [[ ${fpath_arrLen} -le ${DOCKER__NUMOFLINES_5} ]]; then
+                table_index_max__input=${DOCKER__NUMOFLINES_5}
+            else
+                if [[ ${fpath_arrLen} -le ${table_index_max__input} ]]; then
+                    table_index_max__input=${fpath_arrLen}
+                fi
+            fi
+        fi
+    fi
+
+
+
+#---Calculate num-of-lines of input-args
+    #non-fixed objects
+    local tibboHeader_numOfLines=0
+    if [[ ${flag_show_tibboHeader_isEnabled__input} == true ]]; then
+        #Update 'fixed_numOfLines'<
+        tibboHeader_numOfLines=$((tibboHeader_prepend_numOfLines__input + 1))  #due to title and 'tibboHeader_prepend_numOfLines__input'
+    fi
+    local menuTitle_numOfLines=`get_numOfLines_for_specified_string_or_file__func "${menuTitle__input}"`
+    local remark_numOfLines=`get_numOfLines_for_specified_string_or_file__func "${remark__input}"`
+    local info_numOfLines=`get_numOfLines_for_specified_string_or_file__func "${info__input}"`
+    local menuOptions_numOfLines=`get_numOfLines_for_specified_string_or_file__func "${menuOptions__input}"`
+    local readDialog_numOfLines=`get_numOfLines_for_specified_string_or_file__func "${readDialog__input}"`
+
+    #fixed objects
+    local fixed_numOfLines=${DOCKER__NUMOFLINES_4}    #due to a fixed number of horizontal and empty lines
+    if [[ ${remark_numOfLines} -gt ${DOCKER__NUMOFMATCH_0} ]]; then
+        fixed_numOfLines=$((fixed_numOfLines + 1))  #due to the preceding horizontal line
+    fi
+    if [[ ${info_numOfLines} -gt ${DOCKER__NUMOFMATCH_0} ]]; then
+        fixed_numOfLines=$((fixed_numOfLines + 1))  #due to the preceding horizontal line
+    fi
+    if [[ ${menuOptions_numOfLines} -gt ${DOCKER__NUMOFMATCH_0} ]]; then
+        fixed_numOfLines=$((fixed_numOfLines + 1))  #due to the preceding horizontal line
+    fi
+    # if [[ ${menuOptions_numOfLines} -gt ${DOCKER__NUMOFMATCH_0} ]]; then
+    #     fixed_numOfLines=$((fixed_numOfLines + 1))  #due to the preceding empty line
+    # fi
+
+    #total
+    local tot_numOfLines=$((tibboHeader_numOfLines + menuTitle_numOfLines + remark_numOfLines + info_numOfLines + menuOptions_numOfLines + readDialog_numOfLines + fixed_numOfLines + table_index_max__input))
+
+
+
+#---Show directory content
+    while true
+    do
+#-------Show cursor
+        cursor_hide__func
+
+#-------Disable keyboard-input
+        disable_keyboard_input__func
+
+#-------Show Tibbo-header
+        if [[ ${flag_show_tibboHeader_isEnabled__input} == true ]]; then
+            #Check if 'tibboHeader_prepend_numOfLines__input' is an Empty String
+            if [[ -z ${tibboHeader_prepend_numOfLines__input} ]]; then
+                tibboHeader_prepend_numOfLines__input=${DOCKER__NUMOFLINES_2}
+            fi
+
+            #Print Tibbo-title
+            load_tibbo_title__func "${tibboHeader_prepend_numOfLines__input}"
+        fi
+
+#-------Show menu-title
+        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+        show_centered_string__func "${menuTitle__input}" "${DOCKER__TABLEWIDTH}"
+        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+
+        if [[ ! -z ${fpath_arr[@]} ]]; then
+            #Initialization
+            flag_isSet_toBreak_loop=false
+            fpath_relArr=()
+            fpath_relArrIndex=0
+            fpath_arrIndex=0
+            keyInput=0
+            table_index=0
+
+            #Loop thru array
+            for fpath_arrItem in "${fpath_arr[@]}"
+            do
+                #Increment array-index
+                fpath_arrIndex=$((fpath_arrIndex + 1))
+
+                if [[ ${fpath_arrIndex} -gt ${table_index_base} ]]; then
+                    #increment table-index
+                    table_index=$((table_index + 1))
+
+                    #Check if 'table_index = table_index_max__input'
+                    #Remark:
+                    #   If true, set 'table_index = 0'
+                    if [[ ${table_index} -eq ${table_index_max_bck} ]]; then
+                        table_index=${DOCKER__NUMOFMATCH_0}
+
+                        flag_isSet_toBreak_loop=true
+                    fi
+
+#-------------------Get 'fpath_arrItem_base' without directory
+                    if [[ -d ${path__input} ]]; then    #is a directory
+                        fpath_arrItem_base=`basename ${fpath_arrItem}`  
+                    else    #is a file
+                        fpath_arrItem_base=${fpath_arrItem}
+                    fi
+        
+#-------------------Convert 'SED_SUBST_SPACE' back to '<space>'
+                    fpath_arrItem_conv=`echo "${fpath_arrItem_base}" | sed "s/${SED_SUBST_SPACE}/${DOCKER__ONESPACE}/g"`
+
+#-------------------Increment relative index 'fpath_relArrIndex'
+                    if [[ ${table_index} -eq ${DOCKER__NUMOFMATCH_0} ]]; then   #when a turnover has happened
+                        fpath_relArrIndex=$((table_index_max__input - 1))
+                    else    #in normal conditions
+                        fpath_relArrIndex=$((table_index - 1))
+                    fi
+
+#-------------------Add 'fpath_arrItem_conv' to 'fpath_relArr'
+                    #Remark:
+                    #   This array contains only data which matches both patterns...
+                    #   ...'pattern1__input' and 'pattern2__input'.
+                    fpath_relArr[${fpath_relArrIndex}]=${fpath_arrItem_conv}
+
+#-------------------Set 'fpath_arrItem_marked' (default)
+                    fpath_arrItem_marked=${fpath_arrItem_conv}
+
+#-------------------Mark the 1st array-element 'fpath_arrItem_marked' with 'DOCKER__BG_LIGHTSOFTYELLOW' (if applicable)
+                    if [[ ${fpath_relArrIndex} -eq ${DOCKER__NUMOFMATCH_0} ]]; then #true
+                        #Check if 'selItem__input' contains data?
+                        if [[ ! -z ${selItem__input} ]]; then   #true
+                            #Color 'fpath_arrItem_conv' if 'selItem__input != DOCKER__EMPTYSTRING'
+                            fpath_arrItem_marked="${DOCKER__BG_LIGHTSOFTYELLOW}${fpath_arrItem_marked}${DOCKER__NOCOLOR}"
+                        fi
+                    fi
+
+                    #Define and set 'fpath_arrItem_print'
+                    if [[ ${table_index} -ne ${DOCKER__NUMOFMATCH_0} ]]; then
+                        fpath_arrItem_print="${DOCKER__FOURSPACES}${table_index}. ${fpath_arrItem_marked}"
+                    else
+                        fpath_arrItem_print="${DOCKER__THREESPACES}${DOCKER__FG_LIGHTGREY}${DOCKER__LINENUM_1}${DOCKER__NOCOLOR}${table_index}. ${fpath_arrItem_marked}"
+                    fi
+
+                    # #Substitute 'http' with 'hxxp' (if present)
+                    # #Remark:
+                    # #   This substitution is required in order to eliminate the underlines for hyperlinks
+                    # fpath_arrItem_print=`subst_string_with_another_string__func "${fpath_arrItem_print}" \
+                    #         "${SED__HTTP}" \
+                    #         "${SED__HXXP}"`
+                                
+                    #Show fpath_arrItem_conv
+                    echo "${fpath_arrItem_print}"
+                fi
+
+                #Prevously 'table_index' was set to '0'.
+                #This means that the maximum number of items allowed to-be-shown has been reached.
+                #In this case, break the for-loop.
+                if [[ ${flag_isSet_toBreak_loop} == true ]]; then
+                    break
+                fi
+            done    #end of for
+        else
+            if [[ ! -z ${errMsg__input} ]]; then
+                moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+                show_centered_string__func "${errMsg__input}" "${DOCKER__TABLEWIDTH}"
+            fi
+        fi
+
+
+
+#-------Get array-length
+        fpath_relArrLen=${#fpath_relArr[@]}
+
+
+
+#-------Fill up table with Empty Lines (if needed)
+        #Check if 'flag_isSet_toBreak_loop = false'
+        #Remark:
+        #   Remember that if 'flag_isSet_toBreak_loop = true', then...
+        #   ...the for-loop was broken due to 'table_index = table_index_max__input'.
+        if [[ ${flag_isSet_toBreak_loop} == false ]]; then
+            while [[ ${table_index} -lt ${table_index_max__input} ]]
+            do
+                #increment line-number
+                table_index=$((table_index + 1))
+
+                #Print an Empty Line
+                echo "${DOCKER__EMPTYSTRING}"
+            done
+        fi
+
+
+
+#------Show 'prev' and 'next'
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+        #Calculate the 'table_index_base_try_next'
+        #Remark:
+        #   By doing this it can be determined whether the last-page has been reached or not.
+        table_index_base_try_next=$((table_index_base + table_index_max__input))
+
+        #Check if the specified file contains less than or equal to 10 lines
+        if [[ ${fpath_arrLen} -le ${table_index_max__input} ]]; then #less than 10 lines
+            #Don't show anything
+            echo -e "${EMPTYSTRING}"
+        else    #file contains more than 10 lines
+            if [[ ${table_index_base} -eq ${DOCKER__NUMOFMATCH_0} ]]; then   #range 1-10
+                echo -e "${next_only_print}"
+            else    #all other ranges
+                if [[ ${table_index_base_try_next} -ge ${fpath_arrLen} ]]; then  #last range value (e.g. 40-50), assuming 50 is the last-index
+                    echo -e "${prev_only_print}"
+                else   #range 10-20, 20-30, 30-40, etc.
+                    echo -e "${prev_spaces_next_print}"
+                fi
+            fi
+        fi
+
+
+
+#-------Show line-number range between 'prev' and 'next'
+        lineNum_range_relMax=$((table_index_base + table_index_max__input))
+
+        #Check if 'lineNum_range_relMax' has exceeded the maximum number array-items
+        if [[ ${lineNum_range_relMax} -gt ${fpath_arrLen} ]]; then
+            lineNum_range_relMax=${fpath_arrLen}
+        fi
+
+        #Check if 'fpath_arrLen = 0'
+        if [[ ${fpath_arrLen} -eq ${DOCKER__NUMOFMATCH_0} ]]; then  #array contains no data
+            lineNum_range_relMin=${DOCKER__LINENUM_0}
+        else    #array contains data
+            lineNum_range_relMin=$((table_index_base + 1))
+        fi
+
+        lineNum_range_max_abs=${fpath_arrLen}
+
+        #Prepare the line-number range message
+        lineNum_range_msg="${DOCKER__FG_LIGHTGREY}${lineNum_range_relMin}${DOCKER__NOCOLOR} "
+        lineNum_range_msg+="to ${DOCKER__FG_LIGHTGREY}${lineNum_range_relMax}${DOCKER__NOCOLOR} "
+        lineNum_range_msg+="(${DOCKER__FG_SOFTLIGHTRED}${lineNum_range_max_abs}${DOCKER__NOCOLOR})"
+
+        # show_centered_string__func "${lineNum_range_msg}" "${DOCKER__TABLEWIDTH}"
+
+        #Caclulate the length of 'lineNum_range_msg' without regEx
+        lineNum_range_msg_wo_regEx_len=`get_stringlen_wo_regEx__func "${lineNum_range_msg}"`
+
+        #Determine the start-position of where to place 'lineNum_range_msg'
+        lineNum_range_msg_startPos=$(( (DOCKER__TABLEWIDTH/2) - (lineNum_range_msg_wo_regEx_len/2) ))
+
+        #Move cursor to start-position 'lineNum_range_msg_startPos'
+        tput cuu1 && tput cuf ${lineNum_range_msg_startPos}
+
+        #Print 'lineNum_range_msg'
+        echo -e "${lineNum_range_msg}"
+
+
+
+#-------Show info & menu-options
+        # moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+        info__input=`trim_string_toFit_specified_windowSize__func "${info__input}" \
+                        "${DOCKER__TABLEWIDTH}" \
+                        "${DOCKER__TRUE}"`
+        if [[ ! -z ${info__input} ]]; then
+            duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+            echo -e "${info__input}"
+        fi
+        if [[ ! -z ${remark__input} ]]; then
+            duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+            echo -e "${remark__input}"
+        fi
+        if [[ ! -z ${menuOptions__input} ]]; then
+            duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+            echo -e "${menuOptions__input}"
+        fi
+        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+
+
+
+#-------Enable keyboard-input
+        enable_keyboard_input__func
+
+#-------Show cursor
+        cursor_show__func
+
+#-------Read-input
+        while true
+        do
+            #Show read-input
+            read -N1 -p "${readDialog__input}" keyInput
+
+            #Check if 'keyInput' is a numeric value
+            case "${keyInput}" in
+                ${DOCKER__ENTER})
+                    moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+                    ;;
+                ${DOCKER__ESCAPED_HOOKLEFT})
+                    #Only decrement if 'table_index_base > table_index_max__input'
+                    #Remark:
+                    #   Notice that 'table_index_base_try_next' is used here and NOT 'table_index_base'
+                    if [[ ${table_index_base_try_next} -gt ${table_index_max__input} ]]; then
+                        #Set the index-base value (e.g., 0,10,20,etc...)
+                        table_index_base=$((table_index_base - table_index_max__input))
+
+                        #Move-up and clean each line until the top of the table
+                        moveUp_and_cleanLines__func "${tot_numOfLines}"
+
+                        #Break this for-loop
+                        break
+                    else
+                        moveToBeginning_and_cleanLine__func
+                    fi
+
+                    ;;
+                ${DOCKER__ESCAPED_HOOKRIGHT})
+                    #Only decrement if 'table_index_base_try_next < fpath_arrLen'
+                    #Remark:
+                    #   Notice that 'table_index_base_try_next' is used here and NOT 'table_index_base'
+                    if [[ ${table_index_base_try_next} -lt ${fpath_arrLen} ]]; then
+                        #Set the index-base value (e.g., 0,10,20,etc...)
+                        table_index_base=$((table_index_base + table_index_max__input))
+
+                        #Move-up and clean each line until the top of the table
+                        moveUp_and_cleanLines__func "${tot_numOfLines}"
+
+                        #Break this for-loop
+                        break
+                    else
+                        moveToBeginning_and_cleanLine__func
+                    fi
+                    ;;
+                ${DOCKER__ESCAPEKEY})
+                    moveToBeginning_and_cleanLine__func
+
+                    #Get the function-key 'keyOutput' based on the chosen 'keyInput'
+                    keyOutput=`functionKey_detection__func "${keyInput}"`
+                    case "${keyOutput}" in
+                        # ${DOCKER__ENUM_FUNC_F12})
+                        #     #Print read-input dialog with 'keyOutput' value
+                        #     echo "${readDialog__input}"
+                            
+                        #     #Important: set flag to true
+                        #     flag_matched_key_isPressed=true
+
+                        #     # #Exit
+                        #     # exit__func "${DOCKER__EXITCODE_0}" "${DOCKER__NUMOFLINES_2}"
+                        #     ;;
+                        ${DOCKER__EMPTYSTRING}) #arrow-key was pressed
+                            flag_matched_key_isPressed=false
+                            ;;
+                        *)  #OTHER F-KEYS AS SPECIFIED BY 'matchPattern__input'
+                            if [[ ! -z ${matchPattern__input} ]]; then  #not an Empty String             
+                                #Check if the retrieved function-key 'keyOutput' matches the pattern 'matchPattern__input'
+                                flag_matched_key_isPressed=`checkForMatch_of_pattern_within_string__func \
+                                        "${keyOutput}" \
+                                        "${matchPattern__input}"`
+
+                                #Check if 'flag_matched_key_isPressed = true'
+                                if [[ ${flag_matched_key_isPressed} == true ]]; then
+                                     #Print read-input dialog with 'keyOutput' value
+                                    echo "${readDialog__input}"
+                                fi
+                            fi
+                            ;;
+                    esac
+
+                    #Check if a matched function-key was pressed
+                    if [[ ${flag_matched_key_isPressed} == true ]]; then  #match was found
+                        #Set output 'ret'
+                        ret=${keyOutput}
+
+                        #Break the main while-loop
+                        flag_break_main_whileLoop=true
+
+                        #Break this for-loop
+                        break
+                    fi
+                    ;;
+                *)
+                    if [[ ${keyInput} =~ [1-90] ]]; then
+                        #IMPORTANT: If 'keyInput = 0', then set 'keyInput = table_index_max__input'
+                        if [[ ${keyInput} -eq ${DOCKER__NUMOFMATCH_0} ]]; then
+                            keyInput=${table_index_max__input}
+                        fi
+
+                        #Only handle the following condition if 'keyInput =< fpath_relArrLen'
+                        if [[ ${keyInput} -le ${fpath_relArrLen} ]]; then
+                            #If 'keyInput = 0', then set 'keyInput = table_index_max__input'
+                            #Remark:
+                            #   This part is actually not necessary since it has been executed already previously.
+                            if [[ ${keyInput} -eq ${DOCKER__NUMOFMATCH_0} ]]; then
+                                keyInput=${table_index_max__input}
+                            fi
+
+                            #Convert to array-index
+                            #Remark:
+                            #   -1 is a correction due to array starting with 'index = 0'
+                            fpath_relArrIndex_sel=$(( keyInput - 1 ))
+
+                            #Get the selected 'fpath_relArrItem_sel'
+                            fpath_relArrItem_sel="${fpath_relArr[fpath_relArrIndex_sel]}"
+
+                            #Determine the output 'ret' based on whether 'path__input' is a 'directory' or 'file' 
+                            if [[ -d ${path__input} ]]; then    #directory
+                                ret=${path__input}/${fpath_relArrItem_sel}
+                            else    #file
+                                ret=${fpath_relArrItem_sel}
+                            fi
+
+                            #Move-down and clean lines
+                            # moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_3}"
+
+                            #Break the main while-loop
+                            flag_break_main_whileLoop=true
+
+                            #Break this for-loop
+                            break
+                        else
+                            moveToBeginning_and_cleanLine__func
+                        fi             
+                    else    #any other keys
+                        #'matchPattern__input' could contain any keys other than function-keys or numbers [1-90]
+                        #Remark:
+                        #   This part has been tested, but NOT thoroughly.                
+                        if [[ ! -z ${matchPattern__input} ]]; then  #not an Empty String
+                            #Check if the retrieved function-key 'keyInput' matches the pattern 'matchPattern__input'
+                            flag_matched_key_isPressed=`checkForMatch_of_pattern_within_string__func \
+                                    "${keyInput}" \
+                                    "${matchPattern__input}"`
+
+                            #Check if a matched function-key was pressed
+                            if [[ ${flag_matched_key_isPressed} == true ]]; then  #match was found
+                                #Set output 'ret'
+                                ret=${keyInput}
+
+                                #Break the main while-loop
+                                flag_break_main_whileLoop=true
+
+                                #Break this for-loop
+                                break
+                            fi
+                        fi
+
+                        moveToBeginning_and_cleanLine__func
+                    fi
+                    ;;
+            esac
+        done    #end of while
+
+        #Check if 'flag_break_main_whileLoop = true'
+        if [[ ${flag_break_main_whileLoop} == true ]]; then
+            break
+        fi
+    done    #end of main while
+
+
+
+#---Output
+    #write to line-number: 1
+    echo "${ret}" > ${outputFpath__input}
+
+    #write to line-number: 2
+    #Remark:
+    #   This may be useful in case the whole table needs to be cleared...
+    #   ...which was drawn by this subroutine 'show_pathContent_w_selection__func'.
+    echo "${tot_numOfLines}" >> ${outputFpath__input}
+}
+
+function show_fileContent_wo_select__func() {
+#---Input args
+    local fpath__input=${1}
+    local menuTitle__input=${2}
+    local remark__input=${3}
+    local info__input=${4}
+    local menuOptions__input=${5}
+    local errMsg__input=${6}
+    local readDialog__input=${7}
+    local regEx__input=${8}
+    local outputFpath__input=${9}
+    local table_index_max__input=${10}
+    local menuTitle_indent__input=${11}  #leading spaces to-be-added before 'menuTitle__input'
+    local flag_pressAnyKey_isEnabled=${12}
+    local tibboHeader_prepend_numOfLines__input=${13}
+    local flag_show_tibboHeader_isEnabled__input=${14}
+
+
+
+#---Define variables
+    local fpath_arr=()
+    local fpath_arrIndex=0
+    local fpath_arrLen=0
+    local fpath_arrItem=${DOCKER__EMPTYSTRING}
+
+    local keyInput=${DOCKER__EMPTYSTRING}
+    local keyOutput=${DOCKER__EMPTYSTRING}
+
+    local table_index=0
+    local table_index_base=0
+    local table_index_base_try_next=0
+
+    local flag_break_main_whileLoop=false
+    local flag_isSet_toBreak_loop=false
+
+
+
+#---Remove file (if present)
+    if [[ -f ${outputFpath__input} ]]; then
+        rm ${outputFpath__input}
+    fi
+
+
+
+#---Trim message to fit within the specified terminal window-size 'DOCKER__TABLEWIDTH'
+    info__input=`trim_string_toFit_specified_windowSize__func "${info__input}" "${DOCKER__TABLEWIDTH}" "${DOCKER__TRUE}"`
+
+
+
+#---Define 'prev' and 'next' variables
+    local prev_only_print="${DOCKER__ONESPACE_PREV}"
+
+    local oneSpacePrev_len=`get_stringlen_wo_regEx__func "${DOCKER__ONESPACE_PREV}"`
+    local oneSpaceNext_len=`get_stringlen_wo_regEx__func "${DOCKER__ONESPACE_NEXT}"`
+    local space_between_prev_and_next_len=$(( DOCKER__TABLEWIDTH - (oneSpacePrev_len + oneSpaceNext_len) - 1 ))
+    local space_between_prev_and_next=`duplicate_char__func "${DOCKER__ONESPACE}" "${space_between_prev_and_next_len}"`
+    local prev_spaces_next_print="${DOCKER__ONESPACE_PREV}${space_between_prev_and_next}${DOCKER__ONESPACE_NEXT}"
+
+    local docker_space_between_leftBoundary_and_next_len=$(( DOCKER__TABLEWIDTH - oneSpacePrev_len - 1 ))
+    local docker_space_between_leftBoundary_and_next=`duplicate_char__func "${DOCKER__ONESPACE}" "${docker_space_between_leftBoundary_and_next_len}"`
+    local next_only_print="${docker_space_between_leftBoundary_and_next}${DOCKER__ONESPACE_NEXT}"
+
+
+
+#---Store directory content in array'
+    if [[ -s ${fpath__input} ]]; then   #file contains data
+        local path_numOfLines=`get_numOfLines_wo_emptyLines_in_file__func "${fpath__input}"`
+        if [[ ${path_numOfLines} -gt ${DOCKER__NUMOFMATCH_0} ]]; then
+            readarray -t fpath_arr < ${fpath__input}
+        fi
+    fi
+
+
+
+#---Get 'fpath_arrLen'
+    fpath_arrLen=${#fpath_arr[@]}
+
+
+
+#---Set 'table_index_max__input' (if needed)
+    #Note: 
+    #   The condition to check whether 'array contains no data' is preferred over...
+    #   ...checking whether the 'array-length is zero', because...
+    #   ...should the array contains empty lines then the array-length is non-zero.
+    #   This is behavior is unwanted.
+    if [[ -z "${fpath_arr[@]}" ]]; then   #array contains no data
+        table_index_max__input=${DOCKER__NUMOFLINES_5}
+    else    #array contains data
+        if [[ ${fpath_arrLen} -le ${DOCKER__NUMOFLINES_5} ]]; then
+            table_index_max__input=${DOCKER__NUMOFLINES_5}
+        else
+            if [[ ${fpath_arrLen} -le ${table_index_max__input} ]]; then
+                table_index_max__input=${fpath_arrLen}
+            fi
+        fi
+    fi
+
+
+
+#---Calculate num-of-lines of input-args
+    #non-fixed objects
+    local tibboHeader_numOfLines=0
+    if [[ ${flag_show_tibboHeader_isEnabled__input} == true ]]; then
+        #Update 'fixed_numOfLines'<
+        tibboHeader_numOfLines=$((tibboHeader_prepend_numOfLines__input + 1))  #due to title and 'tibboHeader_prepend_numOfLines__input'
+    fi
+    menuTitle_numOfLines=`get_numOfLines_for_specified_string_or_file__func "${menuTitle__input}"`
+    remark_numOfLines=`get_numOfLines_for_specified_string_or_file__func "${remark__input}"`
+    info_numOfLines=`get_numOfLines_for_specified_string_or_file__func "${info__input}"`
+    menuOptions_numOfLines=`get_numOfLines_for_specified_string_or_file__func "${menuOptions__input}"`
+    readDialog_numOfLines=`get_numOfLines_for_specified_string_or_file__func "${readDialog__input}"`
+
+    #fixed objects
+    fixed_numOfLines=${DOCKER__NUMOFLINES_4}    #due to a fixed number of horizontal and empty lines
+    if [[ ${remark_numOfLines} -gt ${DOCKER__NUMOFMATCH_0} ]]; then
+        fixed_numOfLines=$((fixed_numOfLines + 1))  #due to the preceding horizontal line
+    fi
+    if [[ ${info_numOfLines} -gt ${DOCKER__NUMOFMATCH_0} ]]; then
+        fixed_numOfLines=$((fixed_numOfLines + 1))  #due to the preceding horizontal line
+    fi
+    if [[ ${menuOptions_numOfLines} -gt ${DOCKER__NUMOFMATCH_0} ]]; then
+        fixed_numOfLines=$((fixed_numOfLines + 1))  #due to the preceding horizontal line
+    fi
+    if [[ ${flag_pressAnyKey_isEnabled} == true ]]; then
+        fixed_numOfLines=$((fixed_numOfLines + 1))  #due to the preceding horizontal line
+    fi
+    # if [[ ${flag_pressAnyKey_isEnabled} == true ]]; then
+    #     fixed_numOfLines=$((fixed_numOfLines + 1))  #due to the preceding empty line
+    # fi
+
+    #total
+    tot_numOfLines=$((tibboHeader_numOfLines + menuTitle_numOfLines + remark_numOfLines + info_numOfLines + menuOptions_numOfLines + readDialog_numOfLines + fixed_numOfLines + table_index_max__input))
+
+
+
+#---Show directory content
+    while true
+    do
+#-------Show cursor
+        cursor_hide__func
+
+#-------Disable keyboard-input
+        disable_keyboard_input__func
+
+#-------Show Tibbo-header
+        if [[ ${flag_show_tibboHeader_isEnabled__input} == true ]]; then
+            #Check if 'tibboHeader_prepend_numOfLines__input' is an Empty String
+            if [[ -z ${tibboHeader_prepend_numOfLines__input} ]]; then
+                tibboHeader_prepend_numOfLines__input=${DOCKER__NUMOFLINES_2}
+            fi
+
+            #Print Tibbo-title
+            load_tibbo_title__func "${tibboHeader_prepend_numOfLines__input}"
+        fi
+
+#-------Show menu-title
+        # duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+        show_menuTitle_w_adjustable_indent__func "${menuTitle__input}" "${menuTitle_indent__input}"
+        # duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+
+        if [[ ! -z ${fpath_arr[@]} ]]; then
+            #Initialization
+            flag_isSet_toBreak_loop=false
+            fpath_arrIndex=0
+            keyInput=0
+            table_index=0
+
+            #Loop thru array
+            for fpath_arrItem in "${fpath_arr[@]}"
+            do
+                #Increment array-index
+                fpath_arrIndex=$((fpath_arrIndex + 1))
+
+                #Turn
+                if [[ ${fpath_arrIndex} -gt ${table_index_base} ]]; then
+                    #increment table-index
+                    table_index=$((table_index + 1))
+
+                    #Check if 'table_index = table_index_max__input'
+                    #Remark:
+                    #   If true, set 'table_index = 0'
+                    if [[ ${table_index} -eq ${table_index_max__input} ]]; then
+                        table_index=${DOCKER__NUMOFMATCH_0}
+
+                        flag_isSet_toBreak_loop=true
+                    fi
+
+                    #Print fpath_arrItem
+                    echo "${DOCKER__FOURSPACES}${fpath_arrItem}"
+                fi
+
+                #Prevously 'table_index' was set to '0'.
+                #This means that the maximum number of items allowed to-be-shown has been reached.
+                #In this case, break the for-loop.
+                if [[ ${flag_isSet_toBreak_loop} == true ]]; then
+                    break
+                fi
+            done    #end of for
+        else
+            if [[ ! -z ${errMsg__input} ]]; then
+                moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+                show_centered_string__func "${errMsg__input}" "${DOCKER__TABLEWIDTH}"
+            fi
+        fi
+
+
+
+#-------Fill up table with Empty Lines (if needed)
+        #Check if 'flag_isSet_toBreak_loop = false'
+        #Remark:
+        #   Remember that if 'flag_isSet_toBreak_loop = true', then...
+        #   ...the for-loop was broken due to 'table_index = table_index_max__input'.
+        if [[ ${flag_isSet_toBreak_loop} == false ]]; then
+            while [[ ${table_index} -lt ${table_index_max__input} ]]
+            do
+                #increment line-number
+                table_index=$((table_index + 1))
+
+                #Print an Empty Line
+                echo "${DOCKER__EMPTYSTRING}"
+            done
+        fi
+
+
+
+#------Show 'prev' and 'next'
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+        #Calculate the 'table_index_base_try_next'
+        #Remark:
+        #   By doing this it can be determined whether the last-page has been reached or not.
+        table_index_base_try_next=$((table_index_base + table_index_max__input))
+
+        #Check if the specified file contains less than or equal to 10 lines
+        if [[ ${fpath_arrLen} -le ${table_index_max__input} ]]; then #less than 10 lines
+            #Don't show anything
+            echo -e "${EMPTYSTRING}"
+        else    #file contains more than 10 lines
+            if [[ ${table_index_base} -eq ${DOCKER__NUMOFMATCH_0} ]]; then   #range 1-10
+                echo -e "${next_only_print}"
+            else    #all other ranges
+                if [[ ${table_index_base_try_next} -ge ${fpath_arrLen} ]]; then  #last range value (e.g. 40-50), assuming 50 is the last-index
+                    echo -e "${prev_only_print}"
+                else   #range 10-20, 20-30, 30-40, etc.
+                    echo -e "${prev_spaces_next_print}"
+                fi
+            fi
+        fi
+
+
+#-------Show line-number range between 'prev' and 'next'
+        lineNum_range_relMax=$((table_index_base + table_index_max__input))
+        #Check if 'lineNum_range_relMax' has exceeded the maximum number array-items
+        if [[ ${lineNum_range_relMax} -gt ${fpath_arrLen} ]]; then
+            lineNum_range_relMax=${fpath_arrLen}
+        fi
+
+        #Check if 'fpath_arrLen = 0'
+        if [[ ${fpath_arrLen} -eq ${DOCKER__NUMOFMATCH_0} ]]; then  #array contains no data
+            lineNum_range_relMin=${DOCKER__LINENUM_0}
+        else    #array contains data
+            lineNum_range_relMin=$((table_index_base + 1))
+        fi
+
+        lineNum_range_max_abs=${fpath_arrLen}
+
+        #Prepare the line-number range message
+        lineNum_range_msg="${DOCKER__FG_LIGHTGREY}${lineNum_range_relMin}${DOCKER__NOCOLOR} "
+        lineNum_range_msg+="to ${DOCKER__FG_LIGHTGREY}${lineNum_range_relMax}${DOCKER__NOCOLOR} "
+        lineNum_range_msg+="(${DOCKER__FG_SOFTLIGHTRED}${lineNum_range_max_abs}${DOCKER__NOCOLOR})"
+
+        # show_centered_string__func "${lineNum_range_msg}" "${DOCKER__TABLEWIDTH}"
+
+        #Caclulate the length of 'lineNum_range_msg' without regEx
+        lineNum_range_msg_wo_regEx_len=`get_stringlen_wo_regEx__func "${lineNum_range_msg}"`
+
+        #Determine the start-position of where to place 'lineNum_range_msg'
+        lineNum_range_msg_startPos=$(( (DOCKER__TABLEWIDTH - lineNum_range_msg_wo_regEx_len)/2 ))
+
+        #Move cursor to start-position 'lineNum_range_msg_startPos'
+        tput cuu1 && tput cuf ${lineNum_range_msg_startPos}
+
+        #Print 'lineNum_range_msg'
+        echo -e "${lineNum_range_msg}"
+
+
+
+#-------Show info
+        # moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+        if [[ ! -z ${info__input} ]]; then
+            duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+            #Trim 'info__input' (if necessary)
+            info__input=`trim_string_toFit_specified_windowSize__func "${info__input}" \
+                            "${DOCKER__TABLEWIDTH}" \
+                            "${DOCKER__TRUE}"`
+            echo -e "${info__input}"
+        fi
+#-------Show remark
+        if [[ ! -z ${remark__input} ]]; then
+            duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+            echo -e "${remark__input}"
+        fi
+#-------Show menu-options
+        if [[ ! -z ${menuOptions__input} ]]; then
+            duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+            echo -e "${menuOptions__input}"
+        fi
+        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+
+
+#-------Enable keyboard-input
+        enable_keyboard_input__func
+
+
+#-------Show cursor
+        cursor_show__func
+
+
+#-------Check if 'flag_pressAnyKey_isEnabled = true'
+        if [[ "${flag_pressAnyKey_isEnabled}" == true ]]; then
+            #Check if array 'fpath_arr' contains data
+            #Note: 
+            #   The condition to check whether 'array contains no data' is preferred over...
+            #   ...checking whether the 'array-length is zero', because...
+            #   ...should the array contains empty lines then the array-length is non-zero.
+            #   This is behavior is unwanted.
+            if [[ -z "${fpath_arr[@]}" ]]; then   #array contains no data
+                return
+            else    #array contains data
+                if [[ ${fpath_arrLen} -le ${table_index_max__input} ]]; then
+                    return
+                fi
+            fi
+        fi
+
+
+#-------Read-input
+        while true
+        do
+            #Show read-input
+            read -N1 -r -p "${readDialog__input}" keyInput
+
+            #Check if 'keyInput' is a numeric value
+            case "${keyInput}" in
+                ${DOCKER__ENTER})
+                    #Check if 'flag_pressAnyKey_isEnabled = true'
+                    #Remark:
+                    #   If true, then exit upon pressing Enter.
+                    if [[ ${flag_pressAnyKey_isEnabled} == true ]]; then
+                        moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+                        return
+                    fi
+
+                    moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+                    ;;
+                ${DOCKER__ESCAPED_HOOKLEFT})
+                    #Only decrement if 'table_index_base > table_index_max__input'
+                    #Remark:
+                    #   Notice that 'table_index_base_try_next' is used here and NOT 'table_index_base'
+                    if [[ ${table_index_base_try_next} -gt ${table_index_max__input} ]]; then
+                        #Set the index-base value (e.g., 0,10,20,etc...)
+                        table_index_base=$((table_index_base - table_index_max__input))
+
+                        #Move-up and clean each line until the top of the table
+                        moveUp_and_cleanLines__func "${tot_numOfLines}"
+
+                        #Break this for-loop
+                        break
+                    else
+                        moveToBeginning_and_cleanLine__func
+                    fi
+
+                    ;;
+                ${DOCKER__ESCAPED_HOOKRIGHT})
+                    #Only decrement if 'table_index_base_try_next < fpath_arrLen'
+                    #Remark:
+                    #   Notice that 'table_index_base_try_next' is used here and NOT 'table_index_base'
+                    if [[ ${table_index_base_try_next} -lt ${fpath_arrLen} ]]; then
+                        #Set the index-base value (e.g., 0,10,20,etc...)
+                        table_index_base=$((table_index_base + table_index_max__input))
+
+                        #Move-up and clean each line until the top of the table
+                        moveUp_and_cleanLines__func "${tot_numOfLines}"
+
+                        #Break this for-loop
+                        break
+                    else
+                        moveToBeginning_and_cleanLine__func
+                    fi
+                    ;;
+                # ${DOCKER__ESCAPEKEY})
+                #     moveToBeginning_and_cleanLine__func
+
+                #     #Get the function-key which was pressed
+                #     keyOutput=`functionKey_detection__func "${keyInput}"`
+
+                #     #Check if 'flag_pressAnyKey_isEnabled = true'
+                #     #Remarks:
+                #     #   1. If true, then exit upon pressing other function-keys (F1 to F12)
+                #     #   2. In order to remove the unwanted escaped chars,...
+                #     #      ...function 'functionKey_detection__func' should be executed...
+                #     #      ...BEFORE this condtion, 
+                #     if [[ ${flag_pressAnyKey_isEnabled} == true ]]; then
+                #         return
+                #     fi
+
+                #     #Check if function-key F12 was pressed
+                #     if [[ ${keyOutput} == ${DOCKER__ENUM_FUNC_F12} ]]; then
+                #         #Print read-input dialog
+                #         echo "${readDialog__input}"
+
+                #         #Update 'keyInput'
+                #         keyInput=${keyOutput}
+
+                #         #Break the main while-loop
+                #         flag_break_main_whileLoop=true
+
+                #         #Break this for-loop
+                #         break                   
+
+                #         # #Exit
+                #         # exit__func "${DOCKER__EXITCODE_0}" "${DOCKER__NUMOFLINES_2}"
+                #     fi
+                #     ;;
+                *)
+                    #Check if 'flag_pressAnyKey_isEnabled = true'
+                    #Remark:
+                    #   If true, then exit upon pressing any other keys (e.g., a,b,@,etc...)
+                    if [[ ${flag_pressAnyKey_isEnabled} == true ]]; then
+                        moveToBeginning_and_cleanLine__func
+
+                        return
+                    fi
+
+                    if [[ ${keyInput} =~ ${regEx__input} ]]; then
+                            # if [[ ${keyInput} =~ [yn] ]]; then
+                            #     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
+                            # else
+                            #     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+                            # fi
+
+                            #Break the main while-loop
+                            flag_break_main_whileLoop=true
+
+                            #Break this for-loop
+                            break
+                    else
+                        moveToBeginning_and_cleanLine__func
+                    fi
+                    ;;
+            esac
+        done    #end of while
+
+        #Check if 'flag_break_main_whileLoop = true'
+        if [[ ${flag_break_main_whileLoop} == true ]]; then
+            break
+        fi
+    done    #end of main while
+
+
+
+#---Output
+    #Write to file
+    echo "${keyInput}" > ${outputFpath__input}  
+}
+
+
+
+#---STRING FUNCTIONS
 function checkForMatch_of_pattern_within_string__func() {
     #Turn-off Expansion
     disable_expansion__func
@@ -3896,25 +4612,25 @@ function get_endResult_ofString_with_semiColonChar__func() {
     #If FALSE, then return with the original 'string__input'.
     clearIsFound=`checkForMatch_of_pattern_within_string__func "${DOCKER__SEMICOLON_CLEAR}" "${string__input}"`
     if [[ ${clearIsFound} == false ]]; then
-        ret=${string__input}
+        ret="${string__input}"
 
         echo "${ret}"
         
         return
     fi
 
-    #If '{;h | ;b | ;c}' was found previously then, retrieve the substring which is on the right-side of the semi-colon ';'.
+    #If (;c) was found previously then, retrieve the substring which is on the right-side of the semi-colon (;).
     #Remark:
-    #   In case there were multiple '{;h | ;b | ;c}' issued and thus residing in 'string__input',...
-    #   ...then just make sure to get the substring at the last semi-colon ';'.
+    #   In case there were multiple (;c)' issued and thus residing in 'string__input',...
+    #   ...then just make sure to get the substring at the last semi-colon (;).
     rightPart=`echo "${string__input}" | rev | cut -d";" -f1 | rev`
 
     rightPart_len=${#rightPart}
 
     #Get string without semicolon.
     #Remark:
-    #   Please not that if result 'ret' contains any leading and trailing spaces,...
-    #   ...then these spaces will be automatically omitted from the end result.
+    #   Please note that if result 'ret' contains any leading and trailing spaces,...
+    #   ...then these spaces will be removed and therefore not included in the output.
     ret=${rightPart:1:rightPart_len}
 
     #Output
@@ -4209,6 +4925,19 @@ function retrieve_subStrings_delimited_by_lastChar_within_string__func() {
     #2. ret_right
     #Both results are delimited by 'SED__RS'
     echo "${ret_left}${SED__RS}${ret_right}"
+}
+
+function subst_char_with_another_char__func() {
+    #Input args
+    local string__input=${1}
+    local charOld__input=${2}
+    local charNew__input=${3}
+
+    #Replace
+    local ret=`echo "${string__input}" | sed "s/${charOld__input}/${charNew__input}/g"`
+
+	#Output
+	echo "${ret}"
 }
 
 function subst_multiple_chars_with_single_char__func() {
@@ -4610,8 +5339,8 @@ function update_exported_env_var__func() {
     local exported_env_var_fpath__input=${4}
 
     #Define Message Constants
-    local ERRMSG_DOCKERFILE_NOT_FOUND="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Dockerfile '${dockerFile__input}' not Found"
-    local ERRMSG_EXPORTEDFILE_NOT_FOUND="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Environment variable file '${exported_env_var_fpath__input}' not Found"
+    local ERRMSG_DOCKERFILE_NOT_FOUND="${DOCKER__ERROR}: Dockerfile '${dockerFile__input}' not Found"
+    local ERRMSG_EXPORTEDFILE_NOT_FOUND="${DOCKER__ERROR}: Environment variable file '${exported_env_var_fpath__input}' not Found"
 
     #Get repository:tag from file
     local dockerfile_fpath_repositoryTag=${DOCKER__EMPTYSTRING}
@@ -4846,7 +5575,7 @@ docker__environmental_variables__sub() {
 
     git__git_create_checkout_local_branch__filename="git_create_checkout_local_branch.sh"
     git__git_create_checkout_local_branch__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${git__git_create_checkout_local_branch__filename}
-   
+
     git__git_delete_local_branch__filename="git_delete_local_branch.sh"
     git__git_delete_local_branch__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${git__git_delete_local_branch__filename}
     
@@ -4862,8 +5591,23 @@ docker__environmental_variables__sub() {
     git__git_readInput_w_autocomplete__filename="git_readInput_w_autocomplete.sh"
     git__git_readInput_w_autocomplete__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${git__git_readInput_w_autocomplete__filename}
 
-    git__undo_last_pending_commit__filename="git_undo_last_pending_commit.sh"
-    git__undo_last_pending_commit__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${git__undo_last_pending_commit__filename}
+    git__git_tag_create_and_push__filename="git_tag_create_and_push.sh"
+    git__git_tag_create_and_push__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${git__git_tag_create_and_push__filename}
+
+    # git__git_tag_create_link_and_push__filename="git_tag_create_link_and_push.sh"
+    # git__git_tag_create_link_and_push__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${git__git_tag_create_link_and_push__filename}
+
+    git__git_tag_remove__filename="git_tag_remove.sh"
+    git__git_tag_remove__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${git__git_tag_remove__filename}
+
+    git__git_tag_rename__filename="git_tag_rename.sh"
+    git__git_tag_rename__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${git__git_tag_rename__filename}
+
+    git__git_tag_menu__filename="git_tag_menu.sh"
+    git__git_tag_menu__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${git__git_tag_menu__filename}
+
+    git__git_undo_last_unpushed_commit__filename="git_undo_last_unpushed_commit.sh"
+    git__git_undo_last_unpushed_commit__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${git__git_undo_last_unpushed_commit__filename}
 
 
 
@@ -4928,6 +5672,9 @@ docker__environmental_variables__sub() {
     docker__repo_linkcheckout_profile_menu_select_out__filename="docker_repo_linkcheckout_profile_menu_select.out"
     docker__repo_linkcheckout_profile_menu_select_out__fpath=${docker__tmp_dir}/${docker__repo_linkcheckout_profile_menu_select_out__filename}
 
+    docker__readDialog_w_Output__func_out__filename="readDialog_w_Output__func.out"
+    docker__readDialog_w_Output__func_out__fpath=${docker__tmp_dir}/${docker__readDialog_w_Output__func_out__filename}
+
     docker__select_dockerfile_out__filename="docker_select_dockerfile.out"
     docker__select_dockerfile_out__fpath=${docker__tmp_dir}/${docker__select_dockerfile_out__filename}
 
@@ -4943,6 +5690,9 @@ docker__environmental_variables__sub() {
     git__git_create_checkout_local_branch_out__filename="git_create_checkout_local_branch.out"
     git__git_create_checkout_local_branch_out__fpath=${docker__tmp_dir}/${git__git_create_checkout_local_branch_out__filename}
 
+    git__git_tag_create_link_and_push_out__filename="git_tag_create_link_and_push.out"
+    git__git_tag_create_link_and_push_out__fpath=${docker__tmp_dir}/${git__git_tag_create_link_and_push_out__filename}
+
     git__git_delete_local_branch_out__filename="git_delete_local_branch.out"
     git__git_delete_local_branch_out__fpath=${docker__tmp_dir}/${git__git_delete_local_branch_out__filename}
 
@@ -4951,6 +5701,18 @@ docker__environmental_variables__sub() {
 
     git__git_readInput_w_autocomplete_out__filename="git_readInput_w_autocomplete.out"
     git__git_readInput_w_autocomplete_out__fpath=${docker__tmp_dir}/${git__git_readInput_w_autocomplete_out__filename}
+
+    git__git_tag_create_and_push_out__filename="git_tag_create_and_push.out"
+    git__git_tag_create_and_push_out__fpath=${docker__tmp_dir}/${git__git_tag_create_and_push_out__filename}
+
+    git__git_tag_rename_out__filename="git_tag_rename.out"
+    git__git_tag_rename_out__fpath=${docker__tmp_dir}/${git__git_tag_rename_out__filename}
+
+    git__git_tag_remove_out__filename="git_tag_remove.out"
+    git__git_tag_remove_out__fpath=${docker__tmp_dir}/${git__git_tag_remove_out__filename}
+
+    git__git_undo_last_unpushed_commit_out__filename="git_undo_last_unpushed_commit.out"
+    git__git_undo_last_unpushed_commit_out__fpath=${docker__tmp_dir}/${git__git_undo_last_unpushed_commit_out__filename}
 
 
     #OLD VERSION (is temporarily present for backwards compaitibility)

@@ -18,6 +18,7 @@ outFpath__input=${14}    #e.g. docker_show_choose_add_del_from_cache.out
 dockerfile_fpath__input=${15}    #e.g. repository:tag
 exp_env_var_type__input=${16}
 weblink_check_timeOut__input=${17}
+tibboHeader_prepend_numOfLines__input=${18}
 
 
 
@@ -297,6 +298,14 @@ docker__init_move_link_checkout_or_profile_to_top__sub() {
 }
 
 docker__show_menu_handler__sub() {
+    #Check if 'tibboHeader_prepend_numOfLines__input' is an Empty String
+    if [[ -z ${tibboHeader_prepend_numOfLines__input} ]]; then
+        tibboHeader_prepend_numOfLines__input=${DOCKER__NUMOFLINES_2}
+    fi
+
+    #Print Tibbo-title
+    load_tibbo_title__func "${tibboHeader_prepend_numOfLines__input}"
+
     #Initialization
     docker__readInputDialog=${readInputDialog1__input}
     docker__cacheFpath_lineNum_base=0
@@ -422,8 +431,8 @@ docker__show_fileContent__sub() {
                 #Substitute 'http' with 'hxxp'
                 #Remark:
                 #   This substitution is required in order to eliminate the underlines for hyperlinks
-                line_subst=`subst_string_with_another_string__func "${line}" "${SED__HTTP}" "${SED__HXXP}"`
-
+                # line_subst=`subst_string_with_another_string__func "${line}" "${SED__HTTP}" "${SED__HXXP}"`
+                line_subst=${line}
 
 
                 #Define 'line_index'
@@ -1434,7 +1443,7 @@ docker__escapeKey_add_linkCheckout_profile__sub() {
             selItem=${checkoutSel}
         fi
 
-        #Check if the selected 'checkoutSel' and 'checkoutSel' are NOT Empty Strings?
+        #Check if the selected 'linkSel' and 'checkoutSel' are NOT Empty Strings?
         if [[ ! -z ${linkSel} ]] && [[ ! -z ${checkoutSel} ]]; then #true
             menuOptions=${menuOptions3__input}
             matchPattern=${matchPattern3__input}
@@ -1456,7 +1465,10 @@ docker__escapeKey_add_linkCheckout_profile__sub() {
                         "${DOCKER__EMPTYSTRING}" \
                         "${DOCKER__EMPTYSTRING}" \
                         "${DOCKER__TABLEROWS_10}" \
-                        "${docker__show_pathContent_w_selection_func_out__fpath}"
+                        "${DOCKER__TRUE}" \
+                        "${docker__show_pathContent_w_selection_func_out__fpath}" \
+                        "${DOCKER__EMPTYSTRING}" \
+                        "${DOCKER__FALSE}"
 
         #Get result_from_output
         result_from_output=`retrieve_line_from_file__func "${DOCKER__LINENUM_1}" \

@@ -47,12 +47,13 @@ docker__load_source_files__sub() {
 }
 
 docker__load_constants__sub() {
-    DOCKER__MENUTITLE="${DOCKER__FG_LIGHTBLUE}DOCKER: CREATE/REMOVE/RENAME IMAGE${DOCKER__NOCOLOR}"
+    DOCKER__MENUTITLE="${DOCKER__FG_LIGHTBLUE}DOCKER: RUN/REMOVE CONTAINER${DOCKER__NOCOLOR}"
+    DOCKER__VERSION="v22.05.22-0.0.1"
 }
 
 docker__init_variables__sub() {
     docker__myChoice=${DOCKER__EMPTYSTRING}
-    docker__regEx="[1-4rcsiegq]"
+    docker__regEx="[1-3rcsiegq]"
     docker__tibboHeader_prepend_numOfLines=0
 }
 
@@ -62,30 +63,16 @@ docker__menu__sub() {
 
     while true
     do
-        #Get Git-information
-        #Output:
-        #   docker_git_current_info_msg
-        docker__get_git_info__sub
-
         #Load header
         load_tibbo_title__func "${docker__tibboHeader_prepend_numOfLines}"
 
-        #Set 'docker__tibboHeader_prepend_numOfLines'
-        docker__tibboHeader_prepend_numOfLines=${DOCKER__NUMOFLINES_1}
-
-        #Print horizontal line
-        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-
-        #Print menu-title
-        show_leadingAndTrailingStrings_separatedBySpaces__func "${DOCKER__MENUTITLE}" "${docker_git_current_info_msg}" "${DOCKER__TABLEWIDTH}"
-        #Print horizontal line
-        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-
         #Print menu-options
-        echo -e "${DOCKER__FOURSPACES}1. Create image from ${DOCKER__FG_PURPLE}Repository${DOCKER__NOCOLOR}"
-        echo -e "${DOCKER__FOURSPACES}2. Create image from ${DOCKER__FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}"
-        echo -e "${DOCKER__FOURSPACES}3. Remove image"
-        echo -e "${DOCKER__FOURSPACES}4. Rename image ${DOCKER__FG_PURPLE}Repository${DOCKER__NOCOLOR}:${DOCKER__FG_PINK}Tag${DOCKER__NOCOLOR}"
+        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+        show_leadingAndTrailingStrings_separatedBySpaces__func "${DOCKER__MENUTITLE}" "${DOCKER__VERSION}" "${DOCKER__TABLEWIDTH}"
+        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+        echo -e "${DOCKER__FOURSPACES}1. Run ${DOCKER__FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR} from image"
+        echo -e "${DOCKER__FOURSPACES}2. Run *exited* ${DOCKER__FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
+        echo -e "${DOCKER__FOURSPACES}3. Remove ${DOCKER__FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
         echo -e "${DOCKER__FOURSPACES}r. ${DOCKER__FG_PURPLE}Repository${DOCKER__NOCOLOR}-list"
         echo -e "${DOCKER__FOURSPACES}c. ${DOCKER__FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}-list"
@@ -127,16 +114,13 @@ docker__menu__sub() {
         #Goto the selected option
         case ${docker__myChoice} in
             1)
-                ${docker__create_image_from_existing_repository__fpath}
+                ${docker__run_container_from_a_repository__fpath}
                 ;;
             2)
-                ${docker__create_image_from_container__fpath}
+                ${docker__run_exited_container__fpath}
                 ;;
             3)
-                ${docker__remove_image__fpath}
-                ;;
-            4)
-                ${docker_rename_repotag__fpath}
+                ${docker__remove_container__fpath}
                 ;;
             c)
                 docker__show_containerList_handler__sub
@@ -157,56 +141,41 @@ docker__menu__sub() {
                 ${docker__git_menu__fpath}
                 ;;
             q)
-                exit__func "${DOCKER__EXITCODE_99}" "${DOCKER__NUMOFLINES_1}"
+                exit__func "${DOCKER__EXITCODE_99}" "${DOCKER__NUMOFLINES_2}"
                 ;;
         esac
+
+        #Set 'docker__tibboHeader_prepend_numOfLines'
+        docker__tibboHeader_prepend_numOfLines=${DOCKER__NUMOFLINES_1}
     done
 }
 
 docker__show_repositoryList_handler__sub() {
+    #Load header
+    load_tibbo_title__func "${docker__tibboHeader_prepend_numOfLines}"
+
     #Show repo-list
     show_repoList_or_containerList_w_menuTitle_w_confirmation__func "${DOCKER__MENUTITLE_REPOSITORYLIST}" \
                         "${DOCKER__ERRMSG_NO_IMAGES_FOUND}" \
                         "${docker__images_cmd}" \
-                        "${DOCKER__NUMOFLINES_0}" \
+                        "${DOCKER__NUMOFLINES_1}" \
                         "${DOCKER__TIMEOUT_10}" \
                         "${DOCKER__NUMOFLINES_0}" \
-                        "${DOCKER__NUMOFLINES_0}" \
-                        "${DOCKER__NUMOFLINES_2}"
+                        "${DOCKER__NUMOFLINES_0}"
 }
 
 docker__show_containerList_handler__sub() {
+    #Load header
+    load_tibbo_title__func "${docker__tibboHeader_prepend_numOfLines}"
+
     #Show container-list
     show_repoList_or_containerList_w_menuTitle_w_confirmation__func "${DOCKER__MENUTITLE_CONTAINERLIST}" \
                         "${DOCKER__ERRMSG_NO_CONTAINERS_FOUND}" \
                         "${docker__ps_a_cmd}" \
-                        "${DOCKER__NUMOFLINES_0}" \
+                        "${DOCKER__NUMOFLINES_1}" \
                         "${DOCKER__TIMEOUT_10}" \
                         "${DOCKER__NUMOFLINES_0}" \
-                        "${DOCKER__NUMOFLINES_0}" \
-                        "${DOCKER__NUMOFLINES_2}"
-}
-
-docker__get_git_info__sub() {
-    #Get information
-    docker__git_current_branchName=`git__get_current_branchName__func`
-
-    docker__git_current_abbrevCommitHash=`git__log_for_pushed_and_unpushed_commits__func "${DOCKER__EMPTYSTRING}" \
-                        "${GIT__LAST_COMMIT}" \
-                        "${GIT__PLACEHOLDER_ABBREV_COMMIT_HASH}"`
-      
-    docker__git_push_status=`git__checkIf_branch_isPushed__func "${docker__git_current_branchName}"`
-
-    docker__git_current_tag=`git__get_tag_for_specified_branchName__func "${docker__git_current_branchName}" "${DOCKER__FALSE}"`
-    if [[ -z "${docker__git_current_tag}" ]]; then
-        docker__git_current_tag="${GIT__NOT_TAGGED}"
-    fi
-
-    #Generate message to be shown
-    docker_git_current_info_msg="${DOCKER__FG_LIGHTBLUE}${docker__git_current_branchName}${DOCKER__NOCOLOR}:"
-    docker_git_current_info_msg+="${DOCKER__FG_DARKBLUE}${docker__git_current_abbrevCommitHash}${DOCKER__NOCOLOR}"
-    docker_git_current_info_msg+="(${DOCKER__FG_DARKBLUE}${docker__git_push_status}${DOCKER__NOCOLOR}):"
-    docker_git_current_info_msg+="${DOCKER__FG_LIGHTBLUE}${docker__git_current_tag}${DOCKER__NOCOLOR}"
+                        "${DOCKER__NUMOFLINES_0}"
 }
 
 

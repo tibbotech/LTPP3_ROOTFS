@@ -30,7 +30,8 @@ docker__load_environment_variables__sub() {
     # docker__LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS_development_tools__dir%/*}    #move one directory up: LTPP3_ROOTFS/
     # docker__parentDir_of_LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS__dir%/*}    #move two directories up. This directory is the one-level higher than LTPP3_ROOTFS/
 
-    docker__LTPP3_ROOTFS__dir=`pwd`
+    docker__thisScript_fpath=`readlink -f "${BASH_SOURCE:-$0}"`
+    docker__LTPP3_ROOTFS__dir=`dirname ${docker__thisScript_fpath}`
     docker__parentDir_of_LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS__dir%/*}    #move two directories up. This directory is the one-level higher than LTPP3_ROOTFS/
     docker__LTPP3_ROOTFS_development_tools__dir="${docker__LTPP3_ROOTFS__dir}/${docker__development_tools__foldername}"
 
@@ -52,14 +53,6 @@ docker__load_constants__sub() {
     DOCKER__MENUTITLE="${DOCKER__FG_LIGHTBLUE}DOCKER MAIN-MENU${DOCKER__NOCOLOR}"
 }
 
-docker__load_header__sub() {
-    #Input args
-    local prepend_numOfLines__input=${1}
-
-    #Print
-    show_header__func "${DOCKER__TITLE}" "${DOCKER__TABLEWIDTH}" "${DOCKER__BG_ORANGE}" "${prepend_numOfLines__input}" "${DOCKER__NUMOFLINES_0}"
-}
-
 docker__checkIf_user_is_root__sub()
 {
     #Define local variable
@@ -76,6 +69,8 @@ docker__checkIf_user_is_root__sub()
 }
 
 docker__init_variables__sub() {
+    docker__tibboHeader_prepend_numOfLines=${DOCKER__NUMOFLINES_2}
+
     docker__regEx="[1-3890rcseipgq]"
     docker__myChoice=""
 
@@ -105,18 +100,27 @@ docker__mainmenu__sub() {
         #   docker_git_current_info_msg
         docker__get_git_info__sub
 
-        #Print header
-        docker__load_header__sub "${docker__tibboHeader_prepend_numOfLines}"
+        #Print Tibbo-title
+        load_tibbo_title__func "${docker__tibboHeader_prepend_numOfLines}"
 
+        #Set 'docker__tibboHeader_prepend_numOfLines'
+        docker__tibboHeader_prepend_numOfLines=${DOCKER__NUMOFLINES_1}
+
+        #Print horizontal line
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+
+        #Print menut-title
         show_leadingAndTrailingStrings_separatedBySpaces__func "${DOCKER__MENUTITLE}" "${docker_git_current_info_msg}" "${DOCKER__TABLEWIDTH}"
+
+        #Print horizontal line
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
 
-        echo -e "${DOCKER__FOURSPACES}1. (Menu) create ${DOCKER__FG_BORDEAUX}image(s)${DOCKER__NOCOLOR} using docker-${DOCKER__FG_LIGHTBLUE}file${DOCKER__NOCOLOR}/${DOCKER__FG_LIGHTBLUE}list${DOCKER__NOCOLOR}"
-        echo -e "${DOCKER__FOURSPACES}2. (Menu) create${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}remove${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}rename ${DOCKER__FG_BORDEAUX}image${DOCKER__NOCOLOR}"
-        echo -e "${DOCKER__FOURSPACES}3. (Menu) run${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}Remove ${DOCKER__FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
-        echo -e "${DOCKER__FOURSPACES}8. Copy a ${DOCKER__FG_ORANGE}file${DOCKER__NOCOLOR} from${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}to ${DOCKER__FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
-        echo -e "${DOCKER__FOURSPACES}9. ${DOCKER__FG_GREEN}Chroot${DOCKER__NOCOLOR} from inside/outside ${DOCKER__FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}" 
+        #Print menu-options
+        echo -e "${DOCKER__FOURSPACES}1. ${DOCKER__MENU} create ${DOCKER__FG_BORDEAUX}image${DOCKER__NOCOLOR}(s) using docker-file/list"
+        echo -e "${DOCKER__FOURSPACES}2. ${DOCKER__MENU} create${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}remove${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}rename ${DOCKER__FG_BORDEAUX}image${DOCKER__NOCOLOR}"
+        echo -e "${DOCKER__FOURSPACES}3. ${DOCKER__MENU} run${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}remove ${DOCKER__FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
+        echo -e "${DOCKER__FOURSPACES}8. Copy file from${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}to ${DOCKER__FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
+        echo -e "${DOCKER__FOURSPACES}9. Chroot from inside${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}outside ${DOCKER__FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}" 
         echo -e "${DOCKER__FOURSPACES}0. Enter Command Prompt"
 
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
@@ -128,7 +132,7 @@ docker__mainmenu__sub() {
         echo -e "${DOCKER__FOURSPACES}i. Load from ${DOCKER__FG_BORDEAUX}image${DOCKER__NOCOLOR} file"
         echo -e "${DOCKER__FOURSPACES}e. Save to ${DOCKER__FG_BORDEAUX}image${DOCKER__NOCOLOR} file"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-        echo -e "${DOCKER__FOURSPACES}g. (Menu) Git"
+        echo -e "${DOCKER__FOURSPACES}g. ${DOCKER__MENU} Git"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
         echo -e "${DOCKER__FOURSPACES}q. ${DOCKER__QUIT_CTRL_C}"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
@@ -212,16 +216,10 @@ docker__mainmenu__sub() {
                 exit
                 ;;
         esac
-
-        #Set 'docker__tibboHeader_prepend_numOfLines'
-        docker__tibboHeader_prepend_numOfLines=${DOCKER__NUMOFLINES_1}
     done
 }
 
 docker__show_repositoryList_handler__sub() {
-    #Load header
-    docker__load_header__sub "${DOCKER__NUMOFLINES_2}"
-
     #Show repo-list
     show_repoList_or_containerList_w_menuTitle_w_confirmation__func "${DOCKER__MENUTITLE_REPOSITORYLIST}" \
                         "${DOCKER__ERRMSG_NO_IMAGES_FOUND}" \
@@ -229,13 +227,11 @@ docker__show_repositoryList_handler__sub() {
                         "${DOCKER__NUMOFLINES_0}" \
                         "${DOCKER__TIMEOUT_10}" \
                         "${DOCKER__NUMOFLINES_0}" \
-                        "${DOCKER__NUMOFLINES_0}"
+                        "${DOCKER__NUMOFLINES_0}" \
+                        "${DOCKER__NUMOFLINES_2}"
 }
 
 docker__show_containerList_handler__sub() {
-    #Load header
-    docker__load_header__sub "${DOCKER__NUMOFLINES_2}"
-
     #Show container-list
     show_repoList_or_containerList_w_menuTitle_w_confirmation__func "${DOCKER__MENUTITLE_CONTAINERLIST}" \
                         "${DOCKER__ERRMSG_NO_CONTAINERS_FOUND}" \
@@ -243,27 +239,21 @@ docker__show_containerList_handler__sub() {
                         "${DOCKER__NUMOFLINES_0}" \
                         "${DOCKER__TIMEOUT_10}" \
                         "${DOCKER__NUMOFLINES_0}" \
-                        "${DOCKER__NUMOFLINES_0}"
+                        "${DOCKER__NUMOFLINES_0}" \
+                        "${DOCKER__NUMOFLINES_2}"
 }
 
 docker__get_git_info__sub() {
     #Get information
-    docker__git_current_branchName=`git_get_current_branchName__func`
-
-    docker__git_current_abbrevCommitHash=`git_log_for_pushed_and_unpushed_commits__func "${docker__git_current_branchName}" \
+    docker__git_current_branchName=`git__get_current_branchName__func`
+ 
+    docker__git_current_abbrevCommitHash=`git__log_for_pushed_and_unpushed_commits__func "${DOCKER__EMPTYSTRING}" \
                         "${GIT__LAST_COMMIT}" \
                         "${GIT__PLACEHOLDER_ABBREV_COMMIT_HASH}"`
-    
-    docker__git_current_unpushed_abbrevCommitHash=`git_log_for_unpushed_local_commits__func "${docker__git_current_branchName}" \
-                        "${DOCKER__EMPTYSTRING}" \
-                        "${GIT__PLACEHOLDER_ABBREV_COMMIT_HASH}"`
-    
-    docker__git_push_status="${GIT__PUSHED}"
-    if [[ "${docker__git_current_abbrevCommitHash}" == "${docker__git_current_unpushed_abbrevCommitHash}" ]]; then
-        docker__git_push_status="${GIT__UNPUSHED}"
-    fi
+  
+    docker__git_push_status=`git__checkIf_branch_isPushed__func "${docker__git_current_branchName}"`
 
-    docker__git_current_tag=`git_get_tag_for_specified_commitHash__func "${docker__git_current_abbrevCommitHash}"`
+    docker__git_current_tag=`git__get_tag_for_specified_branchName__func "${docker__git_current_branchName}" "${DOCKER__FALSE}"`
     if [[ -z "${docker__git_current_tag}" ]]; then
         docker__git_current_tag="${GIT__NOT_TAGGED}"
     fi

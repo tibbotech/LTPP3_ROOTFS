@@ -47,39 +47,34 @@ docker__load_constants__sub() {
     DOCKER__MENUTITLE="Git Pull"
 
     DOCKER__READDIALOG_YN="Pull from remote (${DOCKER__Y_SLASH_N})?"
+
+    DOCKER__SUBJECT_GIT_PULL="git pull"
 }
 
 docker__init_variables__sub() {
     docker__tibboHeader_prepend_numOfLines=${DOCKER__NUMOFLINES_2}
-}
 
-docker__load_header__sub() {
-    #Input args
-    local prepend_numOfLines__input=${1}
-
-    #Print
-    show_header__func "${DOCKER__TITLE}" "${DOCKER__TABLEWIDTH}" "${DOCKER__BG_ORANGE}" "${prepend_numOfLines__input}" "${DOCKER__NUMOFLINES_0}"
+    docker__exitCode=0
 }
 
 docker__git_pull__sub() {
     #Define constants
     local TIBBOHEADER_PHASE=1
     local MENUTITLE_PHASE=2
-    local GIT_CONFIRM_PULL_PHASE=3
-    local GIT_PULL_PHASE=4
-    local EXIT_PHASE=5
+    local PRINT_START_MESSAGE=3
+    local GIT_CONFIRM_PULL_PHASE=4
+    local GIT_PULL_PHASE=5
+    local PRINT_COMPLETED_MESSAGE=6
+    local EXIT_PHASE=7
 
-    local PRINTF_GIT_PULL_CMD="Git pull"    
-
-    local PRINTF_QUESTION="${DOCKER__FG_YELLOW}QUESTION${DOCKER__NOCOLOR}"
-    local PRINTF_RESULT="${DOCKER__FG_ORANGE}RESULT${DOCKER__NOCOLOR}"
-
-    local STATUS_DONE="${DOCKER__FG_GREEN}done${DOCKER__NOCOLOR}"
-    local STATUS_FAILED="${DOCKER__FG_LIGHTRED}failed${DOCKER__NOCOLOR}"
 
     #Define variables
     local answer=${DOCKER__NO}
     local phase=${TIBBOHEADER_PHASE}
+
+    local printf_msg=${DOCKER__EMPTYSTRING}
+    local printf_subjectMsg=${DOCKER__EMPTYSTRING}
+    local readDialog=${DOCKER__EMPTYSTRING}
 
 
     #Handle 'phase'
@@ -87,21 +82,31 @@ docker__git_pull__sub() {
     do
         case "${phase}" in
             ${TIBBOHEADER_PHASE})
-                docker__load_header__sub "${docker__tibboHeader_prepend_numOfLines}"
+                load_tibbo_title__func "${docker__tibboHeader_prepend_numOfLines}"
 
                 phase="${MENUTITLE_PHASE}"
                 ;;
             ${MENUTITLE_PHASE})
                 show_menuTitle_w_adjustable_indent__func "${DOCKER__MENUTITLE}" "${DOCKER__EMPTYSTRING}"
 
+                phase="${PRINT_START_MESSAGE}"
+                ;;
+            ${PRINT_START_MESSAGE})
+                #Update message
+                printf_subjectMsg="---:${DOCKER__START}: ${DOCKER__SUBJECT_GIT_PULL}"
+                #Show message
+                show_msg_only__func "${printf_subjectMsg}" "${DOCKER__NUMOFLINES_1}" "${DOCKER__NUMOFLINES_0}"
+
+                #Goto next-phase
                 phase="${GIT_CONFIRM_PULL_PHASE}"
                 ;;
             ${GIT_CONFIRM_PULL_PHASE})
-                moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-
+                #Update 'readDialog'
+                readDialog="------:${DOCKER__QUESTION}:${DOCKER__READDIALOG_YN}"
+                
                 while true
                 do
-                    read -N1 -r -p "---:${PRINTF_QUESTION}:${DOCKER__READDIALOG_YN}" answer
+                    read -N1 -r -p "${readDialog}" answer
 
                     case "${answer}" in
                         ${DOCKER__YES})
@@ -112,7 +117,7 @@ docker__git_pull__sub() {
                             break
                             ;;
                         ${DOCKER__NO})
-                            moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+                            # moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
                             phase="${EXIT_PHASE}"
 
@@ -128,21 +133,35 @@ docker__git_pull__sub() {
                 done
                 ;;
             ${GIT_PULL_PHASE})
-                #Move-down and clean
-                moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-
+                #Update command
+                git_cmd="${GIT__CMD_GIT_PULL}"
                 #Execute command
-                git pull
+                eval ${git_cmd}
 
                 #Check exit-code
-                exitCode=$?
-                if [[ ${exitCode} -eq 0 ]]; then
-                    echo -e "---:${PRINTF_RESULT}: ${PRINTF_GIT_PULL_CMD} (${STATUS_DONE})"
+                docker__exitCode=$?
+                if [[ ${docker__exitCode} -eq 0 ]]; then
+                    #Update message
+                    printf_msg="------:${DOCKER__EXECUTED}: ${git_cmd} (${DOCKER__STATUS_DONE})"
                 else
-                    echo -e "---:${PRINTF_RESULT}: ${PRINTF_GIT_PULL_CMD} (${STATUS_FAILED})"
+                    #Update message
+                    printf_msg="------:${DOCKER__EXECUTED}: ${git_cmd} (${DOCKER__STATUS_FAILED})"
                 fi
 
-                phase="${EXIT_PHASE}"
+                #Show message
+                show_msg_only__func "${printf_msg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+
+                #Goto next-phase
+                phase="${PRINT_COMPLETED_MESSAGE}"
+                ;;
+            ${PRINT_COMPLETED_MESSAGE})
+                #Update message
+                printf_subjectMsg="---:${DOCKER__COMPLETED}: ${DOCKER__SUBJECT_GIT_PULL}"
+                #Show message
+                show_msg_only__func "${printf_subjectMsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_1}"
+
+                #Goto next-phase
+                goto__func EXIT_PHASE
                 ;;
             ${EXIT_PHASE})
                 exit__func "${DOCKER__EXITCODE_99}" "${DOCKER__NUMOFLINES_2}"

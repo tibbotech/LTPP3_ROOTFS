@@ -1,8 +1,5 @@
 #!/bin/bash -m
 #Remark: by using '-m' the INT will NOT propagate to the PARENT scripts
-#---PATTERN CONSTANTS
-DOCKER__PATTERN1="Exited"
-
 
 #---SUBROUTINES
 docker__environmental_variables__sub() {
@@ -29,14 +26,10 @@ docker__load_source_files__sub() {
     source ${docker__global__fpath}
 }
 
-docker__load_header__sub() {
-    show_header__func "${DOCKER__TITLE}" "${DOCKER__TABLEWIDTH}" "${DOCKER__BG_ORANGE}" "${DOCKER__NUMOFLINES_2}" "${DOCKER__NUMOFLINES_0}"
-}
-
 docker__init_variables__sub() {
     docker__containerID_chosen=${DOCKER__EMPTYSTRING}
 
-    # docker__ps_a_cmd="docker ps -a"
+    docker__tibboHeader_prepend_numOfLines=${DOCKER__NUMOFLINES_2}
 
     docker__ps_a_containerIdColno=1
 
@@ -65,6 +58,7 @@ docker__start_exited_container_handler__sub() {
     readmsg_remarks+="${DOCKER__DASH} ${DOCKER__FG_YELLOW};c${DOCKER__NOCOLOR}: clear"
 
     #Set initial 'phase'
+    docker__tibboHeader_prepend_numOfLines=${DOCKER__NUMOFLINES_2}
     phase=${CONTAINERID_SELECT_PHASE}
     while true
     do
@@ -79,11 +73,12 @@ docker__start_exited_container_handler__sub() {
                         "${DOCKER__ERRMSG_CHOSEN_CONTAINERID_DOESNOT_EXISTS}" \
                         "${docker__ps_a_cmd}" \
                         "${docker__ps_a_containerIdColno}" \
-                        "${DOCKER__PATTERN1}" \
+                        "${DOCKER__PATTERN_EXITED}" \
                         "${docker__showTable}" \
-                        "${docker__onEnter_breakLoop}"
+                        "${docker__onEnter_breakLoop}" \
+                        "${docker__tibboHeader_prepend_numOfLines}"
 
-                #Get the exitcode just in case:
+                #Get the exit-code just in case:
                 #   1. Ctrl-C was pressed in script 'docker__readInput_w_autocomplete__fpath'.
                 #   2. An error occured in script 'docker__readInput_w_autocomplete__fpath',...
                 #      ...and exit-code = 99 came from function...
@@ -92,7 +87,7 @@ docker__start_exited_container_handler__sub() {
                 if [[ ${docker__exitCode} -eq ${DOCKER__EXITCODE_99} ]]; then
                     exit__func "${docker__exitCode}" "${DOCKER__NUMOFLINES_0}"
                 else
-                    #Retrieve the selected container-ID from file
+                    #Get the result
                     docker__containerID_chosen=`get_output_from_file__func \
                                 "${docker__readInput_w_autocomplete_out__fpath}" \
                                 "${DOCKER__LINENUM_1}"`
@@ -121,12 +116,14 @@ docker__start_exited_container__sub() {
     #Execute command
     docker start ${docker__containerID_chosen}
 
+    #Show Tibbo-title
+    load_tibbo_title__func "${docker__tibboHeader_prepend_numOfLines}"
+
     #Show Container's list
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-    
     show_repoList_or_containerList_w_menuTitle__func "${MENUTITLE_UPDATED_CONTAINER_LIST}" "${docker__ps_a_cmd}"
     
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
+    #Move-down and clean
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 }
 
 
@@ -136,8 +133,6 @@ main_sub() {
     docker__environmental_variables__sub
 
     docker__load_source_files__sub
-
-    docker__load_header__sub
 
     docker__init_variables__sub
 

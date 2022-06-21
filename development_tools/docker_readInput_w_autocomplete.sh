@@ -12,6 +12,7 @@ colNo__input=${8}
 pattern__input=${9}
 showTable__input=${10}
 onEnter_breakLoop__input=${11}
+tibboHeader_prepend_numOfLines__input=${12}
 
 
 
@@ -268,7 +269,8 @@ docker__readInput_handler__sub() {
                         "${colNo__input}" \
                         "${pattern__input}" \
                         "${showTable__input}" \
-                        "${onEnter_breakLoop__input}"
+                        "${onEnter_breakLoop__input}" \
+                        "${tibboHeader_prepend_numOfLines__input}"
 
     #Print empty lines
     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
@@ -287,6 +289,7 @@ docker__readInput_w_autocomplete__sub() {
     local pattern__input=${9}
     local showTable__input=${10}
     local onEnter_breakLoop__input=${11}
+    local tibboHeader_prepend_numOfLines__input=${12}
 
     #Define variables
     local keyInput=${DOCKER__EMPTYSTRING}
@@ -330,6 +333,15 @@ docker__readInput_w_autocomplete__sub() {
     #Remark:
     #   This way we can control whether to show the Image-list Table or not.
     if [[ ${showTable__input} == true ]]; then
+        #Check if 'tibboHeader_prepend_numOfLines__input' is an Empty String
+        if [[ -z ${tibboHeader_prepend_numOfLines__input} ]]; then
+            tibboHeader_prepend_numOfLines__input=${DOCKER__NUMOFLINES_2}
+        fi
+
+        #Print Tibbo-title
+        load_tibbo_title__func "${tibboHeader_prepend_numOfLines__input}"
+        
+        #Show command-output
         docker__show_infoTable__sub "${menuTitle__input}" \
                         "${dockerCmd__input}" \
                         "${errorMsg__input}" #\
@@ -374,7 +386,7 @@ docker__readInput_w_autocomplete__sub() {
                 #If that's the case then function 'get_endResult_ofString_with_semiColonChar__func'
                 #   will handle and return a modified 'ret'.
                 ret_bck=${ret}  #set value
-                ret=`get_endResult_ofString_with_semiColonChar__func ${ret_bck}` 
+                ret=`get_endResult_ofString_with_semiColonChar__func "${ret_bck}"` 
                 
                 if [[ ! -z ${ret} ]]; then    #'ret' contains data
                     #Break immeidiately if ';b' or ';h' was found.

@@ -52,11 +52,10 @@ docker__load_source_files__sub() {
     source ${docker__global__fpath}
 }
 
-docker__load_header__sub() {
-    show_header__func "${DOCKER__TITLE}" "${DOCKER__TABLEWIDTH}" "${DOCKER__BG_ORANGE}" "${DOCKER__NUMOFLINES_2}" "${DOCKER__NUMOFLINES_0}"
-}
-
 docker__load_constants__sub() {
+    #Remark: 
+    #   The following constants will be passed into...
+    #   ...script 'docker_show_choose_add_del_from_cache.sh'
     DOCKER__LINK_MENUTITLE="${menuOption_link__input}"
     DOCKER__LINK_LOCATION_INFO="${DOCKER__FOURSPACES}${DOCKER__FG_VERYLIGHTORANGE}Location${DOCKER__NOCOLOR}: "
     DOCKER__LINK_MENUOPTIONS="${DOCKER__FOURSPACES_F6_CHOOSE}\n"
@@ -83,7 +82,12 @@ docker__load_constants__sub() {
     DOCKER__PROFILE_MENUOPTIONS1+="${DOCKER__FOURSPACES_F7_ADD}\n"
     DOCKER__PROFILE_MENUOPTIONS1+="${DOCKER__FOURSPACES_F8_DEL}\n"
     DOCKER__PROFILE_MENUOPTIONS1+="${DOCKER__FOURSPACES_F12_QUIT}"
-    DOCKER__PROFILE_MENUOPTIONS2="${DOCKER__FOURSPACES_F1_CHOOSE_LINK}\n"
+
+    #Remark: 
+    #   The following constants will be passed into...
+    #   ...function 'show_pathContent_w_selection__func'...
+    #   ...in script 'docker_show_choose_add_del_from_cache.sh'
+    DOCKER__PROFILE_MENUOPTIONS2="${DOCKER__FOURSPACES_F1_CHOOSE_LINK}\n"   #
     DOCKER__PROFILE_MENUOPTIONS2+="${DOCKER__FOURSPACES_F2_CHOOSE_CHECKOUT}\n"
     DOCKER__PROFILE_MENUOPTIONS2+="${DOCKER__FOURSPACES_F5_ABORT}\n"
     DOCKER__PROFILE_MENUOPTIONS2+="${DOCKER__FOURSPACES_F12_QUIT}"
@@ -97,6 +101,8 @@ docker__load_constants__sub() {
     DOCKER__PROFILE_MATCHPATTERN2+="${DOCKER__ENUM_FUNC_F2}"
     DOCKER__PROFILE_MATCHPATTERN2+="${DOCKER__ONESPACE}"
     DOCKER__PROFILE_MATCHPATTERN2+="${DOCKER__ENUM_FUNC_F5}"
+    DOCKER__PROFILE_MATCHPATTERN2+="${DOCKER__ONESPACE}"
+    DOCKER__PROFILE_MATCHPATTERN2+="${DOCKER__ENUM_FUNC_F12}"
     DOCKER__PROFILE_MATCHPATTERN3="${DOCKER__ENUM_FUNC_F1}" #paired with 'DOCKER__PROFILE_MENUOPTIONS3'
     DOCKER__PROFILE_MATCHPATTERN3+="${DOCKER__ONESPACE}"
     DOCKER__PROFILE_MATCHPATTERN3+="${DOCKER__ENUM_FUNC_F2}"
@@ -104,6 +110,8 @@ docker__load_constants__sub() {
     DOCKER__PROFILE_MATCHPATTERN3+="${DOCKER__ENUM_FUNC_F3}"
     DOCKER__PROFILE_MATCHPATTERN3+="${DOCKER__ONESPACE}"
     DOCKER__PROFILE_MATCHPATTERN3+="${DOCKER__ENUM_FUNC_F5}"
+    DOCKER__PROFILE_MATCHPATTERN3+="${DOCKER__ONESPACE}"
+    DOCKER__PROFILE_MATCHPATTERN3+="${DOCKER__ENUM_FUNC_F12}"
     DOCKER__PROFILE_CHOOSE_PROFILE="Choose profile: "
     DOCKER__PROFILE_ADD_PROFILE="Add profile:"  #notice: there is NO trailing space
     # DOCKER__PROFILE_ADD_PROFILE="Add new profile by choosing ${DOCKER__FG_GREEN41}link${DOCKER__NOCOLOR}(${DOCKER__FG_LIGHTGREY}F2${DOCKER__NOCOLOR})"
@@ -123,11 +131,11 @@ docker__init_variables__sub() {
     docker__exp_env_var_menuTitle=${DOCKER__EMPTYSTRING}
     docker__exp_env_var_locationInfo=${DOCKER__EMPTYSTRING}
     docker__exp_env_var_locationInfo_fpath=${DOCKER__EMPTYSTRING}
-    docker__exp_env_var_menuOptions1=${DOCKER__EMPTYSTRING}
-    docker__exp_env_var_menuOptions2=${DOCKER__EMPTYSTRING} #used only for 'link-checkout profile'
-    docker__exp_env_var_menuOptions3=${DOCKER__EMPTYSTRING} #used only for 'link-checkout profile'
-    docker__exp_env_var_matchPattern2=${DOCKER__EMPTYSTRING}    #used in combo with 'docker__exp_env_var_menuOptions2'
-    docker__exp_env_var_matchPattern3=${DOCKER__EMPTYSTRING}    #used in combo with 'docker__exp_env_var_menuOptions3'
+    docker__exp_env_var_menuOptions1=${DOCKER__EMPTYSTRING}     #passed into script 'docker_show_choose_add_del_from_cache.sh' (this is reason why no 'docker__exp_env_var_matchPattern1' is defined)
+    docker__exp_env_var_menuOptions2=${DOCKER__EMPTYSTRING}     #used only for 'link-checkout profile'; passed into function 'show_pathContent_w_selection__func'
+    docker__exp_env_var_menuOptions3=${DOCKER__EMPTYSTRING}     #used only for 'link-checkout profile'; passed into function 'show_pathContent_w_selection__func'
+    docker__exp_env_var_matchPattern2=${DOCKER__EMPTYSTRING}    #used in combo with 'docker__exp_env_var_menuOptions2'; passed into function 'show_pathContent_w_selection__func'
+    docker__exp_env_var_matchPattern3=${DOCKER__EMPTYSTRING}    #used in combo with 'docker__exp_env_var_menuOptions3'; passed into function 'show_pathContent_w_selection__func'
     docker__exp_env_var_option_choose=${DOCKER__EMPTYSTRING}
     docker__exp_env_var_option_add=${DOCKER__EMPTYSTRING}
     docker__exp_env_var_option_del=${DOCKER__EMPTYSTRING}
@@ -226,12 +234,13 @@ docker__show_choose_add_del_handler__sub() {
                         "${docker__show_choose_add_del_from_cache_out__fpath}" \
                         "${dockerFile_fpath__input}" \
                         "${exp_env_var_type__input}" \
-                        "${DOCKER__TIMEOUT_0}"
+                        "${DOCKER__TIMEOUT_0}" \
+                        "${DOCKER__NUMOFLINES_2}"
 
     #Get the exitcode just in case a Ctrl-C was pressed in script 'docker__show_choose_add_del_from_cache__fpath'.
     docker__exitCode=$?
     if [[ ${docker__exitCode} -eq ${DOCKER__EXITCODE_99} ]]; then
-        exit__func "${docker__exitCode}" "${DOCKER__NUMOFLINES_2}"
+        exit__func "${docker__exitCode}" "${DOCKER__NUMOFLINES_1}"
     fi
 }
 
@@ -243,7 +252,7 @@ main_sub() {
 
     docker__load_source_files__sub
 
-    docker__load_header__sub
+    # load_tibbo_title__func "${DOCKER__NUMOFLINES_2}"
 
     docker__load_constants__sub
 

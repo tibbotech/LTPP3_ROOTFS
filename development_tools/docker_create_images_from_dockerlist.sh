@@ -211,24 +211,22 @@ docker__load_source_files__sub() {
     source ${docker__global__fpath}
 }
 
-docker__load_header__sub() {
-    show_header__func "${DOCKER__TITLE}" "${DOCKER__TABLEWIDTH}" "${DOCKER__BG_ORANGE}" "${DOCKER__NUMOFLINES_2}" "${DOCKER__NUMOFLINES_0}"
-}
-
 docker__load_constants__sub() {
     DOCKER__DIR_MENUTITLE="${DOCKER__FG_YELLOW}Create${DOCKER__NOCOLOR} multiple ${DOCKER__FG_BORDEAUX}IMAGES${DOCKER__NOCOLOR} using a ${DOCKER__FG_LIGHTBLUE}docker-list${DOCKER__NOCOLOR}"
-    DOCKER__DIR_REMARK=${DOCKER__EMPTYSTRING}
+    DOCKER__DIR_REMARKS=${DOCKER__EMPTYSTRING}
     DOCKER__DIR_LOCATIONINFO="${DOCKER__FOURSPACES}${DOCKER__FG_VERYLIGHTORANGE}Location${DOCKER__NOCOLOR}: ${docker__LTPP3_ROOTFS_docker_dockerfiles__dir}"
+    DOCKER__DIR_MENUOPTIONS="${DOCKER__FOURSPACES_Q_QUIT}"
+    DOCKER__DIR_MATCHPATTERNS="${DOCKER__QUIT}"
     DOCKER__DIR_ERRMSG="${DOCKER__FOURSPACES}-:${DOCKER__FG_LIGHTRED}Directory is Empty${DOCKER__NOCOLOR}:-"
     DOCKER__DIR_READDIALOG="Choose a file: "
 
     DOCKER__FILE_MENUTITLE="Show ${DOCKER__FG_VERYLIGHTORANGE}file${DOCKER__NOCOLOR}${DOCKER__FG_LIGHTGREY}-${DOCKER__NOCOLOR}content"
-    DOCKER__FILE_READDIALOG="Do you wish to continue (y/n/b): "
+    DOCKER__FILE_READDIALOG="Do you wish to continue? "
     DOCKER__FILE_REMARKS=${DOCKER__EMPTYSTRING}
     DOCKER__FILE_MENUOPTIONS="${DOCKER__FOURSPACES_Y_YES}\n"
     DOCKER__FILE_MENUOPTIONS+="${DOCKER__FOURSPACES_N_NO}\n"
     DOCKER__FILE_MENUOPTIONS+="${DOCKER__FOURSPACES_B_BACK}\n"
-    DOCKER__FILE_MENUOPTIONS+="${DOCKER__FOURSPACES_F12_QUIT}"
+    DOCKER__FILE_MENUOPTIONS+="${DOCKER__FOURSPACES_Q_QUIT}"
     DOCKER__FILE_ERRMSG="${DOCKER__FOURSPACES}-:${DOCKER__FG_LIGHTRED}File is Empty${DOCKER__NOCOLOR}:-"
 }
 
@@ -236,7 +234,7 @@ docker__init_variables__sub() {
     docker__dockerList_fpath=${DOCKER__EMPTYSTRING}
     docker__dockerList_filename=${DOCKER__EMPTYSTRING}
     docker__file_locationInfo=${DOCKER__EMPTYSTRING}
-    docker__myAnswer=${DOCKER__NO}
+    docker__answer=${DOCKER__NO}
     docker__submenuTitle=${DOCKER__EMPTYSTRING}
     docker__flagExitLoop=false
 }
@@ -245,9 +243,6 @@ docker__show_dockerList_files_handler__sub() {
     #Start loop
     while true
     do
-        #Show Tibbo-header
-        docker__load_header__sub
-
         #Show dockerList files
         docker__show_dockerList_files__sub
 
@@ -257,59 +252,8 @@ docker__show_dockerList_files_handler__sub() {
         #Update variables
         docker__file_locationInfo="${DOCKER__FOURSPACES}${DOCKER__FG_VERYLIGHTORANGE}File${DOCKER__NOCOLOR}: ${docker__dockerList_filename}"
 
-
-
-        #Move-down and clean lines
-        # moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
-
-
-
-        #Show Tibbo-header
-        docker__load_header__sub
-
-        #Show file content
-        show_fileContent_wo_select__func "${docker__dockerList_fpath}" \
-                        "${DOCKER__FILE_MENUTITLE}" \
-                        "${DOCKER__FILE_REMARKS}" \
-                        "${docker__file_locationInfo}" \
-                        "${DOCKER__FILE_MENUOPTIONS}" \
-                        "${DOCKER__FILE_ERRMSG}" \
-                        "${DOCKER__FILE_READDIALOG}" \
-                        "${DOCKER__REGEX_YNB}" \
-                        "${docker__show_fileContent_wo_select_func_out__fpath}" \
-                        "${DOCKER__TABLEROWS_10}" \
-                        "${DOCKER__EMPTYSTRING}" \
-                        "${DOCKER__FALSE}"
-
-        #Get the exitcode just in case a Ctrl-C was pressed in function 'show_fileContent_wo_select__func' (in script 'docker_global.sh')
-        docker__exitCode=$?
-        if [[ ${docker__exitCode} -eq ${DOCKER__EXITCODE_99} ]]; then
-            exit__func "${docker__exitCode}" "${DOCKER__NUMOFLINES_2}"
-        fi
-
-        #Get result from file.
-        docker__myAnswer=`get_output_from_file__func \
-                            "${docker__show_fileContent_wo_select_func_out__fpath}" \
-                            "${DOCKER__LINENUM_1}"`
-
-        #Check if 'docker__myAnswer' is a numeric value
-        case "${docker__myAnswer}" in
-            ${DOCKER__ENUM_FUNC_F12})
-                exit__func "${DOCKER__EXITCODE_0}" "${DOCKER__NUMOFLINES_2}"
-
-                ;;
-            ${DOCKER__YES})
-                moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
-
-                return
-                ;;
-            ${DOCKER__NO})
-                exit__func "${DOCKER__EXITCODE_0}" "${DOCKER__NUMOFLINES_2}"
-                ;;
-            *)
-                moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-                ;;
-        esac
+        #Show selected docker-file content
+        docker__show_selected_dockerFile_content__sub
     done
 }
 docker__show_dockerList_files__sub() {
@@ -317,16 +261,19 @@ docker__show_dockerList_files__sub() {
     show_pathContent_w_selection__func "${docker__LTPP3_ROOTFS_docker_list__dir}" \
                         "${DOCKER__EMPTYSTRING}" \
                         "${DOCKER__DIR_MENUTITLE}" \
-                        "${DOCKER__DIR_REMARK}" \
+                        "${DOCKER__DIR_REMARKS}" \
                         "${DOCKER__DIR_LOCATIONINFO}" \
-                        "${DOCKER__FOURSPACES_F12_QUIT}" \
-                        "${DOCKER__EMPTYSTRING}" \
+                        "${DOCKER__DIR_MENUOPTIONS}" \
+                        "${DOCKER__DIR_MATCHPATTERNS}" \
                         "${DOCKER__DIR_ERRMSG}" \
                         "${DOCKER__DIR_READDIALOG}" \
                         "${DOCKER__EMPTYSTRING}" \
                         "${DOCKER__EMPTYSTRING}" \
                         "${DOCKER__TABLEROWS_10}" \
-                        "${docker__show_pathContent_w_selection_func_out__fpath}"
+                        "${DOCKER__FALSE}" \
+                        "${docker__show_pathContent_w_selection_func_out__fpath}" \
+                        "${DOCKER__NUMOFLINES_2}" \
+                        "${DOCKER__TRUE}"
 
     #Get the exitcode just in case a Ctrl-C was pressed in function 'show_fileContent_wo_select__func' (in script 'docker_global.sh')
     docker__exitCode=$?
@@ -340,11 +287,59 @@ docker__show_dockerList_files__sub() {
                         "${DOCKER__LINENUM_1}"`
 
     #Double-check if 'docker__dockerFile_fpath = F12'
-    if [[ ${docker__dockerList_fpath} == ${DOCKER__ENUM_FUNC_F12} ]]; then
+    if [[ ${docker__dockerList_fpath} == ${DOCKER__QUIT} ]]; then
         exit__func "${DOCKER__EXITCODE_0}" "${DOCKER__NUMOFLINES_2}"
     else
         moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
     fi
+}
+
+docker__show_selected_dockerFile_content__sub() {
+    #Show file content
+    show_fileContent_wo_select__func "${docker__dockerList_fpath}" \
+                    "${DOCKER__FILE_MENUTITLE}" \
+                    "${DOCKER__FILE_REMARKS}" \
+                    "${docker__file_locationInfo}" \
+                    "${DOCKER__FILE_MENUOPTIONS}" \
+                    "${DOCKER__FILE_ERRMSG}" \
+                    "${DOCKER__FILE_READDIALOG}" \
+                    "${DOCKER__REGEX_YNBQ}" \
+                    "${docker__show_fileContent_wo_select_func_out__fpath}" \
+                    "${DOCKER__TABLEROWS_10}" \
+                    "${DOCKER__EMPTYSTRING}" \
+                    "${DOCKER__FALSE}" \
+                    "${DOCKER__NUMOFLINES_2}" \
+                    "${DOCKER__TRUE}"
+
+    #Get the exitcode just in case a Ctrl-C was pressed in function 'show_fileContent_wo_select__func' (in script 'docker_global.sh')
+    docker__exitCode=$?
+    if [[ ${docker__exitCode} -eq ${DOCKER__EXITCODE_99} ]]; then
+        exit__func "${docker__exitCode}" "${DOCKER__NUMOFLINES_2}"
+    fi
+
+    #Get result from file.
+    docker__answer=`get_output_from_file__func \
+                        "${docker__show_fileContent_wo_select_func_out__fpath}" \
+                        "${DOCKER__LINENUM_1}"`
+
+    #Check if 'docker__answer' is a numeric value
+    case "${docker__answer}" in
+        ${DOCKER__QUIT})
+            exit__func "${DOCKER__EXITCODE_0}" "${DOCKER__NUMOFLINES_2}"
+
+            ;;
+        ${DOCKER__YES})
+            moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
+
+            return
+            ;;
+        ${DOCKER__NO})
+            exit__func "${DOCKER__EXITCODE_0}" "${DOCKER__NUMOFLINES_2}"
+            ;;
+        *)
+            moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+            ;;
+    esac
 }
 
 docker__create_image_handler__sub() {
@@ -404,8 +399,6 @@ main_sub() {
     docker__load_environment_variables__sub
 
     docker__load_source_files__sub
-
-    # docker__load_header__sub
 
     docker__load_constants__sub
 

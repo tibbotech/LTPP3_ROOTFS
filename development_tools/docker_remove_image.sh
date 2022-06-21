@@ -1,5 +1,6 @@
 #!/bin/bash -m
 #Remark: by using '-m' the INT will NOT propagate to the PARENT scripts
+
 #---SUBROUTINES
 docker__load_environment_variables__sub() {
     #Check the number of input args
@@ -43,10 +44,6 @@ docker__load_source_files__sub() {
     source ${docker__global__fpath}
 }
 
-docker__load_header__sub() {
-    show_header__func "${DOCKER__TITLE}" "${DOCKER__TABLEWIDTH}" "${DOCKER__BG_ORANGE}" "${DOCKER__NUMOFLINES_2}" "${DOCKER__NUMOFLINES_0}"
-}
-
 docker__init_variables__sub() {
     docker__myImageId=""
     docker__myImageId_input=""
@@ -55,6 +52,8 @@ docker__init_variables__sub() {
     docker__myImageId_item=""
     docker__myImageId_isFound=""
     docker__myAnswer=""
+
+    docker__totNumOfLines=0
 
     docker__exitCode=0
 
@@ -67,7 +66,7 @@ docker__init_variables__sub() {
 
 docker__remove_specified_images__sub() {
     #Define message constants
-    local READMSG_DO_YOU_REALLY_WISH_TO_CONTINUE="***Do you REALLY wish to continue (y/n/q/b)? "
+    local READMSG_DO_YOU_REALLY_WISH_TO_CONTINUE="***Do you REALLY wish to continue (${DOCKER__Y_SLASH_N_SLASH_B_SLASH_Q})? "
 
     #Define local message variables
     local errMsg=${DOCKER__EMPTYSTRING}
@@ -89,9 +88,12 @@ docker__remove_specified_images__sub() {
 
         #Check previously (in subroutine 'docker_imageId_input__sub') ctrl+C was pressed.
         if [[ ${docker__exitCode} -eq 99 ]]; then
-            moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-
             break
+        else
+            #Only clean lines if 'docker__myImageId' is an Empty String
+            if [[ -z ${docker__myImageId} ]]; then
+                moveUp_and_cleanLines__func "${docker__totNumOfLines}"
+            fi
         fi
 
         #Check if 'docker__myImageId' contains data.
@@ -101,9 +103,6 @@ docker__remove_specified_images__sub() {
 
             #Convert to Array
             eval "docker__myImageId_arr=(${docker__myImageId_subst})"
-
-            #Print an Empty Line
-            moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
             #Question
             while true
@@ -120,7 +119,7 @@ docker__remove_specified_images__sub() {
                                 docker rmi $(docker images -q)
 
                                 #Set number of lines
-                                numOfLines=${DOCKER__NUMOFLINES_2}
+                                # numOfLines=${DOCKER__NUMOFLINES_2}
                             else    #Handle each image-ID at the time
                                 #Print Empty Lines
                                 moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
@@ -155,11 +154,11 @@ docker__remove_specified_images__sub() {
                                 done
 
                                 #Set number of lines
-                                numOfLines=${DOCKER__NUMOFLINES_2}
+                                # numOfLines=${DOCKER__NUMOFLINES_2}
                             fi
 
                             #Print an Empty Line
-                            moveDown_and_cleanLines__func "${numOfLines}"
+                            # moveDown_and_cleanLines__func "${numOfLines}"
 
                             #Set flag back to true
                             docker__showTable=true
@@ -197,8 +196,8 @@ docker__remove_specified_images__sub() {
 }
 docker_imageId_input__sub() {
     #Define message constants
-    local READMSG_PASTE_YOUR_INPUT="Paste your input (here): "
     local MENUTITLE="Remove ${DOCKER__FG_BORDEAUX}image${DOCKER__NOCOLOR}/${DOCKER__FG_PURPLE}repository${DOCKER__NOCOLOR}"
+    local READMSG_PASTE_YOUR_INPUT="Paste your input (here): "
 
     #Define variables
     local readmsg_remarks="${DOCKER__BG_ORANGE}Remarks:${DOCKER__NOCOLOR}\n"
@@ -211,7 +210,7 @@ docker_imageId_input__sub() {
     readmsg_remarks+="${DOCKER__DASH} [On an Empty Field] press ENTER to confirm deletion"
 
     #Reset variable based on the chosen answer (e.g., n, b)
-    if [[ ${docker__myAnswer} != "b" ]]; then
+    if [[ "${docker__myAnswer}" != "${DOCKER__BACK}" ]]; then   #only reset if no 'back' was pressed
         docker__myImageId=${DOCKER__EMPTYSTRING}
     else
         if [[ ${docker__myImageId} == ${DOCKER__REMOVE_ALL} ]]; then
@@ -225,7 +224,6 @@ docker_imageId_input__sub() {
     local readMsg_numOfLines=0
     local remarks_numOfLines=0
     local update_numOfLines=0
-    local numOfLines_tot=0
 
     #Calculate number of lines to be cleaned
     if [[ ! -z ${READMSG_PASTE_YOUR_INPUT} ]]; then    #this condition is important
@@ -246,8 +244,8 @@ docker_imageId_input__sub() {
             update_numOfLines=`echo -e ${readmsg_update} | wc -l`      
         fi
 
-        #Update total number of lines to be cleaned 'numOfLines_tot'
-        numOfLines_tot=$((readMsg_numOfLines + update_numOfLines + DOCKER__NUMOFLINES_1))
+        #Update total number of lines to be cleaned 'docker__totNumOfLines'
+        docker__totNumOfLines=$((readMsg_numOfLines + update_numOfLines + DOCKER__NUMOFLINES_1))
 
         #Only show the read-input message, but do not show the image-list table.
         ${docker__readInput_w_autocomplete__fpath} "${MENUTITLE}" \
@@ -260,9 +258,10 @@ docker_imageId_input__sub() {
                             "${docker__images_IDColNo}" \
                             "${DOCKER__EMPTYSTRING}" \
                             "${docker__showTable}" \
-                            "${docker__onEnter_breakLoop}"
+                            "${docker__onEnter_breakLoop}" \
+                            "${DOCKER__NUMOFLINES_2}"
 
-        #Get the exitcode just in case:
+        #Get the exit-code just in case:
         #   1. Ctrl-C was pressed in script 'docker__readInput_w_autocomplete__fpath'.
         #   2. An error occured in script 'docker__readInput_w_autocomplete__fpath',...
         #      ...and exit-code = 99 came from function...
@@ -271,7 +270,7 @@ docker_imageId_input__sub() {
         if [[ ${docker__exitCode} -eq 99 ]]; then
             docker__myImageId_input=${DOCKER__EMPTYSTRING}
         else
-            #Retrieve the selected container-ID from file
+            #Get the result
             docker__myImageId_input=`get_output_from_file__func "${docker__readInput_w_autocomplete_out__fpath}" "1"`
         fi  
 
@@ -282,11 +281,6 @@ docker_imageId_input__sub() {
 
         case "${docker__myImageId_input}" in
 		    ${DOCKER__EMPTYSTRING})
-                #Only clean lines if 'docker__myImageId' is an Empty String
-                if [[ -z ${docker__myImageId} ]]; then
-                    moveUp_and_cleanLines__func "${numOfLines_tot}"
-                fi
-
                 break
                 ;;
             ${DOCKER__REMOVE_ALL})
@@ -308,7 +302,7 @@ docker_imageId_input__sub() {
                     fi
                 fi
 
-                moveUp_and_cleanLines__func "${numOfLines_tot}"
+                moveUp_and_cleanLines__func "${docker__totNumOfLines}"
                 ;;
 		esac
 	done
@@ -366,8 +360,6 @@ main_sub() {
     docker__load_environment_variables__sub
 
     docker__load_source_files__sub
-
-    docker__load_header__sub
 
     docker__init_variables__sub
 

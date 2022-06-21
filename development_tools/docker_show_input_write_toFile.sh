@@ -221,7 +221,7 @@ docker__enter_handler__sub() {
     #In other words, whether 'docker__totInput' contains any of the above semi-colon chars.
     #If that's the case then function 'get_endResult_ofString_with_semiColonChar__func'
     #   will handle and return the result 'ret'.
-    totInput_tmp=`get_endResult_ofString_with_semiColonChar__func ${docker__totInput}`
+    totInput_tmp=`get_endResult_ofString_with_semiColonChar__func "${docker__totInput}"`
 
     case "${totInput_tmp}" in
         ${DOCKER__EMPTYSTRING})

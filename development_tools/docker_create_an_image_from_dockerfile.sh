@@ -192,21 +192,20 @@ docker__load_source_files__sub() {
     source ${docker__global__fpath}
 }
 
-docker__load_header__sub() {
-    show_header__func "${DOCKER__TITLE}" "${DOCKER__TABLEWIDTH}" "${DOCKER__BG_ORANGE}" "${DOCKER__NUMOFLINES_2}" "${DOCKER__NUMOFLINES_0}"
-}
-
 docker__load_constants__sub() {
     DOCKER__MENUTITLE="${DOCKER__FG_YELLOW}Create${DOCKER__NOCOLOR} an ${DOCKER__FG_BORDEAUX}Image${DOCKER__NOCOLOR} using a ${DOCKER__FG_DARKBLUE}docker-file${DOCKER__NOCOLOR}"
     DOCKER__REMARK=${DOCKER__EMPTYSTRING}
-    DOCKER__LOCATION_INFO="${DOCKER__FOURSPACES}${DOCKER__FG_VERYLIGHTORANGE}Location${DOCKER__NOCOLOR}: ${docker__LTPP3_ROOTFS_docker_dockerfiles__dir}"
+    DOCKER__LOCATIONINFO="${DOCKER__FOURSPACES}${DOCKER__FG_VERYLIGHTORANGE}Location${DOCKER__NOCOLOR}: ${docker__LTPP3_ROOTFS_docker_dockerfiles__dir}"
+    DOCKER__MENUOPTIONS="${DOCKER__FOURSPACES_Q_QUIT}"
+    DOCKER__MATCHPATTERNS="${DOCKER__QUIT}"
     DOCKER__ERRMSG="${DOCKER__FOURSPACES}-:${DOCKER__FG_LIGHTRED}directory is Empty${DOCKER__NOCOLOR}:-"
     DOCKER__READ_DIALOG="Choose a file: "
 }
 
 docker__init_variables__sub() {
-    docker__dockerFile_fpath=""
-    docker__dockerFile_filename=""
+    docker__dockerFile_fpath=${DOCKER__EMPTYSTRING}
+    docker__dockerFile_filename=${DOCKER__EMPTYSTRING}
+    docker__printMsg=${DOCKER__EMPTYSTRING}
     docker__flagExitLoop=false
 }
 
@@ -216,15 +215,18 @@ docker__show_dockerList_files__sub() {
                         "${DOCKER__EMPTYSTRING}" \
                         "${DOCKER__MENUTITLE}" \
                         "${DOCKER__REMARK}" \
-                        "${DOCKER__LOCATION_INFO}" \
-                        "${DOCKER__FOURSPACES_F12_QUIT}" \
-                        "${DOCKER__EMPTYSTRING}" \
+                        "${DOCKER__LOCATIONINFO}" \
+                        "${DOCKER__MENUOPTIONS}" \
+                        "${DOCKER__MATCHPATTERNS}" \
                         "${DOCKER__ERRMSG}" \
                         "${DOCKER__READ_DIALOG}" \
                         "${DOCKER__EMPTYSTRING}" \
                         "${DOCKER__EMPTYSTRING}" \
                         "${DOCKER__TABLEROWS_10}" \
-                        "${docker__show_pathContent_w_selection_func_out__fpath}"
+                        "${DOCKER__FALSE}" \
+                        "${docker__show_pathContent_w_selection_func_out__fpath}" \
+                        "${DOCKER__NUMOFLINES_2}" \
+                        "${DOCKER__TRUE}"
 
     #Get the exitcode just in case a Ctrl-C was pressed in function 'DOCKER__FOURSPACES_F4_ABORT' (in script 'docker_global.sh')
     docker__exitCode=$?
@@ -238,10 +240,10 @@ docker__show_dockerList_files__sub() {
                         "${DOCKER__LINENUM_1}"`
 
     #Double-check if 'docker__dockerFile_fpath = F12'
-    if [[ ${docker__dockerFile_fpath} == ${DOCKER__ENUM_FUNC_F12} ]]; then
+    if [[ ${docker__dockerFile_fpath} == ${DOCKER__QUIT} ]]; then
         exit__func "${DOCKER__EXITCODE_0}" "${DOCKER__NUMOFLINES_2}"
     else
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
     fi
 }
 
@@ -267,9 +269,13 @@ docker__create_image_handler__sub() {
             create_image__func ${docker__dockerFile_fpath}
         fi
     else
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-        echo -e "***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: File '${DOCKER__FG_DARKBLUE}${docker__dockerFile_fpath}${DOCKER__NOCOLOR}' does ${DOCKER__FG_LIGHTRED}Not${DOCKER__NOCOLOR} exist"
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"       
+        #Update message
+        docker__printMsg="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: "
+        docker__printMsg+="file ${DOCKER__FG_DARKBLUE}${docker__dockerFile_fpath}${DOCKER__NOCOLOR} "
+        docker__printMsg+="does ${DOCKER__FG_LIGHTRED}Not${DOCKER__NOCOLOR} exist"
+
+        #Show message
+        show_msg_only__func "${docker__printMsg}" "${DOCKER__NUMOFLINES_1}" "${DOCKER__NUMOFLINES_1}"
     fi
 }
 
@@ -280,8 +286,6 @@ main_sub() {
     docker__load_environment_variables__sub
 
     docker__load_source_files__sub
-
-    docker__load_header__sub
 
     docker__load_constants__sub
 

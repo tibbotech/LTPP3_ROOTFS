@@ -173,10 +173,6 @@ docker__load_source_files__sub() {
     source ${docker__global__fpath}
 }
 
-docker__load_header__sub() {
-    show_header__func "${DOCKER__TITLE}" "${DOCKER__TABLEWIDTH}" "${DOCKER__BG_ORANGE}" "${DOCKER__NUMOFLINES_2}" "${DOCKER__NUMOFLINES_0}"
-}
-
 docker__init_variables__sub() {
     docker__exitCode=0
     docker__ipv4_addr=${DOCKER__EMPTYSTRING}
@@ -241,16 +237,17 @@ docker__run_container_handler__sub() {
                                     "${docker__images_IDColNo}" \
                                     "${DOCKER__EMPTYSTRING}" \
                                     "${docker__showTable}" \
-                                    "${docker__onEnter_breakLoop}"
+                                    "${docker__onEnter_breakLoop}" \
+                                    "${DOCKER__NUMOFLINES_2}"
 
-                #Get the exitcode just in case:
+                #Get the exit-code just in case:
                 #   1. Ctrl-C was pressed in script 'docker__readInput_w_autocomplete__fpath'.
                 #   2. An error occured in script 'docker__readInput_w_autocomplete__fpath',...
                 #      ...and exit-code = 99 came from function...
                 #      ...'show_msg_w_menuTitle_w_pressAnyKey_w_ctrlC_func' (in script: docker__global.sh).
                 docker__exitCode=$?
                 if [[ ${docker__exitCode} -eq ${DOCKER__EXITCODE_99} ]]; then
-                    exit__func "${docker__exitCode}" "${DOCKER__NUMOFLINES_2}"
+                    exit__func "${docker__exitCode}" "${DOCKER__NUMOFLINES_0}"
                 else
                     #Retrieve the 'new tag' from file
                     docker__imageID_chosen=`get_output_from_file__func \
@@ -354,10 +351,10 @@ docker__run_container__sub() {
         echomsg3+="\t\tssh ${DOCKER__FG_YELLOW}root${DOCKER__NOCOLOR}@${DOCKER__FG_LIGHTCYAN}${docker__ipv4_addr}${DOCKER__NOCOLOR} -p ${DOCKER__FG_LIGHTBLUE}${docker__ssh_localport}${DOCKER__NOCOLOR}\n"
         moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
         echo -e ${echomsg3}
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+        # moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
         # moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
         
-        exit
+        exit__func "${docker__exitCode}" "${DOCKER__NUMOFLINES_0}"
     # else
     #     break
     fi
@@ -396,8 +393,6 @@ main_sub() {
     docker__load_environment_variables__sub
 
     docker__load_source_files__sub
-
-    docker__load_header__sub
 
     docker__init_variables__sub
 

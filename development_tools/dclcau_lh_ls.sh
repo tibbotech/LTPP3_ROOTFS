@@ -9,7 +9,7 @@ listView_numOfRows__input=${2}
 listView_numOfCols__input=${3}
 keyWord__input=${4}
 dircontentlist_fpath__input=${5}
-flag_prepend_emptyLine__input=${6}
+tibboHeader_prepend_numOfLines__input=${6}
 
 
 
@@ -37,25 +37,16 @@ PATTERN_PAGE="Page"
 
 
 
-#---PRINTF CONSTANTS
-PRINTF_DIR_IS_EMPTY="${FOUR_SPACES}-:${FG_YELLOW}directory is Empty${NOCOLOR}:-"
-PRINTF_UNKNOWN_DIRECTORY="${FOUR_SPACES}-:${FG_LIGHTRED}Unknown directory${NOCOLOR}:-"
-
-
-
 #---SPACE CONSTANTS
 EMPTYSTRING=""
 ONE_SPACE=" "
-FOUR_SPACES="    "
+FOUR_SPACES="${ONE_SPACE}${ONE_SPACE}${ONE_SPACE}${ONE_SPACE}"
 
 
 
-#---STRING CONSTANTS
-HORIZONTALLINE="${FG_LIGHTGREY}---------------------------------------------------------------------${NOCOLOR}"
-
-
-
-#---VARIABLES
+#---PRINTF CONSTANTS
+PRINTF_DIR_IS_EMPTY="${FOUR_SPACES}-:${FG_YELLOW}directory is Empty${NOCOLOR}:-"
+PRINTF_UNKNOWN_DIRECTORY="${FOUR_SPACES}-:${FG_LIGHTRED}Unknown directory${NOCOLOR}:-"
 
 
 
@@ -183,6 +174,14 @@ delete_files__sub() {
 }
 
 dirContent_main__sub() {
+    #Check if 'tibboHeader_prepend_numOfLines__input' is an Empty String
+    if [[ -z ${tibboHeader_prepend_numOfLines__input} ]]; then
+        tibboHeader_prepend_numOfLines__input=${DOCKER__NUMOFLINES_2}
+    fi
+
+    #Print Tibbo-title
+    load_tibbo_title__func "${tibboHeader_prepend_numOfLines__input}"
+
     #Check if directory exists
     if [[ ! -d "${dir__input}" ]]; then  #directory does NOT exist
         #Show header
@@ -259,9 +258,6 @@ dirContent_show_header__sub() {
     local printf_header="${FG_DEEPORANGE}List of${NOCOLOR} <${FG_REDORANGE}${dir__input}${NOCOLOR}> ${printf_numOfContents_shown}"
 
     #Print message showing which directory's content is being shown
-    if [[ ${flag_prepend_emptyLine__input} == true ]]; then
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-    fi
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
     printf '%b%s\n' "${printf_header}"
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
