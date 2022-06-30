@@ -4,5 +4,8 @@ SUBSYSTEM=="gpio*", PROGRAM="/bin/sh -c 'find -L /sys/class/gpio/ -maxdepth 2 -e
 #Change ownership and permission of /var/backups/gpio/
 SUBSYSTEM=="gpio*", PROGRAM="/bin/sh -c 'find -L /var/backups/gpio/ -maxdepth 2 -exec chown -R root:gpio {} \; -exec chmod 770 {} \; || true'"
 
+#Change ownership and permission of /sys/devices/platform/soc@B/9c108000.l2sw/mode
+SUBSYSTEM=="gpio*", PROGRAM="/bin/sh -c 'find -L /sys/devices/platform/soc@B/9c108000.l2sw/mode -maxdepth 1 -exec chown -R root:gpio {} \; -exec chmod 664 {} \; || true'"
+
 #Change ownership and permission of /dev/gpiochip*
 SUBSYSTEM=="gpio", KERNEL=="gpiochip[0-4]", GROUP="gpiod", MODE="0660"
