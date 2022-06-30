@@ -275,6 +275,8 @@ GIT__CMD_GIT_TAG="git tag"
 GIT__LOCATION_LOCAL="local"
 GIT__LOCATION_REMOTE="remote"
 
+GIT__REMOTES_ORIGIN_MAIN="remotes/origin/main"
+
 GIT__ERROR_MALFORMED_OBJECT_NAME_TAGS="error: malformed object name tags/"
 
 

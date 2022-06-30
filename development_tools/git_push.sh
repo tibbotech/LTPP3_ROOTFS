@@ -346,7 +346,7 @@ docker__add_comment_push__sub() {
             ${GIT_PUSH_PHASE})
                 #Get the number of commits
                 #1. master:
-                git_master_numOf_commits=`git rev-list --count --no-merges master`
+                git_master_numOf_commits=`git rev-list --count --no-merges ${GIT__REMOTES_ORIGIN_MAIN}`
                 #2. current 'branchName__input':
                 git_current_branch_numOf_commits=`git rev-list --count --no-merges ${branchName__input}`
                 #3. difference
