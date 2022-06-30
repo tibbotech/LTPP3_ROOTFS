@@ -236,7 +236,8 @@ docker__init_variables__sub() {
     docker__file_locationInfo=${DOCKER__EMPTYSTRING}
     docker__answer=${DOCKER__NO}
     docker__submenuTitle=${DOCKER__EMPTYSTRING}
-    docker__flagExitLoop=false
+    docker__flag_exit_main_whileLoop=false
+    docker__flag_exit_docker__show_dockerList_files_handler=false
 }
 
 docker__show_dockerList_files_handler__sub() {
@@ -254,6 +255,11 @@ docker__show_dockerList_files_handler__sub() {
 
         #Show selected docker-file content
         docker__show_selected_dockerFile_content__sub
+
+        #Check if flag is set to 'true'
+        if [[ ${docker__flag_exit_docker__show_dockerList_files_handler} == true ]]; then
+            break
+        fi
     done
 }
 docker__show_dockerList_files__sub() {
@@ -331,6 +337,8 @@ docker__show_selected_dockerFile_content__sub() {
         ${DOCKER__YES})
             moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
 
+            docker__flag_exit_docker__show_dockerList_files_handler=true
+
             return
             ;;
         ${DOCKER__NO})
@@ -342,19 +350,18 @@ docker__show_selected_dockerFile_content__sub() {
     esac
 }
 
-docker__create_image_handler__sub() {
-    #---Read contents of the file
-    #Each line of the file represents a 'dockerfile' containing the instructions to-be-executed
-    
+docker__create_image_handler__sub() {    
     #Define local variables
     local linenum=1
     local dockerfile_fpath=${DOCKER__EMPTYSTRING}
 
     #Initialization
-    docker__flagExitLoop=true
+    docker__flag_exit_main_whileLoop=true
 
     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_0}"
 
+    #---Read contents of the file
+    #Each line of the file represents a 'dockerfile' containing the instructions to-be-executed
     while IFS='' read file_line
     do
         if [[ ${linenum} -gt 1 ]]; then #skip the header
@@ -373,7 +380,7 @@ docker__create_image_handler__sub() {
                     local statusMsg="---:${DOCKER__FG_ORANGE}UPDATE${DOCKER__NOCOLOR}: '${file_line}' already executed..."
                     echo -e "${statusMsg}"
 
-                    docker__flagExitLoop=false
+                    docker__flag_exit_main_whileLoop=false
                 else
                     create_image__func ${dockerfile_fpath}
                 fi
@@ -412,7 +419,7 @@ main_sub() {
 
         docker__create_image_handler__sub
 
-        if [[ ${docker__flagExitLoop} == true ]]; then
+        if [[ ${docker__flag_exit_main_whileLoop} == true ]]; then
             break
         fi
     done
