@@ -240,8 +240,6 @@ echo ">>>allow user <${username}> to sudo <command> w/o password input---"
 echo -e "\r"
 		echo "" | tee -a ${etc_dir}/sudoers
         echo "#---:ALLOW TO EXEC COMMANDS /W SUDO BUT W/O PASSWD INPUT:---" | tee -a ${etc_dir}/sudoers
-		echo "${username}  ALL=(root) NOPASSWD: /bin/systemctl * daisychain_state.service" | tee -a ${etc_dir}/sudoers
-		echo "${username}  ALL=(root) NOPASSWD: /sbin/ip * show *" | tee -a ${etc_dir}/sudoers
 		echo "${username}  ALL=(root) NOPASSWD: /sbin/ip * set *" | tee -a ${etc_dir}/sudoers
 		echo "${username}  ALL=(root) NOPASSWD: /sbin/netplan apply" | tee -a ${etc_dir}/sudoers
 echo -e "\r"
