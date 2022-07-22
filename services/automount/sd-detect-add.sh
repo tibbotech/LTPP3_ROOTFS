@@ -27,8 +27,8 @@ regex_pattern="mmcblk*p*"
 
 
 #---INPUT ARGS
-DEVPART=${1}
-DEVFULLPATH="${dev_dir}/${DEVPART}"
+devpart_in=${1}
+devfullpath_in="${dev_dir}/${devpart_in}"
 
 
 
@@ -38,6 +38,8 @@ FG_LIGHTRED=$'\e[1;31m'
 FG_ORANGE=$'\e[30;38;5;209m'
 FG_LIGHTGREY=$'\e[30;38;5;246m'
 FG_LIGHTGREEN=$'\e[30;38;5;71m'
+FG_SOFLIGHTRED=$'\e[30;38;5;131m'
+BLINK=$'\e[5m'
 
 
 
@@ -45,7 +47,7 @@ FG_LIGHTGREEN=$'\e[30;38;5;71m'
 usage_sub() 
 {
 	echo -e "\r"
-    echo -e ":-->${FG_LIGHTRED}USAGE${NOCOLOR}: $0 <dev_id> (e.g. mmcblk1p1)"
+    echo -e ":-->${BLINK}${FG_LIGHTRED}USAGE${NOCOLOR}: $0 <dev_id> (e.g. mmcblk1p1)"
 	echo -e "\r"
 	
     exit 99
@@ -67,13 +69,14 @@ function get_MEDIAFULLPATH__func() {
     #In case 'mediapart' is an empty string
     #It means that the Micro-SD card does NOT have a label
     if [[ -z ${mediapart} ]]; then
-    #    mediapart="${DEVPART}"
+    #    mediapart="${devpart_in}"
         mediapart="MMC_DRIVE"
     fi
 
 	#Using the Mount information, get ${mtab_devfullpath} (e.g. /dev/sda1) which is stored in /etc/mtab
     local mediafullpath=${media_dir}/${mediapart}	#redefine variable, but now with seqnum
 	local mtab_devfullpath=`cat ${etc_dir}/mtab | grep -w "${mediafullpath}" | cut -d " " -f1`	#grep EXACT match
+	local mediafullpath_isFound=""
 
 	if [[ ! -z ${mtab_devfullpath} ]]; then	#only continue if ${mtab_devfullpath} is NOT an empty string
 		#Rename 'mediapart', because '${mediafullpath}' was found in /etc/mtab
@@ -106,7 +109,9 @@ remove_unused_mountpoints__sub() {
 	# know its mount point, and we don't want to leave it orphaned.	#
 	#---------------------------------------------------------------#
 	#Define variables
-	mediafullpath_array=${media_dir}/*	#note: mediafullpath_array is an ARRAY containing mediafullpaths
+	local mediafullpath_array=${media_dir}/*	#note: mediafullpath_array is an ARRAY containing mediafullpaths
+	local mediafullpath_arrayitem=""
+	local mtab_devfullpath=""
 
 	for mediafullpath_arrayitem in ${mediafullpath_array}	#note: mediafullpath_arrayitem is the same as 'mediafullpath'
 	do
@@ -122,12 +127,10 @@ remove_unused_mountpoints__sub() {
 				${usr_bin_dir}/rm -r ${mediafullpath_arrayitem}	#remove
 			fi
 		else
-			#Get info for the ${devfullpath}
-			ID_FS_LABEL=""	#initialize variable (IMPORTANT)
-			eval $(${sbin_dir}/blkid -o udev ${mtab_devfullpath})
-			mediapart=${ID_FS_LABEL}
+			#Checkif there is a match for 'mtab_devfullpath'
+			local match_isFound=`/sbin/blkid | grep "${mtab_devfullpath}"`
 
-			if [[ -z ${mediapart} ]]; then	#In case no info is found, then umount & remove the ${mediafullpath}
+			if [[ -z ${match_isFound} ]]; then	#In case no info is found, then umount & remove the ${mediafullpath}
 				#${usr_bin_dir}/umount -l ${mediafullpath_arrayitem}	#unmount with forcibly removing entry in /etc/mtab
 
 				${usr_bin_dir}/umount ${mediafullpath_arrayitem}	#unmount
@@ -144,30 +147,44 @@ do_Mount_sub()
 	remove_unused_mountpoints__sub
 
     #Get info for this drive: $ID_FS_LABEL, $ID_FS_UUID, and $ID_FS_TYPE
-	ID_FS_LABEL=""	#initialize variable (IMPORTANT)
-    eval $(${sbin_dir}/blkid -o udev ${DEVFULLPATH})
-	MEDIAPART=${ID_FS_LABEL}
+	local ID_FS_LABEL=""	#initialize variable (IMPORTANT)
+
+	#Remark:
+	#	By executing with 'eval $(...)' it is possible to retrieve the...
+	#	...CONTENT (e.g. HIEN_E) of a VARIABLE (e.g. ID_FS_LABEL)...
+	#	... which is the result of that execution.
+	#For Example:
+	#	The result of '/sbin/blkid -o udev /dev/sda1' is:
+	# 		ID_FS_LABEL=HIEN_E
+	# 		ID_FS_LABEL_ENC=HIEN_E
+	# 		ID_FS_UUID=20D8-EDD7
+	# 		ID_FS_UUID_ENC=20D8-EDD7
+	# 		ID_FS_TYPE=vfat
+	# 		ID_FS_PARTUUID=a7724243-01
+	#	Thus, by executing 'eval $(/sbin/blkid -o udev /dev/sda1)',...
+	#	...and then 'MEDIAPART=${ID_FS_LABEL}', the content of 'ID_FS_LABEL',...
+	#	...which is 'HIEN_E' can be assigned to the variable 'MEDIAPART'.
+    eval $(${sbin_dir}/blkid -o udev ${devfullpath_in})
+	local MEDIAPART=${ID_FS_LABEL}
 	
 	#Get MEDIAFULLPATH
 	#MEDIAFULLPATH=${media_dir}/${MEDIAPART}
-	MEDIAFULLPATH=`get_MEDIAFULLPATH__func "${MEDIAPART}"`
-
-
+	local MEDIAFULLPATH=`get_MEDIAFULLPATH__func "${MEDIAPART}"`
 
 	#Create folder ${MEDIAPART}
 	if [[ ! -d ${MEDIAFULLPATH} ]]; then
 		mkdir -p ${MEDIAFULLPATH}
 	fi
 
-	#Mount DEVFULLPATH (e.g. /dev/sda1) to an available MOUNTPOINT (e.g. /media/HIEN_E)
-	${usr_bin_dir}/mount -t vfat -o rw,users,umask=000,exec ${DEVFULLPATH} ${MEDIAFULLPATH}
+	#Mount devfullpath_in (e.g. /dev/sda1) to an available MOUNTPOINT (e.g. /media/HIEN_E)
+	${usr_bin_dir}/mount -t vfat -o rw,users,umask=000,exec ${devfullpath_in} ${MEDIAFULLPATH}
 
 	#Get permission of directory
-	MEDIAFULLPATH_permission=`ls -ld ${MEDIAFULLPATH} | cut -d" " -f1`
+	local MEDIAFULLPATH_permission=`ls -ld ${MEDIAFULLPATH} | cut -d" " -f1`
 
 	echo -e "\r"
 	echo -e "\r"
-	echo -e "${FG_ORANGE}INFO${NOCOLOR}: ${FG_LIGHTGREEN}MOUNTED${NOCOLOR} MMC: ${FG_LIGHTGREY}${DEVFULLPATH}${NOCOLOR}"
+	echo -e "${FG_ORANGE}INFO${NOCOLOR}: ${BLINK}${FG_LIGHTGREEN}MOUNTED${NOCOLOR} MMC: ${FG_LIGHTGREY}${devfullpath_in}${NOCOLOR}"
 	echo -e "${FG_ORANGE}INFO${NOCOLOR}: MOUNT-POINT: ${FG_LIGHTGREY}${MEDIAFULLPATH}${NOCOLOR}"
 	echo -e "${FG_ORANGE}INFO${NOCOLOR}: PERMISSION: ${FG_LIGHTGREY}${MEDIAFULLPATH_permission}${NOCOLOR}"
 	echo -e "\r"
@@ -177,7 +194,7 @@ do_Mount_sub()
 #---Show message
 # echo -e "\r"
 # echo -e "\r"
-# echo -e "${FG_ORANGE}INFO${NOCOLOR}: DETECTED MMC: ${FG_LIGHTGREY}${DEVPART}${NOCOLOR}"
+# echo -e "${FG_ORANGE}INFO${NOCOLOR}: DETECTED MMC: ${FG_LIGHTGREY}${devpart_in}${NOCOLOR}"
 # echo -e "\r"
 
 
