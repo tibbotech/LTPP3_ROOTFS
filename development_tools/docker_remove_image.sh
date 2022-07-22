@@ -52,6 +52,8 @@ docker__init_variables__sub() {
     docker__myImageId_item=""
     docker__myImageId_isFound=""
     docker__myAnswer=""
+    docker__repo_chosen=""
+    docker__tag_chosen=""
 
     docker__totNumOfLines=0
 
@@ -64,12 +66,54 @@ docker__init_variables__sub() {
     docker__onEnter_breakLoop=true
 }
 
+docker__get_and_check_repoTag__sub() {
+    #Input args
+    local imageID__input=${1}
+
+    #Define message constants
+    local ERRMSG_NO_REPO_FOUND="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: "
+    ERRMSG_NO_REPO_FOUND+="No matching ${DOCKER__FG_BRIGHTLIGHTPURPLE}Repository${DOCKER__NOCOLOR} "
+    ERRMSG_NO_REPO_FOUND+="found for ${DOCKER__FG_BORDEAUX}ID${DOCKER__NOCOLOR} "
+    ERRMSG_NO_REPO_FOUND+=="'${DOCKER__FG_LIGHTGREY}${imageID__input}${DOCKER__NOCOLOR}'"
+
+    local ERRMSG_NO_TAG_FOUND="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: "
+    ERRMSG_NO_TAG_FOUND+="No matching ${DOCKER__FG_LIGHTPINK}Tag${DOCKER__NOCOLOR} "
+    ERRMSG_NO_TAG_FOUND+="found for ${DOCKER__FG_BORDEAUX}ID${DOCKER__NOCOLOR} "
+    ERRMSG_NO_TAG_FOUND+="'${DOCKER__FG_LIGHTGREY}${imageID__input}${DOCKER__NOCOLOR}'"
+
+    local ERRMSG_NO_REPO_TAG_FOUND="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: "
+    ERRMSG_NO_REPO_TAG_FOUND+="No matching ${DOCKER__FG_BRIGHTLIGHTPURPLE}Repository${DOCKER__NOCOLOR} "
+    ERRMSG_NO_REPO_TAG_FOUND+="and ${DOCKER__FG_LIGHTPINK}Tag${DOCKER__NOCOLOR} "
+    ERRMSG_NO_REPO_TAG_FOUND+="found for ${DOCKER__FG_BORDEAUX}ID${DOCKER__NOCOLOR} "
+    ERRMSG_NO_REPO_TAG_FOUND+="'${DOCKER__FG_LIGHTGREY}${imageID__input}${DOCKER__NOCOLOR}'"
+
+    #Get repository
+    docker__repo_chosen=`${docker__images_cmd} | grep -w ${imageID__input} | awk -vcolNo=${docker__images_repoColNo} '{print $colNo}'`
+
+    #Get tag
+    docker__tag_chosen=`${docker__images_cmd} | grep -w ${imageID__input} | awk -vcolNo=${docker__images_tagColNo} '{print $colNo}'`
+
+    #Check if any of the value is an Empty String
+    if [[ -z ${docker__repo_chosen} ]] && [[ -z ${docker__tag_chosen} ]]; then
+        show_msg_wo_menuTitle_w_PressAnyKey__func "${ERRMSG_NO_REPO_TAG_FOUND}" "${DOCKER__NUMOFLINES_2}"
+    else
+        if [[ -z ${docker__repo_chosen} ]]; then
+            show_msg_wo_menuTitle_w_PressAnyKey__func "${ERRMSG_NO_REPO_FOUND}" "${DOCKER__NUMOFLINES_2}"
+        fi
+
+        if [[ -z ${docker__tag_chosen} ]]; then
+            show_msg_wo_menuTitle_w_PressAnyKey__func "${ERRMSG_NO_TAG_FOUND}" "${DOCKER__NUMOFLINES_2}"
+        fi
+    fi
+}
+
 docker__remove_specified_images__sub() {
     #Define message constants
     local READMSG_DO_YOU_REALLY_WISH_TO_CONTINUE="***Do you REALLY wish to continue (${DOCKER__Y_SLASH_N_SLASH_B_SLASH_Q})? "
 
     #Define local message variables
     local errMsg=${DOCKER__EMPTYSTRING}
+    local printMsg=${DOCKER__EMPTYSTRING}
     local numOfLines=${DOCKER__NUMOFLINES_0}
 
     #Set flag to true
@@ -134,16 +178,43 @@ docker__remove_specified_images__sub() {
                                         #Remove selected image-IDs
                                         docker image rmi -f ${docker__myImageId_item}
 
-                                        ##Check if 'docker__myImageId_item' has been removed successfully
+                                        #Check if 'docker__myImageId_item' has been removed successfully
                                         docker__myImageId_isFound=`checkForMatch_dockerCmd_result__func "${docker__myImageId_item}" \
                                                 "${docker__images_cmd}" \
                                                 "${docker__images_IDColNo}"`
                                         if [[ ${docker__myImageId_isFound} == false ]]; then
                                             docker__prune_handler__sub "${docker__myImageId_item}" "${DOCKER__NUMOFLINES_1}"
-                                        else  
-                                            errMsg="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Could *NOT* remove image-ID: ${DOCKER__FG_BORDEAUX}${docker__myImageId_item}${DOCKER__NOCOLOR}"
-                                            
-                                            show_msg_only__func "${errMsg}" "${DOCKER__NUMOFLINES_1}"
+                                        else
+                                            #Get the (docker__repo_chosen) and (docker__tag_chosen) for a given (docker__myImageId_item)
+                                            docker__get_and_check_repoTag__sub "${docker__myImageId_item}"
+
+                                            #Update message
+                                            printMsg="...${DOCKER__BLINK}Attempting${DOCKER__NOCOLOR} to remove "
+                                            printMsg+="${DOCKER__FG_PURPLE}Repository${DOCKER__NOCOLOR}:${DOCKER__FG_PINK}Tag${DOCKER__NOCOLOR} "
+                                            printMsg+="(${docker__repo_chosen}:${docker__tag_chosen}) instead"
+
+                                            #Print message
+                                            show_msg_only__func "${printMsg}" "${DOCKER__NUMOFLINES_1}" "${DOCKER__NUMOFLINES_0}"
+
+                                            #Remove reposity:tag (instead of image)
+                                            #Remark:
+                                            #   It could be the case that this image (docker__myImageId_item) can NOT be removed,...
+                                            #   ...because another image was created which is based on this image (docker__myImageId_item).
+                                            #   In other words, this image (docker__myImageId_item) is the PARENT IMAGE.
+
+                                            docker rmi "${docker__repo_chosen}:${docker__tag_chosen}"
+
+                                            #Check again if 'docker__myImageId_item' has been removed successfully
+                                            docker__myImageId_isFound=`checkForMatch_dockerCmd_result__func "${docker__myImageId_item}" \
+                                                    "${docker__images_cmd}" \
+                                                    "${docker__images_IDColNo}"`
+                                            if [[ ${docker__myImageId_isFound} == false ]]; then
+                                                docker__prune_handler__sub "${docker__myImageId_item}" "${DOCKER__NUMOFLINES_1}"
+                                            else                                     
+                                                errMsg="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Could *NOT* remove image-ID: ${DOCKER__FG_BORDEAUX}${docker__myImageId_item}${DOCKER__NOCOLOR}"
+                                                
+                                                show_msg_only__func "${errMsg}" "${DOCKER__NUMOFLINES_1}"
+                                            fi
                                         fi
                                     else
                                         #Update error-message
