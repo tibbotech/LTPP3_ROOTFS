@@ -418,9 +418,13 @@ echo -e "\r"
 	ufw allow 20
 	ufw allow 21
 	ufw allow 22
+	ufw allow 53
+	ufw allow 67
+	ufw allow 68
 	ufw allow 80
 	ufw allow 8080
 	ufw allow 443
+	ufw allow 547
 	# ufw allow 992
 	# ufw allow 5555
 	# ufw allow 1194
