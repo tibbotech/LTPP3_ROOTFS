@@ -79,8 +79,16 @@ echo -e "\r"
 etc_dir=/etc
 etc_default_dir=${etc_dir}/default
 lib_dir=/lib
+sbin_dir=/sbin
 usr_dir=/usr
-sbin_init_dir=/sbin/init
+sbin_init_dir=${sbin_dir}/init
+
+sbin_ip_fpath=${sbin_dir}/ip
+sbin_netplan_fpath=${sbin_dir}/netplan
+sbin_iw_fpath=${sbin_dir}/iw
+sbin_iwlist_fpath=${sbin_dir}/iwlist
+sbin_iwconfig_fpath=${sbin_dir}/iwconfig
+
 usr_bin_dir=${usr_dir}/bin
 usr_lib_dir=${usr_dir}/lib
 usr_include_dir=${usr_dir}/include
@@ -240,8 +248,11 @@ echo ">>>allow user <${username}> to sudo <command> w/o password input---"
 echo -e "\r"
 		echo "" | tee -a ${etc_dir}/sudoers
         echo "#---:ALLOW TO EXEC COMMANDS /W SUDO BUT W/O PASSWD INPUT:---" | tee -a ${etc_dir}/sudoers
-		echo "${username}  ALL=(root) NOPASSWD: /sbin/ip * set *" | tee -a ${etc_dir}/sudoers
-		echo "${username}  ALL=(root) NOPASSWD: /sbin/netplan apply" | tee -a ${etc_dir}/sudoers
+		echo "${username}  ALL=(root) NOPASSWD: ${sbin_ip_fpath} * set *" | tee -a ${etc_dir}/sudoers
+		echo "${username}  ALL=(root) NOPASSWD: ${sbin_netplan_fpath} apply" | tee -a ${etc_dir}/sudoers
+		echo "${username}  ALL=(root) NOPASSWD: ${sbin_iw_fpath} apply" | tee -a ${etc_dir}/sudoers
+		echo "${username}  ALL=(root) NOPASSWD: ${sbin_iwlist_fpath} apply" | tee -a ${etc_dir}/sudoers
+		echo "${username}  ALL=(root) NOPASSWD: ${sbin_iwconfig_fpath} apply" | tee -a ${etc_dir}/sudoers
 echo -e "\r"
 
 press_any_key__localfunc
