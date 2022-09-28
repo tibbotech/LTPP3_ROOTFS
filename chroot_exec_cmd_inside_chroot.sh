@@ -76,22 +76,36 @@ press_any_key__localfunc() {
 echo -e "\r"
 echo "---Defining Varabiles (Filenames, Directories, Paths, Full-Paths)---"
 echo -e "\r"
+bin_dir=/bin
 etc_dir=/etc
 etc_default_dir=${etc_dir}/default
+etc_profile_d_dir=${etc_dir}/profile.d
 lib_dir=/lib
 sbin_dir=/sbin
 usr_dir=/usr
 sbin_init_dir=${sbin_dir}/init
 
+bin_apt_fpath=${bin_dir}/apt
+bin_chmod_fpath=${bin_dir}/chmod
+bin_pkill_fpath=${bin_dir}/pkill
+bin_systemctl_fpath=${bin_dir}/systemctl
+bin_sed_fpath=${bin_dir}/sed
+bin_tee_fpath=${bin_dir}/tee
 sbin_ip_fpath=${sbin_dir}/ip
-sbin_netplan_fpath=${sbin_dir}/netplan
+sbin_iptables_fpath=${sbin_dir}/iptables
+sbin_ip6tables_fpath=${sbin_dir}/ip6tables
 sbin_iw_fpath=${sbin_dir}/iw
 sbin_iwlist_fpath=${sbin_dir}/iwlist
 sbin_iwconfig_fpath=${sbin_dir}/iwconfig
+sbin_modprobe_fpath=${sbin_dir}/modprobe
+sbin_netplan_fpath=${sbin_dir}/netplan
+sbin_sysctl_fpath=${sbin_dir}/sysctl
+sbin_ufw_fpath=${sbin_dir}/ufw
 
 usr_bin_dir=${usr_dir}/bin
 usr_lib_dir=${usr_dir}/lib
 usr_include_dir=${usr_dir}/include
+usr_local_bin_dir=${usr_dir}/local/bin
 etc_systemd_system_dir=${etc_dir}/systemd/system
 etc_systemd_system_multi_user_target_wants_dir=${etc_systemd_system_dir}/multi-user.target.wants
 
@@ -129,6 +143,13 @@ environment_fpath=${etc_dir}/environment
 
 arm_linux_gnueabihf_filename="arm-linux-gnueabihf"
 arm_linux_gnueabihf_fpath=${usr_lib_dir}/${arm_linux_gnueabihf_filename}
+
+wifipwrmgmt_sh_filename="wifipwrmgmt.sh"
+wifipwrmgmt_sh_fpath=${usr_local_bin_dir}/${wifipwrmgmt_sh_filename}
+
+wifipwrmgmt_run_sh_filename="wifipwrmgmt_run.sh"
+wifipwrmgmt_run_sh_fpath=${etc_profile_d_dir}/${wifipwrmgmt_run_sh_filename}
+
 
 
 #---Define useraccount variables
@@ -248,11 +269,34 @@ echo ">>>allow user <${username}> to sudo <command> w/o password input---"
 echo -e "\r"
 		echo "" | tee -a ${etc_dir}/sudoers
         echo "#---:ALLOW TO EXEC COMMANDS /W SUDO BUT W/O PASSWD INPUT:---" | tee -a ${etc_dir}/sudoers
+		echo "${username}  ALL=(root) NOPASSWD: ${bin_apt_fpath} -y install dnsmasq" | tee -a ${etc_dir}/sudoers
+		echo "${username}  ALL=(root) NOPASSWD: ${bin_apt_fpath} -y install hostapd" | tee -a ${etc_dir}/sudoers
+		echo "${username}  ALL=(root) NOPASSWD: ${bin_apt_fpath} -y install iw" | tee -a ${etc_dir}/sudoers
+		echo "${username}  ALL=(root) NOPASSWD: ${bin_apt_fpath} -y install wireless-tools" | tee -a ${etc_dir}/sudoers
+		echo "${username}  ALL=(root) NOPASSWD: ${bin_chmod_fpath} *wifipwrmgmt*" | tee -a ${etc_dir}/sudoers
+		echo "${username}  ALL=(root) NOPASSWD: ${bin_pkill_fpath} -9 wpa_supplicant" | tee -a ${etc_dir}/sudoers
+		echo "${username}  ALL=(root) NOPASSWD: ${bin_sed_fpath} -i 's/^#net*/net*" | tee -a ${etc_dir}/sudoers
+		echo "${username}  ALL=(root) NOPASSWD: ${bin_systemctl_fpath} daemon-reload" | tee -a ${etc_dir}/sudoers
+		echo "${username}  ALL=(root) NOPASSWD: ${bin_systemctl_fpath} * dnsmasq.service" | tee -a ${etc_dir}/sudoers
+		echo "${username}  ALL=(root) NOPASSWD: ${bin_systemctl_fpath} * hostapd.service" | tee -a ${etc_dir}/sudoers
+		echo "${username}  ALL=(root) NOPASSWD: ${bin_systemctl_fpath} * wpa_supplicant.service" | tee -a ${etc_dir}/sudoers
+		echo "${username}  ALL=(root) NOPASSWD: ${bin_tee_fpath} *wifipwrmgmt*" | tee -a ${etc_dir}/sudoers
+		echo "${username}  ALL=(root) NOPASSWD: ${wifipwrmgmt_run_sh_fpath}" | tee -a ${etc_dir}/sudoers
 		echo "${username}  ALL=(root) NOPASSWD: ${sbin_ip_fpath} * set *" | tee -a ${etc_dir}/sudoers
+		echo "${username}  ALL=(root) NOPASSWD: ${sbin_iptables_fpath} -S *" | tee -a ${etc_dir}/sudoers
+		echo "${username}  ALL=(root) NOPASSWD: ${sbin_ip6tables_fpath} -S *" | tee -a ${etc_dir}/sudoers
+		echo "${username}  ALL=(root) NOPASSWD: ${sbin_iw_fpath} *" | tee -a ${etc_dir}/sudoers
+		echo "${username}  ALL=(root) NOPASSWD: ${sbin_iwlist_fpath} *" | tee -a ${etc_dir}/sudoers
+		echo "${username}  ALL=(root) NOPASSWD: ${sbin_iwconfig_fpath} *" | tee -a ${etc_dir}/sudoers
+		echo "${username}  ALL=(root) NOPASSWD: ${sbin_modprobe_fpath} bcmdhd" | tee -a ${etc_dir}/sudoers
 		echo "${username}  ALL=(root) NOPASSWD: ${sbin_netplan_fpath} apply" | tee -a ${etc_dir}/sudoers
-		echo "${username}  ALL=(root) NOPASSWD: ${sbin_iw_fpath} apply" | tee -a ${etc_dir}/sudoers
-		echo "${username}  ALL=(root) NOPASSWD: ${sbin_iwlist_fpath} apply" | tee -a ${etc_dir}/sudoers
-		echo "${username}  ALL=(root) NOPASSWD: ${sbin_iwconfig_fpath} apply" | tee -a ${etc_dir}/sudoers
+		echo "${username}  ALL=(root) NOPASSWD: ${sbin_sysctl_fpath} -p" | tee -a ${etc_dir}/sudoers
+		echo "${username}  ALL=(root) NOPASSWD: ${sbin_ufw_fpath} allow 53" | tee -a ${etc_dir}/sudoers
+		echo "${username}  ALL=(root) NOPASSWD: ${sbin_ufw_fpath} allow 67" | tee -a ${etc_dir}/sudoers
+		echo "${username}  ALL=(root) NOPASSWD: ${sbin_ufw_fpath} allow 68" | tee -a ${etc_dir}/sudoers
+		echo "${username}  ALL=(root) NOPASSWD: ${sbin_ufw_fpath} allow 547" | tee -a ${etc_dir}/sudoers
+		echo "${username}  ALL=(root) NOPASSWD: ${sbin_ufw_fpath} allow 5553" | tee -a ${etc_dir}/sudoers
+		echo "${username}  ALL=(root) NOPASSWD: ${wifipwrmgmt_sh_fpath} *" | tee -a ${etc_dir}/sudoers
 echo -e "\r"
 
 press_any_key__localfunc
