@@ -88,6 +88,7 @@ sbin_init_dir=${sbin_dir}/init
 bin_apt_fpath=${bin_dir}/apt
 bin_chmod_fpath=${bin_dir}/chmod
 bin_pkill_fpath=${bin_dir}/pkill
+bin_rm_fpath=${bin_dir}/rm
 bin_systemctl_fpath=${bin_dir}/systemctl
 bin_sed_fpath=${bin_dir}/sed
 bin_tee_fpath=${bin_dir}/tee
@@ -274,7 +275,9 @@ echo -e "\r"
 		echo "${username}  ALL=(root) NOPASSWD: ${bin_apt_fpath} -y install iw" | tee -a ${etc_dir}/sudoers
 		echo "${username}  ALL=(root) NOPASSWD: ${bin_apt_fpath} -y install wireless-tools" | tee -a ${etc_dir}/sudoers
 		echo "${username}  ALL=(root) NOPASSWD: ${bin_chmod_fpath} *wifi-powersave-off*" | tee -a ${etc_dir}/sudoers
+		echo "${username}  ALL=(root) NOPASSWD: ${bin_chmod_fpath} *ntios-net-reset-ip-on-shutdown*" | tee -a ${etc_dir}/sudoers
 		echo "${username}  ALL=(root) NOPASSWD: ${bin_pkill_fpath} -9 wpa_supplicant" | tee -a ${etc_dir}/sudoers
+		echo "${username}  ALL=(root) NOPASSWD: ${bin_rm_fpath} *ntios-net-reset-ip-on-shutdown.service" | tee -a ${etc_dir}/sudoers
 		echo "${username}  ALL=(root) NOPASSWD: ${bin_sed_fpath} -i *s/*net*/net*/g*" | tee -a ${etc_dir}/sudoers
 		echo "${username}  ALL=(root) NOPASSWD: ${bin_systemctl_fpath} daemon-reload" | tee -a ${etc_dir}/sudoers
 		echo "${username}  ALL=(root) NOPASSWD: ${bin_systemctl_fpath} * dnsmasq.service" | tee -a ${etc_dir}/sudoers
