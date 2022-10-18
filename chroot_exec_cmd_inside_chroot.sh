@@ -278,6 +278,7 @@ echo -e "\r"
 		echo "${username}  ALL=(root) NOPASSWD: ${bin_chmod_fpath} *wifi-powersave-off*" | tee -a ${etc_dir}/sudoers
 		echo "${username}  ALL=(root) NOPASSWD: ${bin_pkill_fpath} -9 wpa_supplicant" | tee -a ${etc_dir}/sudoers
 		echo "${username}  ALL=(root) NOPASSWD: ${bin_rm_fpath} *ntios-net-reset-ip-on-shutdown*" | tee -a ${etc_dir}/sudoers
+		echo "${username}  ALL=(root) NOPASSWD: ${bin_rm_fpath} /etc/dnsmasq.conf" | tee -a ${etc_dir}/sudoers
 		echo "${username}  ALL=(root) NOPASSWD: ${bin_rm_fpath} /etc/netplan/*.yaml" | tee -a ${etc_dir}/sudoers
 		echo "${username}  ALL=(root) NOPASSWD: ${bin_rm_fpath} /etc/netplan/*.yaml.init" | tee -a ${etc_dir}/sudoers
 		echo "${username}  ALL=(root) NOPASSWD: ${bin_rm_fpath} /etc/netplan/wlan.yaml" | tee -a ${etc_dir}/sudoers
@@ -289,6 +290,7 @@ echo -e "\r"
 		echo "${username}  ALL=(root) NOPASSWD: ${bin_systemctl_fpath} * ntios-net-reset-ip-on-shutdown.service" | tee -a ${etc_dir}/sudoers
 		echo "${username}  ALL=(root) NOPASSWD: ${bin_systemctl_fpath} * wifi-powersave-off*" | tee -a ${etc_dir}/sudoers
 		echo "${username}  ALL=(root) NOPASSWD: ${bin_systemctl_fpath} * wpa_supplicant.service" | tee -a ${etc_dir}/sudoers
+		echo "${username}  ALL=(root) NOPASSWD: ${bin_tee_fpath} /etc/dnsmasq.conf" | tee -a ${etc_dir}/sudoers
 		echo "${username}  ALL=(root) NOPASSWD: ${bin_tee_fpath} /etc/netplan/*.yaml" | tee -a ${etc_dir}/sudoers
 		echo "${username}  ALL=(root) NOPASSWD: ${bin_tee_fpath} /etc/netplan/*.yaml.init" | tee -a ${etc_dir}/sudoers
 		echo "${username}  ALL=(root) NOPASSWD: ${bin_tee_fpath} /etc/netplan/wlan.yaml" | tee -a ${etc_dir}/sudoers
