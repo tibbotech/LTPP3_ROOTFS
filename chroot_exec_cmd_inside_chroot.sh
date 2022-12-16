@@ -76,6 +76,7 @@ press_any_key__localfunc() {
 echo -e "\r"
 echo "---Defining Varabiles (Filenames, Directories, Paths, Full-Paths)---"
 echo -e "\r"
+ntios_su_add_name="ntios-su-add"
 ntios_su_addasperand_name="${ntios_su_add_name}@"
 
 bin_dir=/bin
