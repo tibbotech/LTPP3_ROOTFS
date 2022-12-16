@@ -54,14 +54,6 @@ function checkIf_website_exists__func() {
 
 
 
-#---USER-ACCOUNT VARIABLES
-echo -e "\r"
-echo -e "---Define User-account Variables---"
-echo -e "\r"
-username="ubuntu"
-
-
-
 #---ENVIRONMENT VARIABLES
 press_any_key__func
 echo -e "\r"
@@ -108,8 +100,6 @@ sd_detect_service_filename="sd-detect@.service"
 sd_detect_add_sh_filename="sd-detect-add.sh"
 sd_detect_remove_sh_filename="sd-detect-remove.sh"
 sp7021_ltpp3g2revD_filename="sp7021-ltpp3g2revD.dtsi"
-sudoers_filename="sudoers"
-sudoers_org_filename="${sudoers_filename}.org"
 sunplus_foldername="SP7021"
 usb_mount_rules_filename="usb-mount.rules"
 usb_mount_service_filename="usb-mount@.service"
@@ -249,9 +239,6 @@ dst_sd_detect_service_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_sys
 
 src_sp7021_ltpp3g2revD_fpath=${home_lttp3rootfs_kernel_dts_dir}/${sp7021_ltpp3g2revD_filename}
 dst_sp7021_ltpp3g2revD_fpath=${SP7xxx_linux_kernel_arch_arm_boot_dts_dir}/${sp7021_ltpp3g2revD_filename}
-
-src_sudoers_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}/${sudoers_filename}
-dst_sudoers_org_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_tibbo_sudo_dir}/${sudoers_org_filename}
 
 src_usb_mount_service_fpath=${home_lttp3rootfs_services_automount_dir}/${usb_mount_service_filename}
 dst_usb_mount_service_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}/${usb_mount_service_filename}
@@ -908,25 +895,6 @@ echo -e ">>>Change ownership to <root> for file: ${one_time_exec_before_login_sh
 echo -e "\r"
 echo -e ">>>Change permission to <-rwxr-xr-x> for file: ${one_time_exec_before_login_sh_filename}"
 	chmod 755 ${dst_one_time_exec_before_login_sh_fpath}
-
-
-
-#---/ETC/SUDOERS
-press_any_key__func
-echo -e "\r"
-echo "Add permisions for user <${username}> to file ${src_sudoers_fpath}"
-echo -e "\r"
-		echo "" | tee -a ${src_sudoers_fpath}
-        echo "#---:MY ADDED SUDOERS:---" | tee -a ${src_sudoers_fpath}
-		echo "${username} ALL=(ALL:ALL) ALL" | tee -a ${src_sudoers_fpath}
-		echo "${username} ALL=(root) NOPASSWD: ${bin_systemctl_fpath} start ${ntios_su_addasperand_name}*" | tee -a ${src_sudoers_fpath}
-
-echo -e "\r"
-echo -e ">Copying: ${sudoers_filename}"
-echo -e ">As: ${sudoers_org_filename}"
-echo -e ">from: ${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}"
-echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_etc_tibbo_sudo_dir}"
-	cp ${src_sudoers_fpath} ${dst_sudoers_org_fpath}
 
 
 

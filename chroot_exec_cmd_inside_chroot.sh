@@ -76,13 +76,17 @@ press_any_key__localfunc() {
 echo -e "\r"
 echo "---Defining Varabiles (Filenames, Directories, Paths, Full-Paths)---"
 echo -e "\r"
+ntios_su_addasperand_name="${ntios_su_add_name}@"
+
 bin_dir=/bin
 etc_dir=/etc
 etc_default_dir=${etc_dir}/default
 etc_profile_d_dir=${etc_dir}/profile.d
+etc_tibbo_sudo_dir=${etc_dir}/tibbo/sudo
 lib_dir=/lib
 sbin_dir=/sbin
 usr_dir=/usr
+bin_systemctl_fpath=${bin_dir}/systemctl
 sbin_init_dir=${sbin_dir}/init
 usr_bin_dir=${usr_dir}/bin
 usr_lib_dir=${usr_dir}/lib
@@ -123,12 +127,17 @@ environment_fpath=${etc_dir}/environment
 arm_linux_gnueabihf_filename="arm-linux-gnueabihf"
 arm_linux_gnueabihf_fpath=${usr_lib_dir}/${arm_linux_gnueabihf_filename}
 
+sudoers_filename="sudoers"
+sudoers_fpath=${etc_dir}/${sudoers_filename}
+
+sudoers_org_filename="${sudoers_filename}.org"
+sudoers_org_fpath=${etc_tibbo_sudo_dir}/${sudoers_org_filename}
+
 wifipwrmgmt_sh_filename="wifipwrmgmt.sh"
 wifipwrmgmt_sh_fpath=${usr_local_bin_dir}/${wifipwrmgmt_sh_filename}
 
 wifipwrmgmt_run_sh_filename="wifipwrmgmt_run.sh"
 wifipwrmgmt_run_sh_fpath=${etc_profile_d_dir}/${wifipwrmgmt_run_sh_filename}
-
 
 
 #---Define useraccount variables
@@ -234,6 +243,29 @@ echo ">chown root:root ${sudo_fpath}"
 	chown root:root ${sudo_fpath}
 echo ">chmod a=rx,u+ws ${sudo_fpath}"
 	chmod a=rx,u+ws ${sudo_fpath}
+
+
+echo -e "\r"
+echo ">>>adding user <${username}> to ${etc_dir}/sudoers---"
+echo -e "\r"
+	echo "" | tee -a ${etc_dir}/sudoers
+	echo "#---:MY ADDED SUDOERS:---" | tee -a ${etc_dir}/sudoers
+	echo "${username} ALL=(ALL:ALL) ALL" | tee -a ${etc_dir}/sudoers
+	echo "${username} ALL=(root) NOPASSWD: ${bin_systemctl_fpath} start ${ntios_su_addasperand_name}*" | tee -a ${etc_dir}/sudoers
+
+if [[ ! -d "${etc_tibbo_sudo_dir}" ]]; then
+	echo -e "\r"
+	echo -e ">>>Create: ${etc_tibbo_sudo_dir}"
+	mkdir -p "${etc_tibbo_sudo_dir}"
+fi
+
+echo -e "\r"
+echo -e ">>>Copying: ${sudoers_filename}"
+echo -e ">As: ${sudoers_org_filename}"
+echo -e ">from: ${etc_dir}"
+echo -e ">to: ${etc_tibbo_sudo_dir}"
+	cp ${sudoers_fpath} ${sudoers_org_fpath}
+
 
 press_any_key__localfunc
 echo -e "\r"
