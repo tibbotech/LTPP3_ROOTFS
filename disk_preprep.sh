@@ -988,13 +988,13 @@ echo -e ">>>Change permission to <-rw-r--r--> for folder: ${firmware_foldername}
 #echo -e ">to: ${SP7xxx_linux_kernel_drivers_clk}"
 #	cp ${src_clkspq628c_fpath} ${SP7xxx_linux_kernel_drivers_clk}
 
-echo -e "\r"
-echo -e ">>>Change ownership to <root> for file: ${clkspq628c_filename}"
-	chown root:root ${dst_clkspq628c_fpath}
+# echo -e "\r"
+# echo -e ">>>Change ownership to <root> for file: ${clkspq628c_filename}"
+# 	chown root:root ${dst_clkspq628c_fpath}
 
-echo -e "\r"
-echo -e ">>>Change permission to <-rwxr-xr-x> for file: ${clkspq628c_filename}"
-	chmod 755 ${dst_clkspq628c_fpath}
+# echo -e "\r"
+# echo -e ">>>Change permission to <-rwxr-xr-x> for file: ${clkspq628c_filename}"
+# 	chmod 755 ${dst_clkspq628c_fpath}
 
 
 
