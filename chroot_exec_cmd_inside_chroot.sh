@@ -84,47 +84,19 @@ lib_dir=/lib
 sbin_dir=/sbin
 usr_dir=/usr
 sbin_init_dir=${sbin_dir}/init
-
-bin_aptget_fpath=${bin_dir}/apt-get
-bin_chmod_fpath=${bin_dir}/chmod
-bin_cat_fpath=${bin_dir}/cat
-bin_grep_fpath=${bin_dir}/grep
-bin_mkdir_fpath=${bin_dir}/mkdir
-bin_pkill_fpath=${bin_dir}/pkill
-bin_rm_fpath=${bin_dir}/rm
-bin_systemctl_fpath=${bin_dir}/systemctl
-bin_sed_fpath=${bin_dir}/sed
-bin_tee_fpath=${bin_dir}/tee
-bin_touch_fpath=${bin_dir}/touch
-sbin_brctl_fpath=${sbin_dir}/brctl
-sbin_ip_fpath=${sbin_dir}/ip
-sbin_ipxables_fpath=${sbin_dir}/ip\*ables
-sbin_ipxables_restore_fpath=${sbin_dir}/ip\*ables-restore
-sbin_ipxables_save_fpath=${sbin_dir}/ip\*ables-save
-sbin_iw_fpath=${sbin_dir}/iw
-sbin_iwlist_fpath=${sbin_dir}/iwlist
-sbin_iwconfig_fpath=${sbin_dir}/iwconfig
-sbin_modprobe_fpath=${sbin_dir}/modprobe
-sbin_netplan_fpath=${sbin_dir}/netplan
-sbin_sysctl_fpath=${sbin_dir}/sysctl
-sbin_ufw_fpath=${sbin_dir}/ufw
-
 usr_bin_dir=${usr_dir}/bin
 usr_lib_dir=${usr_dir}/lib
-usr_include_dir=${usr_dir}/include
 usr_local_bin_dir=${usr_dir}/local/bin
 etc_systemd_system_dir=${etc_dir}/systemd/system
 etc_systemd_system_multi_user_target_wants_dir=${etc_systemd_system_dir}/multi-user.target.wants
 
-systemd_fpath=${lib_dir}/systemd/systemd
 localtime_dir=${etc_dir}/localtime
-zoneinfo_dir=${usr_dir}/share/zoneinfo
-
 passwd_fpath=${etc_dir}/passwd
-sudo_fpath=${usr_bin_dir}/sudo
-
 sshd_fpath=${etc_dir}/ssh/sshd_config
+sudo_fpath=${usr_bin_dir}/sudo
+systemd_fpath=${lib_dir}/systemd/systemd
 yaml_fpath=${etc_dir}/netplan/\*.yaml
+zoneinfo_dir=${usr_dir}/share/zoneinfo
 
 # enable_eth1_before_login_service_filename="enable-eth1-before-login.service"
 # enable_eth1_before_login_service_fpath=${etc_systemd_system_dir}/${enable_eth1_before_login_service_filename}
@@ -262,120 +234,6 @@ echo ">chown root:root ${sudo_fpath}"
 	chown root:root ${sudo_fpath}
 echo ">chmod a=rx,u+ws ${sudo_fpath}"
 	chmod a=rx,u+ws ${sudo_fpath}
-
-echo -e "\r"
-echo ">>>adding user <${username}> to ${etc_dir}/sudoers---"
-echo -e "\r"
-		echo "" | tee -a ${etc_dir}/sudoers
-        echo "#---:MY ADDED SUDOERS:---" | tee -a ${etc_dir}/sudoers
-		echo "${username} ALL=(ALL:ALL) ALL" | tee -a ${etc_dir}/sudoers
-echo -e "\r"
-
-echo -e "\r"
-echo ">>>allow user <${username}> to sudo <command> w/o password input---"
-echo -e "\r"
-		echo "" | tee -a ${etc_dir}/sudoers
-        echo "#---:ALLOW TO EXEC COMMANDS /W SUDO BUT W/O PASSWD INPUT:---" | tee -a ${etc_dir}/sudoers
-		echo "${username}  ALL=(root) NOPASSWD: ${bin_aptget_fpath} -y * update" | tee -a ${etc_dir}/sudoers
-		echo "${username}  ALL=(root) NOPASSWD: ${bin_aptget_fpath} -y * bridge-utils" | tee -a ${etc_dir}/sudoers
-		echo "${username}  ALL=(root) NOPASSWD: ${bin_aptget_fpath} -y * dnsmasq" | tee -a ${etc_dir}/sudoers
-		echo "${username}  ALL=(root) NOPASSWD: ${bin_aptget_fpath} -y * hostapd" | tee -a ${etc_dir}/sudoers
-		echo "${username}  ALL=(root) NOPASSWD: ${bin_aptget_fpath} -y * iw" | tee -a ${etc_dir}/sudoers
-		echo "${username}  ALL=(root) NOPASSWD: ${bin_aptget_fpath} -y * wireless-tools" | tee -a ${etc_dir}/sudoers
-		echo "${username}  ALL=(root) NOPASSWD: ${bin_aptget_fpath} -y * wpasupplicant" | tee -a ${etc_dir}/sudoers
-
-		echo "${username}  ALL=(root) NOPASSWD: ${bin_cat_fpath} /etc/tibbo/*/intfstates_ctx.dat*" | tee -a ${etc_dir}/sudoers
-
-		echo "${username}  ALL=(root) NOPASSWD: ${bin_chmod_fpath} 755 /usr/local/bin/hostapd-ng*" | tee -a ${etc_dir}/sudoers
-		echo "${username}  ALL=(root) NOPASSWD: ${bin_chmod_fpath} *ntios-net-autoreconnect*" | tee -a ${etc_dir}/sudoers
-		echo "${username}  ALL=(root) NOPASSWD: ${bin_chmod_fpath} *wifi-powersave-off*" | tee -a ${etc_dir}/sudoers
-		echo "${username}  ALL=(root) NOPASSWD: ${bin_chmod_fpath} * /etc/ip*ables/rules*.v*" | tee -a ${etc_dir}/sudoers
-
-		echo "${username}  ALL=(root) NOPASSWD: ${bin_grep_fpath} * /etc/tibbo/*/intfstates_ctx.dat*" | tee -a ${etc_dir}/sudoers
-
-		echo "${username}  ALL=(root) NOPASSWD: ${bin_mkdir_fpath} -p /etc/ip*ables" | tee -a ${etc_dir}/sudoers
-		echo "${username}  ALL=(root) NOPASSWD: ${bin_mkdir_fpath} -p /etc/tibbo/*" | tee -a ${etc_dir}/sudoers
-
-		echo "${username}  ALL=(root) NOPASSWD: ${bin_rm_fpath} *ntios-net-autoreconnect*" | tee -a ${etc_dir}/sudoers
-		echo "${username}  ALL=(root) NOPASSWD: ${bin_rm_fpath} /etc/dnsmasq.conf" | tee -a ${etc_dir}/sudoers
-		echo "${username}  ALL=(root) NOPASSWD: ${bin_rm_fpath} /etc/default/hostapd" | tee -a ${etc_dir}/sudoers
-		echo "${username}  ALL=(root) NOPASSWD: ${bin_rm_fpath} /etc/hostapd/hostapd.conf" | tee -a ${etc_dir}/sudoers
-		echo "${username}  ALL=(root) NOPASSWD: ${bin_rm_fpath} /etc/netplan/*.yaml" | tee -a ${etc_dir}/sudoers
-		echo "${username}  ALL=(root) NOPASSWD: ${bin_rm_fpath} /etc/tibbo/netplan/net/*.yaml.autoreconnect" | tee -a ${etc_dir}/sudoers
-		echo "${username}  ALL=(root) NOPASSWD: ${bin_rm_fpath} /etc/netplan/wlan.yaml" | tee -a ${etc_dir}/sudoers
-		echo "${username}  ALL=(root) NOPASSWD: ${bin_rm_fpath} /etc/systemd/system/hostapd-ng*" | tee -a ${etc_dir}/sudoers
-		echo "${username}  ALL=(root) NOPASSWD: ${bin_rm_fpath} /etc/tibbo/*/intfstates_ctx.dat" | tee -a ${etc_dir}/sudoers
-		echo "${username}  ALL=(root) NOPASSWD: ${bin_rm_fpath} /usr/local/bin/hostapd-ng*" | tee -a ${etc_dir}/sudoers
-		echo "${username}  ALL=(root) NOPASSWD: ${bin_rm_fpath} *wifi-powersave-off*" | tee -a ${etc_dir}/sudoers
-
-		echo "${username}  ALL=(root) NOPASSWD: ${bin_sed_fpath} -i *d /etc/netplan/wlan.yaml" | tee -a ${etc_dir}/sudoers
-		echo "${username}  ALL=(root) NOPASSWD: ${bin_sed_fpath} -i *i * /etc/netplan/wlan.yaml" | tee -a ${etc_dir}/sudoers
-		echo "${username}  ALL=(root) NOPASSWD: ${bin_sed_fpath} -i *s/*net*/net*/g*" | tee -a ${etc_dir}/sudoers
-		echo "${username}  ALL=(root) NOPASSWD: ${bin_sed_fpath} -i */etc/tibbo/*/intfstates_ctx.dat" | tee -a ${etc_dir}/sudoers
-		echo "${username}  ALL=(root) NOPASSWD: ${bin_sed_fpath} -i */ccode*/*ccode* /etc/firmware/config.txt" | tee -a ${etc_dir}/sudoers
-
-		echo "${username}  ALL=(root) NOPASSWD: ${bin_systemctl_fpath} daemon-reload" | tee -a ${etc_dir}/sudoers
-		echo "${username}  ALL=(root) NOPASSWD: ${bin_systemctl_fpath} * dnsmasq.service" | tee -a ${etc_dir}/sudoers
-		echo "${username}  ALL=(root) NOPASSWD: ${bin_systemctl_fpath} * hostapd.service" | tee -a ${etc_dir}/sudoers
-		echo "${username}  ALL=(root) NOPASSWD: ${bin_systemctl_fpath} * hostapd-ng.service" | tee -a ${etc_dir}/sudoers
-		echo "${username}  ALL=(root) NOPASSWD: ${bin_systemctl_fpath} * ip*ables.service" | tee -a ${etc_dir}/sudoers
-		echo "${username}  ALL=(root) NOPASSWD: ${bin_systemctl_fpath} * ntios-net-autoreconnect*" | tee -a ${etc_dir}/sudoers
-		echo "${username}  ALL=(root) NOPASSWD: ${bin_systemctl_fpath} * wifi-powersave-off*" | tee -a ${etc_dir}/sudoers
-		echo "${username}  ALL=(root) NOPASSWD: ${bin_systemctl_fpath} * wpa_supplicant.service" | tee -a ${etc_dir}/sudoers
-		echo "${username}  ALL=(root) NOPASSWD: ${bin_systemctl_fpath} * wpa_supplicant_daemon.service" | tee -a ${etc_dir}/sudoers
-
-		echo "${username}  ALL=(root) NOPASSWD: ${bin_tee_fpath} /etc/dnsmasq.conf" | tee -a ${etc_dir}/sudoers
-		echo "${username}  ALL=(root) NOPASSWD: ${bin_tee_fpath} /etc/default/hostapd" | tee -a ${etc_dir}/sudoers
-		echo "${username}  ALL=(root) NOPASSWD: ${bin_tee_fpath} /etc/hostapd/hostapd.conf" | tee -a ${etc_dir}/sudoers
-		echo "${username}  ALL=(root) NOPASSWD: ${bin_tee_fpath} /etc/netplan/*.yaml" | tee -a ${etc_dir}/sudoers
-		echo "${username}  ALL=(root) NOPASSWD: ${bin_tee_fpath} /etc/tibbo/netplan/net/*.yaml.autoreconnect" | tee -a ${etc_dir}/sudoers
-		echo "${username}  ALL=(root) NOPASSWD: ${bin_tee_fpath} /etc/netplan/wlan.yaml" | tee -a ${etc_dir}/sudoers
-		echo "${username}  ALL=(root) NOPASSWD: ${bin_tee_fpath} /etc/systemd/system/hostapd-ng*" | tee -a ${etc_dir}/sudoers
-		echo "${username}  ALL=(root) NOPASSWD: ${bin_tee_fpath} /etc/systemd/system/ip*tables.service" | tee -a ${etc_dir}/sudoers
-		echo "${username}  ALL=(root) NOPASSWD: ${bin_tee_fpath} /etc/tibbo/*/intfstates_ctx.dat" | tee -a ${etc_dir}/sudoers
-		echo "${username}  ALL=(root) NOPASSWD: ${bin_tee_fpath} /usr/local/bin/hostapd-ng*" | tee -a ${etc_dir}/sudoers
-		echo "${username}  ALL=(root) NOPASSWD: ${bin_tee_fpath} *ntios-net-autoreconnect*" | tee -a ${etc_dir}/sudoers
-		echo "${username}  ALL=(root) NOPASSWD: ${bin_tee_fpath} *wifi-powersave-off*" | tee -a ${etc_dir}/sudoers
-
-		echo "${username}  ALL=(root) NOPASSWD: ${bin_touch_fpath} /etc/ip*ables/rules*.v*" | tee -a ${etc_dir}/sudoers
-
-		echo "${username}  ALL=(root) NOPASSWD: ${sbin_brctl_fpath} *" | tee -a ${etc_dir}/sudoers
-
-		echo "${username}  ALL=(root) NOPASSWD: ${sbin_ip_fpath} * add *" | tee -a ${etc_dir}/sudoers
-		echo "${username}  ALL=(root) NOPASSWD: ${sbin_ip_fpath} * del *" | tee -a ${etc_dir}/sudoers
-		echo "${username}  ALL=(root) NOPASSWD: ${sbin_ip_fpath} * flush *" | tee -a ${etc_dir}/sudoers
-		echo "${username}  ALL=(root) NOPASSWD: ${sbin_ip_fpath} * set *" | tee -a ${etc_dir}/sudoers
-
-		echo "${username}  ALL=(root) NOPASSWD: ${sbin_ipxables_fpath} -A INPUT -i * -j ACCEPT" | tee -a ${etc_dir}/sudoers
-		echo "${username}  ALL=(root) NOPASSWD: ${sbin_ipxables_fpath} -A INPUT -m state --state RELATED*ESTABLISHED -j ACCEPT" | tee -a ${etc_dir}/sudoers
-		echo "${username}  ALL=(root) NOPASSWD: ${sbin_ipxables_fpath} -t nat -A POSTROUTING -o * -j MASQUERADE" | tee -a ${etc_dir}/sudoers
-		echo "${username}  ALL=(root) NOPASSWD: ${sbin_ipxables_fpath} -A FORWARD -i * -o br0 -m state --state RELATED*ESTABLISHED -j ACCEPT" | tee -a ${etc_dir}/sudoers
-		echo "${username}  ALL=(root) NOPASSWD: ${sbin_ipxables_fpath} -A FORWARD -i br0 -o * -j ACCEPT" | tee -a ${etc_dir}/sudoers
-		echo "${username}  ALL=(root) NOPASSWD: ${sbin_ipxables_fpath} -S*" | tee -a ${etc_dir}/sudoers
-		echo "${username}  ALL=(root) NOPASSWD: ${sbin_ipxables_fpath} -t nat -S*" | tee -a ${etc_dir}/sudoers
-		echo "${username}  ALL=(root) NOPASSWD: ${sbin_ipxables_restore_fpath} *" | tee -a ${etc_dir}/sudoers
-		echo "${username}  ALL=(root) NOPASSWD: ${sbin_ipxables_save_fpath} *" | tee -a ${etc_dir}/sudoers
-
-		echo "${username}  ALL=(root) NOPASSWD: ${sbin_iw_fpath} *" | tee -a ${etc_dir}/sudoers
-
-		echo "${username}  ALL=(root) NOPASSWD: ${sbin_iwlist_fpath} *" | tee -a ${etc_dir}/sudoers
-
-		echo "${username}  ALL=(root) NOPASSWD: ${sbin_iwconfig_fpath} *" | tee -a ${etc_dir}/sudoers
-
-		echo "${username}  ALL=(root) NOPASSWD: ${sbin_modprobe_fpath} bcmdhd" | tee -a ${etc_dir}/sudoers
-
-		echo "${username}  ALL=(root) NOPASSWD: ${sbin_netplan_fpath} apply" | tee -a ${etc_dir}/sudoers
-
-		echo "${username}  ALL=(root) NOPASSWD: ${sbin_sysctl_fpath} -p" | tee -a ${etc_dir}/sudoers
-		
-		echo "${username}  ALL=(root) NOPASSWD: ${sbin_ufw_fpath} allow 53" | tee -a ${etc_dir}/sudoers
-		echo "${username}  ALL=(root) NOPASSWD: ${sbin_ufw_fpath} allow 67" | tee -a ${etc_dir}/sudoers
-		echo "${username}  ALL=(root) NOPASSWD: ${sbin_ufw_fpath} allow 68" | tee -a ${etc_dir}/sudoers
-		echo "${username}  ALL=(root) NOPASSWD: ${sbin_ufw_fpath} allow 547" | tee -a ${etc_dir}/sudoers
-		echo "${username}  ALL=(root) NOPASSWD: ${sbin_ufw_fpath} allow 5553" | tee -a ${etc_dir}/sudoers
-
-		echo "${username}  ALL=(root) NOPASSWD: ${sbin_wpa_supplicant_fpath} -B -c * -f /run/netplan/wpa-wlan0.conf -iwlan0" | tee -a ${etc_dir}/sudoers
-echo -e "\r"
 
 press_any_key__localfunc
 echo -e "\r"

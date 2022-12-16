@@ -1,0 +1,17 @@
+[Unit]
+Description=Disable power management for wlan0
+After=network.target
+Wants=ntios-su-add-monitor.timer
+
+[Service]
+Type=oneshot
+#User MUST BE SET TO 'root'
+User=root
+ExecStart=/usr/local/bin/ntios-su-add-monitor.sh
+
+#Print messages
+StandardInput=journal+console
+StandardOutput=journal+console
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,15 @@
+[Unit]
+Description=Run ntios-su-add-monitor.service every 5 sec (active-state) and 5 sec (idle-state)
+Requires=ntios-su-add-monitor.service
+
+[Timer]
+#Run on boot after 1 seconds
+OnBootSec=1s
+#Run script every 5 sec when Device is Active
+OnUnitActiveSec=5s
+#Run script every 5 sec when Device is Idle
+OnUnitInactiveSec=5s
+AccuracySec=1s
+
+[Install]
+WantedBy=timers.target
