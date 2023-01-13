@@ -91,6 +91,8 @@ ntios_su_add_monitor_timer_filename="${ntios_su_add_monitor_name}.timer"
 one_time_exec_sh_filename="one-time-exec.sh"
 one_time_exec_before_login_sh_filename="one-time-exec-before-login.sh"
 one_time_exec_before_login_service_filename="one-time-exec-before-login.service"
+enable_ufw_before_login_service_filename="enable-ufw-before-login.service"
+enable_ufw_before_login_sh_filename="enable-ufw-before-login.sh"
 profile_filename="profile"
 qemu_user_static_filename="qemu-arm-static"
 resolve_filename="resolv.conf"
@@ -749,7 +751,7 @@ echo -e ">>>Change permission to <-rwxr-xr-x> for file: ${enable_eth1_before_log
 
 
 echo -e "\r"
-echo -e ">Copying: ${enable_ufw_before_login_service_filename}>"
+echo -e ">Copying: ${enable_ufw_before_login_service_filename}"
 echo -e ">from: ${home_lttp3rootfs_services_ufw_dir}"
 echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}"
 	cp ${src_enable_ufw_before_login_service_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}
