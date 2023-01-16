@@ -16,9 +16,8 @@ Type=oneshot
 User=root
 RemainAfterExit=true
 ExecStart=/usr/local/bin/daisychain_state.sh enable
+
 ExecStop=/usr/local/bin/daisychain_state.sh disable
-StandardInput=journal+console
-StandardOutput=journal+console
 
 [Install]
 WantedBy=multi-user.target

@@ -19,9 +19,8 @@ Type=oneshot
 #User MUST BE SET TO 'root'
 User=root
 RemainAfterExit=true
+
 ExecStart=/usr/local/bin/create-chown-pwm.sh "0"
-StandardInput=journal+console
-StandardOutput=journal+console
 
 [Install]
 WantedBy=multi-user.target

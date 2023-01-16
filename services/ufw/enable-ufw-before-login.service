@@ -15,10 +15,9 @@ Type=oneshot
 #User MUST BE SET TO 'root'
 User=root
 RemainAfterExit=true
+
 ExecStart=/usr/local/bin/enable-ufw-before-login.sh enable
 ExecStop=/usr/local/bin/enable-ufw-before-login.sh disable
-StandardInput=journal+console
-StandardOutput=journal+console
 
 [Install]
 WantedBy=multi-user.target
