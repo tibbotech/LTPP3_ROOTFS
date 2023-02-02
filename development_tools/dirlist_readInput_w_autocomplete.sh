@@ -8,8 +8,7 @@ readMsgRemarks__input=${4}
 output_fPath__input=${5}
 tmp_fPath__input=${6}   #the temporary backup fullpath of 'output_fPath__input'
 dir_menuTitle__input=${7}
-flag_prepend_emptyLine__input=${8}
-
+tibboHeader_prepend_numOfLines__input=${8}
 
 
 
@@ -423,23 +422,42 @@ function load_dirlist_into_array__func() {
 
 
 #---SUBROUTINES
-dirlist__environmental_variables__sub() {
-    bin_bash_dir=/bin/bash
+docker__load_environment_variables__sub() {
+    #Check the number of input args
+    if [[ -z ${docker__global__fpath} ]]; then   #must be equal to 3 input args
+        #---Defin FOLDER
+        docker__LTPP3_ROOTFS__foldername="LTPP3_ROOTFS"
+        docker__development_tools__foldername="development_tools"
 
-	# docker__current_dir=`pwd`
-	docker__current_script_fpath="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
-    docker__current_dir=$(dirname ${docker__current_script_fpath})	#/repo/LTPP3_ROOTFS/development_tools
-	docker__current_folder=`basename ${docker__current_dir}`
+        #Get all the directories containing the foldername 'LTPP3_ROOTFS'...
+        #... and read to array 'find_result_arr'
+        #Remark:
+        #   By using '2> /dev/null', the errors are not shown.
+        readarray -t find_dir_result_arr < <(find  / -type d -iname "${docker__LTPP3_ROOTFS__foldername}" 2> /dev/null)
 
-    docker__development_tools_folder="development_tools"
-    if [[ ${docker__current_folder} != ${docker__development_tools_folder} ]]; then
-        docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}/${docker__development_tools_folder}
-    else
-        docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}
+        #Define variable
+        local find_path_of_LTPP3_ROOTFS=${DOCKER__EMPTYSTRING}
+
+        #Loop thru array-elements
+        for find_dir_result_arrItem in "${find_dir_result_arr[@]}"
+        do
+            #Update variable 'find_path_of_LTPP3_ROOTFS'
+            find_path_of_LTPP3_ROOTFS="${find_dir_result_arrItem}/${docker__development_tools__foldername}"
+            #Check if 'directory' exist
+            if [[ -d "${find_path_of_LTPP3_ROOTFS}" ]]; then    #directory exists
+                #Update variable
+                docker__LTPP3_ROOTFS_development_tools__dir="${find_path_of_LTPP3_ROOTFS}"
+
+                break
+            fi
+        done
+
+        docker__LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS_development_tools__dir%/*}    #move one directory up: LTPP3_ROOTFS/
+        docker__parentDir_of_LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS__dir%/*}    #move two directories up. This directory is the one-level higher than LTPP3_ROOTFS/
+
+        docker__global__filename="docker_global.sh"
+        docker__global__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__global__filename}
     fi
-
-    docker__global__filename="docker_global.sh"
-    docker__global__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__global__filename}
 }
 
 dirlist__load_source_files__sub() {
@@ -456,7 +474,7 @@ dirlist__initial_file_cleanup__sub() {
 }
 
 dirlist__initialize_variables__sub() {
-    docker__exec_cmd="docker exec -t ${containerID__input} ${bin_bash_dir} -c"
+    docker__exec_cmd="docker exec -t ${containerID__input} ${docker__bin_bash__dir} -c"
     docker__containerid_state=false
 }
 
@@ -471,15 +489,15 @@ dirlist__preCheck_if_containerID_isRunning__sub() {
         if [[ ${docker__containerid_state} == ${DOCKER__STATE_NOTFOUND} ]]; then
             show_msg_wo_menuTitle_w_PressAnyKey__func "${ERRMSG_CONTAINERID_IS_NOT_FOUND}" "${DOCKER__NUMOFLINES_1}"
 
-            moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+            # moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
-            exit
+            exit__func "${DOCKER__EXITCODE_99}" "${DOCKER__NUMOFLINES_1}"
         elif [[ ${docker__containerid_state} == ${DOCKER__STATE_EXITED} ]]; then
             show_msg_wo_menuTitle_w_PressAnyKey__func "${ERRMSG_CONTAINERID_IS_EXITED}" "${DOCKER__NUMOFLINES_1}"
 
-            moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+            # moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
-            exit
+            exit__func "${DOCKER__EXITCODE_99}" "${DOCKER__NUMOFLINES_1}"
         fi
     fi
 }
@@ -574,7 +592,7 @@ dirlist__readInput_w_autocomplete__sub() {
                         #In other words, whether 'str' contains any of the above semi-colon chars.
                         #If that's the case then function 'get_endResult_ofString_with_semiColonChar__func'
                         #   will handle and return the result 'ret'.
-                        ret_tmp=`get_endResult_ofString_with_semiColonChar__func ${str}`
+                        ret_tmp=`get_endResult_ofString_with_semiColonChar__func "${str}"`
 
                         case "${ret_tmp}" in
                             ${DOCKER__SEMICOLON_BACK})
@@ -701,7 +719,7 @@ dirlist__readInput_w_autocomplete__sub() {
                                             "${str_autocompleted}" \
                                             "${output_fPath__input}" \
                                             "${dir_menuTitle__input}" \
-                                            "${flag_prepend_emptyLine__input}"
+                                            "${tibboHeader_prepend_numOfLines__input}"
 
                                     #Update 'str_shown'
                                     str_shown=${str_autocompleted}
@@ -716,7 +734,7 @@ dirlist__readInput_w_autocomplete__sub() {
                                                 "${str_autocompleted}" \
                                                 "${output_fPath__input}" \
                                                 "${dir_menuTitle__input}" \
-                                                "${flag_prepend_emptyLine__input}"
+                                                "${tibboHeader_prepend_numOfLines__input}"
 
                                         #Update 'str_shown'
                                         str_shown=${str_autocompleted}
@@ -731,6 +749,11 @@ dirlist__readInput_w_autocomplete__sub() {
                                         moveDown_oneLine_then_moveUp_and_clean__func "${DOCKER__NUMOFLINES_1}"
                                     fi
                                 fi
+                            fi
+
+#---------------------------Set 'tibboHeader_prepend_numOfLines__input' (MUST BE SET AT THIS POSITION!!!)
+                            if [[ ! -z ${tibboHeader_prepend_numOfLines__input} ]]; then
+                                tibboHeader_prepend_numOfLines__input=${DOCKER__NUMOFLINES_3}
                             fi
 
 #---------------------------If 'asterisk_isFound = true' then restore 'str'
@@ -861,7 +884,7 @@ dirlist__show_dirContent_handler__sub() {
 	local fpath__input=${2}
     local dirlistContentFpath__input=${3}
     local menuTitle__input=${4}
-    local flag_prependEmptyLine__input=${5}
+    local tibboHeader_prepend_numOfLines__input=${5}
 
     #Split directory from file/folder
     local dir=`get_dirname_from_specified_path__func "${fpath__input}"`
@@ -869,16 +892,28 @@ dirlist__show_dirContent_handler__sub() {
 
     #Move down one line
     if [[ ! -z ${menuTitle__input} ]]; then
-        show_menuTitle_only__func "${menuTitle__input}"
-    else
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+        show_menuTitle_w_adjustable_indent__func "${menuTitle__input}" "${DOCKER__EMPTYSTRING}"
+    # else
+    #     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
     fi
 
     #Show directory content
 	if [[ -z ${containerID__input} ]]; then	#LOCAL machine (aka HOST)
-		${dclcau_lh_ls__fpath} "${dir}" "${DOCKER__TABLEROWS_20}" "${DOCKER__TABLECOLS_0}" "${keyWord}" "${dirlistContentFpath__input}" "${flag_prependEmptyLine__input}"
+		${dclcau_lh_ls__fpath} "${dir}" \
+                    "${DOCKER__TABLEROWS_20}" \
+                    "${DOCKER__TABLECOLS_0}" \
+                    "${keyWord}" \
+                    "${dirlistContentFpath__input}" \
+                    "${tibboHeader_prepend_numOfLines__input}"
+
 	else	#REMOTE machine (aka Container)
-		${dclcau_dc_ls__fpath} "${containerID__input}" "${dir}" "${DOCKER__TABLEROWS_20}" "${DOCKER__TABLECOLS_0}" "${keyWord}" "${dirlistContentFpath__input}" "${flag_prependEmptyLine__input}"
+		${dclcau_dc_ls__fpath} "${containerID__input}" \
+                    "${dir}" \
+                    "${DOCKER__TABLEROWS_20}" \
+                    "${DOCKER__TABLECOLS_0}" \
+                    "${keyWord}" \
+                    "${dirlistContentFpath__input}" \
+                    "${tibboHeader_prepend_numOfLines__input}"
 	fi
 }
 
@@ -886,7 +921,7 @@ dirlist__show_dirContent_handler__sub() {
 
 #---MAIN SUBROUTINE
 main__sub() {
-    dirlist__environmental_variables__sub
+    docker__load_environment_variables__sub
 
     dirlist__load_source_files__sub
 

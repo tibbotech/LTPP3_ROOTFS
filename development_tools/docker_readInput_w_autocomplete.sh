@@ -12,6 +12,7 @@ colNo__input=${8}
 pattern__input=${9}
 showTable__input=${10}
 onEnter_breakLoop__input=${11}
+tibboHeader_prepend_numOfLines__input=${12}
 
 
 
@@ -77,6 +78,9 @@ function arrowKeys_upDown_handler__func() {
 }
 
 function autocomplete__func() {
+    #Disable expansion
+    disable_expansion__func
+
     #Input args
     #Remark:
     #1. non-array parameter(s) precede(s) array-parameter
@@ -87,16 +91,24 @@ function autocomplete__func() {
 
 
     #Define and update keyWord
-    local dataArr_1stItem_len=0
+    local dataArr_filtered_1stElement_len=0
     local keyWord_bck=${DOCKER__EMPTYSTRING}
     local keyWord_len=0
     local numOfMatch=0
     local numOfMatch_init=0
     local ret=${DOCKER__EMPTYSTRING}
 
+    #Get only array-elements containing 'keyWord__input'
+    #Explanation:
+    #   printf '%s\n' "${dataArr[@]}": print each array-element separated by a (\n)
+    #   grep "^${keyWord__input}": get only array-elements matching 'keyWord__input'
+    #   sed 's/\n/ /g': substitute (\n) with space ( )
+    local dataArr_filtered_string=`printf '%s\n' "${dataArr[@]}" | grep "^${keyWord__input}" | sed 's/\n/ /g'`
+    local dataArr_filtered=(`echo "${dataArr_filtered_string}"`)
+
     #initialization
-    dataArr_1stItem_len=${#dataArr[0]}
-    numOfMatch_init=`printf '%s\n' "${dataArr[@]}" | grep "^${keyWord}" | wc -l`
+    dataArr_filtered_1stElement_len=${#dataArr_filtered[0]}
+    numOfMatch_init=`printf '%s\n' "${dataArr_filtered[@]}" | grep "^${keyWord}" | wc -l`
     numOfMatch=${numOfMatch_init}
 
     #Find the closest match
@@ -107,7 +119,7 @@ function autocomplete__func() {
             break
         elif [[ ${numOfMatch_init} -eq 1 ]]; then  #only 1 match
             #Update variable
-            ret=`printf '%s\n' "${dataArr[@]}" | grep "^${keyWord}"`
+            ret=`printf '%s\n' "${dataArr_filtered[@]}" | grep "^${keyWord}"`
 
             #Exit loop
             break
@@ -122,17 +134,17 @@ function autocomplete__func() {
             keyWord_len=$((keyWord_bck_len + 1))
 
             #Get the next keyWord (by using the 1st array-element as base)
-            keyWord=${dataArr[0]:0:keyWord_len}
+            keyWord=${dataArr_filtered[0]:0:keyWord_len}
 
             #Check if the total length of the 1st array-element has been reached
-            if [[ ${keyWord_bck_len} -eq ${dataArr_1stItem_len} ]]; then
+            if [[ ${keyWord_bck_len} -eq ${dataArr_filtered_1stElement_len} ]]; then
                 ret=${keyWord_bck}
 
                 break
             fi
 
             #Get the new number of matches
-            numOfMatch=`printf '%s\n' "${dataArr[@]}" | grep "^${keyWord}" | wc -l`
+            numOfMatch=`printf '%s\n' "${dataArr_filtered[@]}" | grep "^${keyWord}" | wc -l`
 
             #Compare the new 'numOfMatch' with the initial 'numOfMatch_init'
             #If there is a difference, then set 'ret = keyWord_bck' and exit the loop.
@@ -146,6 +158,9 @@ function autocomplete__func() {
 
     #Output
     echo ${ret}
+
+    #Enable expansion
+    enable_expansion__func
 }
 
 function backspace_handler__func() {
@@ -171,7 +186,7 @@ function backspace_handler__func() {
     echo "${str_output}"
 }
 
-function load_containerID_into_array__func() {
+function run_cmd_and_read_output_into_array__func() {
     #Input args
     local dockerCmd__input=${1}
     local colNo__input=${2}
@@ -254,7 +269,8 @@ docker__readInput_handler__sub() {
                         "${colNo__input}" \
                         "${pattern__input}" \
                         "${showTable__input}" \
-                        "${onEnter_breakLoop__input}"
+                        "${onEnter_breakLoop__input}" \
+                        "${tibboHeader_prepend_numOfLines__input}"
 
     #Print empty lines
     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
@@ -273,6 +289,7 @@ docker__readInput_w_autocomplete__sub() {
     local pattern__input=${9}
     local showTable__input=${10}
     local onEnter_breakLoop__input=${11}
+    local tibboHeader_prepend_numOfLines__input=${12}
 
     #Define variables
     local keyInput=${DOCKER__EMPTYSTRING}
@@ -292,7 +309,7 @@ docker__readInput_w_autocomplete__sub() {
     fi
 
 #---Load ContainerIDs into Array 'cachedInput_Arr'
-    load_containerID_into_array__func "${dockerCmd__input}" "${colNo__input}" "${pattern__input}"
+    run_cmd_and_read_output_into_array__func "${dockerCmd__input}" "${colNo__input}" "${pattern__input}"
 
 #---Show Docker Container's List
     #Calculate number of lines to be cleaned
@@ -316,6 +333,15 @@ docker__readInput_w_autocomplete__sub() {
     #Remark:
     #   This way we can control whether to show the Image-list Table or not.
     if [[ ${showTable__input} == true ]]; then
+        #Check if 'tibboHeader_prepend_numOfLines__input' is an Empty String
+        if [[ -z ${tibboHeader_prepend_numOfLines__input} ]]; then
+            tibboHeader_prepend_numOfLines__input=${DOCKER__NUMOFLINES_2}
+        fi
+
+        #Print Tibbo-title
+        load_tibbo_title__func "${tibboHeader_prepend_numOfLines__input}"
+        
+        #Show command-output
         docker__show_infoTable__sub "${menuTitle__input}" \
                         "${dockerCmd__input}" \
                         "${errorMsg__input}" #\
@@ -360,7 +386,7 @@ docker__readInput_w_autocomplete__sub() {
                 #If that's the case then function 'get_endResult_ofString_with_semiColonChar__func'
                 #   will handle and return a modified 'ret'.
                 ret_bck=${ret}  #set value
-                ret=`get_endResult_ofString_with_semiColonChar__func ${ret_bck}` 
+                ret=`get_endResult_ofString_with_semiColonChar__func "${ret_bck}"` 
                 
                 if [[ ! -z ${ret} ]]; then    #'ret' contains data
                     #Break immeidiately if ';b' or ';h' was found.
@@ -433,6 +459,7 @@ docker__readInput_w_autocomplete__sub() {
             ${DOCKER__TAB})
                 #This subroutine will also update 'ret'
                 ret=`autocomplete__func "${ret}" "${cachedInput_Arr[@]}"`
+                # autocomplete__func "${ret}" "${cachedInput_Arr[@]}"
 
                 #First Move-down, then Move-up, after that clean line
                 moveDown_oneLine_then_moveUp_and_clean__func "${numOfLines_noError_tot}"
@@ -492,7 +519,7 @@ docker__show_infoTable__sub() {
             exit__func "${exitCode__input}" "${DOCKER__NUMOFLINES_0}"
         fi
     else
-        show_cmdOutput_w_menuTitle__func "${menuTitle__input}" "${dockerCmd__input}"
+        show_repoList_or_containerList_w_menuTitle__func "${menuTitle__input}" "${dockerCmd__input}"
     fi
 }
 

@@ -1,10 +1,19 @@
 #!/bin/bash
+
+
+
 #---BOOLEAN CONSTANTS
 DOCKER__TRUE=true
 DOCKER__FALSE=false
 
 DOCKER__N="n"
 DOCKER__Y="y"
+
+
+
+#---CACHE CONSTANTS
+DOCKER__ENTER_CMDLINE_MODE_CACHE_MAX=50  ##maximum number of entries for 'docker_enter_cmdline_mode.sh'
+DOCKER__GIT_CACHE_MAX=50    #maximum number of entries for Git-Link and Git-Checkout
 
 
 
@@ -41,7 +50,7 @@ DOCKER__ESCAPED_BACKSLASHDOT="\\."
 DOCKER__ESCAPED__BACKSLASH_ESCAPE_DOT="\\\."    #used in grep
 DOCKER__ESCAPED_DOTBACKSLASH=".\\"
 DOCKER__ESCAPED_HOOKLEFT="\<"
-DOCKER__ESCAPED__HOOKRIGHT="\>"
+DOCKER__ESCAPED_HOOKRIGHT="\>"
 DOCKER__ESCAPED_QUOTE="\""
 DOCKER__ESCAPED_SLASH="\/"
 DOCKER__DOUBLE_ESCAPE_SLASH="${DOCKER__ESCAPED_SLASH}${DOCKER__ESCAPED_SLASH}"
@@ -59,6 +68,12 @@ DOCKER__TAB=$'\t'
 
 DOCKER__CARET_C="^C"
 
+#Remarks:
+#   This cosntant has to be used in combination with 'disable_stty_intr__func' and 'enable_stty_intr__func'
+#   For example see script: docker_enter_cmdline_mode.sh
+DOCKER__CTRL_C=$'\003'
+DOCKER__CTRL_H=\^H
+
 
 
 #---COLOR CONSTANTS
@@ -67,7 +82,10 @@ DOCKER__NOCOLOR=$'\e[0;0m'
 DOCKER__FG_BORDEAUX=$'\e[30;38;5;198m'
 DOCKER__FG_BRIGHTPRUPLE=$'\e[30;38;5;141m'
 DOCKER__FG_BRIGHTLIGHTPURPLE=$'\e[30;38;5;147m'
+DOCKER__FG_BROWN94=$'\e[30;38;5;94m'
+DOCKER__FG_BROWN137=$'\e[30;38;5;137m'
 DOCKER__FG_DARKBLUE=$'\e[30;38;5;33m'
+DOCKER__FG_RED1=$'\e[30;38;5;1m'
 DOCKER__FG_DEEPORANGE=$'\e[30;38;5;208m'
 DOCKER__FG_REDORANGE=$'\e[30;38;5;203m'
 DOCKER__FG_GREEN=$'\e[30;38;5;82m'
@@ -84,6 +102,7 @@ DOCKER__FG_LIGHTPINK=$'\e[30;38;5;218m'
 DOCKER__FG_LIGHTRED=$'\e[1;31m'
 DOCKER__FG_LIGHTSOFTYELLOW=$'\e[30;38;5;229m'
 DOCKER__FG_ORANGE=$'\e[30;38;5;215m'
+DOCKER__FG_PINK=$'\e[30;38;5;213m'
 DOCKER__FG_PURPLE=$'\e[30;38;5;93m'
 DOCKER__FG_PURPLERED=$'\e[30;38;5;198m'
 DOCKER__FG_SOFTDARKBLUE=$'\e[30;38;5;38m'
@@ -100,6 +119,14 @@ DOCKER__BG_LIGHTBLUE=$'\e[30;48;5;45m'
 DOCKER__BG_LIGHTGREY=$'\e[30;48;5;246m'
 DOCKER__BG_LIGHTSOFTYELLOW=$'\e[30;48;5;229m'
 DOCKER__BG_WHITE=$'\e[30;48;5;15m'
+
+DOCKER__BLINK=$'\e[5m'
+
+
+
+#---COMMAND CONSTANTS
+DOCKER__CD="cd"
+DOCKER__EXIT="exit"
 
 
 
@@ -119,6 +146,7 @@ DOCKER__TABLECOLS_MAX_7=7
 DOCKER__CFG_NAME1="docker__dockerFile_fpath"
 
 DOCKER__NONE="<none>"
+DOCKER__BCK="bck"
 DOCKER__PATTERN_EXITED="Exited"
 DOCKER__PATTERN_REPOSITORY_TAG="repository:tag"
 
@@ -137,14 +165,18 @@ DOCKER__READDIALOG_DO_YOU_WISH_TO_CONTINUE_YN="Do you wish to continue (y/n)? "
 
 DOCKER__ECHOMSG_NORESULTS_FOUND="${FOUR_SPACES}-:${FG_YELLOW}No results found${NOCOLOR}:-"
 
-DOCKER__ERRMSG_CHOSEN_CONTAINERID_DOESNOT_EXISTS="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Invalid input value "
-DOCKER__ERRMSG_CHOSEN_IMAGEID_DOESNOT_EXISTS="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Invalid input value "
+DOCKER__ERROR="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}"
+
+DOCKER__ERRMSG_CHOSEN_CONTAINERID_DOESNOT_EXISTS="${DOCKER__ERROR}: Invalid input value "
+DOCKER__ERRMSG_CHOSEN_IMAGEID_DOESNOT_EXISTS="${DOCKER__ERROR}: Invalid input value "
 DOCKER__ERRMSG_NO_CONTAINERS_FOUND="=:${DOCKER__FG_LIGHTRED}NO CONTAINERS FOUND${DOCKER__NOCOLOR}:="
 DOCKER__ERRMSG_NO_EXITED_CONTAINERS_FOUND="=:${DOCKER__FG_LIGHTRED}NO *EXITED* CONTAINERS FOUND${DOCKER__NOCOLOR}:="
 DOCKER__ERRMSG_NO_IMAGES_FOUND="=:${DOCKER__FG_LIGHTRED}NO IMAGES FOUND${DOCKER__NOCOLOR}:="
 
-DOCKER__INVALID_OR_NOT_A_DIRECTORY="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Invalid or not a directory"
-DOCKER__INVALID_OR_NOT_A_FILE="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Invalid or not a file"
+DOCKER__INVALID_OR_NOT_A_DIRECTORY="${DOCKER__ERROR}: Invalid or not a directory"
+DOCKER__INVALID_OR_NOT_A_FILE="${DOCKER__ERROR}: Invalid or not a file"
+
+DOCKER__WARNING="***${DOCKER__FG_BORDEAUX}WARNING${DOCKER__NOCOLOR}"
 
 DOCKER__CONFIGNAME____DOCKER__DOCKERFILE_FPATH="docker__dockerFile_fpath"
 
@@ -153,6 +185,13 @@ DOCKER__CONFIGNAME____DOCKER__DOCKERFILE_FPATH="docker__dockerFile_fpath"
 #---ENV VARIABLES (WHICH ARE USED IN THE DOCKERFILE FILES)
 DOCKER__CONTAINER_ENV1="CONTAINER_ENV1"
 DOCKER__CONTAINER_ENV2="CONTAINER_ENV2"
+
+
+
+#---EXCLUSION CONSTANTS
+DOCKER__EXCL_CMD_ARR=()
+DOCKER__EXCL_CMD_ARR+=("${DOCKER__CD}")
+DOCKER__EXCL_CMD_ARR+=("${DOCKER__EXIT}")
 
 
 
@@ -211,7 +250,41 @@ DOCKER__FUNC_24="24"
 
 
 #---GIT CONSTANTS
-DOCKER__GIT_CACHE_MAX=50    #maximum number of entries for Git-Link and Git-Checkout
+GIT__LAST_COMMIT=1
+
+GIT__PLACEHOLDER_ABBREV_COMMIT_HASH="%h"
+GIT__PLACEHOLDER_SUBJECT="%s"
+
+GIT__NOT_TAGGED="<not-tagged>"
+GIT__PUSHED="pushed"
+GIT__UNPUSHED="unpushed"
+
+GIT__PATTERN_REMOTES="remotes"
+GIT__PATTERN_TAGS="tags"
+GIT__PATTERN_HEADS="heads"
+
+GIT__CMD_GIT_ADD_DOT="git add ."
+GIT__CMD_GIT_BRANCH="git branch"
+GIT__CMD_GIT_CHECKOUT="git checkout"
+GIT__CMD_GIT_COMMIT_DASH_M="git commit -m"
+GIT__CMD_GIT_LS_REMOTE="git ls-remote"
+GIT__CMD_GIT_PULL="git pull"
+GIT__CMD_GIT_PUSH="git push"
+GIT__CMD_GIT_RESET="git reset"
+GIT__CMD_GIT_SHOW_REF="git show-ref"
+GIT__CMD_GIT_TAG="git tag"
+
+GIT__LOCATION_LOCAL="local"
+GIT__LOCATION_REMOTE="remote"
+
+GIT__REMOTES_ORIGIN_MAIN="remotes/origin/main"
+
+GIT__ERROR_MALFORMED_OBJECT_NAME_TAGS="error: malformed object name tags/"
+
+
+
+#---MENU CONSTANTS
+DOCKER__MENU="(${DOCKER__FG_LIGHTGREY}Menu${DOCKER__NOCOLOR})"
 
 
 
@@ -222,6 +295,8 @@ DOCKER__COLNUM_3=3
 DOCKER__LINENUM_0=0
 DOCKER__LINENUM_1=1
 DOCKER__LINENUM_2=2
+
+DOCKER__MINUS_ONE=-1
 
 DOCKER__NUMOFCHARS_1=1
 DOCKER__NUMOFCHARS_2=2
@@ -253,6 +328,7 @@ DOCKER__SPACE_BETWEEN_WORDS=4
 DOCKER__TIMEOUT_3=3
 DOCKER__TIMEOUT_5=5
 DOCKER__TIMEOUT_10=10
+DOCKER__TIMEOUT_30=30
 
 DOCKER__TRAP_NUM_2=2
 
@@ -284,6 +360,26 @@ PHASE_SHOW_KEYINPUT_HANDLER=2
 DOCKER__PREV="prev"
 DOCKER__NEXT="next"
 
+DOCKER__CHECK="${DOCKER__FG_ORANGE}CHECK${DOCKER__NOCOLOR}"
+DOCKER__CHECK_LOCAL="${DOCKER__FG_ORANGE}CHECK (LOCAL)${DOCKER__NOCOLOR}"
+DOCKER__CHECK_REMOTE="${DOCKER__FG_ORANGE}CHECK (REMOTE)${DOCKER__NOCOLOR}"
+DOCKER__COMPLETED="${DOCKER__FG_ORANGE}COMPLETED${DOCKER__NOCOLOR}"
+DOCKER__EXECUTED="${DOCKER__FG_ORANGE}EXECUTED${DOCKER__NOCOLOR}"
+DOCKER__INFO="${DOCKER__FG_ORANGE}INFO${DOCKER__NOCOLOR}"
+DOCKER__INPUT="${DOCKER__FG_YELLOW}INPUT${DOCKER__NOCOLOR}"
+DOCKER__QUESTION="${DOCKER__FG_YELLOW}QUESTION${DOCKER__NOCOLOR}"
+DOCKER__REQUEST="${DOCKER__FG_ORANGE}REQUEST${DOCKER__NOCOLOR}"
+DOCKER__RESULT="${DOCKER__FG_ORANGE}RESULT${DOCKER__NOCOLOR}"
+DOCKER__START="${DOCKER__FG_ORANGE}START${DOCKER__NOCOLOR}"
+DOCKER__STATUS="${DOCKER__FG_ORANGE}STATUS${DOCKER__NOCOLOR}"
+DOCKER__STOPPED="${DOCKER__FG_ORANGE}STOPPED${DOCKER__NOCOLOR}"
+DOCKER__SUGGESTION="${DOCKER__FG_ORANGE}SUGGESTION${DOCKER__NOCOLOR}"
+
+DOCKER__STATUS_DONE="${DOCKER__FG_GREEN}done${DOCKER__NOCOLOR}"
+DOCKER__STATUS_FAILED="${DOCKER__FG_LIGHTRED}failed${DOCKER__NOCOLOR}"
+
+DOCKER__NO_ACTION_REQUIRED="No action required"
+
 
 
 #---READ-INPUT CONSTANTS
@@ -291,21 +387,51 @@ DOCKER__BACK="b"
 DOCKER__CLEAR="c"
 DOCKER__HOME="h"
 DOCKER__NO="n"
+DOCKER__OVERWRITE="o"
 DOCKER__QUIT="q"
 DOCKER__REDO="r"
 DOCKER__YES="y"
 
 DOCKER__Y_SLASH_N="${DOCKER__Y}/${DOCKER__N}"
-DOCKER__Y_SLASH_N_SLASH_B="${DOCKER__Y}/${DOCKER__N}/${DOCKER__BACK}"
+DOCKER__Y_SLASH_N_SLASH_B="${DOCKER__Y_SLASH_N}/${DOCKER__BACK}${DOCKER__FG_LIGHTGREY}ack${DOCKER__NOCOLOR}"
+DOCKER__Y_SLASH_N_SLASH_H="${DOCKER__Y_SLASH_N}/${DOCKER__HOME}${DOCKER__FG_LIGHTGREY}ome${DOCKER__NOCOLOR}"
+DOCKER__Y_SLASH_N_SLASH_O="${DOCKER__Y_SLASH_N}/${DOCKER__OVERWRITE}${DOCKER__FG_LIGHTGREY}verwrite${DOCKER__NOCOLOR}"
+DOCKER__Y_SLASH_N_SLASH_Q="${DOCKER__Y_SLASH_N}/${DOCKER__QUIT}${DOCKER__FG_LIGHTGREY}uit${DOCKER__NOCOLOR}"
+DOCKER__Y_SLASH_N_SLASH_R="${DOCKER__Y_SLASH_N}/${DOCKER__REDO}${DOCKER__FG_LIGHTGREY}edo${DOCKER__NOCOLOR}"
+
+DOCKER__Y_SLASH_N_SLASH_B_SLASH_Q="${DOCKER__Y_SLASH_N}/"
+DOCKER__Y_SLASH_N_SLASH_B_SLASH_Q+="${DOCKER__BACK}${DOCKER__FG_LIGHTGREY}ack${DOCKER__NOCOLOR}/"
+DOCKER__Y_SLASH_N_SLASH_B_SLASH_Q+="${DOCKER__QUIT}${DOCKER__FG_LIGHTGREY}uit${DOCKER__NOCOLOR}"
+
+DOCKER__Y_SLASH_N_SLASH_R_SLASH_Q="${DOCKER__Y_SLASH_N}/"
+DOCKER__Y_SLASH_N_SLASH_R_SLASH_Q+="${DOCKER__REDO}${DOCKER__FG_LIGHTGREY}edo${DOCKER__NOCOLOR}/"
+DOCKER__Y_SLASH_N_SLASH_R_SLASH_Q+="${DOCKER__QUIT}${DOCKER__FG_LIGHTGREY}uit${DOCKER__NOCOLOR}"
+
+DOCKER__Y_SLASH_N_SLASH_O_SLASH_B_SLASH_H="${DOCKER__Y_SLASH_N_SLASH_O}/"
+DOCKER__Y_SLASH_N_SLASH_O_SLASH_B_SLASH_H+="${DOCKER__BACK}${DOCKER__FG_LIGHTGREY}ack${DOCKER__NOCOLOR}/"
+DOCKER__Y_SLASH_N_SLASH_O_SLASH_B_SLASH_H+="${DOCKER__HOME}${DOCKER__FG_LIGHTGREY}ome${DOCKER__NOCOLOR}"
 
 DOCKER__SEMICOLON_BACK=";b"
 DOCKER__SEMICOLON_CLEAR=";c"
 DOCKER__SEMICOLON_DELETE=";d"
 DOCKER__SEMICOLON_HOME=";h"
 
+DOCKER__SEMICOLON_BACK_COLORED="${DOCKER__FG_YELLOW}${DOCKER__SEMICOLON_BACK}${DOCKER__NOCOLOR}ack"
+DOCKER__SEMICOLON_CLEAR_COLORED="${DOCKER__FG_YELLOW}${DOCKER__SEMICOLON_CLEAR}${DOCKER__NOCOLOR}lear"
+
+DOCKER__COMMA_COLORED="${DOCKER__FG_LIGHTGREY},${DOCKER__NOCOLOR}"
+DOCKER__SEMICOLON_BACK_SEMICOLON_CLEAR_COLORED="${DOCKER__SEMICOLON_BACK_COLORED}${DOCKER__COMMA_COLORED}${DOCKER__SEMICOLON_CLEAR_COLORED}"
+
 
 
 #---REGEX CONSTANTS
+DOCKER__REGEX_YN="[yn]"
+DOCKER__REGEX_YNB="[ynb]"
+DOCKER__REGEX_YNH="[ynh]"
+DOCKER__REGEX_YNQ="[ynq]"
+DOCKER__REGEX_YNR="[ynr]"
+DOCKER__REGEX_YNBQ="[ynbq]"
+DOCKER__REGEX_YNOBH="[ynobh]"
 DOCKER__REGEX_0_TO_9="[1-90]"
 DOCKER__REGEX_0_TO_9_COMMA_DASH="[1-90,-]"
 DOCKER__REGEX_1q="[1q]"
@@ -352,11 +478,13 @@ DOCKER__REMOVE_ALL="REMOVE-ALL"
 
 
 #---SPACE CONSTANTS
+DOCKER__ZEROSPACE="${SED__STX}" #used in function 'show_msg_w_menuTitle_only_func'
 DOCKER__ONESPACE=" "
 DOCKER__TWOSPACES=${DOCKER__ONESPACE}${DOCKER__ONESPACE}
 DOCKER__THREESPACES=${DOCKER__TWOSPACES}${DOCKER__ONESPACE}
 DOCKER__FOURSPACES=${DOCKER__TWOSPACES}${DOCKER__TWOSPACES}
 DOCKER__FIVESPACES=${DOCKER__FOURSPACES}${DOCKER__ONESPACE}
+DOCKER__SEVENSPACES=${DOCKER__FOURSPACES}${DOCKER__THREESPACES}
 DOCKER__TENSPACES=${DOCKER__FIVESPACES}${DOCKER__FIVESPACES}
 
 
@@ -407,6 +535,10 @@ DOCKER__HTTP_200=200
 docker__images_cmd="docker images"
 docker__ps_a_cmd="docker ps -a"
 
+docker__images_repoColNo=1
+docker__images_tagColNo=2
+docker__images_IDColNo=3
+docker__ps_a_containerIdColno=1
 
 
 #---EXTERN CONSTANTS & VARIABLES
@@ -421,6 +553,10 @@ extern__ret=${DOCKER__EMPTYSTRING}
 
 
 #---SPECIFAL FUNCTIONS
+function erase_ctrl_h__func() {
+    stty erase ${DOCKER__CTRL_H}
+}
+
 function cursor_hide__func() {
     printf '\e[?25l'
 }
@@ -450,9 +586,38 @@ function disable_ctrl_c__func() {
     trap '' ${DOCKER__TRAP_NUM_2}
 }
 
+function enable_stty_intr__func() {
+    stty sane
+
+    #This function MUST be executed
+    #Note: 
+    #   If this function is NOT executed, when pressing <backspace>
+    #   MobaXterm sends (^H).
+    erase_ctrl_h__func
+}
+
+function disable_stty_intr__func() {
+    stty intr ''
+}
+
 function unset_extern_variables__func() {
     unset extern__req
     unset extern__ret
+}
+
+function cmd_exec__func() {
+    #Input args
+    cmd=${1}
+
+    #Define local variable
+    currUser=$(whoami)
+
+    #Exec command
+    if [[ ${currUser} != "root" ]]; then
+        sudo ${cmd}
+    else
+        ${cmd}
+    fi
 }
 
 function exit__func() {
@@ -491,6 +656,14 @@ function goto__func() {
 	
 	#Exit Function
     exit
+}
+
+function load_tibbo_title__func() {
+    #Input args
+    local prepend_numOfLines__input=${1}
+
+    #Print
+    show_header__func "${DOCKER__TITLE}" "${DOCKER__TABLEWIDTH}" "${DOCKER__BG_ORANGE}" "${prepend_numOfLines__input}" "${DOCKER__NUMOFLINES_0}"
 }
 
 function press_any_key__func() {
@@ -540,22 +713,18 @@ function press_any_key__func() {
 function confirmation_w_timer__func() {
     #Input args
     local confirmation_choices__input=${1}
-    local timeout__input=${2}
-    local prepend_numOfLines__input=${3}
-    local append_numOfLines__input=${4}
+    local confirmation_regEx__input=${2}
+    local timeout__input=${3}
+    local prepend_numOfLines__input=${4}
+    local append_numOfLines__input=${5}
 
     #Define constants
     local ECHOMSG_DO_YOU_WISH_TO_CONTINUE="Do you wish to continue"
 
+    #Define regEx
+    local regEx="${confirmation_regEx__input}"
 
-	#Initialize variables
-    local regEx=${DOCKER__EMPTYSTRING}
-    if [[ ${confirmation_choices__input} == ${DOCKER__Y_SLASH_N} ]]; then
-        regEx="[yn]"
-    else   #confirmation_choices__input =  DOCKER__Y_SLASH_N_SLASH_B_SLASH_Q
-        regEx="[ynbq]"
-    fi
-
+    #Initialization
 	local ret=${DOCKER__EMPTYSTRING}
 	local tCounter=0
 
@@ -574,8 +743,6 @@ function confirmation_w_timer__func() {
     fi
     local after_confirmation_append_numOfLines=$((append_numOfLines - 1))
 
-
-
     #Hide cursor
     # cursor_hide__func
 
@@ -585,18 +752,19 @@ function confirmation_w_timer__func() {
 	do
 		delta_tcounter=$(( ${timeout} - ${tCounter} ))
 
-		read -N1 -t1 -r -p "${ECHOMSG_DO_YOU_WISH_TO_CONTINUE} (${delta_tcounter}) (${confirmation_choices__input})? " ret
+		read -N1 -t1 -r -p "${ECHOMSG_DO_YOU_WISH_TO_CONTINUE} (${confirmation_choices__input}) (${delta_tcounter})? " ret
+		if [[ ! -z ${ret} ]]; then
+            if [[ ${ret} == ${DOCKER__ENTER} ]]; then
+                moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+            else
+                if [[ ${ret} =~ ${regEx} ]]; then
+                    moveDown_and_cleanLines__func "${after_confirmation_append_numOfLines}"
 
-		if [[ ! -z "${ret}" ]]; then
-			if [[ "${ret}" =~ ${regEx} ]]; then
-                moveDown_and_cleanLines__func "${after_confirmation_append_numOfLines}"
-
-				break
-			else
-                if [[ "${ret}" == "${DOCKER__ENTER}" ]]; then
-				    moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+                    break
                 else
                     moveToBeginning_and_cleanLine__func
+
+                    # moveUp_and_cleanLines__func "${prepend_numOfLines__input}"
                 fi
 			fi
         else
@@ -625,6 +793,115 @@ function confirmation_w_timer__func() {
 
 
 #---ARRAY FUNCTIONS
+# function array_find_and_move_element_toTop__func() {
+#     #Input args
+#     local pattern__input=${1}
+#     shift
+#     local arr__input=("$@")
+
+#     #Define variables
+#     local arr_leftOfMatch=()
+#     local arr_rightOfMatch=()
+#     local arr_new=()
+
+#     local arrLen=0
+#     local arrIndex_max=0
+#     local index_match=0
+#     local lineNum_match=0
+#     local numOfElements_leftOfMatch=0
+#     local startIndex_rightOfMatch=0
+
+#     #Get length of array 'arr__input'
+#     local arrLen=${#arr__input[@]}
+#     local arrIndex_max=$((arrLen - 1))
+
+#     #Check if there is an EXACT MATCH of 'pattern__input' within 'arr__input'.
+#     #If true, then get the array-index.
+#     #1. Get the line-number:
+#     lineNum_match=`echo "${arr__input[@]}" | xargs -n1 | grep -nw "${pattern__input}" | cut -d"${DOCKER__COLON}" -f1`
+
+#     #Check if 'lineNum_match = 0'.
+#     #If true, then exit function, because no match was found.
+#     if [[ ${lineNum_match} -eq ${DOCKER__NUMOFMATCH_0} ]]; then
+#         echo "${arr__input[@]}"
+
+#         return
+#     fi
+
+#     #2. Get the array-index:
+#     index_match=$((lineNum_match - 1))
+
+#     #Check if 'index_match = 0'.
+#     #If true, then exit function, because 'pattern__input' is already on the top.
+#     if [[ ${index_match} -eq ${DOCKER__NUMOFMATCH_0} ]]; then
+#         echo "${arr__input[@]}"
+
+#         return
+#     fi
+
+#     #Get the 'numOfElements_leftOfMatch' and 'startIndex_rightOfMatch'
+#     numOfElements_leftOfMatch=$((lineNum_match - 1))
+#     startIndex_rightOfMatch=$((index_match + 1))
+
+#     #Get 'arr_leftOfMatch'
+#     arr_leftOfMatch=("${arr__input[@]:0:numOfElements_leftOfMatch}")
+
+#     #Check if 'startIndex_rightOfMatch <= arrIndex_max'
+#     #If false, then no need to get 'arr_rightOfMatch'
+#     if [[ ${startIndex_rightOfMatch} -le ${arrIndex_max} ]]; then
+#         #Get 'arr_rightOfMatch'
+#         arr_rightOfMatch=("${arr__input[@]:startIndex_rightOfMatch}")
+#     fi
+
+#     #Compose 'arr_new'
+#     arr_new[0]=${arr__input[index_match]}
+#     arr_new+=(${arr_leftOfMatch[@]})
+#     arr_new+=(${arr_rightOfMatch[@]})
+
+#     #Output
+#     echo "${arr_new[@]}"
+# }
+
+function checkFor_leading_partialMatch_of_pattern_within_array__func() {
+    #Turn-off Expansion
+    disable_expansion__func
+
+    #Input Args
+    local pattern__input="${1}"
+    shift
+    local arr__input=("$@")
+
+    #Define variables
+    local arrItem=${DOCKER__EMPTYSTRING}
+    local isFound=${DOCKER__EMPTYSTRING}
+    local ret="false"
+
+    #Loop thru array
+    for arrItem in "${arr__input[@]}"
+    do   
+        isFound=`echo "${pattern__input}" | grep "^${arrItem}"`
+        if [[ ! -z "${isFound}" ]]; then
+            ret="true"
+
+            break
+        fi
+    done
+
+    #Output
+    echo "${ret}"
+}
+
+function array_count_numOf_elements__func() {
+    #Input args
+    local dataArr__input=("$@")
+
+    #Check number of elements WITHOUT empty lines!!!
+    local ret=`printf "%s\n" ${dataArr__input[@]} | grep -c '[^[:space:]]'`
+
+    #Output
+    echo "${ret}"
+}
+
 function array_find_and_move_element_toTop__func() {
     #Input args
     local pattern__input=${1}
@@ -692,6 +969,196 @@ function array_find_and_move_element_toTop__func() {
 
     #Output
     echo "${arr_new[@]}"
+}
+
+function array_subst_string__func() {
+    #Input args
+    local oldString__input=${1}
+    local newSubString__input=${2}
+    shift
+    shift
+    local dataArr__input=("$@")
+
+    #Replace all 'oldString__input' with 'newSubString__input'
+    local ret=`printf '%s\n' "${dataArr__input[@]}" | sed "s/${oldString__input}/${newSubString__input}/g"`
+
+    #Output
+    #Note: the output is an array-STRING!!!
+    echo "${ret[@]}"
+}
+
+function checkForMatch_of_pattern_within_array__func() {
+    #Input args
+    local pattern__input=${1}
+    shift
+    local dataArr__input=("$@")
+
+    #Loop thru array-elements and find a match
+    local dataArrItem=${DOCKER__EMPTYSTRING}
+    local ret=false
+    for dataArrItem in "${dataArr__input[@]}"
+    do
+        if [[ "${pattern__input}" == "${dataArrItem}" ]]; then
+            ret=true
+
+            break
+        fi
+    done
+
+    #Output
+    echo "${ret}"
+}
+
+function combine_two_arrays_of_same_length_and_writeTo_file__func() {
+    #Input args
+    local delimiterChar__input=${1}
+    local delimiterColor__input=${2}
+    local outputFpath__input=${3}   #write the output to this file
+    local flag_count_emptyLines_isEnabled__input=${4}
+    shift
+    shift
+    shift
+    shift
+    #Remark:
+    #   When passing two arrays into this function,...
+    #   These two arrays are combined into one array.
+    #Example:
+    #   arr1=("one" "two" "three")
+    #   arr2=("four" "five" "six")
+    #   arrTot__input=("one" "two" "three" "four" "five" "six")
+    local arrTot__input=("$@")
+
+
+    #Remove file (if present)
+    if [[ -f ${outputFpath__input} ]]; then
+        rm ${outputFpath__input}
+    fi
+
+
+    #Get length of 'arrTot__input'
+    local arrTotLen=${#arrTot__input[@]}
+
+    #Check if flag is set to 'false'
+    if [[ ${flag_count_emptyLines_isEnabled__input} == false ]]; then
+        #Recalculate array-length (without empty lines)
+        arrTotLen=`array_count_numOf_elements__func "${arrTot__input[@]}"`
+    fi
+    local arrTotLen_half=$((arrTotLen/2))
+
+
+    #Initialization
+    local arr1=()
+    local arr2=()
+    local count=0
+    local index=0
+
+    #Split 'arrTot__input' into two arrays
+    # #First half:
+    # local arr1=(`echo "${arrTot__input[@]:0:$((${#arrTot__input[@]} / 2 ))}"`)
+    # #Second half:
+    # local arr2=(`echo "${arrTot__input[@]:$((${#arrTot__input[@]} / 2 ))}"`)
+    for arrTotItem in "${arrTot__input[@]}"
+    do
+        #Add 'arrTotItem' to 'arr1/arr2'
+        if [[ ${count} -lt ${arrTotLen_half} ]]; then
+            arr1[index]="${arrTotItem}"
+        else
+            arr2[index]="${arrTotItem}"
+        fi
+
+        #Incremenet counter
+        count=$((count + 1))
+
+        #Handle 'index'
+        if [[ ${count} -eq ${arrTotLen_half} ]]; then
+            #Reset index
+            index=0
+        else
+            #Increment index
+            index=$((index + 1))
+        fi
+    done
+
+
+    #Get array-lengths
+    local arr1Len=${#arr1[@]}
+    local arr2Len=${#arr2[@]}
+
+    #Check if 'arr1Len != arr2Len'
+    if [[ ${arr1Len} -ne ${arr2Len} ]]; then
+        echo "${ret[@]}"
+
+        return
+    fi
+
+
+    #Check if 'delimiterColor__input' is an Empty String
+    if [[ -z "${delimiterChar__input}" ]]; then
+        delimiterChar__input=${DOCKER__COLON}
+    fi
+
+
+    #Combine arrays
+    for ((i=0; i<${arr1Len}; i++ ))
+    do 
+        if [[ -z "${delimiterColor__input}" ]]; then
+            echo "${arr1[${i}]}${delimiterChar__input}${arr2[${i}]}" >> \
+                        ${outputFpath__input}
+        else
+            echo "${arr1[${i}]}${delimiterColor__input}${delimiterChar__input}${DOCKER__NOCOLOR}${arr2[${i}]}" >> \
+                        ${outputFpath__input}
+        fi
+    done
+}
+
+function show_array_w_menuTitle_w_confirmation__func() {
+    #Input args
+    local menuTitle__input=${1}
+    local confirmation_choices__input=${2}
+    local confirmation_regEx__input=${3}
+    local prepend_numOfLines__input=${4}
+    local confirmation_timeout__input=${5}
+    local confirmation_prepend_numOfLines__input=${6}
+    local confirmation_append_numOfLines__input=${7}
+    shift
+    shift
+    shift
+    shift
+    shift
+    shift
+    shift
+    local dataArr__input=("$@")
+
+    #Move-down cursor
+    moveDown_and_cleanLines__func "${prepend_numOfLines__input}"
+
+    #Print horizontal line
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+
+    #Print menu-title
+    show_centered_string__func "${menuTitle__input}" "${DOCKER__TABLEWIDTH}"
+
+    #Print horizontal line
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+
+    #Print message
+    for dataArrItem in "${dataArr__input[@]}"
+    do
+        echo -e "${DOCKER__FOURSPACES}${dataArrItem}"
+    done
+
+    #Move-down and clean 1 line
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+    #Print horizontal line
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+
+    #Show press-any-key dialog
+    confirmation_w_timer__func "${confirmation_choices__input}" \
+                        "${confirmation_regEx__input}" \
+                        "${confirmation_timeout__input}" \
+                        "${confirmation_prepend_numOfLines__input}" \
+                        "${confirmation_append_numOfLines__input}"
 }
 
 
@@ -915,7 +1382,7 @@ function functionKey_detection__func() {
 
 
 
-#---FILES-RELATED FUNCTIONS
+#---FILE RELATED FUNCTIONS
 function append_caretReturn_ifNotPresent_within_file__func() {
     disable_expansion__func
 
@@ -966,8 +1433,8 @@ function container_checkIf_dir_exists__func() {
 	local dir__input="${2}"
 
 	#Define docker command
-    local bin_bash_dir=/bin/bash
-    local docker_exec_cmd="docker exec -t ${containerID__input} ${bin_bash_dir} -c"
+    local docker__bin_bash__dir=/bin/bash
+    local docker_exec_cmd="docker exec -t ${containerID__input} ${docker__bin_bash__dir} -c"
 
     # #Prepend backslash in front of special chars (e.g., backslash, space, asterisk, etc.)
     # local dir_prepended_backslash=`prepend_backSlash_inFrontOf_specialChars__func \
@@ -1051,8 +1518,8 @@ function container_checkIf_file_exists__func() {
 	local fpath__input=${2}
 
 	#Define variables
-    local bin_bash_dir=/bin/bash
-    local docker_exec_cmd="docker exec -t ${containerID__input} ${bin_bash_dir} -c"
+    local docker__bin_bash__dir=/bin/bash
+    local docker_exec_cmd="docker exec -t ${containerID__input} ${docker__bin_bash__dir} -c"
 
     #Check if directory exists
     local ret_raw=`${docker_exec_cmd} "[ -f "${fpath__input}" ] && echo true || echo false"`
@@ -1197,6 +1664,25 @@ function get_dirname_from_specified_path__func() {
     echo -e "${ret}"
 }
 
+function get_numOfLines_wo_emptyLines_in_file__func() {
+    #Input args
+    local targetFpath__input=${1}
+
+    #Define variables
+    local ret=0
+
+    #Check if file exists
+    if [[ ! -f ${targetFpath__input} ]]; then
+        echo "${ret}"
+    fi
+
+    #Check number of lines WITHOUT empty lines!!!
+    ret=`<${targetFpath__input} grep -c '[^[:space:]]'`
+
+    #Output
+    echo "${ret}"
+}
+
 function get_output_from_file__func() {
     #Input args
     outputFpath__input=${1}
@@ -1224,6 +1710,28 @@ function remove_allEmptyLines_within_file__func() {
 
     #Remove all empty lines
     sed -i '/^$/d' ${targetFpath__input}
+}
+
+function remove_all_lines_from_file_after_a_specified_lineNum__func() {
+    #Input args
+    local targetFpath__input="${1}"
+    local tmpFpath__input="${2}"
+    local lineNumMax__input="${3}"
+
+    #Check if the number of linies of file 'targetFpath__input'
+    local targetFpath_numOfLines=`cat ${targetFpath__input} | wc -l`
+    #Check if 'targetFpath_numOfLines < lineNumMax__input'
+    #If true, then do nothing and exit function
+    if [[ ${targetFpath_numOfLines} -le ${lineNumMax__input} ]]; then
+        return
+    fi
+
+    #Remove all lines which follows AFTER 'lineNumMax__input'...
+    #...and write to a temporary file 'tmpFpath__input'
+    head -n${lineNumMax__input} "${targetFpath__input}" > ${tmpFpath__input}
+
+    #Copy 'tmpFpath__input' to 'targetFpath__input'
+    cp ${tmpFpath__input} ${targetFpath__input}
 }
 
 function retrieve_files_from_specified_dir_basedOn_matching_patterns__func() {
@@ -1318,6 +1826,25 @@ function subst_trailing_string_with_another_string_within_file__func() {
     sed -i "s/${oldSubString__input}$/${newSubString__input}/g" "${targetFpath__input}"
 }
 
+function write_array_to_file__func() {
+    #Input args
+    local outputFpath__input=${1}
+    shift
+    local dataArr__input=("$@")
+
+    #Remove file (if present)
+    if [[ -f ${outputFpath__input} ]]; then
+        rm ${outputFpath__input}
+    fi
+
+    #Write
+    local dataArrItem=${DOCKER__EMPTYSTRING}
+    for dataArrItem in "${dataArr__input[@]}"
+    do
+        echo "${dataArrItem}" >> ${outputFpath__input}
+    done
+}
+
 function write_data_to_file__func() {
     #Input args
     string__input=${1}
@@ -1325,6 +1852,389 @@ function write_data_to_file__func() {
 
     #Write
     echo "${string__input}" > ${targetFpath__input}
+}
+
+
+
+#---GIT FUNCTIONS
+function git__checkIf_branch_alreadyExists__func() {
+    #Input args
+    local branchName_input=${1}
+
+    #Check if 'branchName_input' already exists
+    local stdOutput=`${GIT__CMD_GIT_BRANCH} | grep -w "${branchName_input}" 2>&1`
+    if [[ ! -z ${stdOutput} ]]; then #contains data
+        echo ${DOCKER__TRUE}
+    else    #contains no data
+        echo ${DOCKER__FALSE}
+    fi
+}
+
+function git__checkIf_branch_isCheckedOut__func() {
+    #Input args
+    local branchName_input=${1}
+
+    #Check if 'branchName_input' already exists
+    local stdOutput=`${GIT__CMD_GIT_BRANCH} | grep -w "${branchName_input}" | grep "${DOCKER__ESCAPED_ASTERISK}" 2>&1`
+    if [[ ! -z ${stdOutput} ]]; then #contains data
+        echo ${DOCKER__TRUE}
+    else    #contains no data
+        echo ${DOCKER__FALSE}
+    fi
+}
+
+function git__checkIf_branch_isPushed__func() {
+    #Input args
+    local branchName_input=${1}
+
+    #Check if 'branchName_input' already exists
+    # local stdOutput=`${GIT__CMD_GIT_LS_REMOTE} | grep "${GIT__PATTERN_HEADS}" | rev | cut -d"/" -f1 | rev | grep "^${branchName_input}$"`
+    local stdOutput=`${GIT__CMD_GIT_BRANCH} -r | cut -d"/" -f2 | awk '{print $1}' | grep "^${branchName_input}$"`
+    if [[ ! -z ${stdOutput} ]]; then #contains data
+        echo ${GIT__PUSHED}
+    else    #contains no data
+        echo ${GIT__UNPUSHED}
+    fi
+}
+
+function git__checkIf_tag_contains_specified_branchName__func() {
+    #Input args
+    local branchName__input=${1}
+    local tag__input=${2}
+
+    #Check
+    #Remarks:
+    #   sed 's/*//g': convert asterisk (*) to Empty String
+    #   sed sed 's/^ *//g': convert leading spaces to Empty String
+    #   sed 's/ *$//g': convert trailing spaces to Empty String
+    local stdOutput=`${GIT__CMD_GIT_BRANCH} --contains tags/${tag__input} | \
+                        sed 's/*//g' | \
+                        sed 's/^ *//g' | \
+                        sed 's/ *$//g' | \
+                        grep "^${branchName__input}$"`
+    if [[ ! -z ${stdOutput} ]]; then #contains data
+        echo ${DOCKER__TRUE}
+    else    #contains no data
+        echo ${DOCKER__FALSE}
+    fi
+}
+
+function git__check_local_if_tag_isAlready_inUse___func() {
+    local tag__input=${1}
+
+    #Check if 'branchName_input' already exists
+    local stdOutput=`${GIT__CMD_GIT_TAG} | grep "^${tag__input}$" 2>&1`
+    if [[ ! -z ${stdOutput} ]]; then #contains data
+        echo ${DOCKER__TRUE}
+    else    #contains no data
+        echo ${DOCKER__FALSE}
+    fi   
+}
+
+function git__check_remote_if_tag_isAlready_inUse__func() {
+    local tag__input=${1}
+
+    #Check if 'branchName_input' already exists
+    local stdOutput=`${GIT__CMD_GIT_LS_REMOTE} --tags origin | \
+                        grep "${GIT__PATTERN_TAGS}" | \
+                        rev | \
+                        cut -d"/" -f1 | \
+                        rev | \
+                        grep "^${tag__input}$" 2>&1`
+    if [[ ! -z ${stdOutput} ]]; then #contains data
+        echo ${DOCKER__TRUE}
+    else    #contains no data
+        echo ${DOCKER__FALSE}
+    fi   
+}
+
+function git__get_current_branchName__func() {
+    #Get branch-name
+    local ret=`git symbolic-ref --short -q HEAD`
+
+    #Output
+    echo "${ret}"
+}
+
+function git__get_full_commitHash_for_specified_tag__func() {
+    #Input args
+    local tag__input=${1}
+    local location__input=${2}  #GIT__LOCATION_LOCAL or GIT__LOCATION_REMOTE
+
+    #Define variables
+    local ret=${DOCKER__EMPTYSTRING}
+
+    #Check if 'tag__input' is an Empty String
+    if [[ -z ${tag__input} ]]; then
+        echo "${ret}"
+
+        return
+    fi
+
+    #Check if 'location__input' is NOT 'GIT__LOCATION_LOCAL' and 'GIT__LOCATION_REMOTE'
+    if [[ "${location__input}" != "${GIT__LOCATION_LOCAL}" ]] && \
+            [[ "${location__input}" != "${GIT__LOCATION_REMOTE}" ]]; then
+        echo "${ret}"
+
+        return
+    fi
+
+    #FIRST: try to retrieve the full commit-hash by including the dereference-pattern (^{})
+    if [[ ${location__input} == ${GIT__LOCATION_LOCAL} ]]; then
+        ret=`${GIT__CMD_GIT_SHOW_REF} --tags | grep "\^{}" | grep "${tag__input}" | awk '{print $1}'`
+    else
+        ret=`${GIT__CMD_GIT_LS_REMOTE} --tags | grep "\^{}" | grep "${tag__input}" | awk '{print $1}'`
+    fi
+
+    #SECOND: if including the dereference-pattern (^{}) does NOT give any result, then...
+    #        ...try without the dereference-pattern (^{}).
+    if [[ -z ${ret} ]]; then
+        if [[ ${location__input} == ${GIT__LOCATION_LOCAL} ]]; then
+            ret=`${GIT__CMD_GIT_SHOW_REF} --tags | grep "${tag__input}" | awk '{print $1}'`
+        else
+            ret=`${GIT__CMD_GIT_LS_REMOTE} --tags |  grep "${tag__input}" | awk '{print $1}'`
+        fi
+    fi
+
+    #Output
+    echo "${ret}"
+}
+
+function git__get_tag_for_specified_branchName__func() {
+    #Input args
+    local branchName__input=${1}
+    local flag_include_remoteTags_isEnabled__input=${2}
+
+    #Get list of all local tags and write to array
+    local localTags_arr=()
+    readarray -t localTags_arr < <(${GIT__CMD_GIT_SHOW_REF} --tags | rev | cut -d"/" -f1 | rev)
+
+    #Get list of all remote tags and write to array
+    local remoteTags_arr=()
+    if [[ ${flag_include_remoteTags_isEnabled__input} == true ]]; then
+        readarray -t remoteTags_arr < <(${GIT__CMD_GIT_LS_REMOTE} --tags | rev | cut -d"/" -f1 | rev)
+    fi
+
+    #Combine arrays
+    local totalTags_arr=("${localTags_arr[@]}" "${remoteTags_arr[@]}")
+
+    #Sort and Uniq
+    local totalTags_sortUniq_string=`printf "%s\n" "${totalTags_arr[@]}" | sort | uniq | sed 's/\n//g'`
+
+    #Convert string to array
+    local totalTags_sortUniq_arr=(`echo ${totalTags_sortUniq_string}`)
+
+    #Loop thru array and check for each array-element (aka tag) if it contains the 'branchName__input'
+    local match_isFound=false
+    local totalTags_sortUniq_arrItem=${DOCKER__EMPTYSTRING}
+    local ret=${DOCKER__EMPTYSTRING}
+    for totalTags_sortUniq_arrItem in "${totalTags_sortUniq_arr[@]}"
+    do
+        match_isFound=`git__checkIf_tag_contains_specified_branchName__func \
+                        "${branchName__input}" \
+                        "${totalTags_sortUniq_arrItem}"`
+        if [[ ${match_isFound} == true ]]; then
+            ret=${totalTags_sortUniq_arrItem}
+
+            break
+        fi
+    done
+
+    #Output
+    echo "${ret}"
+}
+
+function git__get_tag_for_specified_commitHash__func() {
+    #Input args
+    local abbrevCommitHash__input=${1}
+
+    #Get tag
+    local ret=`git log -a --pretty=oneline --graph | git name-rev --stdin --tag | \
+                        grep "${abbrevCommitHash__input}"| \
+                        grep "tags" | \
+                        cut -d"(" -f2 | \
+                        cut -d")" -f1 | \
+                        cut -d"/" -f2- | \
+                        cut -d"^" -f1 | \
+                        cut -d"~" -f1 | \
+                        sort | \
+                        uniq`
+
+    #Output
+    echo "${ret}"
+}
+
+function git__get_tags__func() {
+    #Input args
+    local location__input=${1}  #GIT__LOCATION_LOCAL or GIT__LOCATION_REMOTE
+
+    #Check if 'location__input' is NOT 'GIT__LOCATION_LOCAL' and 'GIT__LOCATION_REMOTE'
+    if [[ "${location__input}" != "${GIT__LOCATION_LOCAL}" ]] && \
+            [[ "${location__input}" != "${GIT__LOCATION_REMOTE}" ]]; then
+        echo "${ret}"
+
+        return
+    fi
+
+    #Get all tags
+    local ret=${DOCKER__EMPTYSTRING}
+    if [[ ${location__input} == ${GIT__LOCATION_LOCAL} ]]; then
+        ret=`${GIT__CMD_GIT_SHOW_REF} --tags | rev | cut -d"/" -f1 | rev | sort | uniq | tr -d "[:blank:]"`
+    else    #git_location__input = GIT__LOCATION_REMOTE
+        #Remark:
+        #   cut -d "^" -f2-: used to remove the derefenced symbols (^{}) behind the tags (e.g. vtest123^{})
+        ret=`${GIT__CMD_GIT_LS_REMOTE} --tags | rev | cut -d "^" -f2- | cut -d"/" -f1 | rev | sort | uniq | tr -d "[:blank:]"`
+    fi
+
+    #Output
+    echo "${ret}"
+}
+
+function git__get_branches_for_specified_commitHash__func() {
+    #Input args
+    local abbrevCommitHash__input=${1}
+    local location__input=${2}  #GIT__LOCATION_LOCAL or GIT__LOCATION_REMOTE
+
+    #Check if 'location__input' is NOT 'GIT__LOCATION_LOCAL' and 'GIT__LOCATION_REMOTE'
+    if [[ "${location__input}" != "${GIT__LOCATION_LOCAL}" ]] && \
+            [[ "${location__input}" != "${GIT__LOCATION_REMOTE}" ]]; then
+        echo "${ret}"
+
+        return
+    fi
+
+    #Choose command
+    if [[ ${git_location__input} == ${GIT__LOCATION_LOCAL} ]]; then
+        grep_cmd="grep -v"  #-v means exclude
+    else    #git_location__input = GIT__LOCATION_REMOTE
+        grep_cmd="grep"
+    fi
+
+    #Get all tags
+    local ret=`${GIT__CMD_GIT_BRANCH} -a --contains "${docker__full_commitHash}" | \
+                        ${grep_cmd} "${GIT__PATTERN_REMOTES}" | \
+                        rev | \
+                        cut -d"/" -f1 | \
+                        rev | \
+                        sort | \
+                        uniq | \
+                        tr -d "[:blank:]"`
+
+    #Output
+    echo "${ret}"
+}
+
+function git__log_for_unpushed_local_commits__func() {
+    #Remark:
+    #   1. This function retrieves the git-information
+    #      for UNPUSHED commits to REMOTE
+    #   2. branchName__input -> can NOT be an Empty String
+    #   3. last_nth_commit__input: last (n) commits -> can be an Empty String
+    #   4. placeHolder__input -> can be an Empty String
+    #Reference:
+    #   See link: https://git-scm.com/docs/pretty-formats
+    #Input args
+    local branchName__input=${1}
+    local last_nth_commit__input=${2} 
+    local placeHolder__input=${3}
+
+    #Define variables
+    local ret=${DOCKER__EMPTYSTRING}
+
+    #Check if 'branchName__input' and 'last_nth_commit__input' are Empty Strings
+    if [[ -z ${branchName__input} ]]; then
+        echo "${ret}"
+
+        return
+    fi
+
+    #Retrieve info
+    if [[ -z "${last_nth_commit__input}" ]]; then
+        ret=`git log ${branchName__input} --not --remotes --pretty=format:${placeHolder__input}`
+    else
+        ret=`git log -${last_nth_commit__input} ${branchName__input} --not --remotes --pretty=format:${placeHolder__input}`
+    fi
+     
+    #Output
+    echo "${ret}"
+}
+
+function git__log_for_pushed_and_unpushed_commits__func() {
+    #Remark:
+    #   1. This function retrieves the git-information
+    #      for PUSHED and UNPUSHED commits.
+    #   2. branchName__input -> can be an Empty String
+    #   3. last_nth_commit__input: last (n) commits -> can be an Empty String
+    #   4. placeHolder__input -> can NOT be an Empty String
+    #Reference:
+    #   See link: https://git-scm.com/docs/pretty-formats
+    #Input args
+    local branchName__input=${1}
+    local last_nth_commit__input=${2} 
+    local placeHolder__input=${3}
+
+    #Compose command
+    local cmd="git log"
+    if [[ ! -z "${last_nth_commit__input}" ]]; then
+        cmd="${cmd} -${last_nth_commit__input}"
+    fi
+
+    if [[ ! -z "${branchName__input}" ]]; then
+        cmd="${cmd} ${branchName__input}"
+    fi
+
+    if [[ ! -z "${placeHolder__input}" ]]; then
+        cmd="${cmd} --pretty=format:${placeHolder__input}"
+    fi
+
+    #Retrieve info
+    local ret=`eval ${cmd}`
+
+    #Output
+    echo "${ret}"
+}
+
+function git__retrieve_parent_branchName__func() {
+    #Retrieve parent branch-name
+    local ret=$(git show-branch -a | \
+                        grep '\*' | \
+                        grep -v `git rev-parse --abbrev-ref HEAD` | \
+                        head -n1 | \
+                        sed 's/.*\[\(.*\)\].*/\1/' | \
+                        sed 's/[\^~].*//')
+
+    #Output
+    echo "${ret}"
+}
+
+function git__retrieve_branchName_for_specified_tag__func() {
+    #Input args
+    local tag__input=${1}
+
+    #Get branch-name
+    local ret=${DOCKER__EMPTYSTRING}
+    ret=`${GIT__CMD_GIT_BRANCH} --contains tags/${tag__input} | \
+                        sed 's/*//g' | \
+                        sed 's/^ *//g' | \
+                        sed 's/ *$//g'`
+    #Output
+    echo "${ret}"
+}
+
+function git__retrieve_tag_for_specified_branchName__func() {
+    #Input args
+    local branchName__input=${1}
+
+    #Get abbreviated commit hash
+    local abbrevCommitHash=`git__log_for_pushed_and_unpushed_commits__func "${DOCKER__EMPTYSTRING}" \
+                        "${DOCKER__EMPTYSTRING}" \
+                        "${GIT__PLACEHOLDER_ABBREV_COMMIT_HASH}"`
+
+    #Get tag
+    local ret=`git__get_tag_for_specified_commitHash__func "${abbrevCommitHash}"`
+
+    #Output
+    echo "${ret}"
 }
 
 
@@ -1474,30 +2384,6 @@ function center_string_and_writeTo_file__func() {
     #Print text including Leading Empty Spaces
     printf "%s" "${emptySpaces_string}${string__input}" >> ${writeToThisFile__input}
 }
-function show_cmdOutput_w_menuTitle__func() {
-    #Input args
-    local menuTitle__input=${1}
-    local dockerCmd__input=${2}
-
-    #Show list
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-    show_centered_string__func "${menuTitle__input}" "${DOCKER__TABLEWIDTH}"
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-    
-    if [[ ${dockerCmd__input} == ${docker__ps_a_cmd} ]]; then
-        ${docker__containerlist_tableinfo__fpath}
-    else
-        ${docker__repolist_tableinfo__fpath}
-    fi
-
-    #Move-down cursor
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-
-    #Print
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-    echo -e "${DOCKER__FOURSPACES_QUIT_CTRL_C}"
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-}
 
 function show_centered_string__func() {
     #Input args
@@ -1555,7 +2441,688 @@ function show_errMsg_wo_menuTitle_and_exit_func() {
     exit__func "${DOCKER__EXITCODE_99}" "${DOCKER__NUMOFLINES_0}"
 }
 
-function show_pathContent_w_keyInput__func() {
+function show_header__func() {
+    #Input args
+    local menuTitle__input=${1}
+    local tableWidth__input=${2}
+    local bg_color__input=${3}
+    local prepend_numOfLines__input=${4}
+    local append_numOfLines__input=${5}
+
+    #Move-down and clean
+    moveDown_and_cleanLines__func "${prepend_numOfLines__input}"
+
+    #Print title
+    show_centered_string__func "${menuTitle__input}" "${tableWidth__input}" "${bg_color__input}"
+
+    #Move-down and clean
+    moveDown_and_cleanLines__func "${append_numOfLines__input}"
+}
+
+function show_leadingAndTrailingStrings_separatedBySpaces__func() {
+    #Input args
+    local leadStr__input=${1}
+    local trailStr__input=${2}
+    local tableWidth__input=${3}
+
+    #Get string 'without visiable' color characters
+    local leadStr_input_wo_colorChars=`echo "${leadStr__input}" | sed "s,\x1B\[[0-9;]*m,,g"`
+    local trailStr_input_wo_colorChars=`echo "${trailStr__input}" | sed "s,\x1B\[[0-9;]*m,,g"`
+
+    #Get string length
+    local leadStr_input_wo_colorChars_len=${#leadStr_input_wo_colorChars}
+    local trailStr_input_wo_colorChars_len=${#trailStr_input_wo_colorChars}
+
+    #Calculated the number of spaces to-be-added
+    local numOf_spaces=$(( tableWidth__input-(leadStr_input_wo_colorChars_len+trailStr_input_wo_colorChars_len) ))
+
+    #Create a string containing only EMPTY SPACES
+    local spaces_leading=`duplicate_char__func "${DOCKER__ONESPACE}" "${numOf_spaces}"`
+
+    #Print text including Leading Empty Spaces
+    echo -e "${leadStr__input}${spaces_leading}${trailStr__input}"
+}
+
+function show_msg_only__func() {
+    #Input args
+    local msg__input=${1}
+    local prepend_numOfLines__input=${2}
+    local append_numOfLines__input=${3}
+
+    #Initialization
+    if [[ -z ${prepend_numOfLines__input} ]]; then
+        prepend_numOfLines__input=${DOCKER__NUMOFLINES_0}
+    fi
+
+    if [[ -z ${append_numOfLines__input} ]]; then
+        append_numOfLines__input=${DOCKER__NUMOFLINES_0}
+    fi
+
+    #Prepend empty line
+    moveDown_and_cleanLines__func "${prepend_numOfLines__input}"
+
+    #Print
+    echo -e "${msg__input}"
+
+    #Append empty line
+    moveDown_and_cleanLines__func "${append_numOfLines__input}"
+}
+
+function show_msg_w_menuTitle_w_pressAnyKey_w_ctrlC_func() {
+    #Input args
+    local menuTitle__input=${1}
+    local msg__input=${2}
+    local exitCode__input=${3}
+
+    #Horizontal line
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+
+    #Print 'menuTitle__input'
+    show_centered_string__func "${menuTitle__input}" "${DOCKER__TABLEWIDTH}"
+
+    #Horizontal line
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    
+    #Move-down and clean 1 line
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+    #Print message
+    show_centered_string__func "${msg__input}" "${DOCKER__TABLEWIDTH}"
+    
+    #Move-down and clean 1 line
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+    #Horizontal line
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+
+    #Move-down and clean 1 line
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+    #Show press any key
+    press_any_key__func "${DOCKER__TIMEOUT_10}" \
+                        "${DOCKER__NUMOFLINES_0}" \
+                        "${DOCKER__NUMOFLINES_0}"
+
+    #Exit
+    exit__func "${exitCode__input}" "${DOCKER__NUMOFLINES_2}"
+}
+
+function show_msg_w_menuTitle_only_func() {
+    #Input args
+    local menuTitle__input=${1}
+    local msg__input=${2}
+    local msg_indent__input=${3}    #If NO indent, specify 'DOCKER__ZEROSPACE' (however, DO NOT use DOCKER__EMPTYSTRING)
+    local prepend_numOfLines__input=${4}    #add number of empty lines BEFORE table
+    local afterMsg_numOfLines__input=${5}   #add number of empty lines AFTER 'msg__input'
+    local append_numOfLines__input=${6} #add number of empty lines AFTER table
+    local tibboHeader_prepend_numOfLines__input=${7}
+
+
+    #Initialization
+    if [[ -z ${prepend_numOfLines__input} ]]; then
+        prepend_numOfLines__input=${DOCKER__NUMOFLINES_0}
+    fi
+
+    if [[ -z ${afterMsg_numOfLines__input} ]]; then
+        afterMsg_numOfLines__input=${DOCKER__NUMOFLINES_0}
+    fi
+
+
+    if [[ -z ${append_numOfLines__input} ]]; then
+        append_numOfLines__input=${DOCKER__NUMOFLINES_0}
+    fi
+
+    #Print Tibbo-title (if applicable)
+    if [[ ! -z ${tibboHeader_prepend_numOfLines__input} ]]; then
+        load_tibbo_title__func "${tibboHeader_prepend_numOfLines__input}"
+    else
+        moveDown_and_cleanLines__func "${prepend_numOfLines__input}"
+    fi
+
+    #Horizontal line
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+
+    #Print 'menuTitle__input'
+    show_centered_string__func "${menuTitle__input}" "${DOCKER__TABLEWIDTH}"
+
+    #Horizontal line
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    
+    #CHeck if 'msg_indent__input' is an Empty String or Not
+    if [[ -z ${msg_indent__input} ]]; then  #is an Empty String
+        show_centered_string__func "${msg__input}" "${DOCKER__TABLEWIDTH}"
+    else    #is NOT an Empty String
+        #Check if 'msg_indent__input' is 'DOCKER__ZEROSPACE'
+        #Remark:
+        #   This means that NO indent should be applied
+        if [[ ${msg_indent__input} == ${DOCKER__ZEROSPACE} ]]; then
+            msg_indent__input=${DOCKER__EMPTYSTRING}
+        fi
+        echo -e "${msg_indent__input}${msg__input}"
+    fi
+    
+    #Append 1 emoty line
+    moveDown_and_cleanLines__func "${afterMsg_numOfLines__input}"
+
+    #Horizontal line
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+
+    #Append empty lines
+    moveDown_and_cleanLines__func "${append_numOfLines__input}"
+}
+
+function show_msg_wo_menuTitle_w_PressAnyKey__func() {
+    #Input args
+    local msg__input=${1}
+    local prepend_numOfLines__input=${2}
+    local confirmation_timeout__input=${3}
+    local confirmation_prepend_numOfLines__input=${4}
+    local confirmation_append_numOfLines__input=${5}
+
+    #Move-down cursor
+    moveDown_and_cleanLines__func "${prepend_numOfLines__input}"
+
+    #Print
+    echo -e "${msg__input}"
+
+    #Show press-any-key dialog
+    press_any_key__func "${confirmation_timeout__input}" \
+                        "${confirmation_prepend_numOfLines__input}" \
+                        "${confirmation_append_numOfLines__input}"
+}
+
+function show_array_elements_w_menuTitle__func() {
+    #Input args
+    local menuTitle__input=${1}
+    local menuOptions__input=${2}
+    local dataArr_pageNum__input=${3}    #page-number
+    local dataArr_pageSize__input=${4}  #number of lines to be shown
+    shift
+    shift
+    shift
+    shift
+    local dataArr__input=("$@")
+
+
+    #Hide cursor
+    cursor_hide__func
+
+    #Disable keyboard-input
+    disable_keyboard_input__func
+
+
+    #Print horizontal line
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    #Print menu-title
+    show_centered_string__func "${menuTitle__input}" "${DOCKER__TABLEWIDTH}"
+    #Print horizontal line
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+
+
+    #Get the array-length
+    local dataArrLen=${#dataArr__input[@]}
+
+
+    #set the default flag value
+    local flag_showAll=false
+
+    #Check if 'dataArr_pageNum__input' and 'dataArr_pageSize__input' are Empty Strings
+    if [[ -z ${dataArr_pageNum__input} ]] || [[ -z ${dataArr_pageSize__input} ]]; then
+        flag_showAll=true
+    fi
+
+    #Check if 'dataArr_pageSize__input => dataArrLen'
+    if [[ ${dataArr_pageSize__input} -ge ${dataArrLen} ]]; then
+        flag_showAll=true
+    fi
+
+
+    #Calculate the 'dataArr_lineNum_start' and 'dataArr_lineNum_end'
+    local dataArr_lineNum_start=$((((dataArr_pageNum__input - 1)*dataArr_pageSize__input) + 1))
+    local dataArr_lineNum_end=$((dataArr_pageNum__input*dataArr_pageSize__input))
+    if [[ ${dataArr_lineNum_end} -gt ${dataArrLen} ]]; then
+        dataArr_lineNum_end=${dataArrLen}
+    fi
+
+
+    #Show array-elements
+    local dataArr_lineNum=${DOCKER__LINENUM_0}
+    local print_lineNum=${DOCKER__LINENUM_0}
+    for dataArrItem in "${dataArr__input[@]}"
+    do
+        #Increment array-linenumber
+        dataArr_lineNum=$((dataArr_lineNum + 1))
+ 
+        #Check if 'dataArr_lineNum > dataArr_lineNum_end'
+        if [[ ${dataArr_lineNum} -gt ${dataArr_lineNum_end} ]] && [[ ${flag_showAll} == false ]]; then
+            break
+        fi
+
+        #Check if 'dataArr_lineNum => dataArr_lineNum_start'
+        if [[ ${dataArr_lineNum} -ge ${dataArr_lineNum_start} ]]; then
+            echo "${DOCKER__FOURSPACES}${dataArrItem}"
+
+            print_lineNum=$((print_lineNum + 1))
+        fi
+    done
+
+
+    #Fill-up table with empty lines
+    while [[ ${print_lineNum} -lt ${dataArr_pageSize__input} ]]
+    do
+        #Print an Empty Line
+        echo "${DOCKER__EMPTYSTRING}"
+
+        #increment line-number
+        print_lineNum=$((print_lineNum + 1))
+    done
+
+
+    #Move-down cursor
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+
+    #Show 'prev' and 'next'
+    if [[ ${flag_showAll} == false ]]; then
+        local prev_only_print="${DOCKER__ONESPACE_PREV}"
+
+        local oneSpacePrev_len=`get_stringlen_wo_regEx__func "${DOCKER__ONESPACE_PREV}"`
+        local oneSpaceNext_len=`get_stringlen_wo_regEx__func "${DOCKER__ONESPACE_NEXT}"`
+        local space_between_prev_and_next_len=$(( DOCKER__TABLEWIDTH - (oneSpacePrev_len + oneSpaceNext_len) - 1 ))
+        local space_between_prev_and_next=`duplicate_char__func "${DOCKER__ONESPACE}" "${space_between_prev_and_next_len}"`
+        local prev_spaces_next_print="${DOCKER__ONESPACE_PREV}${space_between_prev_and_next}${DOCKER__ONESPACE_NEXT}"
+
+        local docker_space_between_leftBoundary_and_next_len=$(( DOCKER__TABLEWIDTH - oneSpacePrev_len - 1 ))
+        local docker_space_between_leftBoundary_and_next=`duplicate_char__func "${DOCKER__ONESPACE}" "${docker_space_between_leftBoundary_and_next_len}"`
+        local next_only_print="${docker_space_between_leftBoundary_and_next}${DOCKER__ONESPACE_NEXT}"
+
+        if [[ ${dataArr_lineNum_start} -eq ${DOCKER__NUMOFMATCH_1} ]]; then
+            echo "${next_only_print}"
+        else
+            if [[ ${dataArr_lineNum_end} -eq ${dataArrLen} ]]; then 
+                echo "${prev_only_print}"
+            else
+                echo "${prev_spaces_next_print}"
+            fi
+        fi
+
+        #Show line-number range between 'prev' and 'next'
+        lineNum_range_msg="${DOCKER__FG_LIGHTGREY}${dataArr_pageNum__input}${DOCKER__NOCOLOR} "
+        lineNum_range_msg+="to ${DOCKER__FG_LIGHTGREY}${dataArr_pageSize__input}${DOCKER__NOCOLOR} "
+        lineNum_range_msg+="(${DOCKER__FG_SOFTLIGHTRED}${dataArrLen}${DOCKER__NOCOLOR})"
+
+        #Caclulate the length of 'lineNum_range_msg' without regEx
+        lineNum_range_msg_wo_regEx_len=`get_stringlen_wo_regEx__func "${lineNum_range_msg}"`
+
+        #Determine the start-position of where to place 'lineNum_range_msg'
+        lineNum_range_msg_startPos=$(( (DOCKER__TABLEWIDTH/2) - (lineNum_range_msg_wo_regEx_len/2) ))
+
+        #Move-up
+        if [[ ${flag_showAll} == false ]]; then
+            moveUp__func "${DOCKER__LINENUM_1}"
+        fi
+
+        #Move cursor to start-position 'lineNum_range_msg_startPos'
+        tput cuf ${lineNum_range_msg_startPos}
+
+        #Print 'lineNum_range_msg'
+        echo -e "${lineNum_range_msg}"
+    fi
+
+    if [[ ! -z ${menuOptions__input} ]]; then
+        ##Print horizontal line
+        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+
+        #Print menu-options
+        echo -e "${menuOptions__input}"
+    fi
+
+    #Print horizontal line
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+
+
+    #Show cursor
+    cursor_show__func
+
+    #Enable keyboard-input
+    enable_keyboard_input__func
+}
+
+function show_repoList_or_containerList_w_menuTitle__func() {
+    #Input args
+    local menuTitle__input=${1}
+    local dockerCmd__input=${2}
+
+    #Show list
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    show_centered_string__func "${menuTitle__input}" "${DOCKER__TABLEWIDTH}"
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    
+    if [[ ${dockerCmd__input} == ${docker__ps_a_cmd} ]]; then
+        ${docker__containerlist_tableinfo__fpath}
+    else
+        ${docker__repolist_tableinfo__fpath}
+    fi
+
+    #Move-down cursor
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+    #Print
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    echo -e "${DOCKER__FOURSPACES_QUIT_CTRL_C}"
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+}
+
+function show_repoList_or_containerList_w_menuTitle_w_confirmation__func() {
+    #Input args
+    local menuTitle__input=${1}
+    local msg__input=${2}
+    local docker_cmd__input=${3}
+    local prepend_numOfLines__input=${4}
+    local confirmation_timeout__input=${5}
+    local confirmation_prepend_numOfLines__input=${6}
+    local confirmation_append_numOfLines__input=${7}
+    local tibboHeader_prepend_numOfLines__input=${8}
+
+    #Print Tibbo-title (if applicable)
+    if [[ ! -z ${tibboHeader_prepend_numOfLines__input} ]]; then
+        load_tibbo_title__func "${tibboHeader_prepend_numOfLines__input}"
+    else
+        moveDown_and_cleanLines__func "${prepend_numOfLines__input}"
+    fi
+
+    #Horizontal line
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+
+    #Print title    
+    show_centered_string__func "${menuTitle__input}" "${DOCKER__TABLEWIDTH}"
+
+    #Horizontal line
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+
+
+    #Get number of containers
+    local numOfElements=`${docker_cmd__input} | head -n -1 | wc -l`
+    if [[ ${numOfElements} -gt 0 ]]; then    #containers were found
+        #Show list of repository/container elements
+        if [[ ${docker_cmd__input} == ${docker__images_cmd} ]]; then
+            ${docker__repolist_tableinfo__fpath}
+        else
+            ${docker__containerlist_tableinfo__fpath}
+        fi
+
+        #Move-down cursor
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+    else    #no containers found
+        #Move-down cursor
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+        #Print message
+        show_centered_string__func "${msg__input}" "${DOCKER__TABLEWIDTH}"
+
+        #Move-down cursor
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+        #Horizontal line
+        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+
+        #Move-down cursor
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+        #Show press-any-key dialog
+        press_any_key__func "${confirmation_timeout__input}" \
+                            "${confirmation_prepend_numOfLines__input}" \
+                            "${confirmation_append_numOfLines__input}"
+    fi
+}
+
+
+function show_msg_w_menuTitle_w_confirmation__func() {
+    #Input args
+    local menuTitle__input=${1}
+    local msg__input=${2}
+    local confirmation_choices__input=${3}
+    local confirmation_regEx__input=${4}
+    local prepend_numOfLines__input=${5}
+    local confirmation_timeout__input=${6}
+    local confirmation_prepend_numOfLines__input=${7}
+    local confirmation_append_numOfLines__input=${8}
+
+    #Move-down cursor
+    moveDown_and_cleanLines__func "${prepend_numOfLines__input}"
+
+    #Print horizontal line
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+
+    #Print menu-title
+    show_centered_string__func "${menuTitle__input}" "${DOCKER__TABLEWIDTH}"
+
+    #Print horizontal line
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+
+    #Print message
+    echo -e "${msg__input}"
+
+    #Move-down and clean 1 line
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+    #Print horizontal line
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+
+    #Show press-any-key dialog
+    confirmation_w_timer__func "${confirmation_choices__input}" \
+                        "${confirmation_regEx__input}" \
+                        "${confirmation_timeout__input}" \
+                        "${confirmation_prepend_numOfLines__input}" \
+                        "${confirmation_append_numOfLines__input}"
+}
+
+function show_msg_wo_menuTitle_w_confirmation__func() {
+    #Input args
+    local msg__input=${1}
+    local confirmation_choices__input=${2}
+    local confirmation_regEx__input=${3}
+    local prepend_numOfLines__input=${4}
+    local confirmation_timeout__input=${5}
+    local confirmation_prepend_numOfLines__input=${6}
+    local confirmation_append_numOfLines__input=${7}
+
+    #Move-down cursor
+    moveDown_and_cleanLines__func "${prepend_numOfLines__input}"
+
+    #Print
+    if [[ ! -z "${msg__input}" ]]; then
+        echo -e "${msg__input}"
+    fi
+
+    #Show press-any-key dialog
+    confirmation_w_timer__func "${confirmation_choices__input}" \
+                        "${confirmation_regEx__input}" \
+                        "${confirmation_timeout__input}" \
+                        "${confirmation_prepend_numOfLines__input}" \
+                        "${confirmation_append_numOfLines__input}"
+}
+
+function show_menuTitle_w_adjustable_indent__func() {
+    #Input args
+    local menuTitle__input=${1}
+    local menuTitle_indent__input=${2}
+
+    #Show list
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    if [[ -z ${menuTitle_indent__input} ]]; then
+        show_centered_string__func "${menuTitle__input}" "${DOCKER__TABLEWIDTH}"
+    else
+        echo "${menuTitle_indent__input}${menuTitle__input}"
+    fi
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+}
+
+
+
+#---READ-DiALOG FUNCTIONS
+function readDialog_w_Output__func() {
+    #Input args
+    local readMsg__input=${1}
+    local defaultVal__input=${2}
+    local outputFpath__input=${3}
+    local prepend_numOfLines__input=${4}
+    local append_numOfLines__input=${5}
+
+    #Remove file (if present)
+    if [[ -f ${outputFpath__input} ]]; then
+        rm ${outputFpath__input}
+    fi
+
+
+    #Check if 'prepend_numOfLines' is an Empty String
+    if [[ -z ${prepend_numOfLines__input} ]]; then
+        prepend_numOfLines__input=${DOCKER__NUMOFLINES_0}
+    fi
+
+    #Check if 'append_numOfLines__input' is an Empty String
+    if [[ -z ${append_numOfLines__input} ]]; then
+        append_numOfLines__input=${DOCKER__NUMOFLINES_0}
+    fi
+
+
+    #Move-down and clean
+    moveDown_and_cleanLines__func "${prepend_numOfLines__input}"
+
+
+    #Initialization
+    local ret=${defaultVal__input}
+    local ret_semiColonVal=${DOCKER__EMPTYSTRING}
+
+    #Start loop
+    while true
+    do
+        echo -e "${readMsg__input}${ret}"
+
+        #Move cursor up
+        moveUp_oneLine_then_moveRight__func "${readMsg__input}" "${ret}"
+        
+        #Execute read-input
+        read -N1 -rs -p "" keyInput
+
+        case "${keyInput}" in
+            ${DOCKER__ENTER})
+                #Check if there were any ';b', ';c', ';h' issued.
+                #In other words, whether 'ret' contains any of the above semi-colon chars.
+                #If that's the case then function 'get_endResult_ofString_with_semiColonChar__func'
+                #   will handle and return a modified 'ret'.
+                ret_bck=${ret}  #set value
+                ret=`get_endResult_ofString_with_semiColonChar__func "${ret_bck}"`
+         
+                if [[ ! -z ${ret} ]]; then    #'ret' contains data
+                    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+                    case "${ret}" in
+                        ${DOCKER__SEMICOLON_BACK})
+                            #Retrieve the substring preceding (;b) and write to variable 'ret'
+                            ret=`echo "${ret_bck}" | sed "s/${DOCKER__SEMICOLON_BACK}$//g"`
+
+                            #Set 'ret_semiColonVal'
+                            ret_semiColonVal=${DOCKER__SEMICOLON_BACK}
+                            ;;
+                        ${DOCKER__SEMICOLON_HOME})
+                            #Retrieve the substring preceding (;h) and write to variable 'ret'
+                            ret=`echo "${ret_bck}" | sed "s/${DOCKER__SEMICOLON_HOME}$//g"`
+
+                            #Set 'ret_semiColonVal'
+                            ret_semiColonVal=${DOCKER__SEMICOLON_HOME}
+                            ;;
+                    esac
+
+                    break
+                else    #'ret' is an Empty String
+                    #Reset variable
+                    ret=${DOCKER__EMPTYSTRING}
+
+                    #First Move-down, then Move-up, after that clean line
+                    moveToBeginning_and_cleanLine__func
+                fi
+                ;;
+            ${DOCKER__BACKSPACE})
+                #Update variable
+                ret=`readDialog_w_Output_backSpace_handler__func "${ret}"`
+
+                #First Move-down, then Move-up, after that clean line
+               moveToBeginning_and_cleanLine__func
+                ;;
+            ${DOCKER__ESCAPEKEY})
+                #Handle Arrowkey-press
+                readDialog_w_Output_arrowKeys_handler__func
+
+                #First Move-down, then Move-up, after that clean line
+                moveToBeginning_and_cleanLine__func
+                ;;
+            ${DOCKER__TAB})
+                #First Move-down, then Move-up, after that clean line
+                moveToBeginning_and_cleanLine__func
+                ;;
+            *)
+                #wait for another 0.5 seconds to capture additional characters.
+                #Remark:
+                #   This part has been implemented just in case long text has been copied/pasted.
+                read -rs -t0.01 keyInput_addit
+
+                #Append 'keyInput_addit' to 'keyInput'
+                keyInput="${keyInput}${keyInput_addit}"
+
+                #Append 'keyInput' to 'ret'
+                ret="${ret}${keyInput}"
+
+                #First Move-down, then Move-up, after that clean line
+                moveToBeginning_and_cleanLine__func
+                ;;
+        esac
+    done
+
+
+    #Move-down and clean
+    moveDown_and_cleanLines__func "${append_numOfLines__input}"
+
+
+    #Output
+    echo "${ret}" > ${outputFpath__input}
+    echo "${ret_semiColonVal}" >> ${outputFpath__input}
+}
+function readDialog_w_Output_arrowKeys_handler__func() {
+    # Flush "stdin" with 0.1  sec timeout.
+    read -rsn1 -t 0.1 tmp
+    if [[ "$tmp" == "[" ]]; then
+        # Flush "stdin" with 0.1  sec timeout.
+        read -rsn1 -t 0.1 tmp
+    fi
+
+    #Flush "stdin" with 0.1  sec timeout.
+    read -rsn5 -t 0.1
+}
+function readDialog_w_Output_backSpace_handler__func() {
+    #Input args
+    str_input=${1}
+
+    #CHeck if 'str_input' is an EMPTYSTRING
+    if [[ -z ${str_input} ]]; then
+        return
+    fi
+
+    #Constants
+    OFFSET=0
+
+    #Lengths
+    str_input_len=${#str_input}
+    str_output_len=$((str_input_len-1))
+
+    #Get result
+    str_output=${str_input:${OFFSET}:${str_output_len}}
+
+    #Output
+    echo "${str_output}"
+}
+
+function show_pathContent_w_selection__func() {
 #---Input args
     local path__input=${1}  #could be a directory or file
     local selItem__input=${2}
@@ -1569,7 +3136,10 @@ function show_pathContent_w_keyInput__func() {
     local pattern1__input=${10}
     local pattern2__input=${11}
     local table_index_max__input=${12}
-    local outputFpath__input=${13}
+    local flag_table_index_max_isFixed__input=${13}
+    local outputFpath__input=${14}
+    local tibboHeader_prepend_numOfLines__input=${15}
+    local flag_show_tibboHeader_isEnabled__input=${16}
 
 
 
@@ -1585,6 +3155,7 @@ function show_pathContent_w_keyInput__func() {
     local fpath_arr_string=${DOCKER__EMPTYSTRING}
 
     local fpath_arrTmp=()
+    local fpath_arrTmpLen=0
     local fpath_arrTmp_string=${DOCKER__EMPTYSTRING}
 
     #Relative array, which contains only the number of elements equal to 'table_index_max__input'.
@@ -1595,6 +3166,7 @@ function show_pathContent_w_keyInput__func() {
     local fpath_relArrLen=0
     local fpath_relArrItem_sel=${DOCKER__EMPTYSTRING}
 
+    local keyInput=${DOCKER__EMPTYSTRING}
     local keyOutput=${DOCKER__EMPTYSTRING}
     local pattern1_result=${DOCKER__EMPTYSTRING}
     local pattern2_result=${DOCKER__EMPTYSTRING}
@@ -1603,7 +3175,8 @@ function show_pathContent_w_keyInput__func() {
     local table_index=0
     local table_index_base=0
     local table_index_base_try_next=0
-    local keyInput=${DOCKER__EMPTYSTRING}
+
+    local table_index_max_bck=0
 
     local lineNum_range_relMax=0
     local lineNum_range_relMin=0
@@ -1612,8 +3185,8 @@ function show_pathContent_w_keyInput__func() {
     local lineNum_range_msg=${DOCKER__EMPTYSTRING}
 
     local flag_break_main_whileLoop=false
-    local flag_break_forLoop=false
-    local flag_matched_fkey_isPressed=false
+    local flag_isSet_toBreak_loop=false
+    local flag_matched_key_isPressed=false
 
 
 
@@ -1629,31 +3202,6 @@ function show_pathContent_w_keyInput__func() {
 
 
 
-#---Calculate num-of-lines of input-args
-    #Each input-args
-    menuTitle_numOfLines=`get_numOfLines_for_specified_string_or_file__func "${menuTitle__input}"`
-    remark_numOfLines=`get_numOfLines_for_specified_string_or_file__func "${remark__input}"`
-    info_numOfLines=`get_numOfLines_for_specified_string_or_file__func "${info__input}"`
-    menuOptions_numOfLines=`get_numOfLines_for_specified_string_or_file__func "${menuOptions__input}"`
-    readDialog_numOfLines=`get_numOfLines_for_specified_string_or_file__func "${readDialog__input}"`
-
-    #fixed objects
-    fixed_numOfLines=${DOCKER__NUMOFLINES_4}    #due to a fixed number of horizontal and empty lines
-    if [[ ${remark_numOfLines} -gt ${DOCKER__NUMOFMATCH_0} ]]; then
-        fixed_numOfLines=$((fixed_numOfLines + 1))  #due to the preceding horizontal line
-    fi
-    if [[ ${info_numOfLines} -gt ${DOCKER__NUMOFMATCH_0} ]]; then
-        fixed_numOfLines=$((fixed_numOfLines + 1))  #due to the preceding horizontal line
-    fi
-    if [[ ${menuOptions_numOfLines} -gt ${DOCKER__NUMOFMATCH_0} ]]; then
-        fixed_numOfLines=$((fixed_numOfLines + 1))  #due to the preceding horizontal line
-    fi
-
-    #total
-    tot_numOfLines=$((menuTitle_numOfLines + remark_numOfLines + info_numOfLines + menuOptions_numOfLines + readDialog_numOfLines + fixed_numOfLines + table_index_max__input))
-
-
-
 #---Define 'prev' and 'next' variables
     local prev_only_print="${DOCKER__ONESPACE_PREV}"
 
@@ -1665,6 +3213,7 @@ function show_pathContent_w_keyInput__func() {
 
     local docker_space_between_leftBoundary_and_next_len=$(( DOCKER__TABLEWIDTH - oneSpacePrev_len - 1 ))
     local docker_space_between_leftBoundary_and_next=`duplicate_char__func "${DOCKER__ONESPACE}" "${docker_space_between_leftBoundary_and_next_len}"`
+
     local next_only_print="${docker_space_between_leftBoundary_and_next}${DOCKER__ONESPACE_NEXT}"
 
 
@@ -1678,30 +3227,105 @@ function show_pathContent_w_keyInput__func() {
         fpath_arrTmp_string=`retrieve_files_from_specified_dir_basedOn_matching_patterns__func "${path__input}" \
                             "${pattern1__input}" \
                             "${pattern2__input}"`
+
 #-------Convert string to array
         read -a fpath_arrTmp <<< "${fpath_arrTmp_string}"
-    else    #is a file
-        readarray -t fpath_arrTmp < <(cat "${path__input}")
+    else    #is a file or...
+        if [[ -s ${path__input} ]]; then    #file contains data
+            local path_numOfLines=`get_numOfLines_wo_emptyLines_in_file__func "${path__input}"`
+            if [[ ${path_numOfLines} -gt ${DOCKER__NUMOFMATCH_0} ]]; then
+                readarray -t fpath_arrTmp < <(cat "${path__input}")
+            fi
+        fi
     fi
 
 
-    #Check if a match string 'selItem__input' is provided
-    if [[ ! -z ${selItem__input} ]]; then   #contains data
-        #Rearrange array and place 'selItem__input' on top of the array.
-        #Note: the output 'fpath_arr_string' is a string.
-        fpath_arr_string=`array_find_and_move_element_toTop__func "${selItem__input}" "${fpath_arrTmp[@]}"`
 
-        #Convert string to array
-        #Remark:
-        #   Even though the array has been re-arranged,
-        #   still 'fpath_arr' will not be written to a file!
-        read -a fpath_arr <<< "${fpath_arr_string}"
-    else    #contains no data
-        fpath_arr=("${fpath_arrTmp[@]}")
+#---Get Length of 'fpath_arrTmp'
+    fpath_arrTmpLen=${#fpath_arrTmp[@]}
+
+
+
+#---Check if a match string 'selItem__input' is provided
+    if [[ ${fpath_arrTmpLen} -gt ${DOCKER__NUMOFMATCH_0} ]]; then
+        if [[ ! -z ${selItem__input} ]]; then   #contains data
+            #Rearrange array and place 'selItem__input' on top of the array.
+            #Note: the output 'fpath_arr_string' is a string.
+            fpath_arr_string=`array_find_and_move_element_toTop__func "${selItem__input}" "${fpath_arrTmp[@]}"`
+
+            #Convert string to array
+            #Remark:
+            #   Even though the array has been re-arranged,
+            #   still 'fpath_arr' will not be written to a file!
+            read -a fpath_arr <<< "${fpath_arr_string}"
+        else    #contains no data
+            fpath_arr=("${fpath_arrTmp[@]}")
+        fi
     fi
 
     #Get 'fpath_arrLen'
     fpath_arrLen=${#fpath_arr[@]}
+
+
+#---Backup 'table_index_max__input'
+    table_index_max_bck=${table_index_max__input}
+
+
+
+#---Set 'table_index_max__input' (if needed)
+    #Note: 
+    #   The condition to check whether 'array contains no data' is preferred over...
+    #   ...checking whether the 'array-length is zero', because...
+    #   ...should the array contains empty lines then the array-length is non-zero.
+    #   This is behavior is unwanted.
+    if [[ ${flag_table_index_max_isFixed__input} == false ]]; then
+        if [[ -z "${fpath_arr[@]}" ]]; then   #array contains no data
+            table_index_max__input=${DOCKER__NUMOFLINES_5}
+        else    #array contains data
+            if [[ ${fpath_arrLen} -le ${DOCKER__NUMOFLINES_5} ]]; then
+                table_index_max__input=${DOCKER__NUMOFLINES_5}
+            else
+                if [[ ${fpath_arrLen} -le ${table_index_max__input} ]]; then
+                    table_index_max__input=${fpath_arrLen}
+                fi
+            fi
+        fi
+    fi
+
+
+
+#---Calculate num-of-lines of input-args
+    #non-fixed objects
+    local tibboHeader_numOfLines=0
+    if [[ ${flag_show_tibboHeader_isEnabled__input} == true ]]; then
+        #Update 'fixed_numOfLines'<
+        tibboHeader_numOfLines=$((tibboHeader_prepend_numOfLines__input + 1))  #due to title and 'tibboHeader_prepend_numOfLines__input'
+    fi
+    local menuTitle_numOfLines=`get_numOfLines_for_specified_string_or_file__func "${menuTitle__input}"`
+    local remark_numOfLines=`get_numOfLines_for_specified_string_or_file__func "${remark__input}"`
+    local info_numOfLines=`get_numOfLines_for_specified_string_or_file__func "${info__input}"`
+    local menuOptions_numOfLines=`get_numOfLines_for_specified_string_or_file__func "${menuOptions__input}"`
+    local readDialog_numOfLines=`get_numOfLines_for_specified_string_or_file__func "${readDialog__input}"`
+
+    #fixed objects
+    local fixed_numOfLines=${DOCKER__NUMOFLINES_4}    #due to a fixed number of horizontal and empty lines
+    if [[ ${remark_numOfLines} -gt ${DOCKER__NUMOFMATCH_0} ]]; then
+        fixed_numOfLines=$((fixed_numOfLines + 1))  #due to the preceding horizontal line
+    fi
+    if [[ ${info_numOfLines} -gt ${DOCKER__NUMOFMATCH_0} ]]; then
+        fixed_numOfLines=$((fixed_numOfLines + 1))  #due to the preceding horizontal line
+    fi
+    if [[ ${menuOptions_numOfLines} -gt ${DOCKER__NUMOFMATCH_0} ]]; then
+        fixed_numOfLines=$((fixed_numOfLines + 1))  #due to the preceding horizontal line
+    fi
+    # if [[ ${menuOptions_numOfLines} -gt ${DOCKER__NUMOFMATCH_0} ]]; then
+    #     fixed_numOfLines=$((fixed_numOfLines + 1))  #due to the preceding empty line
+    # fi
+
+    #total
+    local tot_numOfLines=$((tibboHeader_numOfLines + menuTitle_numOfLines + remark_numOfLines + info_numOfLines + menuOptions_numOfLines + readDialog_numOfLines + fixed_numOfLines + table_index_max__input))
+
+
 
 #---Show directory content
     while true
@@ -1711,7 +3335,18 @@ function show_pathContent_w_keyInput__func() {
 
 #-------Disable keyboard-input
         disable_keyboard_input__func
-        
+
+#-------Show Tibbo-header
+        if [[ ${flag_show_tibboHeader_isEnabled__input} == true ]]; then
+            #Check if 'tibboHeader_prepend_numOfLines__input' is an Empty String
+            if [[ -z ${tibboHeader_prepend_numOfLines__input} ]]; then
+                tibboHeader_prepend_numOfLines__input=${DOCKER__NUMOFLINES_2}
+            fi
+
+            #Print Tibbo-title
+            load_tibbo_title__func "${tibboHeader_prepend_numOfLines__input}"
+        fi
+
 #-------Show menu-title
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
         show_centered_string__func "${menuTitle__input}" "${DOCKER__TABLEWIDTH}"
@@ -1719,7 +3354,7 @@ function show_pathContent_w_keyInput__func() {
 
         if [[ ! -z ${fpath_arr[@]} ]]; then
             #Initialization
-            flag_break_forLoop=false
+            flag_isSet_toBreak_loop=false
             fpath_relArr=()
             fpath_relArrIndex=0
             fpath_arrIndex=0
@@ -1739,10 +3374,10 @@ function show_pathContent_w_keyInput__func() {
                     #Check if 'table_index = table_index_max__input'
                     #Remark:
                     #   If true, set 'table_index = 0'
-                    if [[ ${table_index} -eq ${table_index_max__input} ]]; then
+                    if [[ ${table_index} -eq ${table_index_max_bck} ]]; then
                         table_index=${DOCKER__NUMOFMATCH_0}
 
-                        flag_break_forLoop=true
+                        flag_isSet_toBreak_loop=true
                     fi
 
 #-------------------Get 'fpath_arrItem_base' without directory
@@ -1787,28 +3422,30 @@ function show_pathContent_w_keyInput__func() {
                         fpath_arrItem_print="${DOCKER__THREESPACES}${DOCKER__FG_LIGHTGREY}${DOCKER__LINENUM_1}${DOCKER__NOCOLOR}${table_index}. ${fpath_arrItem_marked}"
                     fi
 
-                    #Substitute 'http' with 'hxxp' (if present)
-                    #Remark:
-                    #   This substitution is required in order to eliminate the underlines for hyperlinks
-                    fpath_arrItem_print=`subst_string_with_another_string__func "${fpath_arrItem_print}" \
-                            "${SED__HTTP}" \
-                            "${SED__HXXP}"`
+                    # #Substitute 'http' with 'hxxp' (if present)
+                    # #Remark:
+                    # #   This substitution is required in order to eliminate the underlines for hyperlinks
+                    # fpath_arrItem_print=`subst_string_with_another_string__func "${fpath_arrItem_print}" \
+                    #         "${SED__HTTP}" \
+                    #         "${SED__HXXP}"`
                                 
                     #Show fpath_arrItem_conv
-                    echo -e "${fpath_arrItem_print}"
+                    echo "${fpath_arrItem_print}"
                 fi
 
                 #Prevously 'table_index' was set to '0'.
                 #This means that the maximum number of items allowed to-be-shown has been reached.
                 #In this case, break the for-loop.
-                if [[ ${flag_break_forLoop} == true ]]; then
+                if [[ ${flag_isSet_toBreak_loop} == true ]]; then
                     break
                 fi
             done    #end of for
         else
-            moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+            if [[ ! -z ${errMsg__input} ]]; then
+                moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
-            show_centered_string__func "${errMsg__input}" "${DOCKER__TABLEWIDTH}"
+                show_centered_string__func "${errMsg__input}" "${DOCKER__TABLEWIDTH}"
+            fi
         fi
 
 
@@ -1819,11 +3456,11 @@ function show_pathContent_w_keyInput__func() {
 
 
 #-------Fill up table with Empty Lines (if needed)
-        #Check if 'flag_break_forLoop = false'
+        #Check if 'flag_isSet_toBreak_loop = false'
         #Remark:
-        #   Remember that if 'flag_break_forLoop = true', then...
+        #   Remember that if 'flag_isSet_toBreak_loop = true', then...
         #   ...the for-loop was broken due to 'table_index = table_index_max__input'.
-        if [[ ${flag_break_forLoop} == false ]]; then
+        if [[ ${flag_isSet_toBreak_loop} == false ]]; then
             while [[ ${table_index} -lt ${table_index_max__input} ]]
             do
                 #increment line-number
@@ -1864,18 +3501,28 @@ function show_pathContent_w_keyInput__func() {
 
 #-------Show line-number range between 'prev' and 'next'
         lineNum_range_relMax=$((table_index_base + table_index_max__input))
+
         #Check if 'lineNum_range_relMax' has exceeded the maximum number array-items
         if [[ ${lineNum_range_relMax} -gt ${fpath_arrLen} ]]; then
             lineNum_range_relMax=${fpath_arrLen}
         fi
-        lineNum_range_relMin=$((table_index_base + 1))
+
+        #Check if 'fpath_arrLen = 0'
+        if [[ ${fpath_arrLen} -eq ${DOCKER__NUMOFMATCH_0} ]]; then  #array contains no data
+            lineNum_range_relMin=${DOCKER__LINENUM_0}
+        else    #array contains data
+            lineNum_range_relMin=$((table_index_base + 1))
+        fi
+
         lineNum_range_max_abs=${fpath_arrLen}
 
         #Prepare the line-number range message
         lineNum_range_msg="${DOCKER__FG_LIGHTGREY}${lineNum_range_relMin}${DOCKER__NOCOLOR} "
         lineNum_range_msg+="to ${DOCKER__FG_LIGHTGREY}${lineNum_range_relMax}${DOCKER__NOCOLOR} "
         lineNum_range_msg+="(${DOCKER__FG_SOFTLIGHTRED}${lineNum_range_max_abs}${DOCKER__NOCOLOR})"
-        
+
+        # show_centered_string__func "${lineNum_range_msg}" "${DOCKER__TABLEWIDTH}"
+
         #Caclulate the length of 'lineNum_range_msg' without regEx
         lineNum_range_msg_wo_regEx_len=`get_stringlen_wo_regEx__func "${lineNum_range_msg}"`
 
@@ -1916,8 +3563,6 @@ function show_pathContent_w_keyInput__func() {
 
 #-------Show cursor
         cursor_show__func
-
-
 
 #-------Read-input
         while true
@@ -1971,28 +3616,37 @@ function show_pathContent_w_keyInput__func() {
                     #Get the function-key 'keyOutput' based on the chosen 'keyInput'
                     keyOutput=`functionKey_detection__func "${keyInput}"`
                     case "${keyOutput}" in
-                        ${DOCKER__ENUM_FUNC_F12})
-                            #Print read-input dialog with 'keyOutput' value
-                            echo "${readDialog__input}"
+                        # ${DOCKER__ENUM_FUNC_F12})
+                        #     #Print read-input dialog with 'keyOutput' value
+                        #     echo "${readDialog__input}"
                             
-                            #Important: set flag to true
-                            flag_matched_fkey_isPressed=true
+                        #     #Important: set flag to true
+                        #     flag_matched_key_isPressed=true
 
-                            # #Exit
-                            # exit__func "${DOCKER__EXITCODE_0}" "${DOCKER__NUMOFLINES_2}"
+                        #     # #Exit
+                        #     # exit__func "${DOCKER__EXITCODE_0}" "${DOCKER__NUMOFLINES_2}"
+                        #     ;;
+                        ${DOCKER__EMPTYSTRING}) #arrow-key was pressed
+                            flag_matched_key_isPressed=false
                             ;;
                         *)  #OTHER F-KEYS AS SPECIFIED BY 'matchPattern__input'
-                            if [[ ! -z ${matchPattern__input} ]]; then  #not an Empty String
+                            if [[ ! -z ${matchPattern__input} ]]; then  #not an Empty String             
                                 #Check if the retrieved function-key 'keyOutput' matches the pattern 'matchPattern__input'
-                                flag_matched_fkey_isPressed=`checkForMatch_of_pattern_within_string__func \
+                                flag_matched_key_isPressed=`checkForMatch_of_pattern_within_string__func \
                                         "${keyOutput}" \
                                         "${matchPattern__input}"`
+
+                                #Check if 'flag_matched_key_isPressed = true'
+                                if [[ ${flag_matched_key_isPressed} == true ]]; then
+                                     #Print read-input dialog with 'keyOutput' value
+                                    echo "${readDialog__input}"
+                                fi
                             fi
                             ;;
                     esac
 
                     #Check if a matched function-key was pressed
-                    if [[ ${flag_matched_fkey_isPressed} == true ]]; then  #match was found
+                    if [[ ${flag_matched_key_isPressed} == true ]]; then  #match was found
                         #Set output 'ret'
                         ret=${keyOutput}
 
@@ -2045,17 +3699,18 @@ function show_pathContent_w_keyInput__func() {
                         else
                             moveToBeginning_and_cleanLine__func
                         fi             
-                    else
+                    else    #any other keys
                         #'matchPattern__input' could contain any keys other than function-keys or numbers [1-90]
-                        #***NOT TESTED YET                    
+                        #Remark:
+                        #   This part has been tested, but NOT thoroughly.                
                         if [[ ! -z ${matchPattern__input} ]]; then  #not an Empty String
                             #Check if the retrieved function-key 'keyInput' matches the pattern 'matchPattern__input'
-                            flag_matched_fkey_isPressed=`checkForMatch_of_pattern_within_string__func \
+                            flag_matched_key_isPressed=`checkForMatch_of_pattern_within_string__func \
                                     "${keyInput}" \
                                     "${matchPattern__input}"`
 
                             #Check if a matched function-key was pressed
-                            if [[ ${flag_matched_fkey_isPressed} == true ]]; then  #match was found
+                            if [[ ${flag_matched_key_isPressed} == true ]]; then  #match was found
                                 #Set output 'ret'
                                 ret=${keyInput}
 
@@ -2082,17 +3737,17 @@ function show_pathContent_w_keyInput__func() {
 
 
 #---Output
-    #on line-number: 1
+    #write to line-number: 1
     echo "${ret}" > ${outputFpath__input}
 
-    #on line-number: 2
+    #write to line-number: 2
     #Remark:
     #   This may be useful in case the whole table needs to be cleared...
-    #   ...which was drawn by this subroutine 'show_pathContent_w_keyInput__func'.
+    #   ...which was drawn by this subroutine 'show_pathContent_w_selection__func'.
     echo "${tot_numOfLines}" >> ${outputFpath__input}
 }
 
-function show_fileContent_wo_keyInput__func() {
+function show_fileContent_wo_select__func() {
 #---Input args
     local fpath__input=${1}
     local menuTitle__input=${2}
@@ -2101,8 +3756,13 @@ function show_fileContent_wo_keyInput__func() {
     local menuOptions__input=${5}
     local errMsg__input=${6}
     local readDialog__input=${7}
-    local outputFpath__input=${8}
-    local table_index_max__input=${9}
+    local regEx__input=${8}
+    local outputFpath__input=${9}
+    local table_index_max__input=${10}
+    local menuTitle_indent__input=${11}  #leading spaces to-be-added before 'menuTitle__input'
+    local flag_pressAnyKey_isEnabled=${12}
+    local tibboHeader_prepend_numOfLines__input=${13}
+    local flag_show_tibboHeader_isEnabled__input=${14}
 
 
 
@@ -2120,7 +3780,7 @@ function show_fileContent_wo_keyInput__func() {
     local table_index_base_try_next=0
 
     local flag_break_main_whileLoop=false
-    local flag_break_forLoop=false
+    local flag_isSet_toBreak_loop=false
 
 
 
@@ -2133,30 +3793,6 @@ function show_fileContent_wo_keyInput__func() {
 
 #---Trim message to fit within the specified terminal window-size 'DOCKER__TABLEWIDTH'
     info__input=`trim_string_toFit_specified_windowSize__func "${info__input}" "${DOCKER__TABLEWIDTH}" "${DOCKER__TRUE}"`
-
-
-
-#---Calculate num-of-lines of input-args
-    menuTitle_numOfLines=`get_numOfLines_for_specified_string_or_file__func "${menuTitle__input}"`
-    remark_numOfLines=`get_numOfLines_for_specified_string_or_file__func "${remark__input}"`
-    info_numOfLines=`get_numOfLines_for_specified_string_or_file__func "${info__input}"`
-    menuOptions_numOfLines=`get_numOfLines_for_specified_string_or_file__func "${menuOptions__input}"`
-    readDialog_numOfLines=`get_numOfLines_for_specified_string_or_file__func "${readDialog__input}"`
-
-    #fixed objects
-    fixed_numOfLines=${DOCKER__NUMOFLINES_4}    #due to a fixed number of horizontal and empty lines
-    if [[ ${remark_numOfLines} -gt ${DOCKER__NUMOFMATCH_0} ]]; then
-        fixed_numOfLines=$((fixed_numOfLines + 1))  #due to the preceding horizontal line
-    fi
-    if [[ ${info_numOfLines} -gt ${DOCKER__NUMOFMATCH_0} ]]; then
-        fixed_numOfLines=$((fixed_numOfLines + 1))  #due to the preceding horizontal line
-    fi
-    if [[ ${menuOptions_numOfLines} -gt ${DOCKER__NUMOFMATCH_0} ]]; then
-        fixed_numOfLines=$((fixed_numOfLines + 1))  #due to the preceding horizontal line
-    fi
-
-    #total
-    tot_numOfLines=$((menuTitle_numOfLines + remark_numOfLines + info_numOfLines + menuOptions_numOfLines + readDialog_numOfLines + fixed_numOfLines + table_index_max__input))
 
 
 
@@ -2176,12 +3812,75 @@ function show_fileContent_wo_keyInput__func() {
 
 
 #---Store directory content in array'
-    #Remark: 
-    #   Also make sure to substitute '<space>' with '${STX}space${ETX}'
-    readarray -t fpath_arr < ${fpath__input}
+    if [[ -s ${fpath__input} ]]; then   #file contains data
+        local path_numOfLines=`get_numOfLines_wo_emptyLines_in_file__func "${fpath__input}"`
+        if [[ ${path_numOfLines} -gt ${DOCKER__NUMOFMATCH_0} ]]; then
+            readarray -t fpath_arr < ${fpath__input}
+        fi
+    fi
 
-    #Get 'fpath_arrLen'
+
+
+#---Get 'fpath_arrLen'
     fpath_arrLen=${#fpath_arr[@]}
+
+
+
+#---Set 'table_index_max__input' (if needed)
+    #Note: 
+    #   The condition to check whether 'array contains no data' is preferred over...
+    #   ...checking whether the 'array-length is zero', because...
+    #   ...should the array contains empty lines then the array-length is non-zero.
+    #   This is behavior is unwanted.
+    if [[ -z "${fpath_arr[@]}" ]]; then   #array contains no data
+        table_index_max__input=${DOCKER__NUMOFLINES_5}
+    else    #array contains data
+        if [[ ${fpath_arrLen} -le ${DOCKER__NUMOFLINES_5} ]]; then
+            table_index_max__input=${DOCKER__NUMOFLINES_5}
+        else
+            if [[ ${fpath_arrLen} -le ${table_index_max__input} ]]; then
+                table_index_max__input=${fpath_arrLen}
+            fi
+        fi
+    fi
+
+
+
+#---Calculate num-of-lines of input-args
+    #non-fixed objects
+    local tibboHeader_numOfLines=0
+    if [[ ${flag_show_tibboHeader_isEnabled__input} == true ]]; then
+        #Update 'fixed_numOfLines'<
+        tibboHeader_numOfLines=$((tibboHeader_prepend_numOfLines__input + 1))  #due to title and 'tibboHeader_prepend_numOfLines__input'
+    fi
+    menuTitle_numOfLines=`get_numOfLines_for_specified_string_or_file__func "${menuTitle__input}"`
+    remark_numOfLines=`get_numOfLines_for_specified_string_or_file__func "${remark__input}"`
+    info_numOfLines=`get_numOfLines_for_specified_string_or_file__func "${info__input}"`
+    menuOptions_numOfLines=`get_numOfLines_for_specified_string_or_file__func "${menuOptions__input}"`
+    readDialog_numOfLines=`get_numOfLines_for_specified_string_or_file__func "${readDialog__input}"`
+
+    #fixed objects
+    fixed_numOfLines=${DOCKER__NUMOFLINES_4}    #due to a fixed number of horizontal and empty lines
+    if [[ ${remark_numOfLines} -gt ${DOCKER__NUMOFMATCH_0} ]]; then
+        fixed_numOfLines=$((fixed_numOfLines + 1))  #due to the preceding horizontal line
+    fi
+    if [[ ${info_numOfLines} -gt ${DOCKER__NUMOFMATCH_0} ]]; then
+        fixed_numOfLines=$((fixed_numOfLines + 1))  #due to the preceding horizontal line
+    fi
+    if [[ ${menuOptions_numOfLines} -gt ${DOCKER__NUMOFMATCH_0} ]]; then
+        fixed_numOfLines=$((fixed_numOfLines + 1))  #due to the preceding horizontal line
+    fi
+    if [[ ${flag_pressAnyKey_isEnabled} == true ]]; then
+        fixed_numOfLines=$((fixed_numOfLines + 1))  #due to the preceding horizontal line
+    fi
+    # if [[ ${flag_pressAnyKey_isEnabled} == true ]]; then
+    #     fixed_numOfLines=$((fixed_numOfLines + 1))  #due to the preceding empty line
+    # fi
+
+    #total
+    tot_numOfLines=$((tibboHeader_numOfLines + menuTitle_numOfLines + remark_numOfLines + info_numOfLines + menuOptions_numOfLines + readDialog_numOfLines + fixed_numOfLines + table_index_max__input))
+
+
 
 #---Show directory content
     while true
@@ -2192,16 +3891,25 @@ function show_fileContent_wo_keyInput__func() {
 #-------Disable keyboard-input
         disable_keyboard_input__func
 
+#-------Show Tibbo-header
+        if [[ ${flag_show_tibboHeader_isEnabled__input} == true ]]; then
+            #Check if 'tibboHeader_prepend_numOfLines__input' is an Empty String
+            if [[ -z ${tibboHeader_prepend_numOfLines__input} ]]; then
+                tibboHeader_prepend_numOfLines__input=${DOCKER__NUMOFLINES_2}
+            fi
 
+            #Print Tibbo-title
+            load_tibbo_title__func "${tibboHeader_prepend_numOfLines__input}"
+        fi
 
 #-------Show menu-title
-        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-        show_centered_string__func "${menuTitle__input}" "${DOCKER__TABLEWIDTH}"
-        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+        # duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+        show_menuTitle_w_adjustable_indent__func "${menuTitle__input}" "${menuTitle_indent__input}"
+        # duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
 
         if [[ ! -z ${fpath_arr[@]} ]]; then
             #Initialization
-            flag_break_forLoop=false
+            flag_isSet_toBreak_loop=false
             fpath_arrIndex=0
             keyInput=0
             table_index=0
@@ -2223,33 +3931,36 @@ function show_fileContent_wo_keyInput__func() {
                     if [[ ${table_index} -eq ${table_index_max__input} ]]; then
                         table_index=${DOCKER__NUMOFMATCH_0}
 
-                        flag_break_forLoop=true
+                        flag_isSet_toBreak_loop=true
                     fi
 
                     #Print fpath_arrItem
-                    echo -e "${DOCKER__FOURSPACES}${fpath_arrItem}"
+                    echo "${DOCKER__FOURSPACES}${fpath_arrItem}"
                 fi
 
                 #Prevously 'table_index' was set to '0'.
                 #This means that the maximum number of items allowed to-be-shown has been reached.
                 #In this case, break the for-loop.
-                if [[ ${flag_break_forLoop} == true ]]; then
+                if [[ ${flag_isSet_toBreak_loop} == true ]]; then
                     break
                 fi
             done    #end of for
         else
-            moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-            show_centered_string__func "${errMsg__input}" "${DOCKER__TABLEWIDTH}"
+            if [[ ! -z ${errMsg__input} ]]; then
+                moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+                show_centered_string__func "${errMsg__input}" "${DOCKER__TABLEWIDTH}"
+            fi
         fi
 
 
 
 #-------Fill up table with Empty Lines (if needed)
-        #Check if 'flag_break_forLoop = false'
+        #Check if 'flag_isSet_toBreak_loop = false'
         #Remark:
-        #   Remember that if 'flag_break_forLoop = true', then...
+        #   Remember that if 'flag_isSet_toBreak_loop = true', then...
         #   ...the for-loop was broken due to 'table_index = table_index_max__input'.
-        if [[ ${flag_break_forLoop} == false ]]; then
+        if [[ ${flag_isSet_toBreak_loop} == false ]]; then
             while [[ ${table_index} -lt ${table_index_max__input} ]]
             do
                 #increment line-number
@@ -2287,26 +3998,34 @@ function show_fileContent_wo_keyInput__func() {
         fi
 
 
-
 #-------Show line-number range between 'prev' and 'next'
         lineNum_range_relMax=$((table_index_base + table_index_max__input))
         #Check if 'lineNum_range_relMax' has exceeded the maximum number array-items
         if [[ ${lineNum_range_relMax} -gt ${fpath_arrLen} ]]; then
             lineNum_range_relMax=${fpath_arrLen}
         fi
-        lineNum_range_relMin=$((table_index_base + 1))
+
+        #Check if 'fpath_arrLen = 0'
+        if [[ ${fpath_arrLen} -eq ${DOCKER__NUMOFMATCH_0} ]]; then  #array contains no data
+            lineNum_range_relMin=${DOCKER__LINENUM_0}
+        else    #array contains data
+            lineNum_range_relMin=$((table_index_base + 1))
+        fi
+
         lineNum_range_max_abs=${fpath_arrLen}
 
         #Prepare the line-number range message
         lineNum_range_msg="${DOCKER__FG_LIGHTGREY}${lineNum_range_relMin}${DOCKER__NOCOLOR} "
         lineNum_range_msg+="to ${DOCKER__FG_LIGHTGREY}${lineNum_range_relMax}${DOCKER__NOCOLOR} "
         lineNum_range_msg+="(${DOCKER__FG_SOFTLIGHTRED}${lineNum_range_max_abs}${DOCKER__NOCOLOR})"
-        
+
+        # show_centered_string__func "${lineNum_range_msg}" "${DOCKER__TABLEWIDTH}"
+
         #Caclulate the length of 'lineNum_range_msg' without regEx
         lineNum_range_msg_wo_regEx_len=`get_stringlen_wo_regEx__func "${lineNum_range_msg}"`
 
         #Determine the start-position of where to place 'lineNum_range_msg'
-        lineNum_range_msg_startPos=$(( (DOCKER__TABLEWIDTH/2) - (lineNum_range_msg_wo_regEx_len/2) ))
+        lineNum_range_msg_startPos=$(( (DOCKER__TABLEWIDTH - lineNum_range_msg_wo_regEx_len)/2 ))
 
         #Move cursor to start-position 'lineNum_range_msg_startPos'
         tput cuu1 && tput cuf ${lineNum_range_msg_startPos}
@@ -2316,19 +4035,22 @@ function show_fileContent_wo_keyInput__func() {
 
 
 
-#-------Show info & menu-options
+#-------Show info
         # moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-        info__input=`trim_string_toFit_specified_windowSize__func "${info__input}" \
-                        "${DOCKER__TABLEWIDTH}" \
-                        "${DOCKER__TRUE}"`
         if [[ ! -z ${info__input} ]]; then
             duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+            #Trim 'info__input' (if necessary)
+            info__input=`trim_string_toFit_specified_windowSize__func "${info__input}" \
+                            "${DOCKER__TABLEWIDTH}" \
+                            "${DOCKER__TRUE}"`
             echo -e "${info__input}"
         fi
+#-------Show remark
         if [[ ! -z ${remark__input} ]]; then
             duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
             echo -e "${remark__input}"
         fi
+#-------Show menu-options
         if [[ ! -z ${menuOptions__input} ]]; then
             duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
             echo -e "${menuOptions__input}"
@@ -2339,8 +4061,28 @@ function show_fileContent_wo_keyInput__func() {
 #-------Enable keyboard-input
         enable_keyboard_input__func
 
+
 #-------Show cursor
         cursor_show__func
+
+
+#-------Check if 'flag_pressAnyKey_isEnabled = true'
+        if [[ "${flag_pressAnyKey_isEnabled}" == true ]]; then
+            #Check if array 'fpath_arr' contains data
+            #Note: 
+            #   The condition to check whether 'array contains no data' is preferred over...
+            #   ...checking whether the 'array-length is zero', because...
+            #   ...should the array contains empty lines then the array-length is non-zero.
+            #   This is behavior is unwanted.
+            if [[ -z "${fpath_arr[@]}" ]]; then   #array contains no data
+                return
+            else    #array contains data
+                if [[ ${fpath_arrLen} -le ${table_index_max__input} ]]; then
+                    return
+                fi
+            fi
+        fi
+
 
 #-------Read-input
         while true
@@ -2351,6 +4093,15 @@ function show_fileContent_wo_keyInput__func() {
             #Check if 'keyInput' is a numeric value
             case "${keyInput}" in
                 ${DOCKER__ENTER})
+                    #Check if 'flag_pressAnyKey_isEnabled = true'
+                    #Remark:
+                    #   If true, then exit upon pressing Enter.
+                    if [[ ${flag_pressAnyKey_isEnabled} == true ]]; then
+                        moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+                        return
+                    fi
+
                     moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
                     ;;
                 ${DOCKER__ESCAPED_HOOKLEFT})
@@ -2388,20 +4139,51 @@ function show_fileContent_wo_keyInput__func() {
                         moveToBeginning_and_cleanLine__func
                     fi
                     ;;
-                ${DOCKER__ESCAPEKEY})
-                    moveToBeginning_and_cleanLine__func
+                # ${DOCKER__ESCAPEKEY})
+                #     moveToBeginning_and_cleanLine__func
 
-                    keyOutput=`functionKey_detection__func "${keyInput}"`
-                    if [[ ${keyOutput} == ${DOCKER__ENUM_FUNC_F12} ]]; then
-                        #Print read-input dialog
-                        echo "${readDialog__input}"
+                #     #Get the function-key which was pressed
+                #     keyOutput=`functionKey_detection__func "${keyInput}"`
 
-                        #Exit
-                        exit__func "${DOCKER__EXITCODE_0}" "${DOCKER__NUMOFLINES_2}"
-                    fi
-                    ;;
+                #     #Check if 'flag_pressAnyKey_isEnabled = true'
+                #     #Remarks:
+                #     #   1. If true, then exit upon pressing other function-keys (F1 to F12)
+                #     #   2. In order to remove the unwanted escaped chars,...
+                #     #      ...function 'functionKey_detection__func' should be executed...
+                #     #      ...BEFORE this condtion, 
+                #     if [[ ${flag_pressAnyKey_isEnabled} == true ]]; then
+                #         return
+                #     fi
+
+                #     #Check if function-key F12 was pressed
+                #     if [[ ${keyOutput} == ${DOCKER__ENUM_FUNC_F12} ]]; then
+                #         #Print read-input dialog
+                #         echo "${readDialog__input}"
+
+                #         #Update 'keyInput'
+                #         keyInput=${keyOutput}
+
+                #         #Break the main while-loop
+                #         flag_break_main_whileLoop=true
+
+                #         #Break this for-loop
+                #         break                   
+
+                #         # #Exit
+                #         # exit__func "${DOCKER__EXITCODE_0}" "${DOCKER__NUMOFLINES_2}"
+                #     fi
+                #     ;;
                 *)
-                    if [[ ${keyInput} =~ [ynb] ]]; then
+                    #Check if 'flag_pressAnyKey_isEnabled = true'
+                    #Remark:
+                    #   If true, then exit upon pressing any other keys (e.g., a,b,@,etc...)
+                    if [[ ${flag_pressAnyKey_isEnabled} == true ]]; then
+                        moveToBeginning_and_cleanLine__func
+
+                        return
+                    fi
+
+                    if [[ ${keyInput} =~ ${regEx__input} ]]; then
                             # if [[ ${keyInput} =~ [yn] ]]; then
                             #     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
                             # else
@@ -2412,7 +4194,7 @@ function show_fileContent_wo_keyInput__func() {
                             flag_break_main_whileLoop=true
 
                             #Break this for-loop
-                            break           
+                            break
                     else
                         moveToBeginning_and_cleanLine__func
                     fi
@@ -2433,318 +4215,9 @@ function show_fileContent_wo_keyInput__func() {
     echo "${keyInput}" > ${outputFpath__input}  
 }
 
-function show_header__func() {
-    #Input args
-    local menuTitle__input=${1}
-    local tableWidth__input=${2}
-    local bg_color__input=${3}
-    local prepend_numOfLines__input=${4}
-    local append_numOfLines__input=${5}
-
-    #Move-down and clean
-    moveDown_and_cleanLines__func "${prepend_numOfLines__input}"
-
-    #Print title
-    show_centered_string__func "${menuTitle__input}" "${tableWidth__input}" "${bg_color__input}"
-
-    #Move-down and clean
-    moveDown_and_cleanLines__func "${append_numOfLines__input}"
-}
-
-function show_leadingAndTrailingStrings_separatedBySpaces__func() {
-    #Input args
-    local leadStr__input=${1}
-    local trailStr__input=${2}
-    local tableWidth__input=${3}
-
-    #Get string 'without visiable' color characters
-    local leadStr_input_wo_colorChars=`echo "${leadStr__input}" | sed "s,\x1B\[[0-9;]*m,,g"`
-    local trailStr_input_wo_colorChars=`echo "${trailStr__input}" | sed "s,\x1B\[[0-9;]*m,,g"`
-
-    #Get string length
-    local leadStr_input_wo_colorChars_len=${#leadStr_input_wo_colorChars}
-    local trailStr_input_wo_colorChars_len=${#trailStr_input_wo_colorChars}
-
-    #Calculated the number of spaces to-be-added
-    local numOf_spaces=$(( tableWidth__input-(leadStr_input_wo_colorChars_len+trailStr_input_wo_colorChars_len) ))
-
-    #Create a string containing only EMPTY SPACES
-    local spaces_leading=`duplicate_char__func "${DOCKER__ONESPACE}" "${numOf_spaces}"`
-
-    #Print text including Leading Empty Spaces
-    echo -e "${leadStr__input}${spaces_leading}${trailStr__input}"
-}
-
-function show_msg_only__func() {
-    #Input args
-    local msg__input=${1}
-    local prepend_numOfLines__input=${2}
-
-    #Move-down and clean
-    moveDown_and_cleanLines__func "${prepend_numOfLines__input}"
-
-    #Print
-    echo -e "${msg__input}"
-}
-
-function show_msg_w_menuTitle_w_pressAnyKey_w_ctrlC_func() {
-    #Input args
-    local menuTitle__input=${1}
-    local msg__input=${2}
-    local exitCode__input=${3}
-
-    #Horizontal line
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-
-    #Print 'menuTitle__input'
-    show_centered_string__func "${menuTitle__input}" "${DOCKER__TABLEWIDTH}"
-
-    #Horizontal line
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-    
-    #Move-down and clean 1 line
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-
-    #Print message
-    show_centered_string__func "${msg__input}" "${DOCKER__TABLEWIDTH}"
-    
-    #Move-down and clean 1 line
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-
-    #Horizontal line
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-
-    #Move-down and clean 1 line
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-
-    #Show press any key
-    press_any_key__func "${DOCKER__TIMEOUT_10}" \
-                        "${DOCKER__NUMOFLINES_0}" \
-                        "${DOCKER__NUMOFLINES_0}"
-
-    #Exit
-    exit__func "${exitCode__input}" "${DOCKER__NUMOFLINES_2}"
-}
-
-function show_msg_w_menuTitle_only_func() {
-    #Input args
-    local menuTitle__input=${1}
-    local msg__input=${2}
-    local prepend_numOfLines__input=${3}
-    local append_numOfLines__input=${4}
-
-    #Prepend empty lines
-    moveDown_and_cleanLines__func "${prepend_numOfLines__input}"
-
-    #Horizontal line
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-
-    #Print 'menuTitle__input'
-    show_centered_string__func "${menuTitle__input}" "${DOCKER__TABLEWIDTH}"
-
-    #Horizontal line
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-    
-    #Only handle the following condition if 'msg__input' is NOT an Empty String
-    if [[ ! -z ${msg__input} ]]; then
-        #Print 'msg__input'
-        echo -e "${msg__input}"
-        
-        #Append 1 emoty line
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-
-        #Horizontal line
-        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-    fi
-
-    #Append empty lines
-    moveDown_and_cleanLines__func "${append_numOfLines__input}"
-}
-
-function show_msg_wo_menuTitle_w_PressAnyKey__func() {
-    #Input args
-    local msg__input=${1}
-    local prepend_numOfLines__input=${2}
-    local confirmation_timeout__input=${3}
-    local confirmation_prepend_numOfLines__input=${4}
-    local confirmation_append_numOfLines__input=${5}
-
-    #Move-down cursor
-    moveDown_and_cleanLines__func "${prepend_numOfLines__input}"
-
-    #Print
-    echo -e "${msg__input}"
-
-    #Show press-any-key dialog
-    press_any_key__func "${confirmation_timeout__input}" \
-                        "${confirmation_prepend_numOfLines__input}" \
-                        "${confirmation_append_numOfLines__input}"
-}
-
-function show_repository_or_container_list__func() {
-    #Input args
-    local menuTitle__input=${1}
-    local msg__input=${2}
-    local docker_cmd__input=${3}
-    local prepend_numOfLines__input=${4}
-    local confirmation_timeout__input=${5}
-    local confirmation_prepend_numOfLines__input=${6}
-    local confirmation_append_numOfLines__input=${7}
-
-    #Move-down cursor
-    moveDown_and_cleanLines__func "${prepend_numOfLines__input}"
-
-    #Horizontal line
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-
-    #Print title    
-    show_centered_string__func "${menuTitle__input}" "${DOCKER__TABLEWIDTH}"
-
-    #Horizontal line
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-
-
-    #Get number of containers
-    local numOfElements=`${docker_cmd__input} | head -n -1 | wc -l`
-    if [[ ${numOfElements} -gt 0 ]]; then    #containers were found
-        #Show list of repository/container elements
-        if [[ ${docker_cmd__input} == ${docker__images_cmd} ]]; then
-            ${docker__repolist_tableinfo__fpath}
-        else
-            ${docker__containerlist_tableinfo__fpath}
-        fi
-
-        #Move-down cursor
-        # moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
-    else    #no containers found
-        #Move-down cursor
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-
-        #Print message
-        show_centered_string__func "${msg__input}" "${DOCKER__TABLEWIDTH}"
-
-        #Move-down cursor
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-
-        #Horizontal line
-        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-
-        #Move-down cursor
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-
-        #Show press-any-key dialog
-        press_any_key__func "${confirmation_timeout__input}" \
-                            "${confirmation_prepend_numOfLines__input}" \
-                            "${confirmation_append_numOfLines__input}"
-    fi
-}
-
-
-function show_msg_wo_menuTitle_w_confirmation__func() {
-    #Input args
-    local msg__input=${1}
-    local confirmation_choices__input=${2}
-    local prepend_numOfLines__input=${3}
-    local confirmation_timeout__input=${4}
-    local confirmation_prepend_numOfLines__input=${5}
-    local confirmation_append_numOfLines__input=${6}
-
-    #Move-down cursor
-    moveDown_and_cleanLines__func "${prepend_numOfLines__input}"
-
-    #Print
-    echo -e "${msg__input}"
-
-    #Show press-any-key dialog
-    confirmation_w_timer__func "${confirmation_choices__input}" \
-                        "${confirmation_timeout__input}" \
-                        "${confirmation_prepend_numOfLines__input}" \
-                        "${confirmation_append_numOfLines__input}"
-}
-
-function show_menuTitle_only__func() {
-    #Input args
-    local menuTitle__input=${1}
-
-    #Show list
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-    show_centered_string__func "${menuTitle__input}" "${DOCKER__TABLEWIDTH}"
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-}
-
 
 
 #---STRING FUNCTIONS
-function array_find_and_move_element_toTop__func() {
-    #Input args
-    local pattern__input=${1}
-    shift
-    local arr__input=("$@")
-
-    #Define variables
-    local arr_leftOfMatch=()
-    local arr_rightOfMatch=()
-    local arr_new=()
-
-    local arrLen=0
-    local arrIndex_max=0
-    local index_match=0
-    local lineNum_match=0
-    local numOfElements_leftOfMatch=0
-    local startIndex_rightOfMatch=0
-
-    #Get length of array 'arr__input'
-    local arrLen=${#arr__input[@]}
-    local arrIndex_max=$((arrLen - 1))
-
-    #Check if there is an EXACT MATCH of 'pattern__input' within 'arr__input'.
-    #If true, then get the array-index.
-    #1. Get the line-number:
-    lineNum_match=`echo "${arr__input[@]}" | xargs -n1 | grep -nw "${pattern__input}" | cut -d"${DOCKER__COLON}" -f1`
-
-    #Check if 'lineNum_match = 0'.
-    #If true, then exit function, because no match was found.
-    if [[ ${lineNum_match} -eq ${DOCKER__NUMOFMATCH_0} ]]; then
-        echo "${arr__input[@]}"
-
-        return
-    fi
-
-    #2. Get the array-index:
-    index_match=$((lineNum_match - 1))
-
-    #Check if 'index_match = 0'.
-    #If true, then exit function, because 'pattern__input' is already on the top.
-    if [[ ${index_match} -eq ${DOCKER__NUMOFMATCH_0} ]]; then
-        echo "${arr__input[@]}"
-
-        return
-    fi
-
-    #Get the 'numOfElements_leftOfMatch' and 'startIndex_rightOfMatch'
-    numOfElements_leftOfMatch=$((lineNum_match - 1))
-    startIndex_rightOfMatch=$((index_match + 1))
-
-    #Get 'arr_leftOfMatch'
-    arr_leftOfMatch=("${arr__input[@]:0:numOfElements_leftOfMatch}")
-
-    #Check if 'startIndex_rightOfMatch <= arrIndex_max'
-    #If false, then no need to get 'arr_rightOfMatch'
-    if [[ ${startIndex_rightOfMatch} -le ${arrIndex_max} ]]; then
-        #Get 'arr_rightOfMatch'
-        arr_rightOfMatch=("${arr__input[@]:startIndex_rightOfMatch}")
-    fi
-
-    #Compose 'arr_new'
-    arr_new[0]=${arr__input[index_match]}
-    arr_new+=(${arr_leftOfMatch[@]})
-    arr_new+=(${arr_rightOfMatch[@]})
-
-    #Output
-    echo "${arr_new[@]}"
-}
-
-
 function checkForMatch_of_pattern_within_string__func() {
     #Turn-off Expansion
     disable_expansion__func
@@ -2754,8 +4227,62 @@ function checkForMatch_of_pattern_within_string__func() {
     local string__input=${2}
 
     #Find any match (not exact)
-    local stdOutput=`echo ${string__input} | grep "${pattern__input}"`
+    local stdOutput=`echo "${string__input}" | grep "${pattern__input}"`
     if [[ -z ${stdOutput} ]]; then  #no match
+        echo "false"
+    else    #match
+        echo "true"
+    fi
+
+    #Turn-on Expansion
+    enable_expansion__func
+}
+
+function checkFor_exact_match_of_pattern_within_file__func() {
+    #Turn-off Expansion
+    disable_expansion__func
+
+    #Input Args
+    local pattern__input=${1}
+    local dataFpath__input=${2}
+
+    #Check if file exists
+    if [[ ! -s ${dataFpath__input} ]]; then #does not exist
+        echo "false"
+
+        return
+    fi
+
+    #Find match
+    local isFound=`cat ${dataFpath__input} | grep "^${pattern__input}$"`
+    if [[ -z ${isFound} ]]; then  #no match
+        echo "false"
+    else    #match
+        echo "true"
+    fi
+
+    #Turn-on Expansion
+    enable_expansion__func
+}
+
+function checkFor_any_match_of_pattern_within_file__func() {
+    #Turn-off Expansion
+    disable_expansion__func
+
+    #Input Args
+    local pattern__input=${1}
+    local dataFpath__input=${2}
+
+    #Check if file exists
+    if [[ ! -s ${dataFpath__input} ]]; then #does not exist
+        echo "false"
+
+        return
+    fi
+
+    #Find match
+    local isFound=`cat "${dataFpath__input}" | grep "${pattern__input}"`
+    if [[ -z ${isFound} ]]; then  #no match
         echo "false"
     else    #match
         echo "true"
@@ -2773,6 +4300,13 @@ function checkForMatch_of_patterns_within_file__func() {
     local pattern1__input=${1}
     local pattern2__input=${2}
     local dataFpath__input=${3}
+
+    #Check if file exists
+    if [[ ! -f ${dataFpath__input} ]]; then #does not exist
+        echo "false"
+
+        return
+    fi
 
     #Compose command line
     local cmd="cat ${dataFpath__input}"
@@ -3062,7 +4596,7 @@ function get_endResult_ofString_with_semiColonChar__func() {
     if [[ ${homeIsFound} == true ]]; then
         ret=${DOCKER__SEMICOLON_HOME}
 
-        echo -e "${ret}"
+        echo "${ret}"
         
         return
     fi
@@ -3073,7 +4607,7 @@ function get_endResult_ofString_with_semiColonChar__func() {
     if [[ ${backIsFound} == true ]]; then
         ret=${DOCKER__SEMICOLON_BACK}
 
-        echo -e "${ret}"
+        echo "${ret}"
 
         return
     fi
@@ -3082,41 +4616,46 @@ function get_endResult_ofString_with_semiColonChar__func() {
     #If FALSE, then return with the original 'string__input'.
     clearIsFound=`checkForMatch_of_pattern_within_string__func "${DOCKER__SEMICOLON_CLEAR}" "${string__input}"`
     if [[ ${clearIsFound} == false ]]; then
-        ret=${string__input}
+        ret="${string__input}"
 
-        echo -e "${ret}"
+        echo "${ret}"
         
         return
     fi
 
-    #If ';c' was found previously then, retrieve the substring which is on the right-side of the semi-colon ';'.
+    #If (;c) was found previously then, retrieve the substring which is on the right-side of the semi-colon (;).
     #Remark:
-    #   In case there were multiple ';c' issued and thus residing in 'string__input',...
-    #   ...then just make sure to get the substring at the last semi-colon ';'.
+    #   In case there were multiple (;c)' issued and thus residing in 'string__input',...
+    #   ...then just make sure to get the substring at the last semi-colon (;).
     rightPart=`echo "${string__input}" | rev | cut -d";" -f1 | rev`
 
     rightPart_len=${#rightPart}
 
     #Get string without semicolon.
     #Remark:
-    #   Please not that if result 'ret' contains any leading and trailing spaces,...
-    #   ...then these spaces will be automatically omitted from the end result.
+    #   Please note that if result 'ret' contains any leading and trailing spaces,...
+    #   ...then these spaces will be removed and therefore not included in the output.
     ret=${rightPart:1:rightPart_len}
 
     #Output
-    echo -e "${ret}"
+    echo "${ret}"
 }
 
 function get_numOfLines_for_specified_string_or_file__func() {
     #Input args
-    local string__input=${1}
+    local param__input=${1}
 
     #Get number of lines
-    local ret=${DOCKER__EMPTYSTRING}
-    if [[ ! -f ${string__input} ]]; then    #not a file
-        ret=`echo -e "${string__input}" | sed '/^\s*$/d' | wc -l`
+    local ret=${DOCKER__NUMOFLINES_0}
+    if [[ ! -f ${param__input} ]]; then    #not a file
+        ret=`echo -e "${param__input}" | sed '/^\s*$/d' | wc -l`
     else    #is a file
-        ret=`cat "${string__input}" | sed '/^\s*$/d' | wc -l`
+        #Check if file exists
+        if [[ ! -f ${param__input} ]]; then #does not exist
+            ret=${DOCKER__NUMOFLINES_0}
+        else
+            ret=`cat "${param__input}" | sed '/^\s*$/d' | wc -l`
+        fi
     fi
 
     #Output
@@ -3161,7 +4700,7 @@ function get_last_nChars_ofString__func() {
     echo "${ret}"
 }
 
-function insert_string_into_file__func() {
+function insert_string_into_file_at_specified_lineNum__func() {
     #Input args
     local string__input=${1}
     local lineNum__input=${2}
@@ -3171,7 +4710,7 @@ function insert_string_into_file__func() {
     #Check if 'string__input' is found in file 'targetFpath__input'
     local isFound=false
     if [[ ${flag_checkIf_already_inserted__input} == true ]]; then
-        isFound=`checkForMatch_of_patterns_within_file__func "${string__input}" "${DOCKER__EMPTYSTRING}" "${targetFpath__input}"`
+        isFound=`checkFor_exact_match_of_pattern_within_file__func "${string__input}" "${targetFpath__input}"`
         if [[ ${isFound} == true ]]; then
             return
         fi
@@ -3342,12 +4881,18 @@ function retrieve_lineNum_from_file__func() {
     local line__input=${1}
     local targetFpath__input=${2}
 
-    #Retrieve line-number based on the specified 'line__input'
-    local ret=`cat ${targetFpath__input} | grep -n "^${line__input}$" | cut -d":" -f1`
-    
-    #Check if 'ret' is an Empty String
-    if [[ -z ${ret} ]]; then    #true
-        ret=0
+    #Define variables
+    local ret=0
+
+    #Check if 'targetFpath__input' contains data
+    if [[ -s ${targetFpath__input} ]]; then #contains data
+        #Retrieve line-number based on the specified 'line__input'
+        ret=`cat ${targetFpath__input} | grep -n "^${line__input}$" | cut -d":" -f1`
+
+        #Check if 'ret' is an Empty String
+        if [[ -z ${ret} ]]; then    #true
+            ret=0
+        fi
     fi
 
     #Output
@@ -3384,6 +4929,19 @@ function retrieve_subStrings_delimited_by_lastChar_within_string__func() {
     #2. ret_right
     #Both results are delimited by 'SED__RS'
     echo "${ret_left}${SED__RS}${ret_right}"
+}
+
+function subst_char_with_another_char__func() {
+    #Input args
+    local string__input=${1}
+    local charOld__input=${2}
+    local charNew__input=${3}
+
+    #Replace
+    local ret=`echo "${string__input}" | sed "s/${charOld__input}/${charNew__input}/g"`
+
+	#Output
+	echo "${ret}"
 }
 
 function subst_multiple_chars_with_single_char__func() {
@@ -3785,8 +5343,8 @@ function update_exported_env_var__func() {
     local exported_env_var_fpath__input=${4}
 
     #Define Message Constants
-    local ERRMSG_DOCKERFILE_NOT_FOUND="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Dockerfile '${dockerFile__input}' not Found"
-    local ERRMSG_EXPORTEDFILE_NOT_FOUND="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Environment variable file '${exported_env_var_fpath__input}' not Found"
+    local ERRMSG_DOCKERFILE_NOT_FOUND="${DOCKER__ERROR}: Dockerfile '${dockerFile__input}' not Found"
+    local ERRMSG_EXPORTEDFILE_NOT_FOUND="${DOCKER__ERROR}: Environment variable file '${exported_env_var_fpath__input}' not Found"
 
     #Get repository:tag from file
     local dockerfile_fpath_repositoryTag=${DOCKER__EMPTYSTRING}
@@ -3875,22 +5433,60 @@ docker__ctrl_c__sub() {
 }
 
 docker__environmental_variables__sub() {
-    docker__bin_bash__dir=/bin/bash
+    #Check the number of input args
+    if [[ -z ${docker__LTPP3_ROOTFS__dir} ]]; then   #must be equal to 3 input args
+        #---Defin FOLDER
+        docker__LTPP3_ROOTFS__foldername="LTPP3_ROOTFS"
+        docker__development_tools__foldername="development_tools"
 
-    docker__LTPP3_ROOTFS_development_tools__fpath="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
-    docker__LTPP3_ROOTFS_development_tools__dir=$(dirname ${docker__LTPP3_ROOTFS_development_tools__fpath})
-    docker__LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS_development_tools__dir%/*}    #move one directory up: LTPP3_ROOTFS/
-    docker__parentDir_of_LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS__dir%/*}    #move two directories up. This directory is the one-level higher than LTPP3_ROOTFS/
-    if [[ -z ${docker__parentDir_of_LTPP3_ROOTFS__dir} ]]; then
-        docker__parentDir_of_LTPP3_ROOTFS__dir="${DOCKER__SLASH_CHAR}"
+        #Get all the directories containing the foldername 'LTPP3_ROOTFS'...
+        #... and read to array 'find_result_arr'
+        #Remark:
+        #   By using '2> /dev/null', the errors are not shown.
+        readarray -t find_dir_result_arr < <(find  / -type d -iname "${docker__LTPP3_ROOTFS__foldername}" 2> /dev/null)
+
+        #Define variable
+        local find_path_of_LTPP3_ROOTFS=${DOCKER__EMPTYSTRING}
+
+        #Loop thru array-elements
+        for find_dir_result_arrItem in "${find_dir_result_arr[@]}"
+        do
+            #Update variable 'find_path_of_LTPP3_ROOTFS'
+            find_path_of_LTPP3_ROOTFS="${find_dir_result_arrItem}/${docker__development_tools__foldername}"
+            #Check if 'directory' exist
+            if [[ -d "${find_path_of_LTPP3_ROOTFS}" ]]; then    #directory exists
+                #Update variable
+                docker__LTPP3_ROOTFS_development_tools__dir="${find_path_of_LTPP3_ROOTFS}"
+
+                break
+            fi
+        done
+
+        docker__LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS_development_tools__dir%/*}    #move one directory up: LTPP3_ROOTFS/
+        docker__parentDir_of_LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS__dir%/*}    #move two directories up. This directory is the one-level higher than LTPP3_ROOTFS/
     fi
+
     docker__docker__dir=${docker__parentDir_of_LTPP3_ROOTFS__dir}/docker
     docker__docker_cache__dir=${docker__docker__dir}/cache
+    docker__docker_config__dir=${docker__docker__dir}/config
     docker__docker_dockerfiles__dir=${docker__docker__dir}/dockerfiles
     docker__docker_images__dir=${docker__docker__dir}/images
 
+    docker__enter_cmdline_mode__dir=${docker__parentDir_of_LTPP3_ROOTFS__dir}/enter_cmd_mode
+    docker__enter_cmdline_mode_cache__dir=${docker__enter_cmdline_mode__dir}/cache
 
+    docker__LTPP3_ROOTFS_docker__dir=${docker__LTPP3_ROOTFS__dir}/docker
+    docker__LTPP3_ROOTFS_docker_dockerfiles__dir=${docker__LTPP3_ROOTFS_docker__dir}/dockerfiles
+    docker__LTPP3_ROOTFS_docker_list__dir=${docker__LTPP3_ROOTFS_docker__dir}/list
 
+    docker__tmp_dir=/tmp
+    docker__bin_bash__dir=/bin/bash
+
+#---docker__enter_cmdline_mode_cache__dir - contents
+    docker__enter_cmdline_mode_cache__filename="docker_enter_cmdline_mode.cache"
+    docker__enter_cmdline_mode_cache__fpath=${docker__enter_cmdline_mode_cache__dir}/${docker__enter_cmdline_mode_cache__filename}
+
+#---docker__LTPP3_ROOTFS_development_tools__dir - contents
     compgen__query_w_autocomplete__filename="compgen_query_w_autocomplete.sh"
     compgen__query_w_autocomplete__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${compgen__query_w_autocomplete__filename}
 
@@ -3898,49 +5494,61 @@ docker__environmental_variables__sub() {
     dirlist__readInput_w_autocomplete__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${dirlist__readInput_w_autocomplete__filename}
 
     docker__run_chroot__filename="docker_run_chroot.sh"
-    docker__run_chroot__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__run_chroot__filename}
+    docker__run_chroot__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__run_chroot__filename}
 
     docker__containerlist_tableinfo__filename="docker_containerlist_tableinfo.sh"
     docker__containerlist_tableinfo__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__containerlist_tableinfo__filename}
 
+    docker__container_run_remove_menu__filename="docker_container_run_remove_menu.sh"
+    docker__container_run_remove_menu__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__container_run_remove_menu__filename}
+
     docker__cp_fromto_container__filename="docker_cp_fromto_container.sh"
-    docker__cp_fromto_container__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__cp_fromto_container__filename}
+    docker__cp_fromto_container__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__cp_fromto_container__filename}
 
     docker__create_image_from_container__filename="docker_create_image_from_container.sh"
-    docker__create_image_from_container__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__create_image_from_container__filename}
+    docker__create_image_from_container__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__create_image_from_container__filename}
 
     docker__create_an_image_from_dockerfile__filename="docker_create_an_image_from_dockerfile.sh"
-    docker__create_an_image_from_dockerfile__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__create_an_image_from_dockerfile__filename}
+    docker__create_an_image_from_dockerfile__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__create_an_image_from_dockerfile__filename}
 
     docker__create_images_from_dockerlist__filename="docker_create_images_from_dockerlist.sh"
-    docker__create_images_from_dockerlist__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__create_images_from_dockerlist__filename}
+    docker__create_images_from_dockerlist__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__create_images_from_dockerlist__filename}
 
     docker__create_image_from_existing_repository__filename="docker_create_image_from_existing_repository.sh"
-    docker__create_image_from_existing_repository__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__create_image_from_existing_repository__filename}
+    docker__create_image_from_existing_repository__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__create_image_from_existing_repository__filename}
 
-    docker__create_images_menu__filename="docker_create_images_menu.sh"
-    docker__create_images_menu__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__create_images_menu__filename}
+    docker_create_images_from_dockerfile_dockerlist_menu__filename="docker_create_images_from_dockerfile_dockerlist_menu.sh"
+    docker_create_images_from_dockerfile_dockerlist_menu__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker_create_images_from_dockerfile_dockerlist_menu__filename}
 
     docker__enter_command__filename="docker_enter_command.sh"
-    docker__enter_command__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__enter_command__filename}
+    docker__enter_command__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__enter_command__filename}
+
+    docker__enter_cmdline_mode__filename="docker_enter_cmdline_mode.sh"
+    docker__enter_cmdline_mode__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__enter_cmdline_mode__filename}
 
     docker__export_env_var_menu__filename="docker_export_env_var_menu.sh"
-    docker__export_env_var_menu__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__export_env_var_menu__filename}
+    docker__export_env_var_menu__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__export_env_var_menu__filename}
 
     docker__git_menu__filename="git_menu.sh"
-    docker__git_menu__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__git_menu__filename}
+    docker__git_menu__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__git_menu__filename}
+
+    docker_image_create_remove_rename_menu__filename="docker_image_create_remove_rename_menu.sh"
+    docker_image_create_remove_rename_menu__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker_image_create_remove_rename_menu__filename}
 
     docker__load__filename="docker_load.sh"
-    docker__load__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__load__filename}
+    docker__load__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__load__filename}
 
     docker__readInput_w_autocomplete__filename="docker_readInput_w_autocomplete.sh"
     docker__readInput_w_autocomplete__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__readInput_w_autocomplete__filename}
 
     docker__remove_container__filename="docker_remove_container.sh"
-    docker__remove_container__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__remove_container__filename}
+    docker__remove_container__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__remove_container__filename}
     
     docker__remove_image__filename="docker_remove_image.sh"
-    docker__remove_image__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__remove_image__filename}
+    docker__remove_image__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__remove_image__filename}
+
+    docker_rename_repotag__filename="docker_rename_repotag.sh"
+    docker_rename_repotag__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker_rename_repotag__filename}
 
     docker__repo_link_checkout_menu_select__filename="docker_repo_link_checkout_menu_select.sh"
     docker__repo_link_checkout_menu_select__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__repo_link_checkout_menu_select__filename}
@@ -3952,27 +5560,62 @@ docker__environmental_variables__sub() {
 	docker__repolist_tableinfo__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__repolist_tableinfo__filename}
 
     docker__run_container_from_a_repository__filename="docker_run_container_from_a_repository.sh"
-    docker__run_container_from_a_repository__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__run_container_from_a_repository__filename}
+    docker__run_container_from_a_repository__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__run_container_from_a_repository__filename}
 
     docker__run_exited_container__filename="docker_run_exited_container.sh"
-    docker__run_exited_container__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__run_exited_container__filename}
+    docker__run_exited_container__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__run_exited_container__filename}
 
     docker__select_dockerfile__filename="docker_select_dockerfile.sh"
-    docker__select_dockerfile__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__select_dockerfile__filename}
+    docker__select_dockerfile__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__select_dockerfile__filename}
 
     docker__show_choose_add_del_from_cache__filename="docker_show_choose_add_del_from_cache.sh"
     docker__show_choose_add_del_from_cache__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__show_choose_add_del_from_cache__filename}
 
     docker__save__filename="docker_save.sh"
-    docker__save__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__save__filename}
+    docker__save__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__save__filename}
 
     docker__ssh_to_host__filename="docker_ssh_to_host.sh"
-    docker__ssh_to_host__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__ssh_to_host__filename}
+    docker__ssh_to_host__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__ssh_to_host__filename}
 
+    git__git_create_checkout_local_branch__filename="git_create_checkout_local_branch.sh"
+    git__git_create_checkout_local_branch__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${git__git_create_checkout_local_branch__filename}
+
+    git__git_delete_local_branch__filename="git_delete_local_branch.sh"
+    git__git_delete_local_branch__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${git__git_delete_local_branch__filename}
     
+    git__git_pull__filename="git_pull.sh"
+    git__git_pull__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${git__git_pull__filename}
+    
+    git__git_pull_origin_otherBranch__filename="git_pull_origin_otherbranch.sh"
+    git__git_pull_origin_otherBranch__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${git__git_pull_origin_otherBranch__filename}
+    
+    git__git_push__filename="git_push.sh"
+    git__git_push__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${git__git_push__filename}
 
-    docker__LTPP3_ROOTFS_docker__dir=${docker__LTPP3_ROOTFS__dir}/docker
-    docker__LTPP3_ROOTFS_docker_dockerfiles__dir=${docker__LTPP3_ROOTFS_docker__dir}/dockerfiles
+    git__git_readInput_w_autocomplete__filename="git_readInput_w_autocomplete.sh"
+    git__git_readInput_w_autocomplete__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${git__git_readInput_w_autocomplete__filename}
+
+    git__git_tag_create_and_push__filename="git_tag_create_and_push.sh"
+    git__git_tag_create_and_push__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${git__git_tag_create_and_push__filename}
+
+    # git__git_tag_create_link_and_push__filename="git_tag_create_link_and_push.sh"
+    # git__git_tag_create_link_and_push__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${git__git_tag_create_link_and_push__filename}
+
+    git__git_tag_remove__filename="git_tag_remove.sh"
+    git__git_tag_remove__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${git__git_tag_remove__filename}
+
+    git__git_tag_rename__filename="git_tag_rename.sh"
+    git__git_tag_rename__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${git__git_tag_rename__filename}
+
+    git__git_tag_menu__filename="git_tag_menu.sh"
+    git__git_tag_menu__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${git__git_tag_menu__filename}
+
+    git__git_undo_last_unpushed_commit__filename="git_undo_last_unpushed_commit.sh"
+    git__git_undo_last_unpushed_commit__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${git__git_undo_last_unpushed_commit__filename}
+
+
+
+#---docker__LTPP3_ROOTFS_docker__dir - contents
     docker__dockerfile_ltps_sunplus_filename="dockerfile_ltps_sunplus"
     docker__dockerfile_ltps_sunplus_fpath=${docker__LTPP3_ROOTFS_docker_dockerfiles__dir}/${docker__dockerfile_ltps_sunplus_filename}
 
@@ -3984,15 +5627,11 @@ docker__environmental_variables__sub() {
     docker__exported_env_var_default_filename="exported_env_var_default.txt"
     docker__exported_env_var_default_fpath=${docker__LTPP3_ROOTFS_docker_environment_dir}/${docker__exported_env_var_default_filename}
 
-
-
-    docker__docker_config__dir=${docker__docker__dir}/config
+#---docker__docker_config__dir - contents
     docker__export_env_var_menu_cfg__filename="docker_export_env_var_menu.cfg"
     docker__export_env_var_menu_cfg__fpath=${docker__docker_config__dir}/${docker__export_env_var_menu_cfg__filename}
 
-
-
-    docker__tmp_dir=/tmp
+#---docker__tmp_dir - contents
     compgen__query_w_autocomplete_out__filename="compgen_query_w_autocomplete.out"
     compgen__query_w_autocomplete_out__fpath=${docker__tmp_dir}/${compgen__query_w_autocomplete_out__filename}
 
@@ -4019,8 +5658,11 @@ docker__environmental_variables__sub() {
     docker__create_images_from_dockerlist_out__filename="docker_create_images_from_dockerlist.out"
     docker__create_images_from_dockerlist_out__fpath=${docker__tmp_dir}/${docker__create_images_from_dockerlist_out__filename}
 
-    docker__enter_cmdline_out__filename="docker__enter_cmdline.out"
-    docker__enter_cmdline_out__fpath=${docker__tmp_dir}/${docker__enter_cmdline_out__filename}
+    docker__enter_cmdline_mode_out__filename="docker_enter_cmdline_mode.out"
+    docker__enter_cmdline_mode_out__fpath=${docker__tmp_dir}/${docker__enter_cmdline_mode_out__filename}
+
+    docker__enter_cmdline_mode_tmp__filename="docker_enter_cmdline_mode.tmp"
+    docker__enter_cmdline_mode_tmp__fpath=${docker__tmp_dir}/${docker__enter_cmdline_mode_tmp__filename}
 
     docker__export_env_var_menu_out__filename="docker_export_env_var_menu.out"
     docker__export_env_var_menu_out__fpath=${docker__tmp_dir}/${docker__export_env_var_menu_out__filename}
@@ -4034,22 +5676,59 @@ docker__environmental_variables__sub() {
     docker__repo_linkcheckout_profile_menu_select_out__filename="docker_repo_linkcheckout_profile_menu_select.out"
     docker__repo_linkcheckout_profile_menu_select_out__fpath=${docker__tmp_dir}/${docker__repo_linkcheckout_profile_menu_select_out__filename}
 
+    docker__readDialog_w_Output__func_out__filename="readDialog_w_Output__func.out"
+    docker__readDialog_w_Output__func_out__fpath=${docker__tmp_dir}/${docker__readDialog_w_Output__func_out__filename}
+
     docker__select_dockerfile_out__filename="docker_select_dockerfile.out"
-    docker__select_dockerfile_out__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__select_dockerfile_out__filename}
+    docker__select_dockerfile_out__fpath=${docker__tmp_dir}/${docker__select_dockerfile_out__filename}
 
     docker__show_choose_add_del_from_cache_out__filename="docker_show_choose_add_del_from_cache.out"
     docker__show_choose_add_del_from_cache_out__fpath=${docker__tmp_dir}/${docker__show_choose_add_del_from_cache_out__filename}
 
+    docker__show_fileContent_wo_select_func_out__filename="show_fileContent_wo_select__func.out"
+    docker__show_fileContent_wo_select_func_out__fpath=${docker__tmp_dir}/${docker__show_fileContent_wo_select_func_out__filename}
+
+    docker__show_pathContent_w_selection_func_out__filename="show_pathContent_w_selection__func.out"
+    docker__show_pathContent_w_selection_func_out__fpath=${docker__tmp_dir}/${docker__show_pathContent_w_selection_func_out__filename}
+
+    git__git_create_checkout_local_branch_out__filename="git_create_checkout_local_branch.out"
+    git__git_create_checkout_local_branch_out__fpath=${docker__tmp_dir}/${git__git_create_checkout_local_branch_out__filename}
+
+    git__git_tag_create_link_and_push_out__filename="git_tag_create_link_and_push.out"
+    git__git_tag_create_link_and_push_out__fpath=${docker__tmp_dir}/${git__git_tag_create_link_and_push_out__filename}
+
+    git__git_delete_local_branch_out__filename="git_delete_local_branch.out"
+    git__git_delete_local_branch_out__fpath=${docker__tmp_dir}/${git__git_delete_local_branch_out__filename}
+
+    git__git_push_out__filename="git_push.out"
+    git__git_push_out__fpath=${docker__tmp_dir}/${git__git_push_out__filename}
+
+    git__git_readInput_w_autocomplete_out__filename="git_readInput_w_autocomplete.out"
+    git__git_readInput_w_autocomplete_out__fpath=${docker__tmp_dir}/${git__git_readInput_w_autocomplete_out__filename}
+
+    git__git_tag_create_and_push_out__filename="git_tag_create_and_push.out"
+    git__git_tag_create_and_push_out__fpath=${docker__tmp_dir}/${git__git_tag_create_and_push_out__filename}
+
+    git__git_tag_rename_out__filename="git_tag_rename.out"
+    git__git_tag_rename_out__fpath=${docker__tmp_dir}/${git__git_tag_rename_out__filename}
+
+    git__git_tag_remove_out__filename="git_tag_remove.out"
+    git__git_tag_remove_out__fpath=${docker__tmp_dir}/${git__git_tag_remove_out__filename}
+
+    git__git_undo_last_unpushed_commit_out__filename="git_undo_last_unpushed_commit.out"
+    git__git_undo_last_unpushed_commit_out__fpath=${docker__tmp_dir}/${git__git_undo_last_unpushed_commit_out__filename}
+
+
     #OLD VERSION (is temporarily present for backwards compaitibility)
-	docker__dockercontainer_dirlist__filename="dockercontainer_dirlist.sh"
-	docker__dockercontainer_dirlist__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__dockercontainer_dirlist__filename}
-	docker__localhost_dirlist__filename="localhost_dirlist.sh"
-	docker__localhost_dirlist__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__localhost_dirlist__filename}
+	# docker__dockercontainer_dirlist__filename="dockercontainer_dirlist.sh"
+	# docker__dockercontainer_dirlist__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__dockercontainer_dirlist__filename}
+	# docker__localhost_dirlist__filename="localhost_dirlist.sh"
+	# docker__localhost_dirlist__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__localhost_dirlist__filename}
 }
 
 docker__create_dir__sub() {
-    if [[ ! -d ${docker__tmp_dir} ]]; then
-        mkdir -p ${docker__tmp_dir}
+    if [[ ! -d ${docker__docker__dir} ]]; then
+        mkdir -p ${docker__docker__dir}
     fi
     if [[ ! -d ${docker__docker_cache__dir} ]]; then
         mkdir -p ${docker__docker_cache__dir}
@@ -4062,6 +5741,12 @@ docker__create_dir__sub() {
     fi
     if [[ ! -d ${docker__docker_images__dir} ]]; then
         mkdir -p ${docker__docker_images__dir}
+    fi
+    if [[ ! -d ${docker__enter_cmdline_mode__dir} ]]; then
+        mkdir -p ${docker__enter_cmdline_mode__dir}
+    fi
+    if [[ ! -d ${docker__enter_cmdline_mode_cache__dir} ]]; then
+        mkdir -p ${docker__enter_cmdline_mode_cache__dir}
     fi
     if [[ ! -d ${docker__tmp_dir} ]]; then
         mkdir -p ${docker__tmp_dir}

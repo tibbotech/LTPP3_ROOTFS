@@ -1,137 +1,416 @@
 #!/bin/bash -m
+#---INPUT ARGS
+branchName__input=${1}
+
+
+
 #Remark: by using '-m' the INT will NOT propagate to the PARENT scripts
 #---SUBROUTINES
-git__environmental_variables__sub() {
-	# git__current_dir=`pwd`
-	git__current_script_fpath="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
-    git__current_dir=$(dirname ${git__current_script_fpath})	#/repo/LTPP3_ROOTFS/development_tools
-	git__parent_dir=${git__current_dir%/*}    #gets one directory up (/repo/LTPP3_ROOTFS)
-    if [[ -z ${git__parent_dir} ]]; then
-        git__parent_dir="${DOCKER__SLASH}"
-    fi
-	git__current_folder=`basename ${git__current_dir}`
+docker__environmental_variables__sub() {
+    #Check the number of input args
+    if [[ -z ${docker__global__fpath} ]]; then   #must be equal to 3 input args
+        #---Defin FOLDER
+        docker__LTPP3_ROOTFS__foldername="LTPP3_ROOTFS"
+        docker__development_tools__foldername="development_tools"
 
-    git__development_tools_folder="development_tools"
-    if [[ ${git__current_folder} != ${git__development_tools_folder} ]]; then
-        git__my_LTPP3_ROOTFS_development_tools_dir=${git__current_dir}/${git__development_tools_folder}
-    else
-        git__my_LTPP3_ROOTFS_development_tools_dir=${git__current_dir}
-    fi
+        #Get all the directories containing the foldername 'LTPP3_ROOTFS'...
+        #... and read to array 'find_result_arr'
+        #Remark:
+        #   By using '2> /dev/null', the errors are not shown.
+        readarray -t find_dir_result_arr < <(find  / -type d -iname "${docker__LTPP3_ROOTFS__foldername}" 2> /dev/null)
 
-    docker__global__filename="docker_global.sh"
-    docker__global__fpath=${git__my_LTPP3_ROOTFS_development_tools_dir}/${docker__global__filename}
+        #Define variable
+        local find_path_of_LTPP3_ROOTFS=${DOCKER__EMPTYSTRING}
+
+        #Loop thru array-elements
+        for find_dir_result_arrItem in "${find_dir_result_arr[@]}"
+        do
+            #Update variable 'find_path_of_LTPP3_ROOTFS'
+            find_path_of_LTPP3_ROOTFS="${find_dir_result_arrItem}/${docker__development_tools__foldername}"
+            #Check if 'directory' exist
+            if [[ -d "${find_path_of_LTPP3_ROOTFS}" ]]; then    #directory exists
+                #Update variable
+                docker__LTPP3_ROOTFS_development_tools__dir="${find_path_of_LTPP3_ROOTFS}"
+
+                break
+            fi
+        done
+
+        docker__LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS_development_tools__dir%/*}    #move one directory up: LTPP3_ROOTFS/
+        docker__parentDir_of_LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS__dir%/*}    #move two directories up. This directory is the one-level higher than LTPP3_ROOTFS/
+
+        docker__global__filename="docker_global.sh"
+        docker__global__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__global__filename}
+    fi
 }
 
-git__load_source_files__sub() {
+docker__load_source_files__sub() {
     source ${docker__global__fpath}
 }
 
-git__load_header__sub() {
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-    echo -e "${DOCKER__BG_ORANGE}                                 ${DOCKER__TITLE}${DOCKER__BG_ORANGE}                                ${DOCKER__NOCOLOR}"
+docker__load_constants__sub() {
+    DOCKER__MENUTITLE="Git Push"
+    DOCKER__TABLETITLE_EXISTING_UNPUSHED_COMMITS="Existing Unpushed Commits"
+
+    DOCKER__MENUOPTIONS="${DOCKER__FOURSPACES_Y_YES}\n"
+    DOCKER__MENUOPTIONS+="${DOCKER__FOURSPACES_N_NO}\n"
+    DOCKER__MENUOPTIONS+="${DOCKER__FOURSPACES_Q_QUIT}"
+
+    DOCKER__READDIALOG="Push ${DOCKER__FG_LIGHTGREY}pending${DOCKER__NOCOLOR} commits? "
+    DOCKER__READDIALOG_YNRQ="Push ${DOCKER__FG_LIGHTGREY}new${DOCKER__NOCOLOR} commits (${DOCKER__Y_SLASH_N_SLASH_R_SLASH_Q})? "
+
+    DOCKER__SUBJECT_GIT_PUSH="git push"
 }
 
+docker__init_variables__sub() {
+    docker__commitSubj=${DOCKER__EMPTYSTRING}
+    docker__tibboHeader_prepend_numOfLines=${DOCKER__NUMOFLINES_2}
 
-git__add_comment_push__sub() {
-    #Define local constants
-    local MENUTITLE="Git ${DOCKER__BG_LIGHTGREY}${DOCKER__FG_WHITE}Push${DOCKER__NOCOLOR}"
+    docker__abbrevCommitHash_arr=()
+    docker__commitSubj_arr=()
 
-    #Define local variables
-    local username=${DOCKER__EMPTYSTRING}
-    local password=${DOCKER__EMPTYSTRING}
-    local commit_description=${DOCKER__EMPTYSTRING}
-    local ts_current=${DOCKER__EMPTYSTRING}
+    docker__numOf_pendingCommits=0
+}
 
-    #Define local message variables
-    local errMsg=${DOCKER__EMPTYSTRING}
+docker__reset_variables__sub() {
+    docker__abbrevCommitHash_arr=()
+    docker__commitSubj_arr=()
+}
 
-    #Show menu-title
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-    show_centered_string__func "${MENUTITLE}" "${DOCKER__TABLEWIDTH}"
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+docker__add_comment_push__sub() {
+    #Define constants
+    local TIBBOHEADER_PHASE=1
+    local MENUTITLE_PHASE=2
+    local PRINT_START_MESSAGE=3
+    local GIT_ADD_PHASE=4
+    local GIT_COMMIT_PHASE=5
+    local GIT_CONFIRM_EXISTING_COMMIT_PHASE=6
+    local GIT_CONFIRM_NEW_COMMIT_PHASE=7
+    local GIT_PUSH_PHASE=8
+    local PRINT_COMPLETED_MESSAGE=9
+    local EXIT_PHASE=10
 
-#---Git Add
-    #Execute command
-    git add .
+    local PRINTF_STAGE1="${DOCKER__FG_ORANGE}STAGE-I${DOCKER__NOCOLOR}"
+    local PRINTF_STAGE2="${DOCKER__FG_ORANGE}STAGE-II${DOCKER__NOCOLOR}"
+    local PRINTF_STAGE2A="${DOCKER__FG_ORANGE}STAGE-IIA${DOCKER__NOCOLOR}"
+    local PRINTF_STAGE3="${DOCKER__FG_ORANGE}STAGE-III${DOCKER__NOCOLOR}"
 
-    #Check exit-code
-    exitCode=$?
-    if [[ ${exitCode} -eq 0 ]]; then
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-        echo -e "---:${DOCKER__FG_ORANGE}STATUS${DOCKER__NOCOLOR}: git add. (${DOCKER__FG_GREEN}done${DOCKER__NOCOLOR})"
-    else
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-        echo -e "***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: git add. (${DOCKER__FG_LIGHTRED}failed${DOCKER__NOCOLOR})"
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+    local PRINTF_GIT_COMMIT_CMD="${GIT__CMD_GIT_COMMIT_DASH_M} <your subject>"
+    local PRINTF_GIT_RESET_SOFT_HEAD_CMD="${GIT__CMD_GIT_RESET} --soft HEAD~"
 
-        exit 99
-    fi
+    #Define variables
+    local answer=${DOCKER__NO}
+    local phase=${TIBBOHEADER_PHASE}
 
-#---Git Commit
-    #Provide a commit description
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+    local printf_msg=${DOCKER__EMPTYSTRING}
+    local printf_subjectMsg=${DOCKER__EMPTYSTRING}
+    local readDialog=${DOCKER__EMPTYSTRING}
+
+    local git_current_branch_numOf_commits=0
+    local git_diff_numOf_commits=0
+    local git_master_numOf_commits=0
+
+
+    #Handle 'phase'
     while true
     do
-        read -e -p "Provide a description for this commit: " commit_description
+        case "${phase}" in
+            ${TIBBOHEADER_PHASE})
+                #Show Tibbo-title
+                load_tibbo_title__func "${docker__tibboHeader_prepend_numOfLines}"
 
-        if [[ ! -z ${commit_description} ]]; then
-            break
-        else
-            if [[ ${commit_description} != "${DOCKER__ENTER}" ]]; then    #no ENTER was pressed
-                moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-            fi
-        fi
+                #Goto next-phase
+                phase="${MENUTITLE_PHASE}"
+                ;;
+            ${MENUTITLE_PHASE})
+                #Show menu-title
+                show_menuTitle_w_adjustable_indent__func "${DOCKER__MENUTITLE}" "${DOCKER__EMPTYSTRING}"
+
+                #Goto next-phase
+                phase="${PRINT_START_MESSAGE}"
+                ;;
+            ${PRINT_START_MESSAGE})
+                #Update message
+                printf_subjectMsg="---:${DOCKER__START}: ${DOCKER__SUBJECT_GIT_PUSH}"
+                #Show message
+                show_msg_only__func "${printf_subjectMsg}" "${DOCKER__NUMOFLINES_1}" "${DOCKER__NUMOFLINES_0}"
+
+                #Goto next-phase
+                phase="${GIT_ADD_PHASE}"
+                ;;
+            ${GIT_ADD_PHASE})
+                #Update cmd
+                git_cmd="${GIT__CMD_GIT_ADD_DOT}"
+                #Execute cmd
+                eval ${git_cmd}
+
+                #Check exit-code
+                docker__exitCode=$?
+                if [[ ${docker__exitCode} -eq 0 ]]; then
+                    #Update message
+                    printf_msg="------:${DOCKER__EXECUTED}: ${git_cmd} (${DOCKER__STATUS_DONE})"
+                    #Show message
+                    show_msg_only__func "${printf_msg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+
+                    #Goto next-phase
+                    phase="${GIT_COMMIT_PHASE}"
+                else
+                    #Update message
+                    printf_msg="------:${DOCKER__EXECUTED}: ${git_cmd} (${DOCKER__STATUS_FAILED})"
+                    #Show message
+                    show_msg_only__func "${printf_msg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+
+                    #Goto next-phase
+                    phase="${PRINT_COMPLETED_MESSAGE}"
+                fi
+                ;;
+            ${GIT_COMMIT_PHASE})
+                #Update 'readDialog'
+                readDialog="------:${DOCKER__INPUT}: provide a subject: "
+
+                #Start loop
+                while true
+                do
+                    #Show read-dialog
+                    read -e -p "${readDialog}" docker__commitSubj
+
+                    #Handle 'docker__commitSubj'
+                    if [[ ! -z ${docker__commitSubj} ]]; then   #is Not an Empty String
+                        break
+                    else    #is an Empty String
+                        if [[ ${docker__commitSubj} != "${DOCKER__ENTER}" ]]; then    #no ENTER was pressed
+                            moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+                        fi
+                    fi
+                done
+
+                #Update cmd
+                git_cmd="${GIT__CMD_GIT_COMMIT_DASH_M} \"${docker__commitSubj}\""
+                #Execute cmd
+                eval ${git_cmd}
+
+                #Check exit-code
+                docker__exitCode=$?
+                if [[ ${docker__exitCode} -eq 0 ]]; then
+                    #Update message
+                    printf_msg="------:${DOCKER__EXECUTED}: ${git_cmd} (${DOCKER__STATUS_DONE})"
+                    #Show message
+                    show_msg_only__func "${printf_msg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+
+                    #Go to next-phase
+                    phase="${GIT_CONFIRM_NEW_COMMIT_PHASE}"
+                else
+                    #Get the unpushed commits
+                    #Remark:
+                    #   If no 'branchName__input' is given, then NO results will be found
+                    readarray -t docker__abbrevCommitHash_arr < <(git__log_for_unpushed_local_commits__func \
+                            "${branchName__input}" \
+                            "${DOCKER__EMPTYSTRING}" \
+                            "${GIT__PLACEHOLDER_ABBREV_COMMIT_HASH}")
+                    readarray -t docker__commitSubj_arr < <(git__log_for_unpushed_local_commits__func \
+                            "${branchName__input}" \
+                            "${DOCKER__EMPTYSTRING}" \
+                            "${GIT__PLACEHOLDER_SUBJECT}")
+
+                    #Get the number of unpush commits
+                    docker__numOf_pendingCommits=`array_count_numOf_elements__func "${docker__abbrevCommitHash_arr[@]}"`
+
+                    #Check if 'docker__numOf_pendingCommits > 0'
+                    if [[ ${docker__numOf_pendingCommits} -gt ${DOCKER__NUMOFMATCH_0} ]]; then
+                        phase="${GIT_CONFIRM_EXISTING_COMMIT_PHASE}"
+                    else
+                        #Update message
+                        printf_msg="------:${DOCKER__EXECUTED}: ${git_cmd} (${DOCKER__STATUS_FAILED})"
+                        #Show message
+                        show_msg_only__func "${printf_msg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+
+                        #Go to next-phase
+                        phase="${PRINT_COMPLETED_MESSAGE}"
+                    fi
+                fi
+                ;;
+            ${GIT_CONFIRM_EXISTING_COMMIT_PHASE})
+                #Combine the two arrays 'docker__abbrevCommitHash_arr' and 'docker__commitSubj_arr'...
+                #...and write the output to a specified file (e.g. git__git_push_out__fpath).
+                #Remark:
+                #   Also fore-color the values with 'DOCKER__FG_LIGHTGREY'
+                combine_two_arrays_of_same_length_and_writeTo_file__func  "${DOCKER__COLON}" \
+                        "${DOCKER__BG_LIGHTGREY}" \
+                        "${git__git_push_out__fpath}" \
+                        "${DOCKER__FALSE}" \
+                        "${docker__abbrevCommitHash_arr[@]}" \
+                        "${docker__commitSubj_arr[@]}"
+
+                #Show file content
+                show_fileContent_wo_select__func "${git__git_push_out__fpath}" \
+                                "${DOCKER__TABLETITLE_EXISTING_UNPUSHED_COMMITS}" \
+                                "${DOCKER__EMPTYSTRING}" \
+                                "${DOCKER__EMPTYSTRING}" \
+                                "${DOCKER__MENUOPTIONS}" \
+                                "${DOCKER__ECHOMSG_NORESULTS_FOUND}" \
+                                "${DOCKER__READDIALOG}" \
+                                "${DOCKER__REGEX_YNQ}" \
+                                "${docker__show_fileContent_wo_select_func_out__fpath}" \
+                                "${DOCKER__TABLEROWS_10}" \
+                                "${DOCKER__EMPTYSTRING}" \
+                                "${DOCKER__FALSE}" \
+                                "${DOCKER__NUMOFLINES_2}" \
+                                "${DOCKER__TRUE}"
+
+                #Get the exitcode just in case a Ctrl-C was pressed in function 'show_fileContent_wo_select__func' (in script 'docker_global.sh')
+                docker__exitCode=$?
+                if [[ ${docker__exitCode} -eq ${DOCKER__EXITCODE_99} ]]; then
+                    exit__func "${docker__exitCode}" "${DOCKER__NUMOFLINES_2}"
+                fi
+
+                #Get result from file.
+                answer=`get_output_from_file__func \
+                                    "${docker__show_fileContent_wo_select_func_out__fpath}" \
+                                    "${DOCKER__LINENUM_1}"`
+
+                #Check if 'answer' is a numeric value
+                case "${answer}" in
+                    ${DOCKER__QUIT})
+                        phase="${EXIT_PHASE}"
+                        ;;
+                    ${DOCKER__YES})
+                        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+                        phase="${GIT_PUSH_PHASE}"
+                        ;;
+                    ${DOCKER__NO})
+                        # moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+                        phase="${EXIT_PHASE}"
+                        ;;
+                    *)
+                        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+                        ;;
+                esac
+                ;;
+            ${GIT_CONFIRM_NEW_COMMIT_PHASE})
+                #Update 'readDialog'
+                readDialog="------:${DOCKER__QUESTION}: ${DOCKER__READDIALOG_YNRQ} "
+
+                while true
+                do
+                    read -N1 -r -p "${readDialog}" answer
+
+                    case "${answer}" in
+                        ${DOCKER__QUIT})
+                            # moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+                            ${GIT__CMD_GIT_RESET} --soft HEAD~
+
+                            phase="${EXIT_PHASE}"
+
+                            break
+                            ;;
+                        ${DOCKER__YES})
+                            moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+                            phase="${GIT_PUSH_PHASE}"
+
+                            break
+                            ;;
+                        ${DOCKER__NO})
+                            ${GIT__CMD_GIT_RESET} --soft HEAD~
+
+                            Goto next-phase
+                            phase="${EXIT_PHASE}"
+
+                            break
+                            ;;
+                        ${DOCKER__REDO})
+                            moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
+
+                            echo -e "---:${PRINTF_STAGE2A}: ${PRINTF_GIT_RESET_SOFT_HEAD_CMD}"
+
+                            ${GIT__CMD_GIT_RESET} --soft HEAD~
+
+                            docker__reset_variables__sub
+
+                            phase="${GIT_COMMIT_PHASE}"
+
+                            break
+                            ;;
+                        ${DOCKER__ENTER})
+                            moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+                            ;;
+                        *)
+                            moveToBeginning_and_cleanLine__func
+                            ;;
+                    esac
+                done
+                ;;
+            ${GIT_PUSH_PHASE})
+                #Get the number of commits
+                #1. master:
+                git_master_numOf_commits=`git rev-list --count --no-merges ${GIT__REMOTES_ORIGIN_MAIN}`
+                #2. current 'branchName__input':
+                git_current_branch_numOf_commits=`git rev-list --count --no-merges ${branchName__input}`
+                #3. difference
+                git_diff_numOf_commits=$((git_current_branch_numOf_commits - git_master_numOf_commits))
+
+                #4. Update cmd
+                #Remark: 
+                #   If 'git_diff_numOf_commits = 1' then it means that 'branchName__input' just did it FIRST commit.
+                if [[ ${git_diff_numOf_commits} -eq ${DOCKER__NUMOFMATCH_1} ]]; then
+                    git_cmd="${GIT__CMD_GIT_PUSH} -u origin ${branchName__input}"
+                else
+                    git_cmd="${GIT__CMD_GIT_PUSH}"
+                fi
+
+                #Execute cmd
+                eval ${git_cmd}
+
+                #Check exit-code
+                docker__exitCode=$?
+                if [[ ${docker__exitCode} -eq 0 ]]; then
+                    #Update message
+                    printf_msg="------:${DOCKER__EXECUTED}: ${git_cmd} (${DOCKER__STATUS_DONE})"
+                else
+                    #Update message
+                    printf_msg="------:${DOCKER__EXECUTED}: ${git_cmd} (${DOCKER__STATUS_FAILED})"
+                fi
+
+                #Show message
+                show_msg_only__func "${printf_msg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+                
+                #Goto next-phase
+                phase="${PRINT_COMPLETED_MESSAGE}"
+                ;;
+            ${PRINT_COMPLETED_MESSAGE})
+                #Update message
+                printf_subjectMsg="---:${DOCKER__COMPLETED}: ${DOCKER__SUBJECT_GIT_PUSH}"
+                #Show message
+                show_msg_only__func "${printf_subjectMsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+
+                #Goto next-phase
+                goto__func EXIT_PHASE
+                ;;
+            ${EXIT_PHASE})
+                exit__func "${DOCKER__EXITCODE_99}" "${DOCKER__NUMOFLINES_1}"
+
+                break
+                ;;
+        esac
     done
-
-    #Execute command
-    git commit -m "${commit_description}"
-
-    #Check exit-code
-    exitCode=$?
-    if [[ ${exitCode} -eq 0 ]]; then
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-        echo -e "---:${DOCKER__FG_ORANGE}STATUS${DOCKER__NOCOLOR}: git commit -m <your description> (${DOCKER__FG_GREEN}done${DOCKER__NOCOLOR})"
-    else
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-        echo -e "***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}:  git commit -m <your description> (${DOCKER__FG_LIGHTRED}failed${DOCKER__NOCOLOR})"
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-
-        exit 99
-    fi
-
-
-#---Git Push
-    #Execute command
-    git push
-
-    #Check exit-code
-    exitCode=$?
-    if [[ ${exitCode} -eq 0 ]]; then
-        echo -e "---:${DOCKER__FG_ORANGE}STATUS${DOCKER__NOCOLOR}: git push (${DOCKER__FG_GREEN}done${DOCKER__NOCOLOR})"
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-
-        exit 0
-    else
-        echo -e "***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: git push (${DOCKER__FG_LIGHTRED}failed${DOCKER__NOCOLOR})"
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-
-        exit 99
-    fi
 }
 
 
 
 #---MAIN SUBROUTINE
 main_sub() {
-    git__environmental_variables__sub
+    docker__environmental_variables__sub
 
-    git__load_source_files__sub
+    docker__load_source_files__sub
 
-    git__load_header__sub
+    docker__load_constants__sub
 
-    git__environmental_variables__sub
+    docker__init_variables__sub
 
-    git__add_comment_push__sub
+    docker__add_comment_push__sub
 }
 
 

@@ -10,7 +10,7 @@ listView_numOfRows__input=${3}
 listView_numOfCols__input=${4}      #0: auto-set-column, 1: 1-column, 2: 2-columns, 3: 3-columns (MAX)
 keyWord__input=${5}
 dircontentlist_fpath__input=${6}
-flag_prepend_emptyLine__input=${7}
+tibboHeader_prepend_numOfLines__input=${7}
 
 
 
@@ -41,16 +41,17 @@ PATTERN_PAGE="Page"
 
 
 
-#---PRINTF CONSTANTS
-PRINTF_DIR_IS_EMPTY="${FOUR_SPACES}-:${FG_YELLOW}directory is Empty${NOCOLOR}:-"
-PRINTF_UNKNOWN_DIRECTORY="${FOUR_SPACES}-:${FG_LIGHTRED}Unknown directory${NOCOLOR}:-"
-
-
-
 #---SPACE CONSTANTS
 EMPTYSTRING=""
 ONE_SPACE=" "
-FOUR_SPACES="    "
+FOUR_SPACES="${ONE_SPACE}${ONE_SPACE}${ONE_SPACE}${ONE_SPACE}"
+
+
+
+
+#---PRINTF CONSTANTS
+PRINTF_DIR_IS_EMPTY="${FOUR_SPACES}-:${FG_YELLOW}directory is Empty${NOCOLOR}:-"
+PRINTF_UNKNOWN_DIRECTORY="${FOUR_SPACES}-:${FG_LIGHTRED}Unknown directory${NOCOLOR}:-"
 
 
 
@@ -94,23 +95,41 @@ function duplicate_char__func() {
 
 #---SUBROUTINES
 docker__load_environment_variables__sub() {
-    #---Define PATHS
-    docker__current_script_fpath="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
-    docker__current_dir=$(dirname ${docker__current_script_fpath})
-    if [[ ${docker__current_dir} == ${DOCKER__DOT} ]]; then
-        docker__current_dir=$(pwd)
-    fi
-    docker__current_folder=`basename ${docker__current_dir}`
+    #Check the number of input args
+    if [[ -z ${docker__global__fpath} ]]; then   #must be equal to 3 input args
+        #---Defin FOLDER
+        docker__LTPP3_ROOTFS__foldername="LTPP3_ROOTFS"
+        docker__development_tools__foldername="development_tools"
 
-    docker__development_tools_folder="development_tools"
-    if [[ ${docker__current_folder} != ${docker__development_tools_folder} ]]; then
-        docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}/${docker__development_tools_folder}
-    else
-        docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}
-    fi
+        #Get all the directories containing the foldername 'LTPP3_ROOTFS'...
+        #... and read to array 'find_result_arr'
+        #Remark:
+        #   By using '2> /dev/null', the errors are not shown.
+        readarray -t find_dir_result_arr < <(find  / -type d -iname "${docker__LTPP3_ROOTFS__foldername}" 2> /dev/null)
 
-    docker__global__filename="docker_global.sh"
-    docker__global__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__global__filename}
+        #Define variable
+        local find_path_of_LTPP3_ROOTFS=${DOCKER__EMPTYSTRING}
+
+        #Loop thru array-elements
+        for find_dir_result_arrItem in "${find_dir_result_arr[@]}"
+        do
+            #Update variable 'find_path_of_LTPP3_ROOTFS'
+            find_path_of_LTPP3_ROOTFS="${find_dir_result_arrItem}/${docker__development_tools__foldername}"
+            #Check if 'directory' exist
+            if [[ -d "${find_path_of_LTPP3_ROOTFS}" ]]; then    #directory exists
+                #Update variable
+                docker__LTPP3_ROOTFS_development_tools__dir="${find_path_of_LTPP3_ROOTFS}"
+
+                break
+            fi
+        done
+
+        docker__LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS_development_tools__dir%/*}    #move one directory up: LTPP3_ROOTFS/
+        docker__parentDir_of_LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS__dir%/*}    #move two directories up. This directory is the one-level higher than LTPP3_ROOTFS/
+
+        docker__global__filename="docker_global.sh"
+        docker__global__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__global__filename}
+    fi
 }
 
 docker__load_source_files__sub() {
@@ -163,8 +182,15 @@ delete_files__sub() {
 }
 
 dirContent_main__sub() {
+    #Check if 'tibboHeader_prepend_numOfLines__input' is an Empty String
+    if [[ -z ${tibboHeader_prepend_numOfLines__input} ]]; then
+        tibboHeader_prepend_numOfLines__input=${DOCKER__NUMOFLINES_2}
+    fi
+
+    #Print Tibbo-title
+    load_tibbo_title__func "${tibboHeader_prepend_numOfLines__input}"
+
     #Check if directory exists
-    #Check if 'fpath' is a directory
     local isDirectory=`dc_checkIf_dir_exists__func "${dir__input}"`
     if [[ ${isDirectory} == ${FALSE} ]]; then
         dirContent_show_header__sub
@@ -240,9 +266,6 @@ dirContent_show_header__sub() {
     local printf_header="${FG_DEEPORANGE}List of${NOCOLOR} <${FG_REDORANGE}${dir__input}${NOCOLOR}> ${printf_numOfContents_shown}"
 
     #Print message showing which directory's content is being shown
-    if [[ ${flag_prepend_emptyLine__input} == true ]]; then
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-    fi
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
     printf '%b%s\n' "${printf_header}"
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"

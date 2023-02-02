@@ -1,10 +1,13 @@
-#!/bin/bash
-#INPUT ARGS
+#!/bin/bash -m
+
+#---INPUT ARGS
 containerID__input="${1}"
 query__input="${2}"
 table_numOfRows__input="${3}"
 table_numOfCols__input="${4}"
-output_fPath__input="${5}"
+table_leadingSpace__input="${5}"
+output_fPath__input="${6}"
+tibboHeader_prepend_numOfLines__input=${7}
 
 
 
@@ -436,17 +439,20 @@ function conv_string_to_human_readable__sub() {
     local convSpace__input=${2} #true or false
 
     #SUBSTITUTE:
-    #1. (\ ) to \x02backslashspace\x03
+    #1. (\\\\\\ ) to \x02backslashspace\x03
     local str_subst_backSlashSpace=`echo "${string__input}" | \
                         sed "s/${DOCKER__TRIPLE_ESCAPED_BACKSLASH}${DOCKER__ONESPACE}/${SED_SUBST_BACKSLASHSPACE}/g"`
 
-    #2. (\t) to \x02slasht\x03
-    local str_subst_backslashT=`echo "${str_subst_backSlashSpace}" | \
-                        sed "s/${DOCKER__DOUBLE_ESCAPED_BACKSLASH}${DOCKER__ESCAPED_T}/${SED_SUBST_BACKSLASHT}/g"`
+    # #2. (\\\\t) to \x02slasht\x03 (***NOT-IN-USE***)
+    # local str_subst_backslashT=`echo "${str_subst_backSlashSpace}" | \
+    #                     sed "s/${DOCKER__DOUBLE_ESCAPED_BACKSLASH}${DOCKER__ESCAPED_T}/${SED_SUBST_BACKSLASHT}/g"`
 
-    #3. (\) to \x02backslash\x03
+    #2. Update 'str_subst_backslashT'
+    str_subst_backslashT="${str_subst_backSlashSpace}"
+
+    #3. (\\\\) to \x02backslash\x03
     local str_subst_backslash=`echo "${str_subst_backslashT}" | \
-                        sed "s/${DOCKER__ESCAPED_BACKSLASH}${DOCKER__ESCAPED_BACKSLASH}/${SED_SUBST_BACKSLASH}/g"`
+                        sed "s/${DOCKER__DOUBLE_ESCAPED_BACKSLASH}/${SED_SUBST_BACKSLASH}/g"`
 
     #4. ( ) to \x02space\x03
     local ret=${DOCKER__EMPTYSTRING}
@@ -465,13 +471,18 @@ function inv_human_readable_backTo_string__sub() {
     local convSpace__input=${2} #true or false
 
     #SUBSTITUTE:
-    #1. \x02backslash\x03 to (\)
+    #1. \x02backslash\x03 to (\\\\)
     local str_subst_backslash_inv=`echo "${string__input}" | \
                         sed "s/${SED_SUBST_BACKSLASH}/${DOCKER__DOUBLE_ESCAPED_BACKSLASH}/g"`
 
-    #2.  \x02slasht\x03 to (\t)
-    local str_subst_backslashT_inv=`echo "${str_subst_backslash_inv}" | \
-                        sed "s/${SED_SUBST_BACKSLASHT}/${DOCKER__DOUBLE_ESCAPED_BACKSLASH}${DOCKER__ESCAPED_T}/g"`
+
+    # #2.  \x02slasht\x03 to (\\\\t) (***NOT-IN-USE***)
+    # local str_subst_backslashT_inv=`echo "${str_subst_backslash_inv}" | \
+    #                     sed "s/${SED_SUBST_BACKSLASHT}/${DOCKER__DOUBLE_ESCAPED_BACKSLASH}${DOCKER__ESCAPED_T}/g"`
+
+
+    str_subst_backslashT_inv="${str_subst_backslash_inv}"
+
 
     #3. \x02backslashspace\x03 to (\ )
     local str_subst_backSlashSpace_inv=`echo "${str_subst_backslashT_inv}" | \
@@ -850,13 +861,6 @@ compgen__get_results__sub() {
             ;;
     esac
 
-echo "-----------------------"
-echo "query__input>${query__input}<"
-echo "compgen__leadStr>${compgen__leadStr}<"
-echo "compgen__trailStr>${compgen__trailStr}<"
-echo "compgen__in>${compgen__in}<"
-echo "compgen__cmd>${compgen__cmd}<"
-echo "-----------------------"
     #Define commands
     #Remarks:
     #1. In order to be able to execute commands with SPACES, 'eval' must be used.
@@ -933,6 +937,14 @@ compgen__get_closest_match__sub() {
 }
 
 compgen__show_handler__sub() {
+    #Check if 'tibboHeader_prepend_numOfLines__input' is an Empty String
+    if [[ -z ${tibboHeader_prepend_numOfLines__input} ]]; then
+        tibboHeader_prepend_numOfLines__input=${DOCKER__NUMOFLINES_2}
+    fi
+
+    #Print Tibbo-title
+    load_tibbo_title__func "${tibboHeader_prepend_numOfLines__input}"
+
     #Write results to file
     compgen__prep_print__sub
 
@@ -1027,9 +1039,11 @@ compgen__prep_print__sub() {
             done < ${compgen__raw_headed_tmp__fpath}
 
 #-----------Get 'word_length_max_corr'
-            #REMARK:
-            #   This means that the space between the columns are 4 characters wide
-            local word_length_max_corr=$((word_length_max + DOCKER__SPACE_BETWEEN_WORDS))
+            #REMARKS:
+            #   DOCKER__SPACE_BETWEEN_WORDS: space between each word
+            #   table_leadingSpace_len: leading space of each line
+            local table_leadingSpace_len=${#table_leadingSpace__input}
+            local word_length_max_corr=$((word_length_max + DOCKER__SPACE_BETWEEN_WORDS + table_leadingSpace_len))
 
 #-----------Get 'table_numOfCols__input'
             #Calculate maximum allowed number of columns
@@ -1098,7 +1112,7 @@ compgen__prep_print__sub() {
 
                 #Set 'word' to be printed
                 if [[ ${line_print_numOfWords} -eq 1 ]]; then
-                    line_print="${line_colored}"
+                    line_print="${table_leadingSpace__input}${line_colored}"
                 else
                     line_print="${line_print}${line_colored}" 
                 fi
@@ -1148,13 +1162,15 @@ compgen__prep_header_print__sub() {
     compgen__numOfItems_max=`cat ${compgen__raw_all_tmp__fpath} | wc -l`
 
     #Update variable
-    compgen__print_numOfItems_shown="(${DOCKER__FG_DEEPORANGE}${compgen__numOfItems_toBeShown}${DOCKER__NOCOLOR} out-of ${DOCKER__FG_REDORANGE}${compgen__numOfItems_max}${DOCKER__NOCOLOR})"
+    compgen__print_numOfItems_shown="(${DOCKER__FG_DEEPORANGE}${compgen__numOfItems_toBeShown}${DOCKER__NOCOLOR} "
+    compgen__print_numOfItems_shown+="out-of ${DOCKER__FG_REDORANGE}${compgen__numOfItems_max}${DOCKER__NOCOLOR})"
+
+    compgen__listOfKeyWord="${table_leadingSpace__input}${DOCKER__FG_DEEPORANGE}List of keyword ${DOCKER__NOCOLOR} "
+    compgen__listOfKeyWord+="<${DOCKER__FG_REDORANGE}${query__input}${DOCKER__NOCOLOR}> ${compgen__print_numOfItems_shown}"
 
     #Print message showing which directory's content is being shown
-    echo "${DOCKER__EMPTYSTRING}" >> ${compgen__tablized_tmp__fpath}
-    echo "${DOCKER__EMPTYSTRING}" >> ${compgen__tablized_tmp__fpath}
     echo "${compgen__dup_horizLine}" >> ${compgen__tablized_tmp__fpath}
-    echo "${DOCKER__FG_DEEPORANGE}List of keyword ${DOCKER__NOCOLOR} <${DOCKER__FG_REDORANGE}${query__input}${DOCKER__NOCOLOR}> ${compgen__print_numOfItems_shown}" >> ${compgen__tablized_tmp__fpath}
+    echo "${compgen__listOfKeyWord}" >> ${compgen__tablized_tmp__fpath}
     echo "${compgen__dup_horizLine}" >> ${compgen__tablized_tmp__fpath}
 }
 compgen__prep_print_rem_subString_onLeftSideOf_last_slash__sub() {

@@ -9,27 +9,53 @@ menuOption_linkCheckoutProfile__input=${5}
 
 
 
-
 #---SUBROUTINES
 docker__load_environment_variables__sub() {
-    #Define paths
-    docker__LTPP3_ROOTFS_development_tools__fpath="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
-    docker__LTPP3_ROOTFS_development_tools__dir=$(dirname ${docker__LTPP3_ROOTFS_development_tools__fpath})
-    docker__LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS_development_tools__dir%/*}    #move one directory up: LTPP3_ROOTFS/
+    #Check the number of input args
+    if [[ -z ${docker__global__fpath} ]]; then   #must be equal to 3 input args
+        #---Defin FOLDER
+        docker__LTPP3_ROOTFS__foldername="LTPP3_ROOTFS"
+        docker__development_tools__foldername="development_tools"
 
-    docker__global_filename="docker_global.sh"
-    docker__global__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__global_filename}
+        #Get all the directories containing the foldername 'LTPP3_ROOTFS'...
+        #... and read to array 'find_result_arr'
+        #Remark:
+        #   By using '2> /dev/null', the errors are not shown.
+        readarray -t find_dir_result_arr < <(find  / -type d -iname "${docker__LTPP3_ROOTFS__foldername}" 2> /dev/null)
+
+        #Define variable
+        local find_path_of_LTPP3_ROOTFS=${DOCKER__EMPTYSTRING}
+
+        #Loop thru array-elements
+        for find_dir_result_arrItem in "${find_dir_result_arr[@]}"
+        do
+            #Update variable 'find_path_of_LTPP3_ROOTFS'
+            find_path_of_LTPP3_ROOTFS="${find_dir_result_arrItem}/${docker__development_tools__foldername}"
+            #Check if 'directory' exist
+            if [[ -d "${find_path_of_LTPP3_ROOTFS}" ]]; then    #directory exists
+                #Update variable
+                docker__LTPP3_ROOTFS_development_tools__dir="${find_path_of_LTPP3_ROOTFS}"
+
+                break
+            fi
+        done
+
+        docker__LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS_development_tools__dir%/*}    #move one directory up: LTPP3_ROOTFS/
+        docker__parentDir_of_LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS__dir%/*}    #move two directories up. This directory is the one-level higher than LTPP3_ROOTFS/
+
+        docker__global__filename="docker_global.sh"
+        docker__global__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__global__filename}
+    fi
 }
 
 docker__load_source_files__sub() {
     source ${docker__global__fpath}
 }
 
-docker__load_header__sub() {
-    show_header__func "${DOCKER__TITLE}" "${DOCKER__TABLEWIDTH}" "${DOCKER__BG_ORANGE}" "${DOCKER__NUMOFLINES_2}" "${DOCKER__NUMOFLINES_0}"
-}
-
 docker__load_constants__sub() {
+    #Remark: 
+    #   The following constants will be passed into...
+    #   ...script 'docker_show_choose_add_del_from_cache.sh'
     DOCKER__LINK_MENUTITLE="${menuOption_link__input}"
     DOCKER__LINK_LOCATION_INFO="${DOCKER__FOURSPACES}${DOCKER__FG_VERYLIGHTORANGE}Location${DOCKER__NOCOLOR}: "
     DOCKER__LINK_MENUOPTIONS="${DOCKER__FOURSPACES_F6_CHOOSE}\n"
@@ -56,7 +82,12 @@ docker__load_constants__sub() {
     DOCKER__PROFILE_MENUOPTIONS1+="${DOCKER__FOURSPACES_F7_ADD}\n"
     DOCKER__PROFILE_MENUOPTIONS1+="${DOCKER__FOURSPACES_F8_DEL}\n"
     DOCKER__PROFILE_MENUOPTIONS1+="${DOCKER__FOURSPACES_F12_QUIT}"
-    DOCKER__PROFILE_MENUOPTIONS2="${DOCKER__FOURSPACES_F1_CHOOSE_LINK}\n"
+
+    #Remark: 
+    #   The following constants will be passed into...
+    #   ...function 'show_pathContent_w_selection__func'...
+    #   ...in script 'docker_show_choose_add_del_from_cache.sh'
+    DOCKER__PROFILE_MENUOPTIONS2="${DOCKER__FOURSPACES_F1_CHOOSE_LINK}\n"   #
     DOCKER__PROFILE_MENUOPTIONS2+="${DOCKER__FOURSPACES_F2_CHOOSE_CHECKOUT}\n"
     DOCKER__PROFILE_MENUOPTIONS2+="${DOCKER__FOURSPACES_F5_ABORT}\n"
     DOCKER__PROFILE_MENUOPTIONS2+="${DOCKER__FOURSPACES_F12_QUIT}"
@@ -70,6 +101,8 @@ docker__load_constants__sub() {
     DOCKER__PROFILE_MATCHPATTERN2+="${DOCKER__ENUM_FUNC_F2}"
     DOCKER__PROFILE_MATCHPATTERN2+="${DOCKER__ONESPACE}"
     DOCKER__PROFILE_MATCHPATTERN2+="${DOCKER__ENUM_FUNC_F5}"
+    DOCKER__PROFILE_MATCHPATTERN2+="${DOCKER__ONESPACE}"
+    DOCKER__PROFILE_MATCHPATTERN2+="${DOCKER__ENUM_FUNC_F12}"
     DOCKER__PROFILE_MATCHPATTERN3="${DOCKER__ENUM_FUNC_F1}" #paired with 'DOCKER__PROFILE_MENUOPTIONS3'
     DOCKER__PROFILE_MATCHPATTERN3+="${DOCKER__ONESPACE}"
     DOCKER__PROFILE_MATCHPATTERN3+="${DOCKER__ENUM_FUNC_F2}"
@@ -77,6 +110,8 @@ docker__load_constants__sub() {
     DOCKER__PROFILE_MATCHPATTERN3+="${DOCKER__ENUM_FUNC_F3}"
     DOCKER__PROFILE_MATCHPATTERN3+="${DOCKER__ONESPACE}"
     DOCKER__PROFILE_MATCHPATTERN3+="${DOCKER__ENUM_FUNC_F5}"
+    DOCKER__PROFILE_MATCHPATTERN3+="${DOCKER__ONESPACE}"
+    DOCKER__PROFILE_MATCHPATTERN3+="${DOCKER__ENUM_FUNC_F12}"
     DOCKER__PROFILE_CHOOSE_PROFILE="Choose profile: "
     DOCKER__PROFILE_ADD_PROFILE="Add profile:"  #notice: there is NO trailing space
     # DOCKER__PROFILE_ADD_PROFILE="Add new profile by choosing ${DOCKER__FG_GREEN41}link${DOCKER__NOCOLOR}(${DOCKER__FG_LIGHTGREY}F2${DOCKER__NOCOLOR})"
@@ -96,11 +131,11 @@ docker__init_variables__sub() {
     docker__exp_env_var_menuTitle=${DOCKER__EMPTYSTRING}
     docker__exp_env_var_locationInfo=${DOCKER__EMPTYSTRING}
     docker__exp_env_var_locationInfo_fpath=${DOCKER__EMPTYSTRING}
-    docker__exp_env_var_menuOptions1=${DOCKER__EMPTYSTRING}
-    docker__exp_env_var_menuOptions2=${DOCKER__EMPTYSTRING} #used only for 'link-checkout profile'
-    docker__exp_env_var_menuOptions3=${DOCKER__EMPTYSTRING} #used only for 'link-checkout profile'
-    docker__exp_env_var_matchPattern2=${DOCKER__EMPTYSTRING}    #used in combo with 'docker__exp_env_var_menuOptions2'
-    docker__exp_env_var_matchPattern3=${DOCKER__EMPTYSTRING}    #used in combo with 'docker__exp_env_var_menuOptions3'
+    docker__exp_env_var_menuOptions1=${DOCKER__EMPTYSTRING}     #passed into script 'docker_show_choose_add_del_from_cache.sh' (this is reason why no 'docker__exp_env_var_matchPattern1' is defined)
+    docker__exp_env_var_menuOptions2=${DOCKER__EMPTYSTRING}     #used only for 'link-checkout profile'; passed into function 'show_pathContent_w_selection__func'
+    docker__exp_env_var_menuOptions3=${DOCKER__EMPTYSTRING}     #used only for 'link-checkout profile'; passed into function 'show_pathContent_w_selection__func'
+    docker__exp_env_var_matchPattern2=${DOCKER__EMPTYSTRING}    #used in combo with 'docker__exp_env_var_menuOptions2'; passed into function 'show_pathContent_w_selection__func'
+    docker__exp_env_var_matchPattern3=${DOCKER__EMPTYSTRING}    #used in combo with 'docker__exp_env_var_menuOptions3'; passed into function 'show_pathContent_w_selection__func'
     docker__exp_env_var_option_choose=${DOCKER__EMPTYSTRING}
     docker__exp_env_var_option_add=${DOCKER__EMPTYSTRING}
     docker__exp_env_var_option_del=${DOCKER__EMPTYSTRING}
@@ -199,12 +234,13 @@ docker__show_choose_add_del_handler__sub() {
                         "${docker__show_choose_add_del_from_cache_out__fpath}" \
                         "${dockerFile_fpath__input}" \
                         "${exp_env_var_type__input}" \
-                        "${DOCKER__TIMEOUT_0}"
+                        "${DOCKER__TIMEOUT_0}" \
+                        "${DOCKER__NUMOFLINES_2}"
 
     #Get the exitcode just in case a Ctrl-C was pressed in script 'docker__show_choose_add_del_from_cache__fpath'.
     docker__exitCode=$?
     if [[ ${docker__exitCode} -eq ${DOCKER__EXITCODE_99} ]]; then
-        exit__func "${docker__exitCode}" "${DOCKER__NUMOFLINES_2}"
+        exit__func "${docker__exitCode}" "${DOCKER__NUMOFLINES_1}"
     fi
 }
 
@@ -216,7 +252,7 @@ main_sub() {
 
     docker__load_source_files__sub
 
-    docker__load_header__sub
+    # load_tibbo_title__func "${DOCKER__NUMOFLINES_2}"
 
     docker__load_constants__sub
 

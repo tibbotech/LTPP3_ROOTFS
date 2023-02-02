@@ -1,45 +1,52 @@
 #!/bin/bash -m
 #Remark: by using '-m' the INT will NOT propagate to the PARENT scripts
-#---CONSTANTS
-DOCKER__EXPORT_ENVIRONMENT_VARIABLES_MENUTITLE="${DOCKER__FG_LIGHTBLUE}DOCKER: EXPORT ENVIRONMENT VARIABLES${DOCKER__NOCOLOR}"
-DOCKER__VERSION="v22.04.22-0.0.1"
-
-
 
 #---SUBROUTINES
 docker__load_environment_variables__sub() {
-    #---Define PATHS
-    docker__current_script_fpath="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
-    docker__current_dir=$(dirname ${docker__current_script_fpath})
-    if [[ ${docker__current_dir} == ${DOCKER__DOT} ]]; then
-        docker__current_dir=$(pwd)
-    fi
-    docker__current_folder=`basename ${docker__current_dir}`
+    #Check the number of input args
+    if [[ -z ${docker__global__fpath} ]]; then   #must be equal to 3 input args
+        #---Defin FOLDER
+        docker__LTPP3_ROOTFS__foldername="LTPP3_ROOTFS"
+        docker__development_tools__foldername="development_tools"
 
-    docker__development_tools_folder="development_tools"
-    if [[ ${docker__current_folder} != ${docker__development_tools_folder} ]]; then
-        docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}/${docker__development_tools_folder}
-    else
-        docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}
-    fi
+        #Get all the directories containing the foldername 'LTPP3_ROOTFS'...
+        #... and read to array 'find_result_arr'
+        #Remark:
+        #   By using '2> /dev/null', the errors are not shown.
+        readarray -t find_dir_result_arr < <(find  / -type d -iname "${docker__LTPP3_ROOTFS__foldername}" 2> /dev/null)
 
-    docker__global__filename="docker_global.sh"
-    docker__global__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__global__filename}
+        #Define variable
+        local find_path_of_LTPP3_ROOTFS=${DOCKER__EMPTYSTRING}
+
+        #Loop thru array-elements
+        for find_dir_result_arrItem in "${find_dir_result_arr[@]}"
+        do
+            #Update variable 'find_path_of_LTPP3_ROOTFS'
+            find_path_of_LTPP3_ROOTFS="${find_dir_result_arrItem}/${docker__development_tools__foldername}"
+            #Check if 'directory' exist
+            if [[ -d "${find_path_of_LTPP3_ROOTFS}" ]]; then    #directory exists
+                #Update variable
+                docker__LTPP3_ROOTFS_development_tools__dir="${find_path_of_LTPP3_ROOTFS}"
+
+                break
+            fi
+        done
+
+        docker__LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS_development_tools__dir%/*}    #move one directory up: LTPP3_ROOTFS/
+        docker__parentDir_of_LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS__dir%/*}    #move two directories up. This directory is the one-level higher than LTPP3_ROOTFS/
+
+        docker__global__filename="docker_global.sh"
+        docker__global__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__global__filename}
+    fi
 }
 
 docker__load_source_files__sub() {
     source ${docker__global__fpath}
 }
 
-docker__load_header__sub() {
-    #Input args
-    local prepend_numOfLines__input=${1}
-
-    #Print
-    show_header__func "${DOCKER__TITLE}" "${DOCKER__TABLEWIDTH}" "${DOCKER__BG_ORANGE}" "${prepend_numOfLines__input}" "${DOCKER__NUMOFLINES_0}"
-}
-
 docker__load_constants__sub() {
+    DOCKER__EXPORT_ENVIRONMENT_VARIABLES_MENUTITLE="${DOCKER__FG_LIGHTBLUE}DOCKER: EXPORT ENVIRONMENT VARIABLES${DOCKER__NOCOLOR}"
+
     DOCKER__DIRLIST_MENUTITLE="Choose ${DOCKER__FG_DARKBLUE}docker-file${DOCKER__NOCOLOR}"
     DOCKER__DIRLIST_LOCATION_INFO="${DOCKER__FOURSPACES}${DOCKER__FG_VERYLIGHTORANGE}Location${DOCKER__NOCOLOR}: ${docker__LTPP3_ROOTFS_docker_dockerfiles__dir}"
     DOCKER__DIRLIST_REMARK="${DOCKER__FOURSPACES}${DOCKER__FG_LIGHTGREY}NOTE: only files containing pattern '${DOCKER__CONTAINER_ENV1}'...\n"
@@ -60,7 +67,7 @@ docker__load_constants__sub() {
     DOCKER__MENU_CHOOSE_ADD_DEL_LINKCHECKOUT_PROFILE="Choose${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}"
     DOCKER__MENU_CHOOSE_ADD_DEL_LINKCHECKOUT_PROFILE+="Add${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}Del "
     DOCKER__MENU_CHOOSE_ADD_DEL_LINKCHECKOUT_PROFILE+="${DOCKER__FG_GREEN41}link${DOCKER__NOCOLOR}-${DOCKER__FG_GREEN119}checkout${DOCKER__NOCOLOR} "
-    DOCKER__MENU_CHOOSE_ADD_DEL_LINKCHECKOUT_PROFILE+="${DOCKER__FG_GREEN}Profile${DOCKER__NOCOLOR}"
+    DOCKER__MENU_CHOOSE_ADD_DEL_LINKCHECKOUT_PROFILE+="profile"
 }
 
 docker__init_variables__sub() {
@@ -91,7 +98,7 @@ docker__init_variables__sub() {
     docker__dockerFile_filename_print_maxLen=0
     docker__dockerFile_filename_print_maxLen=0
 
-    docker__prepend_numOfLines=0
+    docker__tibboHeader_prepend_numOfLines=0
 }
 
 docker__retrieve_data_from_configFile__sub() {
@@ -218,22 +225,30 @@ docker__trim_strings_toFit_within_specified_tableSize__sub() {
 
 docker__export_env_var_menu__sub() {
     #Initialization
-    docker__prepend_numOfLines=${DOCKER__NUMOFLINES_2}
+    docker__tibboHeader_prepend_numOfLines=${DOCKER__NUMOFLINES_2}
 
     while true
     do
+        #Get Git-information
+        #Output:
+        #   docker_git_current_info_msg
+        docker__get_git_info__sub
+
         #Retrieve & prep variables
         docker__retrieve_and_prep_variables__sub
 
         #Print header
-        docker__load_header__sub "${docker__prepend_numOfLines}"
+        load_tibbo_title__func "${docker__tibboHeader_prepend_numOfLines}"
+
+        #Set 'docker__tibboHeader_prepend_numOfLines'
+        docker__tibboHeader_prepend_numOfLines=${DOCKER__NUMOFLINES_0}
 
         #Draw horizontal lines
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
 
         #Show menu-title
         show_leadingAndTrailingStrings_separatedBySpaces__func "${DOCKER__EXPORT_ENVIRONMENT_VARIABLES_MENUTITLE}" \
-                        "${DOCKER__VERSION}" \
+                        "${docker_git_current_info_msg}" \
                         "${DOCKER__TABLEWIDTH}"
 
         #Draw horizontal lines
@@ -291,6 +306,8 @@ docker__export_env_var_menu__sub() {
                 ${docker__select_dockerfile__fpath} "${docker__LTPP3_ROOTFS_docker_dockerfiles__dir}" \
                         "${DOCKER__CFG_NAME1}" \
                         "${docker__export_env_var_menu_cfg__fpath}"
+
+                docker__tibboHeader_prepend_numOfLines=${DOCKER__NUMOFLINES_1}
                 ;;
             2)
                 ${docker__repo_link_checkout_menu_select__fpath} "${docker__dockerFile_fpath}" \
@@ -314,14 +331,12 @@ docker__export_env_var_menu__sub() {
                         "${DOCKER__MENU_CHOOSE_ADD_DEL_LINKCHECKOUT_PROFILE}"
                 ;;
             q)
-                exit__func "${DOCKER__EXITCODE_99}" "${DOCKER__NUMOFLINES_2}"
+                exit__func "${DOCKER__EXITCODE_99}" "${DOCKER__NUMOFLINES_1}"
                 ;;
         esac
-
-        #Set 'docker__prepend_numOfLines'
-        docker__prepend_numOfLines=${DOCKER__NUMOFLINES_0}
     done
 }
+
 docker__retrieve_and_prep_variables__sub() {
     #Retrieve data from 'docker__export_env_var_menu_cfg__fpath'
     docker__retrieve_data_from_configFile__sub
@@ -335,6 +350,29 @@ docker__retrieve_and_prep_variables__sub() {
     #Trim strings to fit within table-size
     docker__trim_strings_toFit_within_specified_tableSize__sub
 }
+
+docker__get_git_info__sub() {
+    #Get information
+    docker__git_current_branchName=`git__get_current_branchName__func`
+
+    docker__git_current_abbrevCommitHash=`git__log_for_pushed_and_unpushed_commits__func "${DOCKER__EMPTYSTRING}" \
+                        "${GIT__LAST_COMMIT}" \
+                        "${GIT__PLACEHOLDER_ABBREV_COMMIT_HASH}"`
+      
+    docker__git_push_status=`git__checkIf_branch_isPushed__func "${docker__git_current_branchName}"`
+
+    docker__git_current_tag=`git__get_tag_for_specified_branchName__func "${docker__git_current_branchName}" "${DOCKER__FALSE}"`
+    if [[ -z "${docker__git_current_tag}" ]]; then
+        docker__git_current_tag="${GIT__NOT_TAGGED}"
+    fi
+
+    #Generate message to be shown
+    docker_git_current_info_msg="${DOCKER__FG_LIGHTBLUE}${docker__git_current_branchName}${DOCKER__NOCOLOR}:"
+    docker_git_current_info_msg+="${DOCKER__FG_DARKBLUE}${docker__git_current_abbrevCommitHash}${DOCKER__NOCOLOR}"
+    docker_git_current_info_msg+="(${DOCKER__FG_DARKBLUE}${docker__git_push_status}${DOCKER__NOCOLOR}):"
+    docker_git_current_info_msg+="${DOCKER__FG_LIGHTBLUE}${docker__git_current_tag}${DOCKER__NOCOLOR}"
+}
+
 
 
 #---MAIN SUBROUTINE

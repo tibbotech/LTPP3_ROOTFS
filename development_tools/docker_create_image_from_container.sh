@@ -63,22 +63,18 @@ docker__load_source_files__sub() {
     source ${docker__global__fpath}
 }
 
-docker__load_header__sub() {
-    show_header__func "${DOCKER__TITLE}" "${DOCKER__TABLEWIDTH}" "${DOCKER__BG_ORANGE}" "${DOCKER__NUMOFLINES_2}" "${DOCKER__NUMOFLINES_0}"
-}
-
 docker__init_variables__sub() {
     docker__containerID_chosen=${DOCKER__EMPTYSTRING}
     docker__myAnswer=${DOCKER__NO}
     docker__repo_new=${DOCKER__EMPTYSTRING}
     docker__tag_new=${DOCKER__EMPTYSTRING}
 
-    docker__images_cmd="docker images"
-    docker__ps_a_cmd="docker ps -a"
+    # docker__images_cmd="docker images"
+    # docker__ps_a_cmd="docker ps -a"
 
-    docker__ps_a_containerIdColno=1
-    docker__images_repoColNo=1
-    docker__images_tagColNo=2
+    # docker__ps_a_containerIdColno=1
+    # docker__images_repoColNo=1
+    # docker__images_tagColNo=2
 
     docker__onEnter_breakLoop=false
     docker__showTable=true
@@ -134,18 +130,19 @@ docker__create_image_handler__sub() {
                         "${docker__ps_a_containerIdColno}" \
                         "${DOCKER__EMPTYSTRING}" \
                         "${docker__showTable}" \
-                        "${docker__onEnter_breakLoop}"
+                        "${docker__onEnter_breakLoop}" \
+                        "${DOCKER__NUMOFLINES_2}"
 
-                #Get the exitcode just in case:
+                #Get the exit-code just in case:
                 #   1. Ctrl-C was pressed in script 'docker__readInput_w_autocomplete__fpath'.
                 #   2. An error occured in script 'docker__readInput_w_autocomplete__fpath',...
                 #      ...and exit-code = 99 came from function...
                 #      ...'show_msg_w_menuTitle_w_pressAnyKey_w_ctrlC_func' (in script: docker__global.sh).
                 docker__exitCode=$?
                 if [[ ${docker__exitCode} -eq ${DOCKER__EXITCODE_99} ]]; then
-                    exit__func "${docker__exitCode}" "${DOCKER__NUMOFLINES_2}"
+                    exit__func "${docker__exitCode}" "${DOCKER__NUMOFLINES_0}"
                 else
-                    #Retrieve the selected container-ID from file
+                    #Get the result
                     docker__containerID_chosen=`get_output_from_file__func \
                                     "${docker__readInput_w_autocomplete_out__fpath}" \
                                     "${DOCKER__LINENUM_1}"`
@@ -159,8 +156,6 @@ docker__create_image_handler__sub() {
                 fi
                 ;;
             ${NEW_REPO_INPUT_PHASE})
-                moveDown_and_cleanLines__func "${DOCKER__LINENUM_1}"
-
                 #Run script
                 ${docker__readInput_w_autocomplete__fpath} "${MENUTITLE_CURRENT_IMAGE_LIST}" \
                         "${READMSG_NEW_REPOSITORY_NAME}" \
@@ -172,9 +167,10 @@ docker__create_image_handler__sub() {
                         "${docker__images_repoColNo}" \
                         "${DOCKER__EMPTYSTRING}" \
                         "${docker__showTable}" \
-                        "${docker__onEnter_breakLoop}"
+                        "${docker__onEnter_breakLoop}" \
+                        "${DOCKER__NUMOFLINES_1}"
 
-                #Get the exitcode just in case:
+                #Get the exit-code just in case:
                 #   1. Ctrl-C was pressed in script 'docker__readInput_w_autocomplete__fpath'.
                 #   2. An error occured in script 'docker__readInput_w_autocomplete__fpath',...
                 #      ...and exit-code = 99 came from function...
@@ -197,8 +193,6 @@ docker__create_image_handler__sub() {
                 fi
                 ;;
             ${NEW_TAG_INPUT_PHASE})
-                moveDown_and_cleanLines__func "${DOCKER__LINENUM_1}"
-
                 #Run script
                 ${docker__readInput_w_autocomplete__fpath} "${MENUTITLE_CURRENT_IMAGE_LIST}" \
                         "${READMSG_NEW_REPOSITORY_TAG}" \
@@ -210,9 +204,10 @@ docker__create_image_handler__sub() {
                         "${docker__images_tagColNo}" \
                         "${DOCKER__EMPTYSTRING}" \
                         "${docker__showTable}" \
-                        "${docker__onEnter_breakLoop}"
+                        "${docker__onEnter_breakLoop}" \
+                        "${DOCKER__NUMOFLINES_1}"
 
-                #Get the exitcode just in case:
+                #Get the exit-code just in case:
                 #   1. Ctrl-C was pressed in script 'docker__readInput_w_autocomplete__fpath'.
                 #   2. An error occured in script 'docker__readInput_w_autocomplete__fpath',...
                 #      ...and exit-code = 99 came from function...
@@ -305,23 +300,24 @@ docker__create_image_exec__sub() {
             # moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
 
             # #Show Docker Image List
-            # show_cmdOutput_w_menuTitle__func "${DOCKER__MENUTITLE_UPDATED_REPOSITORYLIST}" "${docker__images_cmd}"
+            # show_repoList_or_containerList_w_menuTitle__func "${DOCKER__MENUTITLE_UPDATED_REPOSITORYLIST}" "${docker__images_cmd}"
 
             #Show repo-list
-            show_repository_or_container_list__func "${DOCKER__MENUTITLE_UPDATED_REPOSITORYLIST}" \
+            show_repoList_or_containerList_w_menuTitle_w_confirmation__func "${DOCKER__MENUTITLE_UPDATED_REPOSITORYLIST}" \
                                 "${DOCKER__ERRMSG_NO_IMAGES_FOUND}" \
                                 "${docker__images_cmd}" \
-                                "${DOCKER__NUMOFLINES_2}" \
+                                "${DOCKER__NUMOFLINES_0}" \
                                 "${DOCKER__TIMEOUT_10}" \
                                 "${DOCKER__NUMOFLINES_0}" \
-                                "${DOCKER__NUMOFLINES_0}"
+                                "${DOCKER__NUMOFLINES_0}" \
+                                "${DOCKER__NUMOFLINES_2}"
                                             
             #Exit this script
-            exit__func "${DOCKER__EXITCODE_0}" "${DOCKER__NUMOFLINES_1}"
+            exit__func "${DOCKER__EXITCODE_0}" "${DOCKER__NUMOFLINES_0}"
         elif [[ ${docker__myAnswer} == ${DOCKER__NO} ]]; then
             exit__func "${DOCKER__EXITCODE_0}" "${DOCKER__NUMOFLINES_2}"
         elif [[ ${docker__myAnswer} == ${DOCKER__REDO} ]]; then
-            moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_3}"
+            moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
             break
         else
@@ -337,8 +333,6 @@ main_sub() {
     docker__environmental_variables__sub
 
     docker__load_source_files__sub
-
-    docker__load_header__sub
 
     docker__init_variables__sub
 

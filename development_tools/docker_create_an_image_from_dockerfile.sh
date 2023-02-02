@@ -21,7 +21,7 @@ function create_image__func() {
     local statusMsg="---:${DOCKER__FG_ORANGE}STATUS${DOCKER__NOCOLOR}: Creating image..."
 
     #Define local  variables
-    local docker__images_cmd="docker images"
+    # local docker__images_cmd="docker images"
     local exported_env_var1=${DOCKER__EMPTYSTRING}  #sunplus git-link
     local exported_env_var2=${DOCKER__EMPTYSTRING}  #sunplus checkout-number
     local exported_env_var3=${DOCKER__EMPTYSTRING}  #tibbo git-link (e.g. LTPP3_ROOTFS.git)
@@ -87,7 +87,7 @@ function create_image__func() {
     #Print docker image list
     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
-    show_cmdOutput_w_menuTitle__func "${DOCKER__MENUTITLE_UPDATED_REPOSITORYLIST}" "${docker__images_cmd}"
+    show_repoList_or_containerList_w_menuTitle__func "${DOCKER__MENUTITLE_UPDATED_REPOSITORYLIST}" "${docker__images_cmd}"
     
     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
 }
@@ -151,66 +151,82 @@ function validate_exitCode__func() {
 
 #---SUBROUTINES
 docker__load_environment_variables__sub() {
-    docker__current_script_fpath="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
-    docker__current_dir=$(dirname ${docker__current_script_fpath})
-    docker__parent_dir=${docker__current_dir%/*}    #gets one directory up
-    if [[ -z ${docker__parent_dir} ]]; then
-        docker__parent_dir="${DOCKER__SLASH_CHAR}"
+    #Check the number of input args
+    if [[ -z ${docker__global__fpath} ]]; then   #must be equal to 3 input args
+        #---Defin FOLDER
+        docker__LTPP3_ROOTFS__foldername="LTPP3_ROOTFS"
+        docker__development_tools__foldername="development_tools"
+
+        #Get all the directories containing the foldername 'LTPP3_ROOTFS'...
+        #... and read to array 'find_result_arr'
+        #Remark:
+        #   By using '2> /dev/null', the errors are not shown.
+        readarray -t find_dir_result_arr < <(find  / -type d -iname "${docker__LTPP3_ROOTFS__foldername}" 2> /dev/null)
+
+        #Define variable
+        local find_path_of_LTPP3_ROOTFS=${DOCKER__EMPTYSTRING}
+
+        #Loop thru array-elements
+        for find_dir_result_arrItem in "${find_dir_result_arr[@]}"
+        do
+            #Update variable 'find_path_of_LTPP3_ROOTFS'
+            find_path_of_LTPP3_ROOTFS="${find_dir_result_arrItem}/${docker__development_tools__foldername}"
+            #Check if 'directory' exist
+            if [[ -d "${find_path_of_LTPP3_ROOTFS}" ]]; then    #directory exists
+                #Update variable
+                docker__LTPP3_ROOTFS_development_tools__dir="${find_path_of_LTPP3_ROOTFS}"
+
+                break
+            fi
+        done
+
+        docker__LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS_development_tools__dir%/*}    #move one directory up: LTPP3_ROOTFS/
+        docker__parentDir_of_LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS__dir%/*}    #move two directories up. This directory is the one-level higher than LTPP3_ROOTFS/
+
+        docker__global__filename="docker_global.sh"
+        docker__global__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__global__filename}
     fi
-    docker_current_script_filename=`basename $0`
-	docker__current_folder=`basename ${docker__current_dir}`
-
-    docker__my_LTPP3_ROOTFS_docker_dir=${docker__parent_dir}/docker
-    docker__LTPP3_ROOTFS_docker_dockerfiles__dir=${docker__my_LTPP3_ROOTFS_docker_dir}/dockerfiles
-
-    docker__development_tools_folder="development_tools"
-    if [[ ${docker__current_folder} != ${docker__development_tools_folder} ]]; then
-        docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}/${docker__development_tools_folder}
-    else
-        docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}
-    fi
-
-    docker__global_filename="docker_global.sh"
-    docker__global__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__global_filename}
 }
 
 docker__load_source_files__sub() {
     source ${docker__global__fpath}
 }
 
-docker__load_header__sub() {
-    show_header__func "${DOCKER__TITLE}" "${DOCKER__TABLEWIDTH}" "${DOCKER__BG_ORANGE}" "${DOCKER__NUMOFLINES_2}" "${DOCKER__NUMOFLINES_0}"
-}
-
 docker__load_constants__sub() {
     DOCKER__MENUTITLE="${DOCKER__FG_YELLOW}Create${DOCKER__NOCOLOR} an ${DOCKER__FG_BORDEAUX}Image${DOCKER__NOCOLOR} using a ${DOCKER__FG_DARKBLUE}docker-file${DOCKER__NOCOLOR}"
     DOCKER__REMARK=${DOCKER__EMPTYSTRING}
-    DOCKER__LOCATION_INFO="${DOCKER__FOURSPACES}${DOCKER__FG_VERYLIGHTORANGE}Location${DOCKER__NOCOLOR}: ${docker__LTPP3_ROOTFS_docker_dockerfiles__dir}"
+    DOCKER__LOCATIONINFO="${DOCKER__FOURSPACES}${DOCKER__FG_VERYLIGHTORANGE}Location${DOCKER__NOCOLOR}: ${docker__LTPP3_ROOTFS_docker_dockerfiles__dir}"
+    DOCKER__MENUOPTIONS="${DOCKER__FOURSPACES_Q_QUIT}"
+    DOCKER__MATCHPATTERNS="${DOCKER__QUIT}"
     DOCKER__ERRMSG="${DOCKER__FOURSPACES}-:${DOCKER__FG_LIGHTRED}directory is Empty${DOCKER__NOCOLOR}:-"
     DOCKER__READ_DIALOG="Choose a file: "
 }
 
 docker__init_variables__sub() {
-    docker__dockerFile_fpath=""
-    docker__dockerFile_filename=""
+    docker__dockerFile_fpath=${DOCKER__EMPTYSTRING}
+    docker__dockerFile_filename=${DOCKER__EMPTYSTRING}
+    docker__printMsg=${DOCKER__EMPTYSTRING}
     docker__flagExitLoop=false
 }
 
 docker__show_dockerList_files__sub() {
     #Show directory content
-    show_pathContent_w_keyInput__func "${docker__LTPP3_ROOTFS_docker_dockerfiles__dir}" \
+    show_pathContent_w_selection__func "${docker__LTPP3_ROOTFS_docker_dockerfiles__dir}" \
                         "${DOCKER__EMPTYSTRING}" \
                         "${DOCKER__MENUTITLE}" \
                         "${DOCKER__REMARK}" \
-                        "${DOCKER__LOCATION_INFO}" \
-                        "${DOCKER__FOURSPACES_F12_QUIT}" \
-                        "${DOCKER__EMPTYSTRING}" \
+                        "${DOCKER__LOCATIONINFO}" \
+                        "${DOCKER__MENUOPTIONS}" \
+                        "${DOCKER__MATCHPATTERNS}" \
                         "${DOCKER__ERRMSG}" \
                         "${DOCKER__READ_DIALOG}" \
                         "${DOCKER__EMPTYSTRING}" \
                         "${DOCKER__EMPTYSTRING}" \
                         "${DOCKER__TABLEROWS_10}" \
-                        "${docker__create_an_image_from_dockerfile_out__fpath}"
+                        "${DOCKER__FALSE}" \
+                        "${docker__show_pathContent_w_selection_func_out__fpath}" \
+                        "${DOCKER__NUMOFLINES_2}" \
+                        "${DOCKER__TRUE}"
 
     #Get the exitcode just in case a Ctrl-C was pressed in function 'DOCKER__FOURSPACES_F4_ABORT' (in script 'docker_global.sh')
     docker__exitCode=$?
@@ -220,14 +236,14 @@ docker__show_dockerList_files__sub() {
 
     #Get result from file.
     docker__dockerFile_fpath=`get_output_from_file__func \
-                        "${docker__create_an_image_from_dockerfile_out__fpath}" \
+                        "${docker__show_pathContent_w_selection_func_out__fpath}" \
                         "${DOCKER__LINENUM_1}"`
 
     #Double-check if 'docker__dockerFile_fpath = F12'
-    if [[ ${docker__dockerFile_fpath} == ${DOCKER__ENUM_FUNC_F12} ]]; then
+    if [[ ${docker__dockerFile_fpath} == ${DOCKER__QUIT} ]]; then
         exit__func "${DOCKER__EXITCODE_0}" "${DOCKER__NUMOFLINES_2}"
     else
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
     fi
 }
 
@@ -253,9 +269,13 @@ docker__create_image_handler__sub() {
             create_image__func ${docker__dockerFile_fpath}
         fi
     else
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-        echo -e "***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: File '${DOCKER__FG_DARKBLUE}${docker__dockerFile_fpath}${DOCKER__NOCOLOR}' does ${DOCKER__FG_LIGHTRED}Not${DOCKER__NOCOLOR} exist"
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"       
+        #Update message
+        docker__printMsg="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: "
+        docker__printMsg+="file ${DOCKER__FG_DARKBLUE}${docker__dockerFile_fpath}${DOCKER__NOCOLOR} "
+        docker__printMsg+="does ${DOCKER__FG_LIGHTRED}Not${DOCKER__NOCOLOR} exist"
+
+        #Show message
+        show_msg_only__func "${docker__printMsg}" "${DOCKER__NUMOFLINES_1}" "${DOCKER__NUMOFLINES_1}"
     fi
 }
 
@@ -266,8 +286,6 @@ main_sub() {
     docker__load_environment_variables__sub
 
     docker__load_source_files__sub
-
-    docker__load_header__sub
 
     docker__load_constants__sub
 

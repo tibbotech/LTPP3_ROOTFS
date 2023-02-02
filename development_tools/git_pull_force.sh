@@ -1,6 +1,6 @@
 #!/bin/bash
 #---SUBROUTINES
-docker__load_header__sub() {
+load_tibbo_title__func() {
     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
     echo -e "${DOCKER__BG_ORANGE}                                 ${DOCKER__TITLE}${DOCKER__BG_ORANGE}                                ${DOCKER__NOCOLOR}"
 }
@@ -38,7 +38,7 @@ docker__git_pull_force__sub() {
 
 #---MAIN SUBROUTINE
 main_sub() {
-    docker__load_header__sub
+    load_tibbo_title__func
 
     docker__git_pull_force__sub
 }

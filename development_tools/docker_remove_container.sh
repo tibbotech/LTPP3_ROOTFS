@@ -26,10 +26,6 @@ docker__load_source_files__sub() {
     source ${docker__global__fpath}
 }
 
-docker__load_header__sub() {
-    show_header__func "${DOCKER__TITLE}" "${DOCKER__TABLEWIDTH}" "${DOCKER__BG_ORANGE}" "${DOCKER__NUMOFLINES_2}" "${DOCKER__NUMOFLINES_0}"
-}
-
 docker__init_variables__sub() {
     docker__myContainerId=${DOCKER__EMPTYSTRING}
     docker__myContainerId_input=${DOCKER__EMPTYSTRING}
@@ -39,10 +35,12 @@ docker__init_variables__sub() {
     docker__myContainerId_isFound=${DOCKER__EMPTYSTRING}
     docker__myAnswer=${DOCKER__EMPTYSTRING}
 
+    docker__totNumOfLines=0
+
     docker__exitCode=0
 
-    docker__ps_a_cmd="docker ps -a"
-    docker__ps_a_containerIdColno=1
+    # docker__ps_a_cmd="docker ps -a"
+    # docker__ps_a_containerIdColno=1
 
     docker__showTable=false
     docker__onEnter_breakLoop=true
@@ -50,13 +48,13 @@ docker__init_variables__sub() {
 
 docker_remove_specified_containers__sub() {
     #Define local constants
-    local READMSG_DO_YOU_REALLY_WISH_TO_CONTINUE="***Do you REALLY wish to continue (y/n/q/b)? "
+    local READMSG_DO_YOU_REALLY_WISH_TO_CONTINUE="***Do you REALLY wish to continue (${DOCKER__Y_SLASH_N_SLASH_B_SLASH_Q})? "
 
     #Define local variables
     local errMsg=${DOCKER__EMPTYSTRING}
     local numOfLines=${DOCKER__NUMOFLINES_0}
 
-    #Set flag to true
+    #Initialization
     docker__showTable=true
 
     #Start loop
@@ -85,9 +83,7 @@ docker_remove_specified_containers__sub() {
             #Convert to Array
             eval "docker__myContainerId_arr=(${docker__myContainerId_subst})"
 
-            #Go thru each array-item
-            moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-
+            #Question
             while true
             do
                 read -N1 -p "${READMSG_DO_YOU_REALLY_WISH_TO_CONTINUE}" docker__myAnswer
@@ -103,7 +99,7 @@ docker_remove_specified_containers__sub() {
                                 docker rm $(docker ps -a -q)
 
                                 #Set number of lines
-                                numOfLines=${DOCKER__NUMOFLINES_2}
+                                # numOfLines=${DOCKER__NUMOFLINES_2}
                             else
                                 #Print Empty Lines
                                 moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
@@ -137,11 +133,11 @@ docker_remove_specified_containers__sub() {
                                 done
 
                                 #Set number of lines
-                                numOfLines=${DOCKER__NUMOFLINES_2}
+                                # numOfLines=${DOCKER__NUMOFLINES_2}
                             fi
 
-                            #Print an Empty Line
-                            moveDown_and_cleanLines__func "${numOfLines}"
+                            # #Print an Empty Line
+                            # moveDown_and_cleanLines__func "${numOfLines}"
 
                             #Set flag back to true
                             docker__showTable=true
@@ -179,11 +175,17 @@ docker_remove_specified_containers__sub() {
 
 docker_containerId_input__sub() {
     #Define message constants
-    local READMSG_PASTE_YOUR_INPUT="Paste your input (here): "
     local MENUTITLE="Remove ${DOCKER__FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}"
+    local READMSG_PASTE_YOUR_INPUT="Paste your input (here): "
     local ERRMSG_INVALID_INPUT_VALUE="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Invalid input value "
 
     #Define variables
+    local isFound=false
+    local readmsg_update=${DOCKER__EMPTYSTRING}
+    local readMsg_numOfLines=0
+    local remarks_numOfLines=0
+    local update_numOfLines=0
+
     local readmsg_remarks="${DOCKER__BG_ORANGE}Remarks:${DOCKER__NOCOLOR}\n"
     readmsg_remarks+="${DOCKER__DASH} Remove ALL container-IDs by typing: ${DOCKER__FG_LIGHTGREY}${DOCKER__REMOVE_ALL}${DOCKER__NOCOLOR}\n"
     readmsg_remarks+="${DOCKER__DASH} Multiple container-IDs can be removed\n"
@@ -202,14 +204,6 @@ docker_containerId_input__sub() {
         fi
     fi
 
-    #Initialization
-    local isFound=false
-    local readmsg_update=${DOCKER__EMPTYSTRING}
-    local readMsg_numOfLines=0
-    local remarks_numOfLines=0
-    local update_numOfLines=0
-    local numOfLines_tot=0
-
     #Calculate number of lines to be cleaned
     if [[ ! -z ${READMSG_PASTE_YOUR_INPUT} ]]; then    #this condition is important
         readMsg_numOfLines=`echo -e ${READMSG_PASTE_YOUR_INPUT} | wc -l`      
@@ -218,6 +212,7 @@ docker_containerId_input__sub() {
         remarks_numOfLines=`echo -e ${readmsg_remarks} | wc -l`      
     fi
 
+    #Show container-list
     while true
     do
         #Define 'readmsg_update'
@@ -229,9 +224,10 @@ docker_containerId_input__sub() {
             update_numOfLines=`echo -e ${readmsg_update} | wc -l`      
         fi
 
-        #Update total number of lines to be cleaned 'numOfLines_tot'
-        numOfLines_tot=$((readMsg_numOfLines + update_numOfLines + DOCKER__NUMOFLINES_1))
+        #Update total number of lines to be cleaned 'docker__totNumOfLines'
+        docker__totNumOfLines=$((readMsg_numOfLines + update_numOfLines + DOCKER__NUMOFLINES_1))
 
+        #Show container-list
         ${docker__readInput_w_autocomplete__fpath} "${MENUTITLE}" \
                             "${READMSG_PASTE_YOUR_INPUT}" \
                             "${readmsg_update}" \
@@ -242,9 +238,10 @@ docker_containerId_input__sub() {
                             "${docker__ps_a_containerIdColno}" \
                             "${DOCKER__EMPTYSTRING}" \
                             "${docker__showTable}" \
-                            "${docker__onEnter_breakLoop}"
+                            "${docker__onEnter_breakLoop}" \
+                            "${DOCKER__NUMOFLINES_2}"
 
-        #Get the exitcode just in case:
+        #Get the exit-code just in case:
         #   1. Ctrl-C was pressed in script 'docker__readInput_w_autocomplete__fpath'.
         #   2. An error occured in script 'docker__readInput_w_autocomplete__fpath',...
         #      ...and exit-code = 99 came from function...
@@ -253,7 +250,7 @@ docker_containerId_input__sub() {
         if [[ ${docker__exitCode} -eq ${DOCKER__EXITCODE_99} ]]; then
             docker__myContainerId_input=${DOCKER__EMPTYSTRING}
         else
-            #Retrieve the selected container-ID from file
+            #Get the result
             docker__myContainerId_input=`get_output_from_file__func "${docker__readInput_w_autocomplete_out__fpath}" "1"`
         fi  
 
@@ -266,7 +263,7 @@ docker_containerId_input__sub() {
 		    ${DOCKER__EMPTYSTRING})
                 #Only clean lines if 'docker__myContainerId' is an Empty String
                 if [[ -z ${docker__myContainerId} ]]; then
-                    moveUp_and_cleanLines__func "${numOfLines_tot}"
+                    moveUp_and_cleanLines__func "${docker__totNumOfLines}"
                 fi
 
                 break
@@ -290,7 +287,7 @@ docker_containerId_input__sub() {
                     fi
                 fi
 
-                moveUp_and_cleanLines__func "${numOfLines_tot}"
+                moveUp_and_cleanLines__func "${docker__totNumOfLines}"
                 ;;
 		esac
 	done
@@ -319,8 +316,6 @@ main_sub() {
     docker__environmental_variables__sub
 
     docker__load_source_files__sub
-
-    docker__load_header__sub
 
     docker__init_variables__sub
 

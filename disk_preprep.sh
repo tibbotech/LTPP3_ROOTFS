@@ -61,65 +61,61 @@ echo -e "---Define Environmental Variables---"
 echo -e "\r"
 
 armhf_filename="ubuntu-base-20.04.1-base-armhf.tar.gz"
-
-disk_foldername="disk"
-firmware_foldername="firmware"
-
-#clkspq628c_filename="clk-sp-q628.c"
-
 brcm_patchram_plus_filename="brcm_patchram_plus"
-
-make_menuconfig_filename="armhf_kernel.config"
-make_menuconfig_default_filename=".config"
-
-sp7021_ltpp3g2revD_filename="sp7021-ltpp3g2revD.dtsi"
-
-qemu_user_static_filename="qemu-arm-static"
-
-resolve_filename="resolv.conf"
-
-usb_mount_rules_filename="usb-mount.rules"
-usb_mount_service_filename="usb-mount@.service"
-usb_mount_sh_filename="usb-mount.sh"
-
-sd_detect_rules_filename="sd-detect.rules"
-sd_detect_service_filename="sd-detect@.service"
-sd_detect_add_sh_filename="sd-detect-add.sh"
-sd_detect_remove_sh_filename="sd-detect-remove.sh"
-
-gpio_gpio_set_group_rules_filename="gpio-set_group.rules"
-
-sunplus_foldername="SP7021"
-profile_filename="profile"
+build_disk_filename="build_disk.sh"
+build_disk_bck_filename=${build_disk_filename}.bak
+build_disk_mod_filename=${build_disk_filename}.mod
 chroot_exec_cmd_inside_chroot_filename="chroot_exec_cmd_inside_chroot.sh"
-# daisychain_mode_filename="mode"
-daisychain_state_service_filename="daisychain_state.service"
-daisychain_state_sh_filename="daisychain_state.sh"
-enable_eth1_before_login_service_filename="enable-eth1-before-login.service"
-enable_eth1_before_login_sh_filename="enable-eth1-before-login.sh"
+#clkspq628c_filename="clk-sp-q628.c"# daisychain_mode_filename="mode"
 create_chown_pwm_service_filename="create-chown-pwm.service"
 create_chown_pwm_sh_filename="create-chown-pwm.sh"
+daisychain_state_service_filename="daisychain_state.service"
+daisychain_state_sh_filename="daisychain_state.sh"
+disk_foldername="disk"
+enable_eth1_before_login_service_filename="enable-eth1-before-login.service"
+enable_eth1_before_login_sh_filename="enable-eth1-before-login.sh"
+firmware_foldername="firmware"
+gpio_gpio_set_group_rules_filename="gpio-set_group.rules"
+hostname_filename="hostname"
+hosts_filename="hosts"
+make_menuconfig_filename="armhf_kernel.config"
+make_menuconfig_default_filename=".config"
+ntios_su_add_name="ntios-su-add"
+ntios_su_addasperand_name="${ntios_su_add_name}@"
+ntios_su_add_monitor_name="${ntios_su_add_name}-monitor"
+ntios_su_add_sh_filename="${ntios_su_add_name}.sh"
+ntios_su_addasperand_service_filename="${ntios_su_addasperand_name}.service"
+ntios_su_add_monitor_service_filename="${ntios_su_add_monitor_name}.service"
+ntios_su_add_monitor_sh_filename="${ntios_su_add_monitor_name}.sh"
+ntios_su_add_monitor_timer_filename="${ntios_su_add_monitor_name}.timer"
 one_time_exec_sh_filename="one-time-exec.sh"
 one_time_exec_before_login_sh_filename="one-time-exec-before-login.sh"
 one_time_exec_before_login_service_filename="one-time-exec-before-login.service"
 enable_ufw_before_login_service_filename="enable-ufw-before-login.service"
 enable_ufw_before_login_sh_filename="enable-ufw-before-login.sh"
-
-hostname_filename="hostname"
-hosts_filename="hosts"
-
-build_disk_filename="build_disk.sh"
-build_disk_bck_filename=${build_disk_filename}.bak
-build_disk_mod_filename=${build_disk_filename}.mod
+profile_filename="profile"
+qemu_user_static_filename="qemu-arm-static"
+resolve_filename="resolv.conf"
+scripts_foldername="scripts"
+sd_detect_rules_filename="sd-detect.rules"
+sd_detect_service_filename="sd-detect@.service"
+sd_detect_add_sh_filename="sd-detect-add.sh"
+sd_detect_remove_sh_filename="sd-detect-remove.sh"
+sp7021_ltpp3g2revD_filename="sp7021-ltpp3g2revD.dtsi"
+sunplus_foldername="SP7021"
+usb_mount_rules_filename="usb-mount.rules"
+usb_mount_service_filename="usb-mount@.service"
+usb_mount_sh_filename="usb-mount.sh"
 
 home_dir=~	#this is the /root directory
+bin_dir=/bin
+# daisychain_dir=/sys/devices/platform/soc\@B/9c108000.l2sw
 etc_dir=/etc
 usr_bin_dir=/usr/bin
 home_downloads_dir=${home_dir}/Downloads
 home_downloads_disk_dir=${home_downloads_dir}/${disk_foldername}
 home_downloads_disk_lib_dir=${home_downloads_dir}/disk/lib
 
-scripts_foldername="scripts"
 scripts_dir=/${scripts_foldername}
 home_lttp3rootfs_dir=${home_dir}/LTPP3_ROOTFS
 home_lttp3rootfs_rootfs_initramfs_dir=${home_lttp3rootfs_dir}/rootfs/initramfs
@@ -130,6 +126,7 @@ home_lttp3rootfs_services_network_dir=${home_lttp3rootfs_dir}/services/network
 home_lttp3rootfs_services_pwm_dir=${home_lttp3rootfs_dir}/services/pwm
 home_lttp3rootfs_services_ufw_dir=${home_lttp3rootfs_dir}/services/ufw
 home_lttp3rootfs_services_permissions_dir=${home_lttp3rootfs_dir}/services/permissions
+home_lttp3rootfs_services_sudo_dir=${home_lttp3rootfs_dir}/services/sudo
 home_lttp3rootfs_kernel_dir=${home_lttp3rootfs_dir}/kernel
 home_lttp3rootfs_kernel_makeconfig_dir=${home_lttp3rootfs_kernel_dir}/makeconfig
 home_lttp3rootfs_kernel_drivers_clk_dir=${home_lttp3rootfs_kernel_dir}/drivers/clk
@@ -145,66 +142,33 @@ SP7xxx_linux_rootfs_initramfs_disk_etc_dir=${SP7xxx_linux_rootfs_initramfs_disk_
 SP7xxx_linux_rootfs_initramfs_disk_lib_dir=${SP7xxx_linux_rootfs_initramfs_disk_dir}/lib
 SP7xxx_linux_rootfs_initramfs_disk_usr_bin_dir=${SP7xxx_linux_rootfs_initramfs_disk_dir}/usr/bin
 SP7xxx_linux_rootfs_initramfs_disk_var_backups_gpio_dir=${SP7xxx_linux_rootfs_initramfs_disk_dir}/var/backups/gpio
-
 SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir=${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}/systemd/system
+SP7xxx_linux_rootfs_initramfs_disk_etc_tibbo_sudo_dir=${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}/tibbo/sudo
 SP7xxx_linux_rootfs_initramfs_disk_etc_udev_rulesd_dir=${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}/udev/rules.d
 SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir=${SP7xxx_linux_rootfs_initramfs_disk_dir}/usr/local/bin
 SP7xxx_linux_rootfs_initramfs_disk_scripts_dir=${SP7xxx_linux_rootfs_initramfs_disk_dir}/scripts
-# daisychain_dir=/sys/devices/platform/soc\@B/9c108000.l2sw
-
 SP7xxx_linux_rootfs_initramfs_extra_dir=${SP7xxx_linux_rootfs_initramfs_dir}/extra
 SP7xxx_linux_rootfs_initramfs_extra_etc_dir=${SP7xxx_linux_rootfs_initramfs_extra_dir}${etc_dir}
 
+armhf_fpath=${home_downloads_dir}/${armhf_filename}
+bin_systemctl_fpath=${bin_dir}/systemctl
 build_disk_fpath=${SP7xxx_linux_rootfs_initramfs_dir}/${build_disk_filename}
 build_disk_bck_fpath=${SP7xxx_linux_rootfs_initramfs_dir}/${build_disk_bck_filename} 
 build_disk_mod_fpath=${home_lttp3rootfs_rootfs_initramfs_dir}/${build_disk_mod_filename} 
-
-# dev_dir=/dev
-# mmcblk0p8_part="mmcblk0p8"
-# dev_mmcblk0p8_dir=${dev_dir}/${mmcblk0p8_part}
-
-src_resolve_fpath=${etc_dir}/${resolve_filename}
-armhf_fpath=${home_downloads_dir}/${armhf_filename}
 disk_etc_profile_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}/${profile_filename}
-
-src_firmware_fpath=${home_lttp3rootfs_rootfs_initramfs_disk_etc_dir}/${firmware_foldername}
-dst_firmware_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}/${firmware_foldername}
-
-#src_clkspq628c_fpath=${home_lttp3rootfs_kernel_drivers_clk_dir}/${clkspq628c_filename}
-#dst_clkspq628c_fpath=${SP7xxx_linux_kernel_drivers_clk}/${clkspq628c_filename}
+src_resolve_fpath=${etc_dir}/${resolve_filename}
 
 src_brcm_patchram_plus_fpath=${home_lttp3rootfs_usr_bin_dir}/${brcm_patchram_plus_filename}
 dst_brcm_patchram_plus_fpath=${SP7xxx_linux_rootfs_initramfs_disk_usr_bin_dir}/${brcm_patchram_plus_filename}
 
-src_make_menuconfig_fpath=${home_lttp3rootfs_kernel_makeconfig_dir}/${make_menuconfig_filename}
-dst_make_menuconfig_fpath=${SP7xxx_linux_kernel_dir}/${make_menuconfig_default_filename}
+#src_clkspq628c_fpath=${home_lttp3rootfs_kernel_drivers_clk_dir}/${clkspq628c_filename}
+#dst_clkspq628c_fpath=${SP7xxx_linux_kernel_drivers_clk}/${clkspq628c_filename}
 
-src_sp7021_ltpp3g2revD_fpath=${home_lttp3rootfs_kernel_dts_dir}/${sp7021_ltpp3g2revD_filename}
-dst_sp7021_ltpp3g2revD_fpath=${SP7xxx_linux_kernel_arch_arm_boot_dts_dir}/${sp7021_ltpp3g2revD_filename}
+src_create_chown_pwm_service_fpath=${home_lttp3rootfs_services_pwm_dir}/${create_chown_pwm_service_filename}
+dst_create_chown_pwm_service_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}/${create_chown_pwm_service_filename}
 
-src_usb_mount_service_fpath=${home_lttp3rootfs_services_automount_dir}/${usb_mount_service_filename}
-dst_usb_mount_service_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}/${usb_mount_service_filename}
-
-src_usb_mount_sh_fpath=${home_lttp3rootfs_services_automount_dir}/${usb_mount_sh_filename}
-dst_usb_mount_sh_fpath=${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}/${usb_mount_sh_filename}
-
-src_usb_mount_rules_fpath=${home_lttp3rootfs_services_automount_dir}/${usb_mount_rules_filename}
-dst_usb_mount_rules_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_udev_rulesd_dir}/${usb_mount_rules_filename}
-
-src_sd_detect_service_fpath=${home_lttp3rootfs_services_automount_dir}/${sd_detect_service_filename}
-dst_sd_detect_service_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}/${sd_detect_service_filename}
-
-src_sd_detect_rules_fpath=${home_lttp3rootfs_services_automount_dir}/${sd_detect_rules_filename}
-dst_sd_detect_rules_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_udev_rulesd_dir}/${sd_detect_rules_filename}
-
-src_gpio_set_group_rules_fpath=${home_lttp3rootfs_services_permissions_dir}/${gpio_gpio_set_group_rules_filename}
-dst_gpio_set_group_rules_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_udev_rulesd_dir}/${gpio_gpio_set_group_rules_filename}
-
-src_sd_detect_add_sh_fpath=${home_lttp3rootfs_services_automount_dir}/${sd_detect_add_sh_filename}
-dst_sd_detect_add_sh_fpath=${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}/${sd_detect_add_sh_filename}
-
-src_sd_detect_remove_sh_fpath=${home_lttp3rootfs_services_automount_dir}/${sd_detect_remove_sh_filename}
-dst_sd_detect_remove_sh_fpath=${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}/${sd_detect_remove_sh_filename}
+src_create_chown_pwm_sh_fpath=${home_lttp3rootfs_services_pwm_dir}/${create_chown_pwm_sh_filename}
+dst_create_chown_pwm_sh_fpath=${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}/${create_chown_pwm_sh_filename}
 
 src_daisychain_state_service_fpath=${home_lttp3rootfs_services_network_dir}/${daisychain_state_service_filename}
 dst_daisychain_state_service_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}/${daisychain_state_service_filename}
@@ -218,11 +182,41 @@ dst_enable_eth1_before_login_service_fpath=${SP7xxx_linux_rootfs_initramfs_disk_
 src_enable_eth1_before_login_sh_fpath=${home_lttp3rootfs_services_network_dir}/${enable_eth1_before_login_sh_filename}
 dst_enable_eth1_before_login_sh_fpath=${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}/${enable_eth1_before_login_sh_filename}
 
-src_create_chown_pwm_service_fpath=${home_lttp3rootfs_services_pwm_dir}/${create_chown_pwm_service_filename}
-dst_create_chown_pwm_service_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}/${create_chown_pwm_service_filename}
+src_enable_ufw_before_login_service_fpath=${home_lttp3rootfs_services_ufw_dir}/${enable_ufw_before_login_service_filename}
+dst_enable_ufw_before_login_service_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}/${enable_ufw_before_login_service_filename}
 
-src_create_chown_pwm_sh_fpath=${home_lttp3rootfs_services_pwm_dir}/${create_chown_pwm_sh_filename}
-dst_create_chown_pwm_sh_fpath=${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}/${create_chown_pwm_sh_filename}
+src_enable_ufw_before_login_sh_fpath=${home_lttp3rootfs_services_ufw_dir}/${enable_ufw_before_login_sh_filename}
+dst_enable_ufw_before_login_sh_fpath=${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}/${enable_ufw_before_login_sh_filename}
+
+src_firmware_fpath=${home_lttp3rootfs_rootfs_initramfs_disk_etc_dir}/${firmware_foldername}
+dst_firmware_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}/${firmware_foldername}
+
+src_gpio_set_group_rules_fpath=${home_lttp3rootfs_services_permissions_dir}/${gpio_gpio_set_group_rules_filename}
+dst_gpio_set_group_rules_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_udev_rulesd_dir}/${gpio_gpio_set_group_rules_filename}
+
+src_hostname_fpath=${home_lttp3rootfs_rootfs_initramfs_disk_etc_dir}/${hostname_filename}
+dst_hostname_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}/${hostname_filename}
+
+src_hosts_fpath=${home_lttp3rootfs_rootfs_initramfs_disk_etc_dir}/${hosts_filename}
+dst_hosts_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}/${hosts_filename}
+
+src_make_menuconfig_fpath=${home_lttp3rootfs_kernel_makeconfig_dir}/${make_menuconfig_filename}
+dst_make_menuconfig_fpath=${SP7xxx_linux_kernel_dir}/${make_menuconfig_default_filename}
+
+src_ntios_su_add_sh_fpath=${home_lttp3rootfs_services_sudo_dir}/${ntios_su_add_sh_filename}
+dst_ntios_su_add_sh_fpath=${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}/${ntios_su_add_sh_filename}
+
+src_ntios_su_addasperand_service_fpath=${home_lttp3rootfs_services_sudo_dir}/${ntios_su_addasperand_service_filename}
+dst_ntios_su_addasperand_service_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}/${ntios_su_addasperand_service_filename}
+
+src_ntios_su_add_monitor_service_fpath=${home_lttp3rootfs_services_sudo_dir}/${ntios_su_add_monitor_service_filename}
+dst_ntios_su_add_monitor_service_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}/${ntios_su_add_monitor_service_filename}
+
+src_ntios_su_add_monitor_sh_fpath=${home_lttp3rootfs_services_sudo_dir}/${ntios_su_add_monitor_sh_filename}
+dst_ntios_su_add_monitor_sh_fpath=${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}/${ntios_su_add_monitor_sh_filename}
+
+src_ntios_su_add_monitor_timer_fpath=${home_lttp3rootfs_services_sudo_dir}/${ntios_su_add_monitor_timer_filename}
+dst_ntios_su_add_monitor_timer_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}/${ntios_su_add_monitor_timer_filename}
 
 src_one_time_exec_sh_fpath=${home_lttp3rootfs_services_oobe_oneshot_dir}/${one_time_exec_sh_filename}
 dst_one_time_exec_sh_fpath=${SP7xxx_linux_rootfs_initramfs_disk_scripts_dir}/${one_time_exec_sh_filename}
@@ -233,17 +227,30 @@ dst_one_time_exec_before_login_sh_fpath=${SP7xxx_linux_rootfs_initramfs_disk_usr
 src_one_time_exec_before_login_service_fpath=${home_lttp3rootfs_services_oobe_oneshot_dir}/${one_time_exec_before_login_service_filename}
 dst_one_time_exec_before_login_service_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}/${one_time_exec_before_login_service_filename}
 
-src_enable_ufw_before_login_service_fpath=${home_lttp3rootfs_services_ufw_dir}/${enable_ufw_before_login_service_filename}
-dst_enable_ufw_before_login_service_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}/${enable_ufw_before_login_service_filename}
+src_sd_detect_add_sh_fpath=${home_lttp3rootfs_services_automount_dir}/${sd_detect_add_sh_filename}
+dst_sd_detect_add_sh_fpath=${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}/${sd_detect_add_sh_filename}
 
-src_enable_ufw_before_login_sh_fpath=${home_lttp3rootfs_services_ufw_dir}/${enable_ufw_before_login_sh_filename}
-dst_enable_ufw_before_login_sh_fpath=${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}/${enable_ufw_before_login_sh_filename}
+src_sd_detect_remove_sh_fpath=${home_lttp3rootfs_services_automount_dir}/${sd_detect_remove_sh_filename}
+dst_sd_detect_remove_sh_fpath=${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}/${sd_detect_remove_sh_filename}
 
-src_hostname_fpath=${home_lttp3rootfs_rootfs_initramfs_disk_etc_dir}/${hostname_filename} 
-dst_hostname_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}/${hostname_filename} 
+src_sd_detect_rules_fpath=${home_lttp3rootfs_services_automount_dir}/${sd_detect_rules_filename}
+dst_sd_detect_rules_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_udev_rulesd_dir}/${sd_detect_rules_filename}
 
-src_hosts_fpath=${home_lttp3rootfs_rootfs_initramfs_disk_etc_dir}/${hosts_filename} 
-dst_hosts_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}/${hosts_filename} 
+src_sd_detect_service_fpath=${home_lttp3rootfs_services_automount_dir}/${sd_detect_service_filename}
+dst_sd_detect_service_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}/${sd_detect_service_filename}
+
+src_sp7021_ltpp3g2revD_fpath=${home_lttp3rootfs_kernel_dts_dir}/${sp7021_ltpp3g2revD_filename}
+dst_sp7021_ltpp3g2revD_fpath=${SP7xxx_linux_kernel_arch_arm_boot_dts_dir}/${sp7021_ltpp3g2revD_filename}
+
+src_usb_mount_service_fpath=${home_lttp3rootfs_services_automount_dir}/${usb_mount_service_filename}
+dst_usb_mount_service_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}/${usb_mount_service_filename}
+
+src_usb_mount_sh_fpath=${home_lttp3rootfs_services_automount_dir}/${usb_mount_sh_filename}
+dst_usb_mount_sh_fpath=${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}/${usb_mount_sh_filename}
+
+src_usb_mount_rules_fpath=${home_lttp3rootfs_services_automount_dir}/${usb_mount_rules_filename}
+dst_usb_mount_rules_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_udev_rulesd_dir}/${usb_mount_rules_filename}
+
 
 
 echo -e "\r"
@@ -434,8 +441,6 @@ else
 		chmod 755 ${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}
 fi
 
-
-
 echo -e "\r"
 echo -e ">Copy file <systemd unit service>: ${usb_mount_service_filename}"
 echo -e ">from: ${home_lttp3rootfs_services_automount_dir}"
@@ -498,19 +503,6 @@ else
 		chmod 755 ${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}
 fi
 
-echo -e "\r"
-echo -e ">Copy file: ${usb_mount_sh_filename}"
-echo -e ">from: ${home_lttp3rootfs_services_automount_dir}"
-echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}"
-	cp ${src_usb_mount_sh_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}
-
-echo -e "\r"
-echo -e ">>>Change ownership to <root> for file: ${usb_mount_sh_filename}"
-	chown root:root ${dst_usb_mount_sh_fpath}
-
-echo -e "\r"
-echo -e ">>>Change permission to <-rwxr-xr-x> for file: ${usb_mount_sh_filename}"
-	chmod 755 ${dst_usb_mount_sh_fpath}
 
 
 echo -e "\r"
@@ -540,6 +532,22 @@ echo -e ">>>Change ownership to <root> for file: ${sd_detect_remove_sh_filename}
 echo -e "\r"
 echo -e ">>>Change permission to <-rwxr-xr-x> for file: ${sd_detect_remove_sh_filename}"
 	chmod 755 ${dst_sd_detect_remove_sh_fpath}
+
+
+
+echo -e "\r"
+echo -e ">Copy file: ${usb_mount_sh_filename}"
+echo -e ">from: ${home_lttp3rootfs_services_automount_dir}"
+echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}"
+	cp ${src_usb_mount_sh_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}
+
+echo -e "\r"
+echo -e ">>>Change ownership to <root> for file: ${usb_mount_sh_filename}"
+	chown root:root ${dst_usb_mount_sh_fpath}
+
+echo -e "\r"
+echo -e ">>>Change permission to <-rwxr-xr-x> for file: ${usb_mount_sh_filename}"
+	chmod 755 ${dst_usb_mount_sh_fpath}
 
 
 
@@ -604,6 +612,7 @@ echo -e ">>>Change permission to <-rw-r--r--> for file: ${sd_detect_rules_filena
 	chmod 644 ${dst_sd_detect_rules_fpath}
 
 
+
 press_any_key__func
 echo -e "\r"
 echo -e "\r"
@@ -636,6 +645,7 @@ echo -e ">>>Change permission to <-rw-r--r--> for file: ${gpio_gpio_set_group_ru
 	chmod 644 ${dst_gpio_set_group_rules_fpath}
 
 
+
 press_any_key__func
 echo -e "\r"
 echo -e "---Services to run BEFORE login---"
@@ -647,62 +657,6 @@ echo -e ">in: ${SP7xxx_linux_rootfs_initramfs_disk_dir}"
 if [[ ! -d ${SP7xxx_linux_rootfs_initramfs_disk_scripts_dir} ]]; then
 	mkdir ${SP7xxx_linux_rootfs_initramfs_disk_scripts_dir}
 fi
-
-echo -e "\r"
-echo -e ">Copying: ${daisychain_state_service_filename}>"
-echo -e ">from: ${home_lttp3rootfs_services_network_dir}"
-echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}"
-	cp ${src_daisychain_state_service_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}
-
-echo -e "\r"
-echo -e ">>>Change ownership to <root> for file: ${daisychain_state_service_filename}"
-	chown root:root ${dst_daisychain_state_service_fpath}
-
-echo -e "\r"
-echo -e ">>>Change permission to <-rwxr-xr-x> for file: ${daisychain_state_service_filename}"
-	chmod 644 ${dst_daisychain_state_service_fpath}
-
-echo -e "\r"
-echo -e ">Copying: ${daisychain_state_sh_filename}>"
-echo -e ">from: ${home_lttp3rootfs_services_network_dir}"
-echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}"
-	cp ${src_daisychain_state_sh_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}
-
-echo -e "\r"
-echo -e ">>>Change ownership to <root> for file: ${daisychain_state_sh_filename}"
-	chown root:root ${dst_daisychain_state_sh_fpath}
-
-echo -e "\r"
-echo -e ">>>Change permission to <-rwxr-xr-x> for file: ${daisychain_state_sh_filename}"
-	chmod 755 ${dst_daisychain_state_sh_fpath}
-
-echo -e "\r"
-echo -e ">Copying: ${enable_eth1_before_login_service_filename}>"
-echo -e ">from: ${home_lttp3rootfs_services_network_dir}"
-echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}"
-	cp ${src_enable_eth1_before_login_service_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}
-
-echo -e "\r"
-echo -e ">>>Change ownership to <root> for file: ${enable_eth1_before_login_service_filename}"
-	chown root:root ${dst_enable_eth1_before_login_service_fpath}
-
-echo -e "\r"
-echo -e ">>>Change permission to <-rwxr-xr-x> for file: ${enable_eth1_before_login_service_filename}"
-	chmod 644 ${dst_enable_eth1_before_login_service_fpath}
-
-echo -e "\r"
-echo -e ">Copying: ${enable_eth1_before_login_sh_filename}>"
-echo -e ">from: ${home_lttp3rootfs_services_network_dir}"
-echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}"
-	cp ${src_enable_eth1_before_login_sh_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}
-
-echo -e "\r"
-echo -e ">>>Change ownership to <root> for file: ${enable_eth1_before_login_sh_filename}"
-	chown root:root ${dst_enable_eth1_before_login_sh_fpath}
-
-echo -e "\r"
-echo -e ">>>Change permission to <-rwxr-xr-x> for file: ${enable_eth1_before_login_sh_filename}"
-	chmod 755 ${dst_enable_eth1_before_login_sh_fpath}
 
 
 
@@ -737,6 +691,170 @@ echo -e ">>>Change permission to <-rwxr-xr-x> for file: ${create_chown_pwm_sh_fi
 
 
 echo -e "\r"
+echo -e ">Copying: ${daisychain_state_service_filename}>"
+echo -e ">from: ${home_lttp3rootfs_services_network_dir}"
+echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}"
+	cp ${src_daisychain_state_service_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}
+
+echo -e "\r"
+echo -e ">>>Change ownership to <root> for file: ${daisychain_state_service_filename}"
+	chown root:root ${dst_daisychain_state_service_fpath}
+
+echo -e "\r"
+echo -e ">>>Change permission to <-rwxr-xr-x> for file: ${daisychain_state_service_filename}"
+	chmod 644 ${dst_daisychain_state_service_fpath}
+
+echo -e "\r"
+echo -e ">Copying: ${daisychain_state_sh_filename}>"
+echo -e ">from: ${home_lttp3rootfs_services_network_dir}"
+echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}"
+	cp ${src_daisychain_state_sh_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}
+
+echo -e "\r"
+echo -e ">>>Change ownership to <root> for file: ${daisychain_state_sh_filename}"
+	chown root:root ${dst_daisychain_state_sh_fpath}
+
+echo -e "\r"
+echo -e ">>>Change permission to <-rwxr-xr-x> for file: ${daisychain_state_sh_filename}"
+	chmod 755 ${dst_daisychain_state_sh_fpath}
+
+
+
+echo -e "\r"
+echo -e ">Copying: ${enable_eth1_before_login_service_filename}>"
+echo -e ">from: ${home_lttp3rootfs_services_network_dir}"
+echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}"
+	cp ${src_enable_eth1_before_login_service_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}
+
+echo -e "\r"
+echo -e ">>>Change ownership to <root> for file: ${enable_eth1_before_login_service_filename}"
+	chown root:root ${dst_enable_eth1_before_login_service_fpath}
+
+echo -e "\r"
+echo -e ">>>Change permission to <-rwxr-xr-x> for file: ${enable_eth1_before_login_service_filename}"
+	chmod 644 ${dst_enable_eth1_before_login_service_fpath}
+
+echo -e "\r"
+echo -e ">Copying: ${enable_eth1_before_login_sh_filename}>"
+echo -e ">from: ${home_lttp3rootfs_services_network_dir}"
+echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}"
+	cp ${src_enable_eth1_before_login_sh_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}
+
+echo -e "\r"
+echo -e ">>>Change ownership to <root> for file: ${enable_eth1_before_login_sh_filename}"
+	chown root:root ${dst_enable_eth1_before_login_sh_fpath}
+
+echo -e "\r"
+echo -e ">>>Change permission to <-rwxr-xr-x> for file: ${enable_eth1_before_login_sh_filename}"
+	chmod 755 ${dst_enable_eth1_before_login_sh_fpath}
+
+
+
+echo -e "\r"
+echo -e ">Copying: ${enable_ufw_before_login_service_filename}"
+echo -e ">from: ${home_lttp3rootfs_services_ufw_dir}"
+echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}"
+	cp ${src_enable_ufw_before_login_service_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}
+
+echo -e "\r"
+echo -e ">>>Change ownership to <root> for file: ${enable_ufw_before_login_service_filename}"
+	chown root:root ${dst_enable_ufw_before_login_service_fpath}
+
+echo -e "\r"
+echo -e ">>>Change permission to <-rw-r--r--> for file: ${enable_ufw_before_login_service_filename}"
+	chmod 644 ${dst_enable_ufw_before_login_service_fpath}
+
+echo -e "\r"
+echo -e ">Copying: ${enable_ufw_before_login_sh_filename}"
+echo -e ">from: ${home_lttp3rootfs_services_ufw_dir}"
+echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}"
+	cp ${src_enable_ufw_before_login_sh_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}
+
+echo -e "\r"
+echo -e ">>>Change ownership to <root> for file: ${enable_ufw_before_login_sh_filename}"
+	chown root:root ${dst_enable_ufw_before_login_sh_fpath}
+
+echo -e "\r"
+echo -e ">>>Change permission to <-rwxr-xr-x> for file: ${enable_ufw_before_login_sh_filename}"
+	chmod 755 ${dst_enable_ufw_before_login_sh_fpath}
+
+
+
+echo -e "\r"
+echo -e ">Copying: ${ntios_su_addasperand_service_filename}>"
+echo -e ">from: ${home_lttp3rootfs_services_sudo_dir}"
+echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}"
+	cp ${src_ntios_su_addasperand_service_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}
+
+echo -e "\r"
+echo -e ">>>Change ownership to <root> for file: ${ntios_su_addasperand_service_filename}"
+	chown root:root ${dst_ntios_su_addasperand_service_fpath}
+
+echo -e "\r"
+echo -e ">>>Change permission to <-rw-r--r--> for file: ${ntios_su_addasperand_service_filename}"
+	chmod 644 ${dst_ntios_su_addasperand_service_fpath}
+
+echo -e "\r"
+echo -e ">Copying: ${ntios_su_add_sh_filename}"
+echo -e ">from: ${home_lttp3rootfs_services_sudo_dir}"
+echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}"
+	cp ${src_ntios_su_add_sh_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}
+
+echo -e "\r"
+echo -e ">>>Change ownership to <root> for file: ${ntios_su_add_sh_filename}"
+	chown root:root ${dst_ntios_su_add_sh_fpath}
+
+echo -e "\r"
+echo -e ">>>Change permission to <-rwxr-xr-x> for file: ${ntios_su_add_sh_filename}"
+	chmod 755 ${dst_ntios_su_add_sh_fpath}
+
+
+
+echo -e "\r"
+echo -e ">Copying: ${ntios_su_add_monitor_service_filename}>"
+echo -e ">from: ${home_lttp3rootfs_services_sudo_dir}"
+echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}"
+	cp ${src_ntios_su_add_monitor_service_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}
+
+echo -e "\r"
+echo -e ">>>Change ownership to <root> for file: ${ntios_su_add_monitor_service_filename}"
+	chown root:root ${dst_ntios_su_add_monitor_service_fpath}
+
+echo -e "\r"
+echo -e ">>>Change permission to <-rw-r--r--> for file: ${ntios_su_add_monitor_service_filename}"
+	chmod 644 ${dst_ntios_su_add_monitor_service_fpath}
+
+echo -e "\r"
+echo -e ">Copying: ${ntios_su_add_monitor_sh_filename}"
+echo -e ">from: ${home_lttp3rootfs_services_sudo_dir}"
+echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}"
+	cp ${src_ntios_su_add_monitor_sh_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}
+
+echo -e "\r"
+echo -e ">>>Change ownership to <root> for file: ${ntios_su_add_monitor_sh_filename}"
+	chown root:root ${dst_ntios_su_add_monitor_sh_fpath}
+
+echo -e "\r"
+echo -e ">>>Change permission to <-rwxr-xr-x> for file: ${ntios_su_add_monitor_sh_filename}"
+	chmod 755 ${dst_ntios_su_add_monitor_sh_fpath}
+
+echo -e "\r"
+echo -e ">Copying: ${ntios_su_add_monitor_timer_filename}>"
+echo -e ">from: ${home_lttp3rootfs_services_sudo_dir}"
+echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}"
+	cp ${src_ntios_su_add_monitor_timer_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}
+
+echo -e "\r"
+echo -e ">>>Change ownership to <root> for file: ${ntios_su_add_monitor_timer_filename}"
+	chown root:root ${dst_ntios_su_add_monitor_timer_fpath}
+
+echo -e "\r"
+echo -e ">>>Change permission to <-rw-r--r--> for file: ${ntios_su_add_monitor_timer_filename}"
+	chmod 644 ${dst_ntios_su_add_monitor_timer_fpath}
+
+
+
+echo -e "\r"
 echo -e ">Copying: ${one_time_exec_sh_filename}"
 echo -e ">from: ${home_lttp3rootfs_services_oobe_oneshot_dir}"
 echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_scripts_dir}"
@@ -749,6 +867,8 @@ echo -e ">>>Change ownership to <root> for file: ${one_time_exec_sh_filename}"
 echo -e "\r"
 echo -e ">>>Change permission to <-rwxr-xr-x> for file: ${one_time_exec_sh_filename}"
 	chmod 755 ${dst_one_time_exec_sh_fpath}
+
+
 
 echo -e "\r"
 echo -e ">Copying: ${one_time_exec_before_login_service_filename}>"
@@ -778,33 +898,6 @@ echo -e "\r"
 echo -e ">>>Change permission to <-rwxr-xr-x> for file: ${one_time_exec_before_login_sh_filename}"
 	chmod 755 ${dst_one_time_exec_before_login_sh_fpath}
 
-echo -e "\r"
-echo -e ">Copying: ${enable_ufw_before_login_service_filename}>"
-echo -e ">from: ${home_lttp3rootfs_services_ufw_dir}"
-echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}"
-	cp ${src_enable_ufw_before_login_service_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}
-
-echo -e "\r"
-echo -e ">>>Change ownership to <root> for file: ${enable_ufw_before_login_service_filename}"
-	chown root:root ${dst_enable_ufw_before_login_service_fpath}
-
-echo -e "\r"
-echo -e ">>>Change permission to <-rw-r--r--> for file: ${enable_ufw_before_login_service_filename}"
-	chmod 644 ${dst_enable_ufw_before_login_service_fpath}
-
-echo -e "\r"
-echo -e ">Copying: ${enable_ufw_before_login_sh_filename}"
-echo -e ">from: ${home_lttp3rootfs_services_ufw_dir}"
-echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}"
-	cp ${src_enable_ufw_before_login_sh_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}
-
-echo -e "\r"
-echo -e ">>>Change ownership to <root> for file: ${enable_ufw_before_login_sh_filename}"
-	chown root:root ${dst_enable_ufw_before_login_sh_fpath}
-
-echo -e "\r"
-echo -e ">>>Change permission to <-rwxr-xr-x> for file: ${enable_ufw_before_login_sh_filename}"
-	chmod 755 ${dst_enable_ufw_before_login_sh_fpath}
 
 
 #---HOSTNAME/HOSTS
@@ -839,6 +932,7 @@ echo -e ">>>Change permission to <-rw-r--r--> for file: ${hosts_filename}"
 	chmod 644 ${dst_hosts_fpath}
 
 
+
 #---FIRMWARE FOLDER
 press_any_key__func
 echo -e "\r"
@@ -864,13 +958,14 @@ echo -e ">>>Change permission to <-rw-r--r--> for folder: ${firmware_foldername}
 #echo -e ">to: ${SP7xxx_linux_kernel_drivers_clk}"
 #	cp ${src_clkspq628c_fpath} ${SP7xxx_linux_kernel_drivers_clk}
 
-echo -e "\r"
-echo -e ">>>Change ownership to <root> for file: ${clkspq628c_filename}"
-	chown root:root ${dst_clkspq628c_fpath}
+# echo -e "\r"
+# echo -e ">>>Change ownership to <root> for file: ${clkspq628c_filename}"
+# 	chown root:root ${dst_clkspq628c_fpath}
 
-echo -e "\r"
-echo -e ">>>Change permission to <-rwxr-xr-x> for file: ${clkspq628c_filename}"
-	chmod 755 ${dst_clkspq628c_fpath}
+# echo -e "\r"
+# echo -e ">>>Change permission to <-rwxr-xr-x> for file: ${clkspq628c_filename}"
+# 	chmod 755 ${dst_clkspq628c_fpath}
+
 
 
 #---FILE: brcm_patchram_plus
@@ -888,6 +983,7 @@ echo -e ">>>Change ownership to <root> for file: ${brcm_patchram_plus_filename}"
 echo -e "\r"
 echo -e ">>>Change permission to <-rwxr-xr-x> for file: ${brcm_patchram_plus_filename}"
 	chmod 755 ${dst_brcm_patchram_plus_fpath}
+
 
 
 #---KERNEL: MAKE MENUCONFIG
@@ -915,6 +1011,8 @@ echo -e ">>>Navigate to ${SP7xxx_linux_kernel_dir}"
 #echo -e "\r"
 #echo -e "\r"
 
+
+
 #---DTSI
 press_any_key__func
 echo -e "\r"
@@ -940,6 +1038,7 @@ echo -e "\r"
 echo -e ">chown root:root ${etc_dir}"
 echo -e ">in: ${SP7xxx_linux_rootfs_initramfs_extra_dir}"
 	chown root:root ${SP7xxx_linux_rootfs_initramfs_extra_etc_dir}
+
 
 
 ###FIX error messages:
@@ -970,6 +1069,7 @@ echo -e ">from: ${home_lttp3rootfs_rootfs_initramfs_dir}"
 echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_dir}"
 echo -e "\r"
 cp ${build_disk_mod_fpath}  ${build_disk_fpath}
+
 
 
 #Make file "build_disk.sh" executable

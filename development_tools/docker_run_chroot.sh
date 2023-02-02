@@ -63,19 +63,12 @@ docker__load_source_files__sub() {
     source ${docker__global__fpath}
 }
 
-docker__load_header__sub() {
-    show_header__func "${DOCKER__TITLE}" "${DOCKER__TABLEWIDTH}" "${DOCKER__BG_ORANGE}" "${DOCKER__NUMOFLINES_2}" "${DOCKER__NUMOFLINES_0}"
-}
-
 docker__init_variables__sub() {
     docker__myContainerId=${DOCKER__EMPTYSTRING}
     docker__isRunning_inside_container=false
     docker__numOf_errors_found=0
 
     docker__exitCode=0
-
-    docker__ps_a_cmd="docker ps -a"
-    docker__ps_a_containerIdColno=1
 
     docker__showTable=true
     docker__onEnter_breakLoop=true
@@ -121,9 +114,11 @@ docker__choose_containerID__sub() {
                         "${docker__ps_a_containerIdColno}" \
                         "${DOCKER__EMPTYSTRING}" \
                         "${docker__showTable}" \
-                        "${docker__onEnter_breakLoop}"
+                        "${docker__onEnter_breakLoop}" \
+                        "${DOCKER__NUMOFLINES_2}"
 
-    #Get the exitcode just in case:
+
+    #Get the exit-code just in case:
     #   1. Ctrl-C was pressed in script 'docker__readInput_w_autocomplete__fpath'.
     #   2. An error occured in script 'docker__readInput_w_autocomplete__fpath',...
     #      ...and exit-code = 99 came from function...
@@ -132,7 +127,7 @@ docker__choose_containerID__sub() {
     if [[ ${docker__exitCode} -eq ${DOCKER__EXITCODE_99} ]]; then
         docker__myContainerId=${DOCKER__EMPTYSTRING}
     else
-        #Retrieve the selected container-ID from file
+        #Get the result
         docker__myContainerId=`get_output_from_file__func "${docker__readInput_w_autocomplete_out__fpath}" "1"`
     fi
 }
@@ -174,7 +169,7 @@ docker__preCheck__sub() {
     if [[ ${docker__numOf_errors_found} -gt ${DOCKER__NUMOFMATCH_0} ]]; then
         show_errMsg_wo_menuTitle_and_exit_func "${ERRMSG_ONE_OR_MORE_CHECKITEMS_FAILED}" \
                         ${DOCKER__NUMOFLINES_1} \
-                        ${DOCKER__NUMOFLINES_2}
+                        ${DOCKER__NUMOFLINES_1}
     fi
 }
 docker__preCheck_app_isInstalled__sub() {
@@ -255,7 +250,7 @@ docker__run_script__sub() {
     echo -e "---:${DOCKER__FG_ORANGE}INFO${DOCKER__NOCOLOR}: Type ${DOCKER__FG_YELLOW}exit${DOCKER__NOCOLOR} to Exit ${DOCKER__FG_GREEN}Chroot${DOCKER__NOCOLOR}"
     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
     #Run chroot command
     #REMARK: make a choice based on whether currently running in 'local-host' or 'container'
@@ -269,16 +264,17 @@ docker__run_script__sub() {
     exitCode=$?
     if [[ ${exitCode} -ne 0 ]]; then #no errors found
         echo -e "---:${DOCKER__FG_ORANGE}STATUS${DOCKER__NOCOLOR}: *Unable* to enter ${DOCKER__FG_GREEN}Chroot${DOCKER__NOCOLOR} environment..."
+
+        exit__func "${exitCode}" "${DOCKER__NUMOFLINES_1}"
+    else
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
     fi
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 }
 
 docker__main__sub(){
     docker__environmental_variables__sub
 
     docker__load_source_files__sub
-
-    docker__load_header__sub
 
     docker__init_variables__sub
 

@@ -1,0 +1,468 @@
+#!/bin/bash -m
+#Remark: by using '-m' the INT will NOT propagate to the PARENT scripts
+
+#---SUBROUTINES
+docker__environmental_variables__sub() {
+    #Check the number of input args
+    if [[ -z ${docker__global__fpath} ]]; then   #must be equal to 3 input args
+        #---Defin FOLDER
+        docker__LTPP3_ROOTFS__foldername="LTPP3_ROOTFS"
+        docker__development_tools__foldername="development_tools"
+
+        #Get all the directories containing the foldername 'LTPP3_ROOTFS'...
+        #... and read to array 'find_result_arr'
+        #Remark:
+        #   By using '2> /dev/null', the errors are not shown.
+        readarray -t find_dir_result_arr < <(find  / -type d -iname "${docker__LTPP3_ROOTFS__foldername}" 2> /dev/null)
+
+        #Define variable
+        local find_path_of_LTPP3_ROOTFS=${DOCKER__EMPTYSTRING}
+
+        #Loop thru array-elements
+        for find_dir_result_arrItem in "${find_dir_result_arr[@]}"
+        do
+            #Update variable 'find_path_of_LTPP3_ROOTFS'
+            find_path_of_LTPP3_ROOTFS="${find_dir_result_arrItem}/${docker__development_tools__foldername}"
+            #Check if 'directory' exist
+            if [[ -d "${find_path_of_LTPP3_ROOTFS}" ]]; then    #directory exists
+                #Update variable
+                docker__LTPP3_ROOTFS_development_tools__dir="${find_path_of_LTPP3_ROOTFS}"
+
+                break
+            fi
+        done
+
+        docker__LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS_development_tools__dir%/*}    #move one directory up: LTPP3_ROOTFS/
+        docker__parentDir_of_LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS__dir%/*}    #move two directories up. This directory is the one-level higher than LTPP3_ROOTFS/
+
+        docker__global__filename="docker_global.sh"
+        docker__global__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__global__filename}
+    fi
+}
+
+docker__load_source_files__sub() {
+    source ${docker__global__fpath}
+}
+
+docker__load_constants__sub() {
+    DOCKER__MENUTITLE="Git Create, Link & Push New Tag"
+    
+    DOCKER__CHOOSEBRANCH_MENUOPTIONS="${DOCKER__FOURSPACES_Q_QUIT}"
+    DOCKER__CHOOSEBRANCH_MATCHPATTERNS="${DOCKER__QUIT}"
+    DOCKER__CHOOSEBRANCH_READDIALOG="Choose branch: "
+    
+    DOCKER__CHOOSECOMMITID_MENUOPTIONS="${DOCKER__FOURSPACES_B_BACK}\n"
+    DOCKER__CHOOSECOMMITID_MENUOPTIONS+="${DOCKER__FOURSPACES_Q_QUIT}"
+    DOCKER__CHOOSECOMMITID_MATCHPATTERNS="${DOCKER__BACK}"
+    DOCKER__CHOOSECOMMITID_MATCHPATTERNS+="${DOCKER__ONESPACE}"
+    DOCKER__CHOOSECOMMITID_MATCHPATTERNS+="${DOCKER__QUIT}"
+    DOCKER__CHOOSECOMMITID_READDIALOG="Choose commit-id: "
+
+    DOCKER__INPUTNEWTAG_MENUTITLE="List of local tags"
+    DOCKER__INPUTNEWTAG_READDIALOG="Input new tag: "
+
+    DOCKER__QUESTIONDIALOG="Do you wish to continue (${DOCKER__Y_SLASH_N_SLASH_Q})? "
+}
+
+docker__init_variables__sub() {
+    docker__tibboHeader_prepend_numOfLines=${DOCKER__NUMOFLINES_0}
+
+    docker__abbrevCommitHash_arr=()
+    docker__localBranchNames_arr=()
+
+    #Remark:
+    #   The 'docker__result_from_output' could be a key-input or selected table-item.
+    docker__result_from_output=${DOCKER__EMPTYSTRING}
+    #Remark:
+    #   'tot_numOfLines' retrieved from 'docker__result_from_output' representing the
+    #       total number of lines of the table drawn within 
+    #        'show_pathContent_w_selection__func'.
+    #   Note: this value may be needed in case the above mentioned table
+    #       needs to be cleared.
+    docker__totNumOfLines_from_output=0
+
+    docker__abbrevCommitHash_chosen=${DOCKER__EMPTYSTRING}
+    docker__branch_chosen=${DOCKER__EMPTYSTRING}
+    docker__tag_chosen=${DOCKER__EMPTYSTRING}
+    docker__stdErr=${DOCKER__EMPTYSTRING}
+
+    docker__tag_chosen_isFound=false
+    docker__onEnter_breakLoop=false
+    docker__showTable=true
+}
+
+docker__create_checkout_local_branch_handler__sub() {
+    #Define local message constants
+    local PRINTF_CREATE_AND_PUSH_TAG="create, link & push tag"
+    local PRINTF_PLEASE_INPUT_A_UNIQUE_TAG="Please input a unique tag"
+
+    #Define local Question constants
+    local QUESTION_CHECKOUT_BRANCH="Check out chosen Branch (${DOCKER__Y_SLASH_N_SLASH_Q})? "
+    local QUESTION_CREATE_AND_CHECKOUT_BRANCH="Create & Check out chosen Branch (${DOCKER__Y_SLASH_N_SLASH_Q})? "
+
+    #Define local variables
+    local answer=${DOCKER__EMPTYSTRING}
+    local printf_msg=${DOCKER__EMPTYSTRING}
+    local tag_message=${DOCKER__EMPTYSTRING}
+
+
+
+#Goto phase: START
+goto__func START
+
+
+
+@START:
+    docker__tibboHeader_prepend_numOfLines=${DOCKER__NUMOFLINES_2}
+
+    goto__func PRECHECK
+
+
+
+@PRECHECK:
+    #Check if the current directory is a git-repository
+    docker__stdErr=`${GIT__CMD_GIT_BRANCH} 2>&1 > /dev/null`
+    if [[ ! -z ${docker__stdErr} ]]; then   #not a git-repository
+        goto__func EXIT_PRECHECK_FAILED  #goto next-phase
+    else    #is a git-repository
+        goto__func GET_LOCAL_BRANCHNAMES
+    fi
+
+
+@GET_LOCAL_BRANCHNAMES:
+    #Remove file
+    if [[ -f ${git__git_tag_create_link_and_push_out__fpath} ]]; then
+        rm ${git__git_tag_create_link_and_push_out__fpath}
+    fi
+
+    #Get all local branch names
+    readarray -t docker__localBranchNames_arr < <(${GIT__CMD_GIT_BRANCH} | sed 's/*//g' | sed 's/^ *//g')
+
+    #Write array to file
+    write_array_to_file__func "${git__git_tag_create_link_and_push_out__fpath}" "${docker__localBranchNames_arr[@]}"
+
+    #Go to next-phase
+    goto__func SHOW_AND_CHOOSE_BRANCH
+
+
+
+@SHOW_AND_CHOOSE_BRANCH:
+    #Show file-content
+    show_pathContent_w_selection__func "${git__git_tag_create_link_and_push_out__fpath}" \
+                    "${DOCKER__EMPTYSTRING}" \
+                    "${DOCKER__MENUTITLE}" \
+                    "${DOCKER__EMPTYSTRING}" \
+                    "${DOCKER__EMPTYSTRING}" \
+                    "${DOCKER__CHOOSEBRANCH_MENUOPTIONS}" \
+                    "${DOCKER__CHOOSEBRANCH_MATCHPATTERNS}" \
+                    "${DOCKER__ECHOMSG_NORESULTS_FOUND}" \
+                    "${DOCKER__CHOOSEBRANCH_READDIALOG}" \
+                    "${DOCKER__EMPTYSTRING}" \
+                    "${DOCKER__EMPTYSTRING}" \
+                    "${DOCKER__TABLEROWS_10}" \
+                    "${DOCKER__FALSE}" \
+                    "${docker__show_pathContent_w_selection_func_out__fpath}" \
+                    "${docker__tibboHeader_prepend_numOfLines}" \
+                    "${DOCKER__TRUE}"
+
+    #Get docker__result_from_output
+    docker__result_from_output=`retrieve_line_from_file__func "${DOCKER__LINENUM_1}" \
+                    "${docker__show_pathContent_w_selection_func_out__fpath}"`
+    docker__totNumOfLines_from_output=`retrieve_line_from_file__func "${DOCKER__LINENUM_2}" \
+                    "${docker__show_pathContent_w_selection_func_out__fpath}"`
+
+    #Move-down and clean
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+    #Handle 'docker__result_from_output'
+    case "${docker__result_from_output}" in
+        ${DOCKER__QUIT})    #abort
+            goto__func EXIT_SUCCESSFUL
+            ;;
+        *)
+            docker__branch_chosen="${docker__result_from_output}"
+
+            goto__func GET_ABBREVIATED_COMMIT_HASH
+            ;;
+    esac    
+
+
+
+@GET_ABBREVIATED_COMMIT_HASH:
+    #Get all 'abbreviated commit hash' (pushed and unpushed)
+    readarray -t docker__abbrevCommitHash_arr < <(git__log_for_pushed_and_unpushed_commits__func \
+                        "${docker__branch_chosen}" \
+                        "${DOCKER__EMPTYSTRING}" \
+                        "${GIT__PLACEHOLDER_ABBREV_COMMIT_HASH}")
+
+    #Write array to file
+    write_array_to_file__func "${git__git_tag_create_link_and_push_out__fpath}" "${docker__abbrevCommitHash_arr[@]}"
+
+    #Go to next-phase
+    goto__func SHOW_AND_CHOOSE_ABBREVIATED_COMMIT_HASH
+
+
+
+@SHOW_AND_CHOOSE_ABBREVIATED_COMMIT_HASH:
+    #Show file-content
+    show_pathContent_w_selection__func "${git__git_tag_create_link_and_push_out__fpath}" \
+                    "${DOCKER__EMPTYSTRING}" \
+                    "${DOCKER__MENUTITLE}" \
+                    "${DOCKER__EMPTYSTRING}" \
+                    "${DOCKER__EMPTYSTRING}" \
+                    "${DOCKER__CHOOSECOMMITID_MENUOPTIONS}" \
+                    "${DOCKER__CHOOSECOMMITID_MATCHPATTERNS}" \
+                    "${DOCKER__ECHOMSG_NORESULTS_FOUND}" \
+                    "${DOCKER__CHOOSECOMMITID_READDIALOG}" \
+                    "${DOCKER__EMPTYSTRING}" \
+                    "${DOCKER__EMPTYSTRING}" \
+                    "${DOCKER__TABLEROWS_10}" \
+                    "${DOCKER__FALSE}" \
+                    "${docker__show_pathContent_w_selection_func_out__fpath}" \
+                    "${docker__tibboHeader_prepend_numOfLines}" \
+                    "${DOCKER__TRUE}"
+
+    #Get docker__result_from_output
+    docker__result_from_output=`retrieve_line_from_file__func "${DOCKER__LINENUM_1}" \
+                    "${docker__show_pathContent_w_selection_func_out__fpath}"`
+    docker__totNumOfLines_from_output=`retrieve_line_from_file__func "${DOCKER__LINENUM_2}" \
+                    "${docker__show_pathContent_w_selection_func_out__fpath}"`
+
+    #Move-down and clean
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+    #Handle 'docker__result_from_output'
+    case "${docker__result_from_output}" in
+        ${DOCKER__QUIT})    #abort
+            goto__func EXIT_SUCCESSFUL
+            ;;
+        ${DOCKER__BACK})    #back
+            goto__func GET_LOCAL_BRANCHNAMES
+
+            break
+            ;;
+        *)
+            docker__abbrevCommitHash_chosen="${docker__result_from_output}"
+
+            goto__func SHOW_AND_INPUT_TAG
+
+            break
+            ;;
+    esac
+
+
+
+@SHOW_AND_INPUT_TAG:
+    #Show file-content
+    ${git__git_readInput_w_autocomplete__fpath} "${DOCKER__INPUTNEWTAG_MENUTITLE}" \
+            "${DOCKER__FOURSPACES_QUIT_CTRL_C}" \
+            "${DOCKER__INPUTNEWTAG_READDIALOG}" \
+            "${DOCKER__ECHOMSG_NORESULTS_FOUND}" \
+            "${GIT__CMD_GIT_TAG}" \
+            "${docker__showTable}" \
+            "${docker__onEnter_breakLoop}" \
+            "${docker__tibboHeader_prepend_numOfLines}"
+
+    #Get the exit-code just in case:
+    #   1. Ctrl-C was pressed in script 'git__git_readInput_w_autocomplete__fpath'.
+    #   2. An error occured in script 'git__git_readInput_w_autocomplete__fpath',...
+    #      ...and exit-code = 99 came from function...
+    #      ...'show_msg_w_menuTitle_w_pressAnyKey_w_ctrlC_func' (in script: docker__global.sh).
+    docker__exitCode=$?
+    if [[ ${docker__exitCode} -eq ${DOCKER__EXITCODE_99} ]]; then
+        goto__func EXIT_SUCCESSFUL
+    else
+        #Get the result
+        docker__tag_chosen=`get_output_from_file__func \
+                        "${git__git_readInput_w_autocomplete_out__fpath}" \
+                        "${DOCKER__LINENUM_1}"`
+
+        #Got to next-phase
+        goto__func CHECK_LOCAL_TAGS
+    fi
+
+
+
+@CHECK_LOCAL_TAGS:
+    #Check if 'docker__tag_chosen' is already in-use
+    docker__tag_chosen_isFound=`git__check_local_if_tag_isAlready_inUse___func "${docker__tag_chosen}"`
+    if [[ ${docker__tag_chosen_isFound} == ${DOCKER__TRUE} ]]; then
+        #Update message
+        printf_msg="---:${DOCKER__CHECK_LOCAL}: tag ${DOCKER__FG_LIGHTGREY}${docker__tag_chosen}${DOCKER__NOCOLOR} is already in-use"
+        #Show message
+        show_msg_only__func "${printf_msg}" "${DOCKER__NUMOFLINES_1}" "${DOCKER__NUMOFLINES_0}"
+
+        #Goto next-phase
+        goto__func SHOW_AND_INPUT_TAG
+    else
+        #Update message
+        printf_msg="---:${DOCKER__CHECK_LOCAL}: tag ${DOCKER__FG_LIGHTGREY}${docker__tag_chosen}${DOCKER__NOCOLOR} does not exist"
+        #Show message
+        show_msg_only__func "${printf_msg}" "${DOCKER__NUMOFLINES_1}" "${DOCKER__NUMOFLINES_0}"
+
+        #Goto next-phase
+        goto__func CHECK_REMOTE_TAGS
+    fi
+
+
+
+@CHECK_REMOTE_TAGS:
+    #Check if 'docker__tag_chosen' is already in-use
+    docker__tag_chosen_isFound=`git__check_remote_if_tag_isAlready_inUse__func "${docker__tag_chosen}"`
+    if [[ ${docker__tag_chosen_isFound} == ${DOCKER__TRUE} ]]; then
+        #Update message
+        printf_msg="---:${DOCKER__CHECK_REMOTE}: tag ${DOCKER__FG_LIGHTGREY}${docker__tag_chosen}${DOCKER__NOCOLOR} is already in-use"
+        #Show message
+        show_msg_only__func "${printf_msg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+
+        #Goto next-phase
+        goto__func SHOW_AND_INPUT_TAG
+    else
+        #Update message
+        printf_msg="---:${DOCKER__CHECK_REMOTE}: tag ${DOCKER__FG_LIGHTGREY}${docker__tag_chosen}${DOCKER__NOCOLOR} does not exist"
+        #Show message
+        show_msg_only__func "${printf_msg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_1}"
+
+        #Goto next-phase
+        goto__func CONFIRMATION_TO_PROCEED        
+    fi
+
+
+
+@CONFIRMATION_TO_PROCEED:
+    #Show question
+    while true
+    do
+        #Show question
+        read -N1 -p "${DOCKER__QUESTIONDIALOG}" answer
+
+        #Check if 'answer' is Not an Empty String
+        if [[ ! -z ${answer} ]]; then   #not an Empty String
+            if [[ ${answer} =~ ${DOCKER__REGEX_YNQ} ]]; then    #match was found
+                moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+                #Handle 'answer'
+                if [[ ${answer} == ${DOCKER__QUIT} ]]; then
+                    goto__func EXIT_SUCCESSFUL
+                elif [[ ${answer} == ${DOCKER__NO} ]]; then
+                    goto__func GET_LOCAL_BRANCHNAMES
+                else
+                    goto__func CREATE_AND_PUSH_TAG
+                fi
+
+                break
+            else    #no match was found
+                if [[ ${answer} != "${DOCKER__ENTER}" ]]; then
+                    moveToBeginning_and_cleanLine__func
+                else
+                    moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+                fi
+            fi
+        fi
+    done
+
+
+
+@CREATE_AND_PUSH_TAG:
+    #Update message
+    printf_subjectMsg="---:${DOCKER__START}: ${PRINTF_CREATE_AND_PUSH_TAG}"
+    #Show message
+    show_msg_only__func "${printf_subjectMsg}" "${DOCKER__NUMOFLINES_2}" "${DOCKER__NUMOFLINES_0}"
+
+
+    #Update message
+    tag_message="Created '${docker__tag_chosen}' and linked to '${docker__abbrevCommitHash_chosen}'"
+
+    #Create tag
+    #1. Update cmd
+    git_cmd="${GIT__CMD_GIT_TAG} -a \"${docker__tag_chosen}\" \"${docker__abbrevCommitHash_chosen}\" -m \"${tag_message}\""
+    #2. Execute cmd
+    eval ${git_cmd}
+
+    #Check exit-code
+    exitCode=$?
+    if [[ ${exitCode} -eq 0 ]]; then
+        #Update message
+        printf_msg="------:${DOCKER__EXECUTED}: ${git_cmd} (${DOCKER__STATUS_DONE})"
+        #Show message
+        show_msg_only__func "${printf_msg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+    else
+        #Update message
+        printf_msg="------:${DOCKER__EXECUTED}: ${git_cmd} (${DOCKER__STATUS_FAILED})"
+        #Show message
+        show_msg_only__func "${printf_msg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+
+        #Update message
+        printf_subjectMsg="---:${DOCKER__STOPPED}: ${PRINTF_CREATE_AND_PUSH_TAG}"
+        #Show message
+        show_msg_only__func "${printf_subjectMsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+
+        #Goto next-phase
+        goto__func GET_LOCAL_BRANCHNAMES
+    fi
+
+
+    #Push 'docker__tag_chosen' to REMOTE
+    #1. Update cmd
+    git_cmd="${GIT__CMD_GIT_PUSH} origin ${docker__tag_chosen}"
+    #2. Execute cmd
+    eval ${git_cmd}
+    
+
+    #Check exit-code
+    exitCode=$?
+    if [[ ${exitCode} -eq 0 ]]; then
+        #Update message
+        printf_msg="------:${DOCKER__EXECUTED}: ${git_cmd} (${DOCKER__STATUS_DONE})"
+    else
+        #Update message
+        printf_msg="------:${DOCKER__EXECUTED}: ${git_cmd} (${DOCKER__STATUS_FAILED})"
+    fi
+
+    #Show message
+    show_msg_only__func "${printf_msg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+
+    #Update message
+    printf_subjectMsg="---:${DOCKER__COMPLETED}: ${PRINTF_CREATE_AND_PUSH_TAG}"
+    #Show message
+    show_msg_only__func "${printf_subjectMsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+
+    #Goto next-phase
+    goto__func GET_LOCAL_BRANCHNAMES
+
+
+
+@EXIT_PRECHECK_FAILED:
+    #Update message
+    printf_msg="${DOCKER__ERROR}: ${docker__stdErr}"
+    #Show message
+    show_msg_only__func "${printf_msg}" "${DOCKER__NUMOFLINES_2}" "${DOCKER__NUMOFLINES_0}"
+    
+    #Exit
+    exit__func "${DOCKER__EXITCODE_99}" "${DOCKER__NUMOFLINES_2}"
+
+
+
+@EXIT_SUCCESSFUL:
+    exit__func "${DOCKER__EXITCODE_0}" "${DOCKER__NUMOFLINES_1}"
+}
+
+
+
+#---MAIN SUBROUTINE
+main_sub() {
+    docker__environmental_variables__sub
+
+    docker__load_source_files__sub
+
+    docker__load_constants__sub
+
+    docker__init_variables__sub
+
+    docker__create_checkout_local_branch_handler__sub
+}
+
+
+
+#---EXECUTE
+main_sub

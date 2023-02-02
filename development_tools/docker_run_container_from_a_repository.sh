@@ -132,31 +132,45 @@ function get_assigned_ipv4_addresses__func() {
 
 #---SUBROUTINES
 docker__load_environment_variables__sub() {
-    #---Define PATHS
-    docker__current_script_fpath="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
-    docker__current_dir=$(dirname ${docker__current_script_fpath})
-    if [[ ${docker__current_dir} == ${DOCKER__DOT} ]]; then
-        docker__current_dir=$(pwd)
-    fi
-    docker__current_folder=`basename ${docker__current_dir}`
+    #Check the number of input args
+    if [[ -z ${docker__global__fpath} ]]; then   #must be equal to 3 input args
+        #---Defin FOLDER
+        docker__LTPP3_ROOTFS__foldername="LTPP3_ROOTFS"
+        docker__development_tools__foldername="development_tools"
 
-    docker__development_tools_folder="development_tools"
-    if [[ ${docker__current_folder} != ${docker__development_tools_folder} ]]; then
-        docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}/${docker__development_tools_folder}
-    else
-        docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}
-    fi
+        #Get all the directories containing the foldername 'LTPP3_ROOTFS'...
+        #... and read to array 'find_result_arr'
+        #Remark:
+        #   By using '2> /dev/null', the errors are not shown.
+        readarray -t find_dir_result_arr < <(find  / -type d -iname "${docker__LTPP3_ROOTFS__foldername}" 2> /dev/null)
 
-    docker__global__filename="docker_global.sh"
-    docker__global__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__global__filename}
+        #Define variable
+        local find_path_of_LTPP3_ROOTFS=${DOCKER__EMPTYSTRING}
+
+        #Loop thru array-elements
+        for find_dir_result_arrItem in "${find_dir_result_arr[@]}"
+        do
+            #Update variable 'find_path_of_LTPP3_ROOTFS'
+            find_path_of_LTPP3_ROOTFS="${find_dir_result_arrItem}/${docker__development_tools__foldername}"
+            #Check if 'directory' exist
+            if [[ -d "${find_path_of_LTPP3_ROOTFS}" ]]; then    #directory exists
+                #Update variable
+                docker__LTPP3_ROOTFS_development_tools__dir="${find_path_of_LTPP3_ROOTFS}"
+
+                break
+            fi
+        done
+
+        docker__LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS_development_tools__dir%/*}    #move one directory up: LTPP3_ROOTFS/
+        docker__parentDir_of_LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS__dir%/*}    #move two directories up. This directory is the one-level higher than LTPP3_ROOTFS/
+
+        docker__global__filename="docker_global.sh"
+        docker__global__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__global__filename}
+    fi
 }
 
 docker__load_source_files__sub() {
     source ${docker__global__fpath}
-}
-
-docker__load_header__sub() {
-    show_header__func "${DOCKER__TITLE}" "${DOCKER__TABLEWIDTH}" "${DOCKER__BG_ORANGE}" "${DOCKER__NUMOFLINES_2}" "${DOCKER__NUMOFLINES_0}"
 }
 
 docker__init_variables__sub() {
@@ -173,12 +187,12 @@ docker__init_variables__sub() {
     docker__tag_chosen=${DOCKER__EMPTYSTRING}
     docker__repoTag_chosen=${DOCKER__EMPTYSTRING}
 
-    docker__images_cmd="docker images"
-    docker__ps_a_cmd="docker ps -a"
+    # docker__images_cmd="docker images"
+    # docker__ps_a_cmd="docker ps -a"
 
-    docker__images_repoColNo=1
-    docker__images_tagColNo=2
-    docker__images_IDColNo=3
+    # docker__images_repoColNo=1
+    # docker__images_tagColNo=2
+    # docker__images_IDColNo=3
 
     docker__onEnter_breakLoop=false
     docker__showTable=true
@@ -223,16 +237,17 @@ docker__run_container_handler__sub() {
                                     "${docker__images_IDColNo}" \
                                     "${DOCKER__EMPTYSTRING}" \
                                     "${docker__showTable}" \
-                                    "${docker__onEnter_breakLoop}"
+                                    "${docker__onEnter_breakLoop}" \
+                                    "${DOCKER__NUMOFLINES_2}"
 
-                #Get the exitcode just in case:
+                #Get the exit-code just in case:
                 #   1. Ctrl-C was pressed in script 'docker__readInput_w_autocomplete__fpath'.
                 #   2. An error occured in script 'docker__readInput_w_autocomplete__fpath',...
                 #      ...and exit-code = 99 came from function...
                 #      ...'show_msg_w_menuTitle_w_pressAnyKey_w_ctrlC_func' (in script: docker__global.sh).
                 docker__exitCode=$?
                 if [[ ${docker__exitCode} -eq ${DOCKER__EXITCODE_99} ]]; then
-                    exit__func "${docker__exitCode}" "${DOCKER__NUMOFLINES_2}"
+                    exit__func "${docker__exitCode}" "${DOCKER__NUMOFLINES_0}"
                 else
                     #Retrieve the 'new tag' from file
                     docker__imageID_chosen=`get_output_from_file__func \
@@ -307,7 +322,7 @@ docker__run_container__sub() {
         #Show Container's list
         moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
-        show_cmdOutput_w_menuTitle__func "${MENUTITLE_UPDATED_CONTAINER_LIST}" "${docker__ps_a_cmd}"
+        show_repoList_or_containerList_w_menuTitle__func "${MENUTITLE_UPDATED_CONTAINER_LIST}" "${docker__ps_a_cmd}"
 
         moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
         # moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
@@ -336,10 +351,10 @@ docker__run_container__sub() {
         echomsg3+="\t\tssh ${DOCKER__FG_YELLOW}root${DOCKER__NOCOLOR}@${DOCKER__FG_LIGHTCYAN}${docker__ipv4_addr}${DOCKER__NOCOLOR} -p ${DOCKER__FG_LIGHTBLUE}${docker__ssh_localport}${DOCKER__NOCOLOR}\n"
         moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
         echo -e ${echomsg3}
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+        # moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
         # moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
         
-        exit
+        exit__func "${docker__exitCode}" "${DOCKER__NUMOFLINES_0}"
     # else
     #     break
     fi
@@ -378,8 +393,6 @@ main_sub() {
     docker__load_environment_variables__sub
 
     docker__load_source_files__sub
-
-    docker__load_header__sub
 
     docker__init_variables__sub
 

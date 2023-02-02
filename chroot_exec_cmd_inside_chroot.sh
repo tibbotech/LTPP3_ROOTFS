@@ -76,30 +76,40 @@ press_any_key__localfunc() {
 echo -e "\r"
 echo "---Defining Varabiles (Filenames, Directories, Paths, Full-Paths)---"
 echo -e "\r"
+ntios_su_add_name="ntios-su-add"
+ntios_su_addasperand_name="${ntios_su_add_name}@"
+
+bin_dir=/bin
 etc_dir=/etc
 etc_default_dir=${etc_dir}/default
+etc_profile_d_dir=${etc_dir}/profile.d
+etc_tibbo_sudo_dir=${etc_dir}/tibbo/sudo
 lib_dir=/lib
+sbin_dir=/sbin
 usr_dir=/usr
-sbin_init_dir=/sbin/init
+bin_systemctl_fpath=${bin_dir}/systemctl
+sbin_init_dir=${sbin_dir}/init
 usr_bin_dir=${usr_dir}/bin
 usr_lib_dir=${usr_dir}/lib
-usr_include_dir=${usr_dir}/include
+usr_local_bin_dir=${usr_dir}/local/bin
 etc_systemd_system_dir=${etc_dir}/systemd/system
 etc_systemd_system_multi_user_target_wants_dir=${etc_systemd_system_dir}/multi-user.target.wants
 
-systemd_fpath=${lib_dir}/systemd/systemd
 localtime_dir=${etc_dir}/localtime
+passwd_fpath=${etc_dir}/passwd
+sshd_fpath=${etc_dir}/ssh/sshd_config
+sudo_fpath=${usr_bin_dir}/sudo
+systemd_fpath=${lib_dir}/systemd/systemd
+yaml_fpath=${etc_dir}/netplan/\*.yaml
 zoneinfo_dir=${usr_dir}/share/zoneinfo
 
-passwd_fpath=${etc_dir}/passwd
-sudo_fpath=${usr_bin_dir}/sudo
+# enable_eth1_before_login_service_filename="enable-eth1-before-login.service"
+# enable_eth1_before_login_service_fpath=${etc_systemd_system_dir}/${enable_eth1_before_login_service_filename}
+# enable_eth1_before_login_service_symlink_fpath=${etc_systemd_system_multi_user_target_wants_dir}/${enable_eth1_before_login_service_filename}
 
-sshd_fpath=${etc_dir}/ssh/sshd_config
-yaml_fpath=${etc_dir}/netplan/\*.yaml
-
-enable_eth1_before_login_service_filename="enable-eth1-before-login.service"
-enable_eth1_before_login_service_fpath=${etc_systemd_system_dir}/${enable_eth1_before_login_service_filename}
-enable_eth1_before_login_service_symlink_fpath=${etc_systemd_system_multi_user_target_wants_dir}/${enable_eth1_before_login_service_filename}
+# daisychain_state_service_filename="daisychain_state.service"
+# daisychain_state_service_fpath=${etc_systemd_system_dir}/${daisychain_state_service_filename}
+# daisychain_state_service_symlink_fpath=${etc_systemd_system_multi_user_target_wants_dir}/${daisychain_state_service_filename}
 
 create_chown_pwm_service_filename="create-chown-pwm.service"
 create_chown_pwm_service_fpath=${etc_systemd_system_dir}/${create_chown_pwm_service_filename}
@@ -117,6 +127,18 @@ environment_fpath=${etc_dir}/environment
 
 arm_linux_gnueabihf_filename="arm-linux-gnueabihf"
 arm_linux_gnueabihf_fpath=${usr_lib_dir}/${arm_linux_gnueabihf_filename}
+
+sudoers_filename="sudoers"
+sudoers_fpath=${etc_dir}/${sudoers_filename}
+
+sudoers_org_filename="${sudoers_filename}.org"
+sudoers_org_fpath=${etc_tibbo_sudo_dir}/${sudoers_org_filename}
+
+wifipwrmgmt_sh_filename="wifipwrmgmt.sh"
+wifipwrmgmt_sh_fpath=${usr_local_bin_dir}/${wifipwrmgmt_sh_filename}
+
+wifipwrmgmt_run_sh_filename="wifipwrmgmt_run.sh"
+wifipwrmgmt_run_sh_fpath=${etc_profile_d_dir}/${wifipwrmgmt_run_sh_filename}
 
 
 #---Define useraccount variables
@@ -223,13 +245,28 @@ echo ">chown root:root ${sudo_fpath}"
 echo ">chmod a=rx,u+ws ${sudo_fpath}"
 	chmod a=rx,u+ws ${sudo_fpath}
 
+
 echo -e "\r"
-echo ">>>adding user <${username}> to sudoers---"
+echo ">>>adding user <${username}> to ${etc_dir}/sudoers---"
 echo -e "\r"
-		echo "" | tee -a ${etc_dir}/sudoers
-        echo "#---:MY ADDED SUDOERS:---" | tee -a ${etc_dir}/sudoers
-		echo "${username} ALL=(ALL:ALL) ALL" | tee -a ${etc_dir}/sudoers
+	echo "" | tee -a ${etc_dir}/sudoers
+	echo "#---:MY ADDED SUDOERS:---" | tee -a ${etc_dir}/sudoers
+	echo "${username} ALL=(ALL:ALL) ALL" | tee -a ${etc_dir}/sudoers
+	echo "${username} ALL=(root) NOPASSWD: ${bin_systemctl_fpath} start ${ntios_su_addasperand_name}*" | tee -a ${etc_dir}/sudoers
+
+if [[ ! -d "${etc_tibbo_sudo_dir}" ]]; then
+	echo -e "\r"
+	echo -e ">>>Create: ${etc_tibbo_sudo_dir}"
+	mkdir -p "${etc_tibbo_sudo_dir}"
+fi
+
 echo -e "\r"
+echo -e ">>>Copying: ${sudoers_filename}"
+echo -e ">As: ${sudoers_org_filename}"
+echo -e ">from: ${etc_dir}"
+echo -e ">to: ${etc_tibbo_sudo_dir}"
+	cp ${sudoers_fpath} ${sudoers_org_fpath}
+
 
 press_any_key__localfunc
 echo -e "\r"
@@ -348,21 +385,21 @@ echo -e "\r"
 echo "---Configure <PPA>---"
 echo -e "\r"
 echo ">Add Tibbo-PPA-Key"
-	curl -s --compressed "https://tibbotech.github.io/ltpp3g2_ppa/u0_4_0/KEY.gpg" | apt-key add -
+	curl -s --compressed "https://tibbotech.github.io/ltpp3g2_ppa/ppa/KEY.gpg" | apt-key add -
 
 echo -e "\r"
 echo ">Add Tibbo-PPA to 'sources.list'"
-	curl -s --compressed -o /etc/apt/sources.list.d/my_list_file.list "https://tibbotech.github.io/ltpp3g2_ppa/u0_4_0/my_list_file.list"
+	curl -s --compressed -o /etc/apt/sources.list.d/my_list_file.list "https://tibbotech.github.io/ltpp3g2_ppa/ppa/my_list_file.list"
 
 echo -e "\r"
 echo ">Installing update"
 echo -e "\r"
 	apt-get -y update
 
-echo -e "\r"
-echo "---Installing <tibbo-oobe>---"
-echo -e "\r"
-	apt-get -y install tibbo-oobe
+#echo -e "\r"
+#echo "---Installing <tibbo-oobe>---"
+#echo -e "\r"
+#	apt-get -y install tibbo-oobe
 
 # echo -e "\r"
 # echo "---Installing <pmount>---"
@@ -405,9 +442,13 @@ echo -e "\r"
 	ufw allow 20
 	ufw allow 21
 	ufw allow 22
+	ufw allow 53
+	ufw allow 67
+	ufw allow 68
 	ufw allow 80
 	ufw allow 8080
 	ufw allow 443
+	ufw allow 547
 	# ufw allow 992
 	# ufw allow 5555
 	# ufw allow 1194
@@ -479,6 +520,10 @@ echo "---Enable Services---"
 # echo -e "\r"
 # echo ">Create symlink for <${enable_eth1_before_login_service_filename}>"
 # 	ln -s ${enable_eth1_before_login_service_fpath} ${enable_eth1_before_login_service_symlink_fpath}
+
+# echo -e "\r"
+# echo ">Create symlink for <${daisychain_state_service_filename}>"
+# 	ln -s ${daisychain_state_service_fpath} ${daisychain_state_service_symlink_fpath}
 
 echo -e "\r"
 echo ">Create symlink for <${create_chown_pwm_service_filename}>"

@@ -1,76 +1,190 @@
 #!/bin/bash -m
 #Remark: by using '-m' the INT will NOT propagate to the PARENT scripts
 #---SUBROUTINES
-git__environmental_variables__sub() {
-	# git__current_dir=`pwd`
-	git__current_script_fpath="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
-    git__current_dir=$(dirname ${git__current_script_fpath})	#/repo/LTPP3_ROOTFS/development_tools
-	git__parent_dir=${git__current_dir%/*}    #gets one directory up (/repo/LTPP3_ROOTFS)
-    if [[ -z ${git__parent_dir} ]]; then
-        git__parent_dir="${DOCKER__SLASH}"
-    fi
-	git__current_folder=`basename ${git__current_dir}`
+docker__environmental_variables__sub() {
+    #Check the number of input args
+    if [[ -z ${docker__global__fpath} ]]; then   #must be equal to 3 input args
+        #---Defin FOLDER
+        docker__LTPP3_ROOTFS__foldername="LTPP3_ROOTFS"
+        docker__development_tools__foldername="development_tools"
 
-    git__development_tools_folder="development_tools"
-    if [[ ${git__current_folder} != ${git__development_tools_folder} ]]; then
-        git__my_LTPP3_ROOTFS_development_tools_dir=${git__current_dir}/${git__development_tools_folder}
-    else
-        git__my_LTPP3_ROOTFS_development_tools_dir=${git__current_dir}
-    fi
+        #Get all the directories containing the foldername 'LTPP3_ROOTFS'...
+        #... and read to array 'find_result_arr'
+        #Remark:
+        #   By using '2> /dev/null', the errors are not shown.
+        readarray -t find_dir_result_arr < <(find  / -type d -iname "${docker__LTPP3_ROOTFS__foldername}" 2> /dev/null)
 
-    docker__global__filename="docker_global.sh"
-    docker__global__fpath=${git__my_LTPP3_ROOTFS_development_tools_dir}/${docker__global__filename}
+        #Define variable
+        local find_path_of_LTPP3_ROOTFS=${DOCKER__EMPTYSTRING}
+
+        #Loop thru array-elements
+        for find_dir_result_arrItem in "${find_dir_result_arr[@]}"
+        do
+            #Update variable 'find_path_of_LTPP3_ROOTFS'
+            find_path_of_LTPP3_ROOTFS="${find_dir_result_arrItem}/${docker__development_tools__foldername}"
+            #Check if 'directory' exist
+            if [[ -d "${find_path_of_LTPP3_ROOTFS}" ]]; then    #directory exists
+                #Update variable
+                docker__LTPP3_ROOTFS_development_tools__dir="${find_path_of_LTPP3_ROOTFS}"
+
+                break
+            fi
+        done
+
+        docker__LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS_development_tools__dir%/*}    #move one directory up: LTPP3_ROOTFS/
+        docker__parentDir_of_LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS__dir%/*}    #move two directories up. This directory is the one-level higher than LTPP3_ROOTFS/
+
+        docker__global__filename="docker_global.sh"
+        docker__global__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__global__filename}
+    fi
 }
 
-git__load_source_files__sub() {
+docker__load_source_files__sub() {
     source ${docker__global__fpath}
 }
 
-git__load_header__sub() {
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-    echo -e "${DOCKER__BG_ORANGE}                                 ${DOCKER__TITLE}${DOCKER__BG_ORANGE}                                ${DOCKER__NOCOLOR}"
+docker__load_constants__sub() {
+    DOCKER__MENUTITLE="Git Pull"
+
+    DOCKER__READDIALOG_YN="Pull from remote (${DOCKER__Y_SLASH_N})?"
+
+    DOCKER__SUBJECT_GIT_PULL="git pull"
 }
 
-git__git_pull__sub() {
-    #Define local constants
-    local MENUTITLE="Git ${DOCKER__BG_WHITE}${DOCKER__FG_LIGHTGREY}Pull${DOCKER__NOCOLOR}"
+docker__init_variables__sub() {
+    docker__tibboHeader_prepend_numOfLines=${DOCKER__NUMOFLINES_2}
 
-    #Show menu-title
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-    show_centered_string__func "${MENUTITLE}" "${DOCKER__TABLEWIDTH}"
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    docker__exitCode=0
+}
 
-    #Execute command
-    git pull
+docker__git_pull__sub() {
+    #Define constants
+    local TIBBOHEADER_PHASE=1
+    local MENUTITLE_PHASE=2
+    local PRINT_START_MESSAGE=3
+    local GIT_CONFIRM_PULL_PHASE=4
+    local GIT_PULL_PHASE=5
+    local PRINT_COMPLETED_MESSAGE=6
+    local EXIT_PHASE=7
 
-    #Check exit-code
-    exitCode=$?
-    if [[ ${exitCode} -eq 0 ]]; then
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-        echo -e "---:${DOCKER__FG_ORANGE}STATUS${DOCKER__NOCOLOR}: git pull (${DOCKER__FG_GREEN}done${DOCKER__NOCOLOR})"
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
-        exit 0
-    else
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-        echo -e "***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: git pull (${DOCKER__FG_LIGHTRED}failed${DOCKER__NOCOLOR})"
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-        
-        exit 99
-    fi
+    #Define variables
+    local answer=${DOCKER__NO}
+    local phase=${TIBBOHEADER_PHASE}
+
+    local printf_msg=${DOCKER__EMPTYSTRING}
+    local printf_subjectMsg=${DOCKER__EMPTYSTRING}
+    local readDialog=${DOCKER__EMPTYSTRING}
+
+
+    #Handle 'phase'
+    while true
+    do
+        case "${phase}" in
+            ${TIBBOHEADER_PHASE})
+                load_tibbo_title__func "${docker__tibboHeader_prepend_numOfLines}"
+
+                phase="${MENUTITLE_PHASE}"
+                ;;
+            ${MENUTITLE_PHASE})
+                show_menuTitle_w_adjustable_indent__func "${DOCKER__MENUTITLE}" "${DOCKER__EMPTYSTRING}"
+
+                phase="${PRINT_START_MESSAGE}"
+                ;;
+            ${PRINT_START_MESSAGE})
+                #Update message
+                printf_subjectMsg="---:${DOCKER__START}: ${DOCKER__SUBJECT_GIT_PULL}"
+                #Show message
+                show_msg_only__func "${printf_subjectMsg}" "${DOCKER__NUMOFLINES_1}" "${DOCKER__NUMOFLINES_0}"
+
+                #Goto next-phase
+                phase="${GIT_CONFIRM_PULL_PHASE}"
+                ;;
+            ${GIT_CONFIRM_PULL_PHASE})
+                #Update 'readDialog'
+                readDialog="------:${DOCKER__QUESTION}:${DOCKER__READDIALOG_YN}"
+                
+                while true
+                do
+                    read -N1 -r -p "${readDialog}" answer
+
+                    case "${answer}" in
+                        ${DOCKER__YES})
+                            moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+                            phase="${GIT_PULL_PHASE}"
+
+                            break
+                            ;;
+                        ${DOCKER__NO})
+                            # moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+                            phase="${EXIT_PHASE}"
+
+                            break
+                            ;;
+                        ${DOCKER__ENTER})
+                            moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+                            ;;
+                        *)
+                            moveToBeginning_and_cleanLine__func
+                            ;;
+                    esac
+                done
+                ;;
+            ${GIT_PULL_PHASE})
+                #Update command
+                git_cmd="${GIT__CMD_GIT_PULL}"
+                #Execute command
+                eval ${git_cmd}
+
+                #Check exit-code
+                docker__exitCode=$?
+                if [[ ${docker__exitCode} -eq 0 ]]; then
+                    #Update message
+                    printf_msg="------:${DOCKER__EXECUTED}: ${git_cmd} (${DOCKER__STATUS_DONE})"
+                else
+                    #Update message
+                    printf_msg="------:${DOCKER__EXECUTED}: ${git_cmd} (${DOCKER__STATUS_FAILED})"
+                fi
+
+                #Show message
+                show_msg_only__func "${printf_msg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+
+                #Goto next-phase
+                phase="${PRINT_COMPLETED_MESSAGE}"
+                ;;
+            ${PRINT_COMPLETED_MESSAGE})
+                #Update message
+                printf_subjectMsg="---:${DOCKER__COMPLETED}: ${DOCKER__SUBJECT_GIT_PULL}"
+                #Show message
+                show_msg_only__func "${printf_subjectMsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_1}"
+
+                #Goto next-phase
+                goto__func EXIT_PHASE
+                ;;
+            ${EXIT_PHASE})
+                exit__func "${DOCKER__EXITCODE_99}" "${DOCKER__NUMOFLINES_2}"
+
+                break
+                ;;
+        esac
+    done
 }
 
 
 
 #---MAIN SUBROUTINE
 main_sub() {
-    git__environmental_variables__sub
+    docker__environmental_variables__sub
 
-    git__load_source_files__sub
+    docker__load_source_files__sub
 
-    git__load_header__sub
+    docker__load_constants__sub
 
-    git__git_pull__sub
+    docker__init_variables__sub
+
+    docker__git_pull__sub
 }
 
 

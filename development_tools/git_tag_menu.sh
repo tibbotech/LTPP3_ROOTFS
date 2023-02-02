@@ -1,5 +1,8 @@
+#!/bin/bash -m
+#Remark: by using '-m' the INT will NOT propagate to the PARENT scripts
+
 #---SUBROUTINES
-docker__environmental_variables__sub() {
+docker__load_environment_variables__sub() {
     #Check the number of input args
     if [[ -z ${docker__global__fpath} ]]; then   #must be equal to 3 input args
         #---Defin FOLDER
@@ -38,25 +41,26 @@ docker__environmental_variables__sub() {
 }
 
 docker__load_source_files__sub() {
-    source ${docker__global__fpath}
+    source ${docker__global__fpath} "${docker__parentDir_of_LTPP3_ROOTFS__dir}" \
+                        "${docker__LTPP3_ROOTFS__dir}" \
+                        "${docker__LTPP3_ROOTFS_development_tools__dir}"
 }
 
 docker__load_constants__sub() {
-    GIT__MENUTITLE="${DOCKER__FG_LIGHTBLUE}GIT MENU${DOCKER__NOCOLOR}"
+    DOCKER__MENUTITLE="${DOCKER__FG_LIGHTBLUE}GIT: CREATE/RENAME/REMOVE TAG${DOCKER__NOCOLOR}"
 }
 
 docker__init_variables__sub() {
-    # docker__current_checkOut_branch=${DOCKER__EMPTYSTRING}
-    docker__myChoice=""    
-    docker__regEx="[01-6hq]"
-
+    docker__myChoice=${DOCKER__EMPTYSTRING}
+    
     docker__tibboHeader_prepend_numOfLines=0
 
-    docker__childWhileLoop_isExit=false
-    docker__parentWhileLoop_isExit=false
+    docker__regEx="[1-4q]"
+
+    docker__exitCode=0
 }
 
-git__menu_sub() {
+docker__menu__sub() {
     #Initialization
     docker__tibboHeader_prepend_numOfLines=${DOCKER__NUMOFLINES_2}
 
@@ -73,106 +77,71 @@ git__menu_sub() {
         #Set 'docker__tibboHeader_prepend_numOfLines'
         docker__tibboHeader_prepend_numOfLines=${DOCKER__NUMOFLINES_1}
 
-        # #Get current CHECKOUT BRANCH
-        # docker__current_checkOut_branch=`git symbolic-ref --short -q HEAD`
+        #Print horizontal line
+        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
 
+        #Print menut-title
+        show_leadingAndTrailingStrings_separatedBySpaces__func "${DOCKER__MENUTITLE}" \
+                        "${docker_git_current_info_msg}" \
+                        "${DOCKER__TABLEWIDTH}"
+
+        #Print horizontal line
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-        show_leadingAndTrailingStrings_separatedBySpaces__func "${GIT__MENUTITLE}" "${docker_git_current_info_msg}" "${DOCKER__TABLEWIDTH}"
-        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-        # echo -e "${DOCKER__FOURSPACES}Current Checkout Branch: ${DOCKER__FG_LIGHTSOFTYELLOW}${docker__git_current_branchName}${DOCKER__NOCOLOR}"
-        # duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-        echo -e "${DOCKER__FOURSPACES}1. Push"
-        echo -e "${DOCKER__FOURSPACES}2. Pull"
-        echo -e "${DOCKER__FOURSPACES}3. Undo last unpushed commit"
-        echo -e "${DOCKER__FOURSPACES}4. Create${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}checkout ${DOCKER__FG_BROWN94}local${DOCKER__NOCOLOR} branch"
-        echo -e "${DOCKER__FOURSPACES}5. Delete ${DOCKER__FG_BROWN94}local${DOCKER__NOCOLOR} branch"
-        echo -e "${DOCKER__FOURSPACES}6. ${DOCKER__MENU} create${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}rename${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}remove tag"
-        echo -e "${DOCKER__FOURSPACES}0. Enter Command Prompt"
+
+        #Print menu-options
+        echo -e "${DOCKER__FOURSPACES}1. Create & push tag"
+        echo -e "${DOCKER__FOURSPACES}2. Rename tag"
+        echo -e "${DOCKER__FOURSPACES}3. Remove ${DOCKER__FG_BROWN94}local${DOCKER__NOCOLOR} tag"
+        echo -e "${DOCKER__FOURSPACES}4. Remove ${DOCKER__FG_BROWN137}remote${DOCKER__NOCOLOR} tag"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
         echo -e "${DOCKER__FOURSPACES}q. $DOCKER__QUIT_CTRL_C"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-        # echo -e "\r"
+        # moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
+        #Show read-dialog
         while true
         do
             #Select an option
             read -N1 -r -p "Please choose an option: " docker__myChoice
-            echo -e "\r"
+            moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
             #Only continue if a valid option is selected
-            case "${docker__myChoice}" in
-                ${DOCKER__CTRL_C})
-                    docker__exit_handler__sub
-                    ;;
-                *)
-                    if [[ ! -z "${docker__myChoice}" ]]; then
-                        if [[ ${docker__myChoice} =~ ${docker__regEx} ]]; then
-                            break
-                        else
-                            if [[ ${docker__myChoice} == ${DOCKER__ENTER} ]]; then
-                                moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
-                            else
-                                moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-                            fi
-                        fi
+            if [[ ! -z ${docker__myChoice} ]]; then
+                if [[ ${docker__myChoice} =~ ${docker__regEx} ]]; then
+                    break
+                else
+                    if [[ ${docker__myChoice} == ${DOCKER__ENTER} ]]; then
+                        moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
                     else
                         moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
                     fi
-                    ;;
-            esac
-
-            #Check if flag is given to break loop
-            if [[ ${docker__childWhileLoop_isExit} == true ]]; then
-                break
+                fi
+            else
+                moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
             fi
         done
             
         #Goto the selected option
         case ${docker__myChoice} in
-            1)  
-                ${git__git_push__fpath} "${docker__git_current_branchName}"
+            1)
+                ${git__git_tag_create_and_push__fpath}
+
+                docker__restore_branch_checkedOut__sub
                 ;;
-            2)  
-                ${git__git_pull__fpath}
+            2)
+                ${git__git_tag_rename__fpath}
                 ;;
             3)
-                ${git__git_undo_last_unpushed_commit__fpath} "${docker__git_current_branchName}"
+                ${git__git_tag_remove__fpath} "${GIT__LOCATION_LOCAL}"
                 ;;
             4)
-                ${git__git_create_checkout_local_branch__fpath}
-
-                moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
-                ;;
-            5)
-                ${git__git_delete_local_branch__fpath}
-
-                moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
-                ;;
-            6)
-                ${git__git_tag_menu__fpath} "${docker__git_current_branchName}"
-                ;;
-            0)
-                ${docker__enter_cmdline_mode__fpath} "${DOCKER__EMPTYSTRING}"
+                ${git__git_tag_remove__fpath} "${GIT__LOCATION_REMOTE}"
                 ;;
             q)
-                docker__exit_handler__sub
+                exit__func "${DOCKER__EXITCODE_99}" "${DOCKER__NUMOFLINES_1}"
                 ;;
         esac
-
-        #Check if flag is given to break loop
-        if [[ ${docker__parentWhileLoop_isExit} == true ]]; then
-            break
-        fi
     done
-}
-
-docker__exit_handler__sub() {
-    #Set flag to true
-    docker__childWhileLoop_isExit=true
-    docker__parentWhileLoop_isExit=true
-
-    #Move-down and clean 1 line
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 }
 
 docker__get_git_info__sub() {
@@ -182,7 +151,7 @@ docker__get_git_info__sub() {
     docker__git_current_abbrevCommitHash=`git__log_for_pushed_and_unpushed_commits__func "${DOCKER__EMPTYSTRING}" \
                         "${GIT__LAST_COMMIT}" \
                         "${GIT__PLACEHOLDER_ABBREV_COMMIT_HASH}"`
-  
+    
     docker__git_push_status=`git__checkIf_branch_isPushed__func "${docker__git_current_branchName}"`
 
     docker__git_current_tag=`git__get_tag_for_specified_branchName__func "${docker__git_current_branchName}" "${DOCKER__FALSE}"`
@@ -197,11 +166,55 @@ docker__get_git_info__sub() {
     docker_git_current_info_msg+="${DOCKER__FG_LIGHTBLUE}${docker__git_current_tag}${DOCKER__NOCOLOR}"
 }
 
+docker__restore_branch_checkedOut__sub() {
+    #Define constants
+    local PRINTF_RESTORE_CHECKOUT_BRANCH="restore checked-out branch"
+
+    #Define variables
+    local git_cmd=${DOCKER__EMPTYSTRING}
+    local printf_msg=${DOCKER__EMPTYSTRING}
+    local printf_subjectMsg=${DOCKER__EMPTYSTRING}
+
+    #Get currently checked out branch
+    local current_branch_checkedOut=`git__get_current_branchName__func`
+
+    #Check if 'current_branch_checkedOut' is the same as 'docker__git_current_branchName'
+    if [[ ${current_branch_checkedOut} != ${docker__git_current_branchName} ]]; then  #not the same
+        #Update message
+        printf_subjectMsg="---:${DOCKER__START}: ${PRINTF_RESTORE_CHECKOUT_BRANCH}"
+        #Show message
+        show_msg_only__func "${printf_subjectMsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+
+        #Update cmd
+        git_cmd="${GIT__CMD_GIT_CHECKOUT} ${docker__git_current_branchName}"
+        #Execute cmd
+        eval ${git_cmd}
+
+        #Check exit-code
+        exitCode=$?
+        if [[ ${exitCode} -eq 0 ]]; then
+            #Update message
+            printf_msg="------:${DOCKER__EXECUTED}: ${git_cmd} (${DOCKER__STATUS_DONE})"
+        else
+            #Update message
+            printf_msg="------:${DOCKER__EXECUTED}: ${git_cmd} (${DOCKER__STATUS_FAILED})"
+        fi
+
+        #Show message
+        show_msg_only__func "${printf_msg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+
+        #Update message
+        printf_subjectMsg="---:${DOCKER__COMPLETED}: ${PRINTF_RESTORE_CHECKOUT_BRANCH}"
+        #Show message
+        show_msg_only__func "${printf_subjectMsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_1}"
+    fi
+}
+
 
 
 #---MAIN SUBROUTINE
 main__sub() {
-    docker__environmental_variables__sub
+    docker__load_environment_variables__sub
 
     docker__load_source_files__sub
 
@@ -209,7 +222,7 @@ main__sub() {
 
     docker__init_variables__sub
 
-    git__menu_sub
+    docker__menu__sub
 }
 
 

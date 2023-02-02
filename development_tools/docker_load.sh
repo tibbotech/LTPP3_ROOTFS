@@ -2,35 +2,45 @@
 #Remark: by using '-m' the INT will NOT propagate to the PARENT scripts
 #--SUBROUTINES
 docker__load_environment_variables__sub() {
-    #---Define PATHS
-    docker__current_script_fpath="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
-    docker__current_dir=$(dirname ${docker__current_script_fpath})
-    if [[ ${docker__current_dir} == ${DOCKER__DOT} ]]; then
-        docker__current_dir=$(pwd)
+    #Check the number of input args
+    if [[ -z ${docker__global__fpath} ]]; then   #must be equal to 3 input args
+        #---Defin FOLDER
+        docker__LTPP3_ROOTFS__foldername="LTPP3_ROOTFS"
+        docker__development_tools__foldername="development_tools"
+
+        #Get all the directories containing the foldername 'LTPP3_ROOTFS'...
+        #... and read to array 'find_result_arr'
+        #Remark:
+        #   By using '2> /dev/null', the errors are not shown.
+        readarray -t find_dir_result_arr < <(find  / -type d -iname "${docker__LTPP3_ROOTFS__foldername}" 2> /dev/null)
+
+        #Define variable
+        local find_path_of_LTPP3_ROOTFS=${DOCKER__EMPTYSTRING}
+
+        #Loop thru array-elements
+        for find_dir_result_arrItem in "${find_dir_result_arr[@]}"
+        do
+            #Update variable 'find_path_of_LTPP3_ROOTFS'
+            find_path_of_LTPP3_ROOTFS="${find_dir_result_arrItem}/${docker__development_tools__foldername}"
+            #Check if 'directory' exist
+            if [[ -d "${find_path_of_LTPP3_ROOTFS}" ]]; then    #directory exists
+                #Update variable
+                docker__LTPP3_ROOTFS_development_tools__dir="${find_path_of_LTPP3_ROOTFS}"
+
+                break
+            fi
+        done
+
+        docker__LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS_development_tools__dir%/*}    #move one directory up: LTPP3_ROOTFS/
+        docker__parentDir_of_LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS__dir%/*}    #move two directories up. This directory is the one-level higher than LTPP3_ROOTFS/
+
+        docker__global__filename="docker_global.sh"
+        docker__global__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__global__filename}
     fi
-    docker__current_folder=`basename ${docker__current_dir}`
-
-    docker__development_tools_folder="development_tools"
-    if [[ ${docker__current_folder} != ${docker__development_tools_folder} ]]; then
-        docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}/${docker__development_tools_folder}
-    else
-        docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}
-    fi
-
-    docker__global__filename="docker_global.sh"
-    docker__global__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__global__filename}
-
-
-
-    docker__image_fPath=${DOCKER__EMPTYSTRING}
 }
 
 docker__load_source_files__sub() {
     source ${docker__global__fpath}
-}
-
-docker__load_header__sub() {
-    show_header__func "${DOCKER__TITLE}" "${DOCKER__TABLEWIDTH}" "${DOCKER__BG_ORANGE}" "${DOCKER__NUMOFLINES_2}" "${DOCKER__NUMOFLINES_0}"
 }
 
 docker__load_constants__sub() {
@@ -57,11 +67,11 @@ docker__init_variables__sub() {
     docker__repo_chosen=${DOCKER__EMPTYSTRING}
     docker__tag_chosen=${DOCKER__EMPTYSTRING}
 
-    docker__images_cmd="docker images"
+    # docker__images_cmd="docker images"
 
-    docker__images_repoColNo=1
-    docker__images_tagColNo=2
-    docker__images_IDColNo=3
+    # docker__images_repoColNo=1
+    # docker__images_tagColNo=2
+    # docker__images_IDColNo=3
 
     docker__onEnter_breakLoop=false
     docker__showTable=true
@@ -86,18 +96,18 @@ docker__load_handler__sub() {
                         "${dirlist__dst_ls_1aA_output__fpath}" \
                         "${dirlist__dst_ls_1aA_tmp__fpath}" \
 						"${DOCKER__EMPTYSTRING}" \
-                        "${DOCKER__FALSE}"
+                        "${DOCKER__NUMOFLINES_2}"
 
-                #Get the exitcode just in case:
-                #   1. Ctrl-C was pressed in script 'docker__readInput_w_autocomplete__fpath'.
-                #   2. An error occured in script 'docker__readInput_w_autocomplete__fpath',...
+                #Get the exit-code just in case:
+                #   1. Ctrl-C was pressed in script 'dirlist__readInput_w_autocomplete__fpath'.
+                #   2. An error occured in script 'dirlist__readInput_w_autocomplete__fpath',...
                 #      ...and exit-code = 99 came from function...
                 #      ...'show_msg_w_menuTitle_w_pressAnyKey_w_ctrlC_func' (in script: docker__global.sh).
                 docker__exitCode=$?
                 if [[ ${docker__exitCode} -eq ${DOCKER__EXITCODE_99} ]]; then
                     exit__func "${docker__exitCode}" "${DOCKER__NUMOFLINES_2}"
                 else
-                    #Retrieve the selected container-ID from file
+                    #Get the result
                     docker__path_output=`get_output_from_file__func "${dirlist__readInput_w_autocomplete_out__fpath}" "${DOCKER__LINENUM_1}"`
                     docker__numOfMatches_output=`get_output_from_file__func "${dirlist__readInput_w_autocomplete_out__fpath}" "${DOCKER__LINENUM_2}"`
                 fi
@@ -130,7 +140,7 @@ docker__load_handler__sub() {
                                 "${DOCKER__NUMOFLINES_1}" \
                                 "${DOCKER__TIMEOUT_10}" \
                                 "${DOCKER__NUMOFLINES_1}" \
-                                "${DOCKER__NUMOFLINES_1}"  
+                                "${DOCKER__NUMOFLINES_2}"  
                 fi
                 ;;
             ${DOCKER__LOAD_PHASE})
@@ -159,7 +169,7 @@ docker__load_handler__sub() {
 
                         break
                     elif  [[ "${docker__answer}" == "${DOCKER__N}" ]]; then
-                        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_3}"
+                        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
                         #Goto next-phase
                         phase=${DOCKER__SELECT_SRC_DIR}
@@ -175,14 +185,14 @@ docker__load_handler__sub() {
                 done
                 ;;
             ${DOCKER__SHOW_UPDATED_IMAGE_LIST_PHASE})
-                #Show repo-list
-                show_repository_or_container_list__func "${DOCKER__MENUTITLE_UPDATED_REPOSITORYLIST}" \
+                show_repoList_or_containerList_w_menuTitle_w_confirmation__func "${DOCKER__MENUTITLE_UPDATED_REPOSITORYLIST}" \
                                     "${DOCKER__ERRMSG_NO_IMAGES_FOUND}" \
                                     "${docker__images_cmd}" \
-                                    "${DOCKER__NUMOFLINES_2}" \
+                                    "${DOCKER__NUMOFLINES_0}" \
                                     "${DOCKER__TIMEOUT_10}" \
                                     "${DOCKER__NUMOFLINES_0}" \
-                                    "${DOCKER__NUMOFLINES_0}"
+                                    "${DOCKER__NUMOFLINES_0}" \
+                                    "${DOCKER__NUMOFLINES_2}"
 
                 exit__func "${DOCKER__EXITCODE_0}" "${DOCKER__NUMOFLINES_0}"
                 ;;
@@ -200,7 +210,7 @@ main_sub() {
 
     docker__load_source_files__sub
 
-    docker__load_header__sub
+    # load_tibbo_title__func
 
     docker__load_constants__sub
 

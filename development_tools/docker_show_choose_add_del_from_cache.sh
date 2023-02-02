@@ -18,18 +18,47 @@ outFpath__input=${14}    #e.g. docker_show_choose_add_del_from_cache.out
 dockerfile_fpath__input=${15}    #e.g. repository:tag
 exp_env_var_type__input=${16}
 weblink_check_timeOut__input=${17}
+tibboHeader_prepend_numOfLines__input=${18}
 
 
 
 #---SUBROUTINES
 docker__load_environment_variables__sub() {
-    #Define paths
-    docker__LTPP3_ROOTFS_development_tools__fpath="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
-    docker__LTPP3_ROOTFS_development_tools__dir=$(dirname ${docker__LTPP3_ROOTFS_development_tools__fpath})
-    docker__LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS_development_tools__dir%/*}    #move one directory up: LTPP3_ROOTFS/
+    #Check the number of input args
+    if [[ -z ${docker__global__fpath} ]]; then   #must be equal to 3 input args
+        #---Defin FOLDER
+        docker__LTPP3_ROOTFS__foldername="LTPP3_ROOTFS"
+        docker__development_tools__foldername="development_tools"
 
-    docker__global__filename="docker_global.sh"
-    docker__global__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__global__filename}
+        #Get all the directories containing the foldername 'LTPP3_ROOTFS'...
+        #... and read to array 'find_result_arr'
+        #Remark:
+        #   By using '2> /dev/null', the errors are not shown.
+        readarray -t find_dir_result_arr < <(find  / -type d -iname "${docker__LTPP3_ROOTFS__foldername}" 2> /dev/null)
+
+        #Define variable
+        local find_path_of_LTPP3_ROOTFS=${DOCKER__EMPTYSTRING}
+
+        #Loop thru array-elements
+        for find_dir_result_arrItem in "${find_dir_result_arr[@]}"
+        do
+            #Update variable 'find_path_of_LTPP3_ROOTFS'
+            find_path_of_LTPP3_ROOTFS="${find_dir_result_arrItem}/${docker__development_tools__foldername}"
+            #Check if 'directory' exist
+            if [[ -d "${find_path_of_LTPP3_ROOTFS}" ]]; then    #directory exists
+                #Update variable
+                docker__LTPP3_ROOTFS_development_tools__dir="${find_path_of_LTPP3_ROOTFS}"
+
+                break
+            fi
+        done
+
+        docker__LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS_development_tools__dir%/*}    #move one directory up: LTPP3_ROOTFS/
+        docker__parentDir_of_LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS__dir%/*}    #move two directories up. This directory is the one-level higher than LTPP3_ROOTFS/
+
+        docker__global__filename="docker_global.sh"
+        docker__global__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__global__filename}
+    fi
 }
 
 docker__load_source_files__sub() {
@@ -234,11 +263,11 @@ docker__init_move_link_checkout_or_profile_to_top__sub() {
     # OR
     # docker__lineNum_abs > 1: match found, but the matched value is not on line-number = 1.
     if [[ ${docker__lineNum_abs} -eq ${DOCKER__LINENUM_0} ]] || [[ ${docker__lineNum_abs} -gt ${DOCKER__LINENUM_1} ]]; then
-        #Delete line specified by 'docker__lineNum_abs'
+        #Delete 'line' specified by 'docker__lineNum_abs'
         delete_lineNum_from_file__func "${docker__lineNum_abs}" "${DOCKER__EMPTYSTRING}" "${target_cacheFpath}"
 
         #Insert 'line' at the top of the file.
-        insert_string_into_file__func "${docker__env_var_sel}" "${DOCKER__LINENUM_1}" "${target_cacheFpath}" "${DOCKER__TRUE}"
+        insert_string_into_file_at_specified_lineNum__func "${docker__env_var_sel}" "${DOCKER__LINENUM_1}" "${target_cacheFpath}" "${DOCKER__TRUE}"
     fi
 
     #IMPORTANT: double-check if 'docker__env_var_link', 'docker__env_var_checkoutare present...
@@ -254,13 +283,13 @@ docker__init_move_link_checkout_or_profile_to_top__sub() {
         #link
         local link_lineNum_found=`retrieve_lineNum_from_file__func "${docker__env_var_link}" "${docker__linkCacheFpath}"`
         if [[ ${link_lineNum_found} -eq ${DOCKER__NUMOFMATCH_0} ]]; then
-            insert_string_into_file__func "${docker__env_var_link}" "${DOCKER__LINENUM_1}" "${docker__linkCacheFpath}" "${DOCKER__TRUE}"
+            insert_string_into_file_at_specified_lineNum__func "${docker__env_var_link}" "${DOCKER__LINENUM_1}" "${docker__linkCacheFpath}" "${DOCKER__TRUE}"
         fi
 
         #Checkout
         local checkout_lineNum_found=`retrieve_lineNum_from_file__func "${docker__env_var_checkout}" "${docker__checkoutCacheFpath}"`
         if [[ ${checkout_lineNum_found} -eq ${DOCKER__NUMOFMATCH_0} ]]; then
-            insert_string_into_file__func "${docker__env_var_checkout}" "${DOCKER__LINENUM_1}" "${docker__checkoutCacheFpath}" "${DOCKER__TRUE}"
+            insert_string_into_file_at_specified_lineNum__func "${docker__env_var_checkout}" "${DOCKER__LINENUM_1}" "${docker__checkoutCacheFpath}" "${DOCKER__TRUE}"
         fi
     fi
 
@@ -269,6 +298,14 @@ docker__init_move_link_checkout_or_profile_to_top__sub() {
 }
 
 docker__show_menu_handler__sub() {
+    #Check if 'tibboHeader_prepend_numOfLines__input' is an Empty String
+    if [[ -z ${tibboHeader_prepend_numOfLines__input} ]]; then
+        tibboHeader_prepend_numOfLines__input=${DOCKER__NUMOFLINES_2}
+    fi
+
+    #Print Tibbo-title
+    load_tibbo_title__func "${tibboHeader_prepend_numOfLines__input}"
+
     #Initialization
     docker__readInputDialog=${readInputDialog1__input}
     docker__cacheFpath_lineNum_base=0
@@ -394,8 +431,8 @@ docker__show_fileContent__sub() {
                 #Substitute 'http' with 'hxxp'
                 #Remark:
                 #   This substitution is required in order to eliminate the underlines for hyperlinks
-                line_subst=`subst_string_with_another_string__func "${line}" "${SED__HTTP}" "${SED__HXXP}"`
-
+                # line_subst=`subst_string_with_another_string__func "${line}" "${SED__HTTP}" "${SED__HXXP}"`
+                line_subst=${line}
 
 
                 #Define 'line_index'
@@ -837,7 +874,7 @@ docker__enter_add_handler__sub() {
 }
 docker__enter_add_link_checkout_or_profile_handler__sub() {
     #Check if 'docker__totInput' is already added to 'target_cacheFpath'?
-    local isFound=`checkForMatch_of_patterns_within_file__func "${docker__totInput}" "${DOCKER__EMPTYSTRING}" "${target_cacheFpath}"`
+    local isFound=`checkFor_exact_match_of_pattern_within_file__func "${docker__totInput}" "${target_cacheFpath}"`
     if [[ ${isFound} == true ]]; then
         local ERRMSG_GITLINK_ALREADY_ADDED="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: ${exp_env_var_type__input} already added"
         show_msg_wo_menuTitle_w_PressAnyKey__func "${ERRMSG_GITLINK_ALREADY_ADDED}" \
@@ -893,6 +930,7 @@ docker__enter_add_link_checkout_or_profile_handler__sub() {
             #Show error message and output answer to extern variable 'extern__ret'
             show_msg_wo_menuTitle_w_confirmation__func "${ERRMSG_CHOSEN_WEBLINK_IS_NOTACCESSIBLE}" \
                     "${DOCKER__Y_SLASH_N}" \
+                    "${DOCKER__REGEX_YN}" \
                     "${DOCKER__NUMOFLINES_2}" \
                     "${DOCKER__TIMEOUT_10}" \
                     "${DOCKER__NUMOFLINES_1}" \
@@ -900,6 +938,9 @@ docker__enter_add_link_checkout_or_profile_handler__sub() {
 
             #Get answer
             answer=${extern__ret}
+
+            #Unset extern variable
+            unset extern__ret
 
             #Move-up and clean
             moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_5}"
@@ -982,7 +1023,7 @@ docker__update_cache_files__sub() {
 
             #Insert/append 'docker_arg1'
             if [[ -f ${target_cacheFpath} ]]; then
-                insert_string_into_file__func "${docker_arg1}" \
+                insert_string_into_file_at_specified_lineNum__func "${docker_arg1}" \
                         "${lineNum_insert}" \
                         "${target_cacheFpath}" \
                         "${DOCKER__TRUE}"
@@ -997,7 +1038,7 @@ docker__update_cache_files__sub() {
                 if [[ ! -z ${docker_arg2} ]]; then
                     docker_arg1_colon_arg2="${docker_arg1}${DOCKER__COLON}${docker_arg2}"
 
-                    insert_string_into_file__func "${docker_arg1_colon_arg2}" \
+                    insert_string_into_file_at_specified_lineNum__func "${docker_arg1_colon_arg2}" \
                             "${lineNum_insert}" \
                             "${docker__linkCheckoutProfileCacheFpath}" \
                             "${DOCKER__TRUE}"
@@ -1016,7 +1057,7 @@ docker__update_cache_files__sub() {
 
             #Insert/append 'docker_arg1'
             if [[ -f ${target_cacheFpath} ]]; then 
-                insert_string_into_file__func "${docker_arg2}" \
+                insert_string_into_file_at_specified_lineNum__func "${docker_arg2}" \
                         "${lineNum_insert}" \
                         "${target_cacheFpath}" \
                         "${DOCKER__TRUE}"
@@ -1031,7 +1072,7 @@ docker__update_cache_files__sub() {
                 if [[ ! -z ${docker_arg1} ]]; then
                     docker_arg1_colon_arg2="${docker_arg1}${DOCKER__COLON}${docker_arg2}"
                 
-                    insert_string_into_file__func "${docker_arg1_colon_arg2}" \
+                    insert_string_into_file_at_specified_lineNum__func "${docker_arg1_colon_arg2}" \
                             "${lineNum_insert}" \
                             "${docker__linkCheckoutProfileCacheFpath}" \
                             "${DOCKER__TRUE}"
@@ -1044,7 +1085,7 @@ docker__update_cache_files__sub() {
 
             #Insert/append 'docker_arg1_colon_arg2'
             if [[ -f ${docker__linkCheckoutProfileCacheFpath} ]]; then
-                insert_string_into_file__func "${docker_arg1_colon_arg2}" \
+                insert_string_into_file_at_specified_lineNum__func "${docker_arg1_colon_arg2}" \
                         "${lineNum_insert}" \
                         "${target_cacheFpath}" \
                         "${DOCKER__TRUE}"
@@ -1089,7 +1130,7 @@ docker__update_other_cache_files_due_to_chosen_object() {
             if [[ ! -z ${docker_arg2} ]]; then
                 docker_arg1_colon_arg2="${docker_arg1}${DOCKER__COLON}${docker_arg2}"
 
-                insert_string_into_file__func "${docker_arg1_colon_arg2}" \
+                insert_string_into_file_at_specified_lineNum__func "${docker_arg1_colon_arg2}" \
                         "${DOCKER__LINENUM_1}" \
                         "${docker__linkCheckoutProfileCacheFpath}" \
                         "${DOCKER__TRUE}"
@@ -1109,7 +1150,7 @@ docker__update_other_cache_files_due_to_chosen_object() {
             if [[ ! -z ${docker_arg1} ]]; then
                 docker_arg1_colon_arg2="${docker_arg1}${DOCKER__COLON}${docker_arg2}"
 
-                insert_string_into_file__func "${docker_arg1_colon_arg2}" \
+                insert_string_into_file_at_specified_lineNum__func "${docker_arg1_colon_arg2}" \
                         "${DOCKER__LINENUM_1}" \
                         "${docker__linkCheckoutProfileCacheFpath}" \
                         "${DOCKER__TRUE}"
@@ -1120,7 +1161,7 @@ docker__update_other_cache_files_due_to_chosen_object() {
             docker_arg1=`echo "${data__input}" | rev | cut -d"${DOCKER__COLON}" -f2- | rev`
 
             #Insert at the 1st line
-            insert_string_into_file__func "${docker_arg1}" \
+            insert_string_into_file_at_specified_lineNum__func "${docker_arg1}" \
                         "${DOCKER__LINENUM_1}" \
                         "${docker__linkCacheFpath}" \
                         "${DOCKER__TRUE}"
@@ -1129,7 +1170,7 @@ docker__update_other_cache_files_due_to_chosen_object() {
             docker_arg2=`echo "${data__input}" | rev | cut -d"${DOCKER__COLON}" -f1 | rev`
 
             #Insert at the 1st line
-            insert_string_into_file__func "${docker_arg2}" \
+            insert_string_into_file_at_specified_lineNum__func "${docker_arg2}" \
                         "${DOCKER__LINENUM_1}" \
                         "${docker__checkoutCacheFpath}" \
                         "${DOCKER__TRUE}"
@@ -1383,7 +1424,7 @@ docker__escapeKey_add_linkCheckout_profile__sub() {
     #Remark:
     #   'tot_numOfLines' retrieved from 'result_from_output' representing the
     #       total number of lines of the table drawn within 
-    #        'show_pathContent_w_keyInput__func'.
+    #        'show_pathContent_w_selection__func'.
     #   Note: this value may be needed in case the above mentioned table
     #       needs to be cleared.
     local tot_numOfLines_from_output=0
@@ -1402,7 +1443,7 @@ docker__escapeKey_add_linkCheckout_profile__sub() {
             selItem=${checkoutSel}
         fi
 
-        #Check if the selected 'checkoutSel' and 'checkoutSel' are NOT Empty Strings?
+        #Check if the selected 'linkSel' and 'checkoutSel' are NOT Empty Strings?
         if [[ ! -z ${linkSel} ]] && [[ ! -z ${checkoutSel} ]]; then #true
             menuOptions=${menuOptions3__input}
             matchPattern=${matchPattern3__input}
@@ -1412,7 +1453,7 @@ docker__escapeKey_add_linkCheckout_profile__sub() {
         fi
 
         #Show file-content
-        show_pathContent_w_keyInput__func "${cacheFpath}" \
+        show_pathContent_w_selection__func "${cacheFpath}" \
                         "${selItem}" \
                         "${menuTitle__input}" \
                         "${DOCKER__EMPTYSTRING}" \
@@ -1424,13 +1465,16 @@ docker__escapeKey_add_linkCheckout_profile__sub() {
                         "${DOCKER__EMPTYSTRING}" \
                         "${DOCKER__EMPTYSTRING}" \
                         "${DOCKER__TABLEROWS_10}" \
-                        "${docker__show_choose_add_del_from_cache_out__fpath}"
+                        "${DOCKER__TRUE}" \
+                        "${docker__show_pathContent_w_selection_func_out__fpath}" \
+                        "${DOCKER__EMPTYSTRING}" \
+                        "${DOCKER__FALSE}"
 
         #Get result_from_output
         result_from_output=`retrieve_line_from_file__func "${DOCKER__LINENUM_1}" \
-                        "${docker__show_choose_add_del_from_cache_out__fpath}"`
+                        "${docker__show_pathContent_w_selection_func_out__fpath}"`
         tot_numOfLines_from_output=`retrieve_line_from_file__func "${DOCKER__LINENUM_2}" \
-                        "${docker__show_choose_add_del_from_cache_out__fpath}"`
+                        "${docker__show_pathContent_w_selection_func_out__fpath}"`
 
         #Handle 'result_from_output'
         case "${result_from_output}" in
@@ -1725,7 +1769,7 @@ docker__move_selected_item_to_top_of_cache_file__sub() {
     delete_lineNum_from_file__func "${lineNum_abs}" "${DOCKER__EMPTYSTRING}" "${target_cacheFpath}"
 
     #Insert 'line' at the top of the file.
-    insert_string_into_file__func "${docker__line}" "${DOCKER__LINENUM_1}" "${target_cacheFpath}" "${DOCKER__TRUE}"
+    insert_string_into_file_at_specified_lineNum__func "${docker__line}" "${DOCKER__LINENUM_1}" "${target_cacheFpath}" "${DOCKER__TRUE}"
 }
 
 docker__any_add_handler__sub() {

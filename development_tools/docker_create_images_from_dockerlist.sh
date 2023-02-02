@@ -82,7 +82,7 @@ function create_image__func() {
     #Print docker image list
     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
-    show_cmdOutput_w_menuTitle__func "${DOCKER__MENUTITLE_UPDATED_REPOSITORYLIST}" "${docker__images_cmd}"
+    show_repoList_or_containerList_w_menuTitle__func "${DOCKER__MENUTITLE_UPDATED_REPOSITORYLIST}" "${docker__images_cmd}"
     
     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
 }
@@ -170,53 +170,63 @@ docker__mandatory_apps_check__sub() {
 }
 
 docker__load_environment_variables__sub() {
-    docker__current_script_fpath="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
-    docker__current_dir=$(dirname ${docker__current_script_fpath})
-    docker__parent_dir=${docker__current_dir%/*}    #gets one directory up
-    if [[ -z ${docker__parent_dir} ]]; then
-        docker__parent_dir="${DOCKER__SLASH_CHAR}"
+    #Check the number of input args
+    if [[ -z ${docker__global__fpath} ]]; then   #must be equal to 3 input args
+        #---Defin FOLDER
+        docker__LTPP3_ROOTFS__foldername="LTPP3_ROOTFS"
+        docker__development_tools__foldername="development_tools"
+
+        #Get all the directories containing the foldername 'LTPP3_ROOTFS'...
+        #... and read to array 'find_result_arr'
+        #Remark:
+        #   By using '2> /dev/null', the errors are not shown.
+        readarray -t find_dir_result_arr < <(find  / -type d -iname "${docker__LTPP3_ROOTFS__foldername}" 2> /dev/null)
+
+        #Define variable
+        local find_path_of_LTPP3_ROOTFS=${DOCKER__EMPTYSTRING}
+
+        #Loop thru array-elements
+        for find_dir_result_arrItem in "${find_dir_result_arr[@]}"
+        do
+            #Update variable 'find_path_of_LTPP3_ROOTFS'
+            find_path_of_LTPP3_ROOTFS="${find_dir_result_arrItem}/${docker__development_tools__foldername}"
+            #Check if 'directory' exist
+            if [[ -d "${find_path_of_LTPP3_ROOTFS}" ]]; then    #directory exists
+                #Update variable
+                docker__LTPP3_ROOTFS_development_tools__dir="${find_path_of_LTPP3_ROOTFS}"
+
+                break
+            fi
+        done
+
+        docker__LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS_development_tools__dir%/*}    #move one directory up: LTPP3_ROOTFS/
+        docker__parentDir_of_LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS__dir%/*}    #move two directories up. This directory is the one-level higher than LTPP3_ROOTFS/
+
+        docker__global__filename="docker_global.sh"
+        docker__global__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__global__filename}
     fi
-    #Define local variables
-    docker_current_script_filename=`basename $0`
-
-    docker__my_LTPP3_ROOTFS_docker_dir=${docker__parent_dir}/docker
-    docker__my_LTPP3_ROOTFS_docker_list_dir=${docker__my_LTPP3_ROOTFS_docker_dir}/list
-    docker__my_LTPP3_ROOTFS_docker_dockerfiles_dir=${docker__my_LTPP3_ROOTFS_docker_dir}/dockerfiles
-
-    docker__current_folder=`basename ${docker__current_dir}`
-    docker__development_tools_folder="development_tools"
-    if [[ ${docker__current_folder} != ${docker__development_tools_folder} ]]; then
-        docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}/${docker__development_tools_folder}
-    else
-        docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}
-    fi
-
-    docker__global_filename="docker_global.sh"
-    docker__global__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__global_filename}
 }
 
 docker__load_source_files__sub() {
     source ${docker__global__fpath}
 }
 
-docker__load_header__sub() {
-    show_header__func "${DOCKER__TITLE}" "${DOCKER__TABLEWIDTH}" "${DOCKER__BG_ORANGE}" "${DOCKER__NUMOFLINES_2}" "${DOCKER__NUMOFLINES_0}"
-}
-
 docker__load_constants__sub() {
     DOCKER__DIR_MENUTITLE="${DOCKER__FG_YELLOW}Create${DOCKER__NOCOLOR} multiple ${DOCKER__FG_BORDEAUX}IMAGES${DOCKER__NOCOLOR} using a ${DOCKER__FG_LIGHTBLUE}docker-list${DOCKER__NOCOLOR}"
-    DOCKER__DIR_REMARK=${DOCKER__EMPTYSTRING}
+    DOCKER__DIR_REMARKS=${DOCKER__EMPTYSTRING}
     DOCKER__DIR_LOCATIONINFO="${DOCKER__FOURSPACES}${DOCKER__FG_VERYLIGHTORANGE}Location${DOCKER__NOCOLOR}: ${docker__LTPP3_ROOTFS_docker_dockerfiles__dir}"
+    DOCKER__DIR_MENUOPTIONS="${DOCKER__FOURSPACES_Q_QUIT}"
+    DOCKER__DIR_MATCHPATTERNS="${DOCKER__QUIT}"
     DOCKER__DIR_ERRMSG="${DOCKER__FOURSPACES}-:${DOCKER__FG_LIGHTRED}Directory is Empty${DOCKER__NOCOLOR}:-"
     DOCKER__DIR_READDIALOG="Choose a file: "
 
     DOCKER__FILE_MENUTITLE="Show ${DOCKER__FG_VERYLIGHTORANGE}file${DOCKER__NOCOLOR}${DOCKER__FG_LIGHTGREY}-${DOCKER__NOCOLOR}content"
-    DOCKER__FILE_READDIALOG="Do you wish to continue (y/n/b): "
-    DOCKER__FILE_REMARK=${DOCKER__EMPTYSTRING}
+    DOCKER__FILE_READDIALOG="Do you wish to continue? "
+    DOCKER__FILE_REMARKS=${DOCKER__EMPTYSTRING}
     DOCKER__FILE_MENUOPTIONS="${DOCKER__FOURSPACES_Y_YES}\n"
     DOCKER__FILE_MENUOPTIONS+="${DOCKER__FOURSPACES_N_NO}\n"
     DOCKER__FILE_MENUOPTIONS+="${DOCKER__FOURSPACES_B_BACK}\n"
-    DOCKER__FILE_MENUOPTIONS+="${DOCKER__FOURSPACES_F12_QUIT}"
+    DOCKER__FILE_MENUOPTIONS+="${DOCKER__FOURSPACES_Q_QUIT}"
     DOCKER__FILE_ERRMSG="${DOCKER__FOURSPACES}-:${DOCKER__FG_LIGHTRED}File is Empty${DOCKER__NOCOLOR}:-"
 }
 
@@ -224,18 +234,16 @@ docker__init_variables__sub() {
     docker__dockerList_fpath=${DOCKER__EMPTYSTRING}
     docker__dockerList_filename=${DOCKER__EMPTYSTRING}
     docker__file_locationInfo=${DOCKER__EMPTYSTRING}
-    docker__myAnswer=${DOCKER__NO}
+    docker__answer=${DOCKER__NO}
     docker__submenuTitle=${DOCKER__EMPTYSTRING}
-    docker__flagExitLoop=false
+    docker__flag_exit_main_whileLoop=false
+    docker__flag_exit_docker__show_dockerList_files_handler=false
 }
 
 docker__show_dockerList_files_handler__sub() {
     #Start loop
     while true
     do
-        #Show Tibbo-header
-        docker__load_header__sub
-
         #Show dockerList files
         docker__show_dockerList_files__sub
 
@@ -245,71 +253,35 @@ docker__show_dockerList_files_handler__sub() {
         #Update variables
         docker__file_locationInfo="${DOCKER__FOURSPACES}${DOCKER__FG_VERYLIGHTORANGE}File${DOCKER__NOCOLOR}: ${docker__dockerList_filename}"
 
+        #Show selected docker-file content
+        docker__show_selected_dockerFile_content__sub
 
-
-        #Move-down and clean lines
-        # moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
-
-
-
-        #Show Tibbo-header
-        docker__load_header__sub
-
-        #Show file content
-        show_fileContent_wo_keyInput__func "${docker__dockerList_fpath}" \
-                        "${DOCKER__FILE_MENUTITLE}" \
-                        "${DOCKER__FILE_REMARK}" \
-                        "${docker__file_locationInfo}" \
-                        "${DOCKER__FILE_MENUOPTIONS}" \
-                        "${DOCKER__FILE_ERRMSG}" \
-                        "${DOCKER__FILE_READDIALOG}" \
-                        "${docker__create_images_from_dockerlist_out__fpath}" \
-                        "${DOCKER__TABLEROWS_10}"
-
-        #Get the exitcode just in case a Ctrl-C was pressed in function 'show_fileContent_wo_keyInput__func' (in script 'docker_global.sh')
-        docker__exitCode=$?
-        if [[ ${docker__exitCode} -eq ${DOCKER__EXITCODE_99} ]]; then
-            exit__func "${docker__exitCode}" "${DOCKER__NUMOFLINES_2}"
+        #Check if flag is set to 'true'
+        if [[ ${docker__flag_exit_docker__show_dockerList_files_handler} == true ]]; then
+            break
         fi
-
-        #Get result from file.
-        docker__myAnswer=`get_output_from_file__func \
-                            "${docker__create_images_from_dockerlist_out__fpath}" \
-                            "${DOCKER__LINENUM_1}"`
-
-        #Check if 'docker__myAnswer' is a numeric value
-        case "${docker__myAnswer}" in
-            ${DOCKER__YES})
-                moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
-
-                return
-                ;;
-            ${DOCKER__NO})
-                exit__func "${DOCKER__EXITCODE_0}" "${DOCKER__NUMOFLINES_2}"
-                ;;
-            *)
-                moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-                ;;
-        esac
     done
 }
 docker__show_dockerList_files__sub() {
     #Show directory content
-    show_pathContent_w_keyInput__func "${docker__my_LTPP3_ROOTFS_docker_list_dir}" \
+    show_pathContent_w_selection__func "${docker__LTPP3_ROOTFS_docker_list__dir}" \
                         "${DOCKER__EMPTYSTRING}" \
                         "${DOCKER__DIR_MENUTITLE}" \
-                        "${DOCKER__DIR_REMARK}" \
+                        "${DOCKER__DIR_REMARKS}" \
                         "${DOCKER__DIR_LOCATIONINFO}" \
-                        "${DOCKER__FOURSPACES_F12_QUIT}" \
-                        "${DOCKER__EMPTYSTRING}" \
+                        "${DOCKER__DIR_MENUOPTIONS}" \
+                        "${DOCKER__DIR_MATCHPATTERNS}" \
                         "${DOCKER__DIR_ERRMSG}" \
                         "${DOCKER__DIR_READDIALOG}" \
                         "${DOCKER__EMPTYSTRING}" \
                         "${DOCKER__EMPTYSTRING}" \
                         "${DOCKER__TABLEROWS_10}" \
-                        "${docker__create_images_from_dockerlist_out__fpath}"
+                        "${DOCKER__FALSE}" \
+                        "${docker__show_pathContent_w_selection_func_out__fpath}" \
+                        "${DOCKER__NUMOFLINES_2}" \
+                        "${DOCKER__TRUE}"
 
-    #Get the exitcode just in case a Ctrl-C was pressed in function 'show_fileContent_wo_keyInput__func' (in script 'docker_global.sh')
+    #Get the exitcode just in case a Ctrl-C was pressed in function 'show_fileContent_wo_select__func' (in script 'docker_global.sh')
     docker__exitCode=$?
     if [[ ${docker__exitCode} -eq ${DOCKER__EXITCODE_99} ]]; then
         exit__func "${docker__exitCode}" "${DOCKER__NUMOFLINES_2}"
@@ -317,35 +289,84 @@ docker__show_dockerList_files__sub() {
 
     #Get result from file.
     docker__dockerList_fpath=`get_output_from_file__func \
-                        "${docker__create_images_from_dockerlist_out__fpath}" \
+                        "${docker__show_pathContent_w_selection_func_out__fpath}" \
                         "${DOCKER__LINENUM_1}"`
 
     #Double-check if 'docker__dockerFile_fpath = F12'
-    if [[ ${docker__dockerList_fpath} == ${DOCKER__ENUM_FUNC_F12} ]]; then
+    if [[ ${docker__dockerList_fpath} == ${DOCKER__QUIT} ]]; then
         exit__func "${DOCKER__EXITCODE_0}" "${DOCKER__NUMOFLINES_2}"
     else
         moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
     fi
 }
 
-docker__create_image_handler__sub() {
-    #---Read contents of the file
-    #Each line of the file represents a 'dockerfile' containing the instructions to-be-executed
-    
+docker__show_selected_dockerFile_content__sub() {
+    #Show file content
+    show_fileContent_wo_select__func "${docker__dockerList_fpath}" \
+                    "${DOCKER__FILE_MENUTITLE}" \
+                    "${DOCKER__FILE_REMARKS}" \
+                    "${docker__file_locationInfo}" \
+                    "${DOCKER__FILE_MENUOPTIONS}" \
+                    "${DOCKER__FILE_ERRMSG}" \
+                    "${DOCKER__FILE_READDIALOG}" \
+                    "${DOCKER__REGEX_YNBQ}" \
+                    "${docker__show_fileContent_wo_select_func_out__fpath}" \
+                    "${DOCKER__TABLEROWS_10}" \
+                    "${DOCKER__EMPTYSTRING}" \
+                    "${DOCKER__FALSE}" \
+                    "${DOCKER__NUMOFLINES_2}" \
+                    "${DOCKER__TRUE}"
+
+    #Get the exitcode just in case a Ctrl-C was pressed in function 'show_fileContent_wo_select__func' (in script 'docker_global.sh')
+    docker__exitCode=$?
+    if [[ ${docker__exitCode} -eq ${DOCKER__EXITCODE_99} ]]; then
+        exit__func "${docker__exitCode}" "${DOCKER__NUMOFLINES_2}"
+    fi
+
+    #Get result from file.
+    docker__answer=`get_output_from_file__func \
+                        "${docker__show_fileContent_wo_select_func_out__fpath}" \
+                        "${DOCKER__LINENUM_1}"`
+
+    #Check if 'docker__answer' is a numeric value
+    case "${docker__answer}" in
+        ${DOCKER__QUIT})
+            exit__func "${DOCKER__EXITCODE_0}" "${DOCKER__NUMOFLINES_2}"
+
+            ;;
+        ${DOCKER__YES})
+            moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
+
+            docker__flag_exit_docker__show_dockerList_files_handler=true
+
+            return
+            ;;
+        ${DOCKER__NO})
+            exit__func "${DOCKER__EXITCODE_0}" "${DOCKER__NUMOFLINES_2}"
+            ;;
+        *)
+            moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+            ;;
+    esac
+}
+
+docker__create_image_handler__sub() {    
     #Define local variables
     local linenum=1
     local dockerfile_fpath=${DOCKER__EMPTYSTRING}
 
     #Initialization
-    docker__flagExitLoop=true
+    docker__flag_exit_main_whileLoop=true
 
     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_0}"
 
+    #---Read contents of the file
+    #Each line of the file represents a 'dockerfile' containing the instructions to-be-executed
     while IFS='' read file_line
     do
         if [[ ${linenum} -gt 1 ]]; then #skip the header
             #Get the fullpath
-            dockerfile_fpath=${docker__my_LTPP3_ROOTFS_docker_dockerfiles_dir}/${file_line}
+            dockerfile_fpath=${docker__LTPP3_ROOTFS_docker_dockerfiles__dir}/${file_line}
 
             #Check if file exists
             if [[ -f ${dockerfile_fpath} ]]; then
@@ -359,7 +380,7 @@ docker__create_image_handler__sub() {
                     local statusMsg="---:${DOCKER__FG_ORANGE}UPDATE${DOCKER__NOCOLOR}: '${file_line}' already executed..."
                     echo -e "${statusMsg}"
 
-                    docker__flagExitLoop=false
+                    docker__flag_exit_main_whileLoop=false
                 else
                     create_image__func ${dockerfile_fpath}
                 fi
@@ -386,8 +407,6 @@ main_sub() {
 
     docker__load_source_files__sub
 
-    # docker__load_header__sub
-
     docker__load_constants__sub
 
     docker__init_variables__sub
@@ -400,7 +419,7 @@ main_sub() {
 
         docker__create_image_handler__sub
 
-        if [[ ${docker__flagExitLoop} == true ]]; then
+        if [[ ${docker__flag_exit_main_whileLoop} == true ]]; then
             break
         fi
     done

@@ -1,0 +1,17 @@
+[Unit]
+Description=created for ntios
+Wants=network.target
+
+[Service]
+Type=oneshot
+#User MUST BE SET TO 'root'
+User=root
+RemainAfterExit=false
+
+ExecStart=/usr/local/bin/ntios-su-add.sh %i
+
+StandardInput=journal+console
+StandardOutput=journal+console
+
+[Install]
+WantedBy=default.target
