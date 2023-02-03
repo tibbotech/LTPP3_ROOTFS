@@ -16,7 +16,7 @@ FG_SOFLIGHTRED=$'\e[30;38;5;131m'
 
 
 #CONSTANTS
-PWMCHIP0_DIR="/sys/devices/platform/soc@*/*.pwm/pwm/pwmchip0"
+PWMCHIP0_DIR="/sys/devices/platform/soc*/*.pwm/pwm/pwmchip0"
 
 
 
