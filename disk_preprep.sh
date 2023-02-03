@@ -101,7 +101,10 @@ sd_detect_rules_filename="sd-detect.rules"
 sd_detect_service_filename="sd-detect@.service"
 sd_detect_add_sh_filename="sd-detect-add.sh"
 sd_detect_remove_sh_filename="sd-detect-remove.sh"
-sp7021_ltpp3g2revD_filename="sp7021-ltpp3g2revD.dtsi"
+sp7021_ltpp3g2revD_dtsi_filename="sp7021-ltpp3g2revD.dtsi"
+sp7021_ltpp3g2revD_patch_filename="sp7021-ltpp3g2revD.patch"
+sp7021_common_dtsi_filename="sp7021-common.dtsi"
+sp7021_common_patch_filename="sp7021-common.patch"
 sunplus_foldername="SP7021"
 usb_mount_rules_filename="usb-mount.rules"
 usb_mount_service_filename="usb-mount@.service"
@@ -239,9 +242,6 @@ dst_sd_detect_rules_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_udev_rulesd_d
 src_sd_detect_service_fpath=${home_lttp3rootfs_services_automount_dir}/${sd_detect_service_filename}
 dst_sd_detect_service_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}/${sd_detect_service_filename}
 
-src_sp7021_ltpp3g2revD_fpath=${home_lttp3rootfs_kernel_dts_dir}/${sp7021_ltpp3g2revD_filename}
-dst_sp7021_ltpp3g2revD_fpath=${SP7xxx_linux_kernel_arch_arm_boot_dts_dir}/${sp7021_ltpp3g2revD_filename}
-
 src_usb_mount_service_fpath=${home_lttp3rootfs_services_automount_dir}/${usb_mount_service_filename}
 dst_usb_mount_service_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}/${usb_mount_service_filename}
 
@@ -250,6 +250,12 @@ dst_usb_mount_sh_fpath=${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}/$
 
 src_usb_mount_rules_fpath=${home_lttp3rootfs_services_automount_dir}/${usb_mount_rules_filename}
 dst_usb_mount_rules_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_udev_rulesd_dir}/${usb_mount_rules_filename}
+
+sp7021_common_dtsi_fpath=${SP7xxx_linux_kernel_arch_arm_boot_dts_dir}/${sp7021_common_dtsi_filename}
+sp7021_common_patch_fpath=${home_lttp3rootfs_kernel_dts_dir}/${sp7021_common_patch_filename}
+
+sp7021_ltpp3g2revD_dtsi_fpath=${SP7xxx_linux_kernel_arch_arm_boot_dts_dir}/${sp7021_ltpp3g2revD_dtsi_filename}
+sp7021_ltpp3g2revD_patch_fpath=${home_lttp3rootfs_kernel_dts_dir}/${sp7021_ltpp3g2revD_patch_filename}
 
 
 
@@ -1013,25 +1019,6 @@ echo -e ">>>Navigate to ${SP7xxx_linux_kernel_dir}"
 
 
 
-#---DTSI
-press_any_key__func
-echo -e "\r"
-echo -e "---UART config file"
-echo -e ">Copying: ${sp7021_ltpp3g2revD_filename}>"
-echo -e ">from: ${home_lttp3rootfs_kernel_dts_uart_dir}"
-echo -e ">to: ${SP7xxx_linux_kernel_arch_arm_boot_dts_dir}"
-	cp ${src_sp7021_ltpp3g2revD_fpath} ${SP7xxx_linux_kernel_arch_arm_boot_dts_dir}
-
-echo -e "\r"
-echo -e ">>>Change ownership to <root> for file: ${sp7021_ltpp3g2revD_filename}"
-	chown root:root ${dst_sp7021_ltpp3g2revD_fpath}
-
-echo -e "\r"
-echo -e ">>>Change permission to <-rw-r--r--> for file: ${sp7021_ltpp3g2revD_filename}"
-	chmod 644 ${dst_sp7021_ltpp3g2revD_fpath}
-
-
-
 ###FIX error messages:
 #	WARN:	uid is 0 but '/etc' is owned by 1000
 echo -e "\r"
@@ -1081,3 +1068,18 @@ echo -e ">to: -rwxr-xr-x"
 echo -e "\r"
 chmod +x ${build_disk_fpath}
 
+
+
+###APPLYIBG PATCHES###
+press_any_key__func
+echo -e "\r"
+echo -e ">Patching"
+echo -e ">source: ${sp7021_common_dtsi_filename}"
+echo -e ">with: ${sp7021_common_patch_filename}"
+patch -f "${sp7021_common_dtsi_fpath}" < "${sp7021_common_patch_fpath}"
+
+echo -e "\r"
+echo -e ">Patching"
+echo -e ">source: ${sp7021_ltpp3g2revD_dtsi_filename}"
+echo -e ">with: ${sp7021_ltpp3g2revD_patch_filename}"
+patch -f "${sp7021_ltpp3g2revD_dtsi_fpath}" < "${sp7021_ltpp3g2revD_patch_fpath}"
