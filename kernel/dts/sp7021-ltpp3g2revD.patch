@@ -1,5 +1,5 @@
 --- sp7021-ltpp3g2revD.dtsi.org	2023-02-03 03:06:54.000000000 +0000
-+++ sp7021-ltpp3g2revD.dtsi	2023-02-03 09:21:32.000000000 +0000
++++ sp7021-ltpp3g2revD.dtsi	2023-02-04 01:28:15.000000000 +0000
 @@ -1,439 +1,439 @@
 -// SPDX-License-Identifier: GPL-2.0
 -/*
@@ -879,4 +879,3 @@
 +		};
 +	};
 +};
-\ No newline at end of file

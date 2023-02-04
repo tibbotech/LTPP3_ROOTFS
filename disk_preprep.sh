@@ -103,8 +103,10 @@ sd_detect_add_sh_filename="sd-detect-add.sh"
 sd_detect_remove_sh_filename="sd-detect-remove.sh"
 sp7021_ltpp3g2revD_dtsi_filename="sp7021-ltpp3g2revD.dtsi"
 sp7021_ltpp3g2revD_patch_filename="sp7021-ltpp3g2revD.patch"
+sp7021_ltpp3g2revD_patch_plusonly_filename="sp7021-ltpp3g2revD.patch.plusonly"
 sp7021_common_dtsi_filename="sp7021-common.dtsi"
 sp7021_common_patch_filename="sp7021-common.patch"
+sp7021_common_patch_plusonly_filename="sp7021-common.patch.plusonly"
 sunplus_foldername="SP7021"
 usb_mount_rules_filename="usb-mount.rules"
 usb_mount_service_filename="usb-mount@.service"
@@ -114,6 +116,7 @@ home_dir=~	#this is the /root directory
 bin_dir=/bin
 # daisychain_dir=/sys/devices/platform/soc\@B/9c108000.l2sw
 etc_dir=/etc
+tmp_dir=/tmp
 usr_bin_dir=/usr/bin
 home_downloads_dir=${home_dir}/Downloads
 home_downloads_disk_dir=${home_downloads_dir}/${disk_foldername}
@@ -253,9 +256,11 @@ dst_usb_mount_rules_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_udev_rulesd_d
 
 sp7021_common_dtsi_fpath=${SP7xxx_linux_kernel_arch_arm_boot_dts_dir}/${sp7021_common_dtsi_filename}
 sp7021_common_patch_fpath=${home_lttp3rootfs_kernel_dts_dir}/${sp7021_common_patch_filename}
+sp7021_common_patch_plusonly_fpath=${tmp_dir}/${sp7021_common_patch_plusonly_filename}
 
 sp7021_ltpp3g2revD_dtsi_fpath=${SP7xxx_linux_kernel_arch_arm_boot_dts_dir}/${sp7021_ltpp3g2revD_dtsi_filename}
 sp7021_ltpp3g2revD_patch_fpath=${home_lttp3rootfs_kernel_dts_dir}/${sp7021_ltpp3g2revD_patch_filename}
+sp7021_ltpp3g2revD_patch_plusonly_fpath=${tmp_dir}/${sp7021_ltpp3g2revD_patch_plusonly_filename}
 
 
 
@@ -1073,13 +1078,53 @@ chmod +x ${build_disk_fpath}
 ###APPLYIBG PATCHES###
 press_any_key__func
 echo -e "\r"
-echo -e ">Patching"
-echo -e ">source: ${sp7021_common_dtsi_filename}"
-echo -e ">with: ${sp7021_common_patch_filename}"
-patch -f "${sp7021_common_dtsi_fpath}" < "${sp7021_common_patch_fpath}"
+echo -e ">Substracting patch-lines"
+echo -e ">from: ${sp7021_common_patch_filename}"
+echo -e ">write to: ${sp7021_common_patch_plusonly_filename}"
+cat "${sp7021_common_patch_fpath}" | grep -w "^+" | grep -v "^++" | cut -d"+" -f2- > "${sp7021_common_patch_plusonly_fpath}"
 
+#Check if there is a difference between 'sp7021_common_dtsi_fpath' and 'sp7021_common_patch_plusonly_fpath'
+#Remark:
+#	comm -13: would only show any file-content of 'sp7021_common_patch_plusonly_fpath' which is not found in 'sp7021_common_dtsi_fpath'
+sp7021_common_dtsi_diff=$(comm -13 <(sort ${sp7021_common_dtsi_fpath}) <(sort ${sp7021_common_patch_plusonly_fpath}))
+if [[ -n "${sp7021_common_dtsi_diff}" ]]; then
+	echo -e "\r"
+	echo -e ">Patching file"
+	echo -e ">source: ${sp7021_common_dtsi_filename}"
+	echo -e ">with: ${sp7021_common_patch_filename}"
+	patch -N "${sp7021_common_dtsi_fpath}" < "${sp7021_common_patch_fpath}"
+else
+	echo -e "\r"
+	echo -e ">Patch already applied to: ${sp7021_common_dtsi_filename}"
+fi
+
+press_any_key__func
 echo -e "\r"
-echo -e ">Patching"
-echo -e ">source: ${sp7021_ltpp3g2revD_dtsi_filename}"
-echo -e ">with: ${sp7021_ltpp3g2revD_patch_filename}"
-patch -f "${sp7021_ltpp3g2revD_dtsi_fpath}" < "${sp7021_ltpp3g2revD_patch_fpath}"
+echo -e ">Substracting patch-lines"
+echo -e ">from: ${sp7021_ltpp3g2revD_patch_filename}"
+echo -e ">write to: ${sp7021_ltpp3g2revD_patch_plusonly_filename}"
+cat "${sp7021_ltpp3g2revD_patch_fpath}" | grep -w "^+" | grep -v "^++" | cut -d"+" -f2- > "${sp7021_ltpp3g2revD_patch_plusonly_fpath}"
+
+#Check if there is a difference between 'sp7021_ltpp3g2revD_dtsi_fpath' and 'sp7021_ltpp3g2revD_patch_plusonly_fpath'
+#Remark:
+#	comm -13: would only show any file-content of 'sp7021_ltpp3g2revD_patch_plusonly_fpath' which is not found in 'sp7021_ltpp3g2revD_dtsi_fpath'
+sp7021_ltpp3g2revD_dtsi_diff=$(comm -13 <(sort ${sp7021_ltpp3g2revD_dtsi_fpath}) <(sort ${sp7021_ltpp3g2revD_patch_plusonly_fpath}))
+if [[ -n "${sp7021_ltpp3g2revD_dtsi_diff}" ]]; then
+	echo -e "\r"
+	echo -e ">Patching file"
+	echo -e ">source: ${sp7021_ltpp3g2revD_dtsi_filename}"
+	echo -e ">with: ${sp7021_ltpp3g2revD_patch_filename}"
+	patch -N "${sp7021_ltpp3g2revD_dtsi_fpath}" < "${sp7021_ltpp3g2revD_patch_fpath}"
+else
+	echo -e "\r"
+	echo -e ">Patch already applied to: ${sp7021_ltpp3g2revD_dtsi_filename}"
+fi
+
+
+
+#>>>>REMOVE THESE LINES LATER
+echo -e "\r"
+echo -e ">Copying original files: ${sp7021_common_dtsi_filename}, ${sp7021_ltpp3g2revD_dtsi_filename}"
+echo -e "\r"
+cp /root/TMP/${sp7021_common_dtsi_filename} ${SP7xxx_linux_kernel_arch_arm_boot_dts_dir}
+cp /root/TMP/${sp7021_ltpp3g2revD_dtsi_filename} ${SP7xxx_linux_kernel_arch_arm_boot_dts_dir}
