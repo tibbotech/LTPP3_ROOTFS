@@ -1119,12 +1119,3 @@ else
 	echo -e "\r"
 	echo -e ">Patch already applied to: ${sp7021_ltpp3g2revD_dtsi_filename}"
 fi
-
-
-
-#>>>>REMOVE THESE LINES LATER
-echo -e "\r"
-echo -e ">Copying original files: ${sp7021_common_dtsi_filename}, ${sp7021_ltpp3g2revD_dtsi_filename}"
-echo -e "\r"
-cp /root/TMP/${sp7021_common_dtsi_filename} ${SP7xxx_linux_kernel_arch_arm_boot_dts_dir}
-cp /root/TMP/${sp7021_ltpp3g2revD_dtsi_filename} ${SP7xxx_linux_kernel_arch_arm_boot_dts_dir}
