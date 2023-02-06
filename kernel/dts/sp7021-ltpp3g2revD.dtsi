@@ -214,6 +214,16 @@ pinctrl-names = "default";
  /*** all non-device binded that you want to set mode ***/
  pinctrl-names = "default";
  pinctrl-0 = <&pins_iopp_nobinded &pins_gpio_nobinded &func_zero>;
+ 
+ interrupt-parent = <&intc>;
+ interrupts = <120 IRQ_TYPE_LEVEL_LOW>,
+						 <121 IRQ_TYPE_LEVEL_LOW>,
+						 <122 IRQ_TYPE_LEVEL_LOW>,
+						 <123 IRQ_TYPE_LEVEL_LOW>,
+						 <124 IRQ_TYPE_LEVEL_LOW>,
+						 <125 IRQ_TYPE_LEVEL_LOW>,
+						 <126 IRQ_TYPE_LEVEL_LOW>,
+						 <127 IRQ_TYPE_LEVEL_LOW>;
 
  /* detouch any preset pins from this functions */
  func_zero: pinmux_func_zero-pins {
