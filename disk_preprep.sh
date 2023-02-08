@@ -254,11 +254,11 @@ dst_usb_mount_rules_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_udev_rulesd_d
 
 old_sp7021_common_dtsi_fpath=${SP7xxx_linux_kernel_arch_arm_boot_dts_dir}/${sp7021_common_dtsi_filename}
 new_sp7021_common_dtsi_fpath=${home_lttp3rootfs_kernel_dts_dir}/${sp7021_common_dtsi_filename}
-sp7021_common_patch_fpath=${tmp_dir}/${sp7021_common_patch_filename}
+sp7021_common_patch_fpath=${home_lttp3rootfs_kernel_dts_dir}/${sp7021_common_patch_filename}
 
 old_sp7021_ltpp3g2revD_dtsi_fpath=${SP7xxx_linux_kernel_arch_arm_boot_dts_dir}/${sp7021_ltpp3g2revD_dtsi_filename}
 new_sp7021_ltpp3g2revD_dtsi_fpath=${home_lttp3rootfs_kernel_dts_dir}/${sp7021_ltpp3g2revD_dtsi_filename}
-sp7021_ltpp3g2revD_patch_fpath=${tmp_dir}/${sp7021_ltpp3g2revD_patch_filename}
+sp7021_ltpp3g2revD_patch_fpath=${home_lttp3rootfs_kernel_dts_dir}/${sp7021_ltpp3g2revD_patch_filename}
 
 
 
@@ -1080,12 +1080,12 @@ chmod +x ${build_disk_fpath}
 press_any_key__func
 sp7021_common_dtsi_diff=$(diff ${old_sp7021_common_dtsi_fpath} ${new_sp7021_common_dtsi_fpath})
 if [[ -n "${sp7021_common_dtsi_diff}" ]]; then
-	echo -e "\r"
-	echo -e ">Creating patch"
-	echo -e ">old: ${old_sp7021_common_dtsi_fpath}"
-	echo -e ">new: ${new_sp7021_common_dtsi_fpath}"
-	echo -e ">patch: ${sp7021_common_patch_fpath}"
-	diff -u "${old_sp7021_common_dtsi_fpath}" "${new_sp7021_common_dtsi_fpath}" > "${sp7021_common_patch_fpath}"
+	# echo -e "\r"
+	# echo -e ">Creating patch"
+	# echo -e ">old: ${old_sp7021_common_dtsi_fpath}"
+	# echo -e ">new: ${new_sp7021_common_dtsi_fpath}"
+	# echo -e ">patch: ${sp7021_common_patch_fpath}"
+	# diff -u "${old_sp7021_common_dtsi_fpath}" "${new_sp7021_common_dtsi_fpath}" > "${sp7021_common_patch_fpath}"
 
 	echo -e "\r"
 	echo -e ">Patching file"
@@ -1100,12 +1100,12 @@ fi
 press_any_key__func
 sp7021_ltpp3g2revD_dtsi_diff=$(diff ${old_sp7021_ltpp3g2revD_dtsi_fpath} ${new_sp7021_ltpp3g2revD_dtsi_fpath})
 if [[ -n "${sp7021_ltpp3g2revD_dtsi_diff}" ]]; then
-	echo -e "\r"
-	echo -e ">Creating patch"
-	echo -e ">old: ${old_sp7021_ltpp3g2revD_dtsi_fpath}"
-	echo -e ">new: ${new_sp7021_ltpp3g2revD_dtsi_fpath}"
-	echo -e ">patch: ${sp7021_ltpp3g2revD_patch_fpath}"
-	diff -u "${old_sp7021_ltpp3g2revD_dtsi_fpath}" "${new_sp7021_ltpp3g2revD_dtsi_fpath}" > "${sp7021_ltpp3g2revD_patch_fpath}"
+	# echo -e "\r"
+	# echo -e ">Creating patch"
+	# echo -e ">old: ${old_sp7021_ltpp3g2revD_dtsi_fpath}"
+	# echo -e ">new: ${new_sp7021_ltpp3g2revD_dtsi_fpath}"
+	# echo -e ">patch: ${sp7021_ltpp3g2revD_patch_fpath}"
+	# diff -u "${old_sp7021_ltpp3g2revD_dtsi_fpath}" "${new_sp7021_ltpp3g2revD_dtsi_fpath}" > "${sp7021_ltpp3g2revD_patch_fpath}"
 
 	echo -e "\r"
 	echo -e ">Patching file"
