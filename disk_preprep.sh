@@ -101,10 +101,12 @@ sd_detect_rules_filename="sd-detect.rules"
 sd_detect_service_filename="sd-detect@.service"
 sd_detect_add_sh_filename="sd-detect-add.sh"
 sd_detect_remove_sh_filename="sd-detect-remove.sh"
+irq_sp7021_intc_c_filename="irq-sp7021-intc.c"
+irq_sp7021_intc_c_patch_filename="irq-sp7021-intc.c.patch"
 sp7021_ltpp3g2revD_dtsi_filename="sp7021-ltpp3g2revD.dtsi"
-sp7021_ltpp3g2revD_patch_filename="sp7021-ltpp3g2revD.patch"
+sp7021_ltpp3g2revD_dtsi_patch_filename="sp7021-ltpp3g2revD.dtsi.patch"
 sp7021_common_dtsi_filename="sp7021-common.dtsi"
-sp7021_common_patch_filename="sp7021-common.patch"
+sp7021_common_dtsi_patch_filename="sp7021-common.dtsi.patch"
 sunplus_foldername="SP7021"
 usb_mount_rules_filename="usb-mount.rules"
 usb_mount_service_filename="usb-mount@.service"
@@ -134,11 +136,13 @@ home_lttp3rootfs_services_sudo_dir=${home_lttp3rootfs_dir}/services/sudo
 home_lttp3rootfs_kernel_dir=${home_lttp3rootfs_dir}/kernel
 home_lttp3rootfs_kernel_makeconfig_dir=${home_lttp3rootfs_kernel_dir}/makeconfig
 home_lttp3rootfs_kernel_drivers_clk_dir=${home_lttp3rootfs_kernel_dir}/drivers/clk
+home_lttp3rootfs_kernel_drivers_irqchip_dir=${home_lttp3rootfs_kernel_dir}/drivers/irqchip
 home_lttp3rootfs_kernel_dts_dir=${home_lttp3rootfs_kernel_dir}/dts
 home_lttp3rootfs_usr_bin_dir=${home_lttp3rootfs_dir}/usr/bin
 SP7xxx_dir=${home_dir}/SP7021
 SP7xxx_linux_kernel_dir=${SP7xxx_dir}/linux/kernel
-SP7xxx_linux_kernel_drivers_clk=${SP7xxx_linux_kernel_dir}/drivers/clk
+SP7xxx_linux_kernel_drivers_clk_dir=${SP7xxx_linux_kernel_dir}/drivers/clk
+SP7xxx_linux_kernel_drivers_irqchip_dir=${SP7xxx_linux_kernel_dir}/drivers/irqchip
 SP7xxx_linux_kernel_arch_arm_boot_dts_dir=${SP7xxx_linux_kernel_dir}/arch/arm/boot/dts
 SP7xxx_linux_rootfs_initramfs_dir=${SP7xxx_dir}/linux/rootfs/initramfs
 SP7xxx_linux_rootfs_initramfs_disk_dir=${SP7xxx_linux_rootfs_initramfs_dir}/${disk_foldername}
@@ -166,7 +170,7 @@ src_brcm_patchram_plus_fpath=${home_lttp3rootfs_usr_bin_dir}/${brcm_patchram_plu
 dst_brcm_patchram_plus_fpath=${SP7xxx_linux_rootfs_initramfs_disk_usr_bin_dir}/${brcm_patchram_plus_filename}
 
 #src_clkspq628c_fpath=${home_lttp3rootfs_kernel_drivers_clk_dir}/${clkspq628c_filename}
-#dst_clkspq628c_fpath=${SP7xxx_linux_kernel_drivers_clk}/${clkspq628c_filename}
+#dst_clkspq628c_fpath=${SP7xxx_linux_kernel_drivers_clk_dir}/${clkspq628c_filename}
 
 src_create_chown_pwm_service_fpath=${home_lttp3rootfs_services_pwm_dir}/${create_chown_pwm_service_filename}
 dst_create_chown_pwm_service_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}/${create_chown_pwm_service_filename}
@@ -252,13 +256,17 @@ dst_usb_mount_sh_fpath=${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}/$
 src_usb_mount_rules_fpath=${home_lttp3rootfs_services_automount_dir}/${usb_mount_rules_filename}
 dst_usb_mount_rules_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_udev_rulesd_dir}/${usb_mount_rules_filename}
 
+old_irq_sp7021_intc_c_fpath=${SP7xxx_linux_kernel_arch_arm_boot_dts_dir}/${irq_sp7021_intc_c_filename}
+new_irq_sp7021_intc_c_fpath=${home_lttp3rootfs_kernel_dts_dir}/${irq_sp7021_intc_c_filename}
+irq_sp7021_intc_c_patch_fpath=${home_lttp3rootfs_kernel_dts_dir}/${irq_sp7021_intc_c_patch_filename}
+
 old_sp7021_common_dtsi_fpath=${SP7xxx_linux_kernel_arch_arm_boot_dts_dir}/${sp7021_common_dtsi_filename}
 new_sp7021_common_dtsi_fpath=${home_lttp3rootfs_kernel_dts_dir}/${sp7021_common_dtsi_filename}
-sp7021_common_patch_fpath=${home_lttp3rootfs_kernel_dts_dir}/${sp7021_common_patch_filename}
+sp7021_common_dtsi_patch_fpath=${home_lttp3rootfs_kernel_dts_dir}/${sp7021_common_dtsi_patch_filename}
 
 old_sp7021_ltpp3g2revD_dtsi_fpath=${SP7xxx_linux_kernel_arch_arm_boot_dts_dir}/${sp7021_ltpp3g2revD_dtsi_filename}
 new_sp7021_ltpp3g2revD_dtsi_fpath=${home_lttp3rootfs_kernel_dts_dir}/${sp7021_ltpp3g2revD_dtsi_filename}
-sp7021_ltpp3g2revD_patch_fpath=${home_lttp3rootfs_kernel_dts_dir}/${sp7021_ltpp3g2revD_patch_filename}
+sp7021_ltpp3g2revD_dtsi_patch_fpath=${home_lttp3rootfs_kernel_dts_dir}/${sp7021_ltpp3g2revD_dtsi_patch_filename}
 
 
 
@@ -964,8 +972,8 @@ echo -e ">>>Change permission to <-rw-r--r--> for folder: ${firmware_foldername}
 #echo -e "\r"
 #echo -e ">Copying: ${clkspq628c_filename}"
 #echo -e ">from: ${home_lttp3rootfs_kernel_drivers_clk_dir}"
-#echo -e ">to: ${SP7xxx_linux_kernel_drivers_clk}"
-#	cp ${src_clkspq628c_fpath} ${SP7xxx_linux_kernel_drivers_clk}
+#echo -e ">to: ${SP7xxx_linux_kernel_drivers_clk_dir}"
+#	cp ${src_clkspq628c_fpath} ${SP7xxx_linux_kernel_drivers_clk_dir}
 
 # echo -e "\r"
 # echo -e ">>>Change ownership to <root> for file: ${clkspq628c_filename}"
@@ -1074,24 +1082,27 @@ chmod +x ${build_disk_fpath}
 
 
 ###APPLYIBG PATCHES###
-#Check if there is a difference between 'old_sp7021_common_dtsi_fpath' and 'sp7021_common_patch_plusonly_fpath'
-#Remark:
-#	comm -13: would only show any file-content of 'sp7021_common_patch_plusonly_fpath' which is not found in 'old_sp7021_common_dtsi_fpath'
+press_any_key__func
+irq_sp7021_intc_c_diff=$(diff ${old_irq_sp7021_intc_c_fpath} ${new_irq_sp7021_intc_c_fpath})
+if [[ -n "${irq_sp7021_intc_c_diff}" ]]; then
+	echo -e "\r"
+	echo -e ">Patching file"
+	echo -e ">source: ${old_irq_sp7021_intc_c_fpath}"
+	echo -e ">with: ${irq_sp7021_intc_c_patch_fpath}"
+	patch "${old_irq_sp7021_intc_c_fpath}" < "${irq_sp7021_intc_c_patch_fpath}"
+else
+	echo -e "\r"
+	echo -e ">Patch already applied to: ${old_irq_sp7021_intc_c_fpath}"
+fi
+
 press_any_key__func
 sp7021_common_dtsi_diff=$(diff ${old_sp7021_common_dtsi_fpath} ${new_sp7021_common_dtsi_fpath})
 if [[ -n "${sp7021_common_dtsi_diff}" ]]; then
-	# echo -e "\r"
-	# echo -e ">Creating patch"
-	# echo -e ">old: ${old_sp7021_common_dtsi_fpath}"
-	# echo -e ">new: ${new_sp7021_common_dtsi_fpath}"
-	# echo -e ">patch: ${sp7021_common_patch_fpath}"
-	# diff -u "${old_sp7021_common_dtsi_fpath}" "${new_sp7021_common_dtsi_fpath}" > "${sp7021_common_patch_fpath}"
-
 	echo -e "\r"
 	echo -e ">Patching file"
 	echo -e ">source: ${old_sp7021_common_dtsi_fpath}"
-	echo -e ">with: ${sp7021_common_patch_fpath}"
-	patch "${old_sp7021_common_dtsi_fpath}" < "${sp7021_common_patch_fpath}"
+	echo -e ">with: ${sp7021_common_dtsi_patch_fpath}"
+	patch "${old_sp7021_common_dtsi_fpath}" < "${sp7021_common_dtsi_patch_fpath}"
 else
 	echo -e "\r"
 	echo -e ">Patch already applied to: ${old_sp7021_common_dtsi_fpath}"
@@ -1100,18 +1111,11 @@ fi
 press_any_key__func
 sp7021_ltpp3g2revD_dtsi_diff=$(diff ${old_sp7021_ltpp3g2revD_dtsi_fpath} ${new_sp7021_ltpp3g2revD_dtsi_fpath})
 if [[ -n "${sp7021_ltpp3g2revD_dtsi_diff}" ]]; then
-	# echo -e "\r"
-	# echo -e ">Creating patch"
-	# echo -e ">old: ${old_sp7021_ltpp3g2revD_dtsi_fpath}"
-	# echo -e ">new: ${new_sp7021_ltpp3g2revD_dtsi_fpath}"
-	# echo -e ">patch: ${sp7021_ltpp3g2revD_patch_fpath}"
-	# diff -u "${old_sp7021_ltpp3g2revD_dtsi_fpath}" "${new_sp7021_ltpp3g2revD_dtsi_fpath}" > "${sp7021_ltpp3g2revD_patch_fpath}"
-
 	echo -e "\r"
 	echo -e ">Patching file"
 	echo -e ">source: ${old_sp7021_ltpp3g2revD_dtsi_fpath}"
-	echo -e ">with: ${sp7021_ltpp3g2revD_patch_fpath}"
-	patch "${old_sp7021_ltpp3g2revD_dtsi_fpath}" < "${sp7021_ltpp3g2revD_patch_fpath}"
+	echo -e ">with: ${sp7021_ltpp3g2revD_dtsi_patch_fpath}"
+	patch "${old_sp7021_ltpp3g2revD_dtsi_fpath}" < "${sp7021_ltpp3g2revD_dtsi_patch_fpath}"
 else
 	echo -e "\r"
 	echo -e ">Patch already applied to: ${old_sp7021_ltpp3g2revD_dtsi_fpath}"
