@@ -25,8 +25,8 @@
 #       sp7021-ltpp3g2revD.dtsi
 #       sp7021-common.dtsi
 #   8. To create NEW PATCHES, run the following commands:
-#       diff -u /root/SP7021/linux/kernel/arch/arm/boot/dts/sp7021-common.dtsi /root/LTPP3_ROOTFS/kernel/dts/sp7021-common.dtsi > /root/LTPP3_ROOTFS/kernel/dts/sp7021-common.patch
-#       diff -u /root/SP7021/linux/kernel/arch/arm/boot/dts/sp7021-ltpp3g2revD.dtsi /root/LTPP3_ROOTFS/kernel/dts/sp7021-ltpp3g2revD.dtsi > /root/LTPP3_ROOTFS/kernel/dts/sp7021-ltpp3g2revD.patch
+#       diff -u /root/SP7021/linux/kernel/arch/arm/boot/dts/sp7021-common.dtsi /root/LTPP3_ROOTFS/kernel/dts/sp7021-common.dtsi > /root/LTPP3_ROOTFS/kernel/dts/sp7021-common.dtsi.patch
+#       diff -u /root/SP7021/linux/kernel/arch/arm/boot/dts/sp7021-ltpp3g2revD.dtsi /root/LTPP3_ROOTFS/kernel/dts/sp7021-ltpp3g2revD.dtsi > /root/LTPP3_ROOTFS/kernel/dts/sp7021-ltpp3g2revD.dtsi.patch
 #   9. In folder '/root/LTPP3_ROOTFS/kernel/dts', confirm that the new 'dtsi' and 'patch' files are present.
 #   10. Once confirmed, navigate to '/root/LTPP3_ROOTFS'
 #   11. Run the following commands:

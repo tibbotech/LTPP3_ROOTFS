@@ -256,9 +256,9 @@ dst_usb_mount_sh_fpath=${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}/$
 src_usb_mount_rules_fpath=${home_lttp3rootfs_services_automount_dir}/${usb_mount_rules_filename}
 dst_usb_mount_rules_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_udev_rulesd_dir}/${usb_mount_rules_filename}
 
-old_irq_sp7021_intc_c_fpath=${SP7xxx_linux_kernel_arch_arm_boot_dts_dir}/${irq_sp7021_intc_c_filename}
-new_irq_sp7021_intc_c_fpath=${home_lttp3rootfs_kernel_dts_dir}/${irq_sp7021_intc_c_filename}
-irq_sp7021_intc_c_patch_fpath=${home_lttp3rootfs_kernel_dts_dir}/${irq_sp7021_intc_c_patch_filename}
+old_irq_sp7021_intc_c_fpath=${SP7xxx_linux_kernel_drivers_irqchip_dir}/${irq_sp7021_intc_c_filename}
+new_irq_sp7021_intc_c_fpath=${home_lttp3rootfs_kernel_drivers_irqchip_dir}/${irq_sp7021_intc_c_filename}
+irq_sp7021_intc_c_patch_fpath=${home_lttp3rootfs_kernel_drivers_irqchip_dir}/${irq_sp7021_intc_c_patch_filename}
 
 old_sp7021_common_dtsi_fpath=${SP7xxx_linux_kernel_arch_arm_boot_dts_dir}/${sp7021_common_dtsi_filename}
 new_sp7021_common_dtsi_fpath=${home_lttp3rootfs_kernel_dts_dir}/${sp7021_common_dtsi_filename}
