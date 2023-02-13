@@ -1,3 +1,8 @@
+#!/bin/bash
+#--------------------------------------------------------------------
+#REMARK:
+#   The command 'source' requires '#!/bin/bash' to be defined.
+#--------------------------------------------------------------------
 #---SUBROUTINES
 docker__load_environment_variables__sub() {
     # #---Defin FOLDER
