@@ -277,7 +277,8 @@ GIT__CMD_GIT_TAG="git tag"
 GIT__LOCATION_LOCAL="local"
 GIT__LOCATION_REMOTE="remote"
 
-GIT__REMOTES_ORIGIN_MAIN="remotes/origin/main"
+GIT__REMOTES_ORIGIN="remotes/origin"
+GIT__REMOTES_ORIGIN_MAIN="${GIT__REMOTES_ORIGIN}/main"
 
 GIT__ERROR_MALFORMED_OBJECT_NAME_TAGS="error: malformed object name tags/"
 
@@ -347,6 +348,7 @@ DOCKER__COLOR_SLASH_DOTDOT_SLASH_DOTDOT="${DOCKER__COLOR_SLASH}${DOCKER__COLOR_D
 
 #---PATTERN CONSTANTS
 DOCKER__PATTERN_DOCKER_IO="docker.io"
+DOCKER__PATTERN_TOP="top"
 
 
 #---PHASE CONSTANTS
@@ -469,6 +471,9 @@ SED__BACKSLASH_DOT="${SED__BACKSLASH}${SED__DOT}"
 
 SED__HTTP="http"
 SED__HXXP="hxxp"
+
+SED_LBRACKET_63_SEMICOLON_1H="\\[63;1H"
+SED_LEFBRACKET_0_SEMICOLON_0M="\\[0;0m"
 
 
 
@@ -3935,7 +3940,8 @@ function show_fileContent_wo_select__func() {
                     fi
 
                     #Print fpath_arrItem
-                    echo "${DOCKER__FOURSPACES}${fpath_arrItem}"
+                    # echo "${DOCKER__FOURSPACES}${fpath_arrItem}"
+                    echo "${fpath_arrItem}"
                 fi
 
                 #Prevously 'table_index' was set to '0'.

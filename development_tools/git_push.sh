@@ -348,7 +348,7 @@ docker__add_comment_push__sub() {
                 #1. master:
                 git_master_numOf_commits=`git rev-list --count --no-merges ${GIT__REMOTES_ORIGIN_MAIN}`
                 #2. current 'branchName__input':
-                git_current_branch_numOf_commits=`git rev-list --count --no-merges ${branchName__input}`
+                git_current_branch_numOf_commits=`git rev-list --count --no-merges ${GIT__REMOTES_ORIGIN}/${branchName__input}`
                 #3. difference
                 git_diff_numOf_commits=$((git_current_branch_numOf_commits - git_master_numOf_commits))
 
@@ -356,7 +356,7 @@ docker__add_comment_push__sub() {
                 #Remark: 
                 #   If 'git_diff_numOf_commits = 1' then it means that 'branchName__input' just did it FIRST commit.
                 if [[ ${git_diff_numOf_commits} -eq ${DOCKER__NUMOFMATCH_1} ]]; then
-                    git_cmd="${GIT__CMD_GIT_PUSH} -u origin ${branchName__input}"
+                    git_cmd="${GIT__CMD_GIT_PUSH} -u origin ${branchName__input}"   #first commit
                 else
                     git_cmd="${GIT__CMD_GIT_PUSH}"
                 fi

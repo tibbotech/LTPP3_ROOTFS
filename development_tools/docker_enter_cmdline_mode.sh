@@ -1,5 +1,8 @@
 #---INPUT ARGS
 containerID__input=${1}
+ltpp3g2_username=${2}
+ltpp3g2_ipAddr=${3}
+
 
 
 #---SUBROUTINES
@@ -32,8 +35,6 @@ docker__init_variables__sub() {
     docker__cachedInput_arrLen=0
     docker__cachedInput_arrIndex=-1 #must be set to (-1)
     docker__cachedInput_arrIndex_max=0
-
-    docker__output_arr=()
 
     docker__cmd=${DOCKER__EMPTYSTRING}
     docker__cmd_clean=${DOCKER__EMPTYSTRING}
@@ -330,7 +331,7 @@ docker__enter_handler__sub() {
             if [[ ! -z ${docker__cmd} ]]; then  #command provided
                 #Execute command and write result to file
                 #Output: docker__isExcluded
-                docker__exec_cmd_and_write_output_toFile__sub "${docker__cmd}"
+                docker__exec_cmd_and_write_output_toFile__sub "${docker__cmd}" "${ltpp3g2_username}" "${ltpp3g2_ipAddr}"
 
                 if [[ ${docker__isExcluded} == false ]]; then
                     #Show file content (including Tibbo header)
@@ -382,9 +383,11 @@ docker__exit_handler__sub() {
 docker__exec_cmd_and_write_output_toFile__sub() {
     #Input args
     local cmd__input="${1}"
+    local usr__input="${2}"
+    local ip__input="${3}"
 
-    #Reset array
-    docker__output_arr=()
+    #Defube variables
+    local top_isfound="${DOCKER__EMPTYSTRING}"
 
     #Check if 'cmd__wo_leadingSpaces' is found in the exclusion array-list 'DOCKER__EXCL_CMD_ARR'
     docker__isExcluded=`checkFor_leading_partialMatch_of_pattern_within_array__func "${cmd__input}" \
@@ -394,34 +397,55 @@ docker__exec_cmd_and_write_output_toFile__sub() {
         #Execute command WIRHOUT writing to array and file
         ${cmd__input}
     else    
-        #Execute command WITH writing to array and file
-        #Remark:
-        #   In order to be able to execute commands with SPACES, 'eval' must be used
-        readarray -t docker__output_arr < <(eval ${cmd__input})
+        #Check if pattern 'top' is found in 'cmd__input'
+        top_isfound=$(echo "${cmd__input}" | grep -o "${DOCKER__PATTERN_TOP}")
+        if [[ -n "${top_isfound}" ]]; then
+            #Append string ( -n1) to 'top'
+            #Remark:
+            #   Since we are using a shell to call the 'top' command
+            #   ...it is important to append ( -n1), forces 'top' to show
+            #   ...only 1 result, after which 'top' MUST terminate.
+            cmd__input+=" -n1"
+        fi
+
+        #Execute command and write output to a file
+        if [[ -z "${usr__input}" ]] && [[ -z "${ip__input}" ]]; then
+            #Note: in order to be able to execute commands with SPACES, 'eval' must be used.
+            eval ${cmd__input} > ${docker__enter_cmdline_mode_out__fpath}
+        else
+            #Execute command via SSH
+            ssh -tt ${ltpp3g2_username}@${ltpp3g2_ipAddr} "${cmd__input}" > "${docker__enter_cmdline_mode_out__fpath}"
+        fi
+
+        #If command 'top' was execited, then:
+        #1. At the 1st line: remove characters ([?1h=[?25l[H[2J(B[m) BEFORE the pattern 'top'.
+        #Note: The escaped characters ([?1h=[?25l[H[2J(B[m) forces
+        #      ...the table to be shown on TOP of the Terminal Window.
+        if [[ -n "${top_isfound}" ]]; then
+            sed -i "1s/^.*${DOCKER__PATTERN_TOP}/${DOCKER__PATTERN_TOP}/" "${docker__enter_cmdline_mode_out__fpath}"
+        fi
+
+        #2. Replace all '[63;1H' with '[0;0m'
+        #Note: The escaped character ([63;1H) forces empty lines to be drawn...
+        #      ...below the table to fill up the empty space of the Terminal Window.
+        sed -i "s/${SED_LBRACKET_63_SEMICOLON_1H}/${SED_LEFBRACKET_0_SEMICOLON_0M}/g" "${docker__enter_cmdline_mode_out__fpath}"
     fi
 
     #Write input to 'docker__cachedInput_arr' and 'docker__enter_cmdline_mode_cache__fpath'
-    docker__write_input_to_cache_file_and_update_array__sub
-
-    #Write 'docker__output_arr' to file 'docker__enter_cmdline_mode_out__fpath'
-    #Remark:
-    #   Do NOT use 'echo' because...
-    #   ...all array-elements will be written to the file as ONE line...
-    #   ...instead of multiple lines.
-    printf "%s\n" "${docker__output_arr[@]}" > ${docker__enter_cmdline_mode_out__fpath}
+    docker__write_cmdinput_to_cache_file_and_update_array__sub
 }
-docker__write_input_to_cache_file_and_update_array__sub() {
+docker__write_cmdinput_to_cache_file_and_update_array__sub() {
     #Get the exit-code of the previously executed command.
     docker__exitCode=$?
 
     #Validate docker__exitCode
     if [[ ${docker__exitCode} -eq 0 ]]; then    #no errors found
-        #Check if 'cmd__input' is already added to file ''
+        #Check if 'cmd__input' is already added to file 'docker__enter_cmdline_mode_cache__fpath'
         local lineNum_found=`retrieve_lineNum_from_file__func "${cmd__input}" \
                         "${docker__enter_cmdline_mode_cache__fpath}"`
 
         if [[ ${lineNum_found} -gt ${DOCKER__LINENUM_1} ]]; then
-            #Deliete line specified by 'lineNum_found'
+            #Delete line specified by 'lineNum_found'
             delete_lineNum_from_file__func "${lineNum_found}" \
                         "${DOCKER__EMPTYSTRING}" \
                         "${docker__enter_cmdline_mode_cache__fpath}"
@@ -560,7 +584,6 @@ docker__tab_handler__sub() {
 
 #---MAIN SUBROUTINE
 main__sub() {
-
     docker__environmental_variables__sub
 
     docker__load_source_files__sub

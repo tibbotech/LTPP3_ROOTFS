@@ -185,7 +185,7 @@ docker__mainmenu__sub() {
                 ;;
 
             0)
-                ${docker__enter_cmdline_mode__fpath} "${DOCKER__EMPTYSTRING}"
+                ${docker__enter_cmdline_mode__fpath} "${DOCKER__EMPTYSTRING}" "${DOCKER__EMPTYSTRING}" "${DOCKER__EMPTYSTRING}"
                 ;;
 
             c)
