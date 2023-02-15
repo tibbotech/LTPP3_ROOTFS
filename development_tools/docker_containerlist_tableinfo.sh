@@ -1,6 +1,6 @@
 #!/bin/bash
 #---SUBROUTINES
-docker__environmental_variables__sub() {
+docker__get_source_fullpath__sub() {
     #---Define PATHS
     docker__current_script_fpath="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
     docker__current_dir=$(dirname ${docker__current_script_fpath})
@@ -148,7 +148,7 @@ docker__get_docker_containerList__sub() {
 
 #---MAIN SUBROUTINES
 main__sub() {
-    docker__environmental_variables__sub
+    docker__get_source_fullpath__sub
 
     docker__load_source_files__sub
 

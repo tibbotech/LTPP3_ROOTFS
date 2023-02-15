@@ -1,5 +1,5 @@
 #---SUBROUTINES
-docker__environmental_variables__sub() {
+docker__get_source_fullpath__sub() {
     #Check the number of input args
     if [[ -z ${docker__global__fpath} ]]; then   #must be equal to 3 input args
         #---Defin FOLDER
@@ -201,7 +201,7 @@ docker__get_git_info__sub() {
 
 #---MAIN SUBROUTINE
 main__sub() {
-    docker__environmental_variables__sub
+    docker__get_source_fullpath__sub
 
     docker__load_source_files__sub
 

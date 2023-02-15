@@ -3,45 +3,86 @@
 #REMARK:
 #   The command 'source' requires '#!/bin/bash' to be defined.
 #--------------------------------------------------------------------
-#---SUBROUTINES
-docker__load_environment_variables__sub() {
-    # #---Defin FOLDER
-    # docker__LTPP3_ROOTFS__foldername="LTPP3_ROOTFS"
+docker__get_source_fullpath__sub() {
+    #Define variables
+    local docker__current_dir="${EMPTYSTRING}"
+    local docker__home_dir=~
+
+    local docker__development_tools__foldername="${EMPTYSTRING}"
+    local docker__LTPP3_ROOTFS__foldername="${EMPTYSTRING}"
+    local docker__global__filename="${EMPTYSTRING}"
+    local docker__parentDir_of_LTPP3_ROOTFS__dir="${EMPTYSTRING}"
+
+    local docker__find_dir_result_arr=()
+    local docker__find_dir_result_arritem="${EMPTYSTRING}"
+    local docker__find_path_of_LTPP3_ROOTFS="${EMPTYSTRING}"
+
+    local docker__repo_of_LTPP3_ROOTFS="${EMPTYSTRING}"
+
+
+
+    #Set variables
+    current_dir=$(pwd)
     docker__development_tools__foldername="development_tools"
-
-    # #Get all the directories containing the foldername 'LTPP3_ROOTFS'...
-    # #... and read to array 'find_result_arr'
-    # #Remark:
-    # #   By using '2> /dev/null', the errors are not shown.
-    # readarray -t find_dir_result_arr < <(find  / -type d -iname "${docker__LTPP3_ROOTFS__foldername}" 2> /dev/null)
-
-    # #Define variable
-    # local find_path_of_LTPP3_ROOTFS=${DOCKER__EMPTYSTRING}
-
-    # #Loop thru array-elements
-    # for find_dir_result_arrItem in "${find_dir_result_arr[@]}"
-    # do
-    #     #Update variable 'find_path_of_LTPP3_ROOTFS'
-    #     find_path_of_LTPP3_ROOTFS="${find_dir_result_arrItem}/${docker__development_tools__foldername}"
-    #     #Check if 'directory' exist
-    #     if [[ -d "${find_path_of_LTPP3_ROOTFS}" ]]; then    #directory exists
-    #         #Update variable
-    #         docker__LTPP3_ROOTFS_development_tools__dir="${find_path_of_LTPP3_ROOTFS}"
-
-    #         break
-    #     fi
-    # done
-
-    # docker__LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS_development_tools__dir%/*}    #move one directory up: LTPP3_ROOTFS/
-    # docker__parentDir_of_LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS__dir%/*}    #move two directories up. This directory is the one-level higher than LTPP3_ROOTFS/
-
-    docker__thisScript_fpath=`readlink -f "${BASH_SOURCE:-$0}"`
-    docker__LTPP3_ROOTFS__dir=`dirname ${docker__thisScript_fpath}`
-    docker__parentDir_of_LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS__dir%/*}    #move two directories up. This directory is the one-level higher than LTPP3_ROOTFS/
-    docker__LTPP3_ROOTFS_development_tools__dir="${docker__LTPP3_ROOTFS__dir}/${docker__development_tools__foldername}"
-
     docker__global__filename="docker_global.sh"
+    docker__LTPP3_ROOTFS__foldername="LTPP3_ROOTFS"
+    docker__repo_of_LTPP3_ROOTFS="git@github.com:tibbotech/${docker__LTPP3_ROOTFS__foldername}.git"
+
+
+
+    #Start loop
+    while true
+    do
+        #Get all the directories containing the foldername 'LTPP3_ROOTFS'...
+        #... and read to array 'find_result_arr'
+        readarray -t docker__find_dir_result_arr < <(find  / -type d -iname "${docker__LTPP3_ROOTFS__foldername}" 2> /dev/null)
+
+        for docker__find_dir_result_arritem in "${docker__find_dir_result_arr[@]}"
+        do
+            #Update variable 'docker__find_path_of_LTPP3_ROOTFS'
+            docker__find_path_of_LTPP3_ROOTFS="${docker__find_dir_result_arritem}/${docker__development_tools__foldername}"
+            #Check if 'directory' exist
+            if [[ -d "${docker__find_path_of_LTPP3_ROOTFS}" ]]; then    #directory exists
+                #Update variable
+                #Remark:
+                #   'docker__LTPP3_ROOTFS_development_tools__dir' is a global variable.
+                #   This variable will be passed 'globally' to script 'docker_global.sh'.
+                docker__LTPP3_ROOTFS_development_tools__dir="${docker__find_path_of_LTPP3_ROOTFS}"
+
+                break
+            fi
+        done
+
+        #Check if 'docker__LTPP3_ROOTFS_development_tools__dir' contains any data
+        if [[ -z "${docker__LTPP3_ROOTFS_development_tools__dir}" ]]; then  #contains no data
+            echo -e "\r"
+
+            echo -e "***\e[1;31mERROR\e[0;0m: folder \e[30;38;5;246m${docker__development_tools__foldername}\e[0;0m: \e[30;38;5;131mNot Found\e[0;0m"
+
+            echo -e "\r"
+
+            exit 99
+        else    #contains data
+            break
+        fi
+    done
+
+
+
+    #Retrieve directories
+    #Remark:
+    #   'docker__LTPP3_ROOTFS__dir' is a global variable.
+    #   This variable will be passed 'globally' to script 'docker_global.sh'.
+    docker__LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS_development_tools__dir%/*}    #move one directory up: LTPP3_ROOTFS/
+    docker__parentDir_of_LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS__dir%/*}    #move two directories up. This directory is the one-level higher than LTPP3_ROOTFS/
+
+    #Get full-path
+    #Remark:
+    #   'docker__global__fpath' is a global variable.
+    #   This variable will be passed 'globally' to script 'docker_global.sh'.
     docker__global__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__global__filename}
+
+
 
     #***IMPORTANT: EXPORT PATHS
     export docker__LTPP3_ROOTFS__dir
@@ -274,7 +315,7 @@ docker__get_git_info__sub() {
 
 #---MAIN SUBROUTINE
 main__sub() {
-    docker__load_environment_variables__sub
+    docker__get_source_fullpath__sub
 
     docker__load_source_files__sub
 

@@ -376,6 +376,7 @@ DOCKER__START="${DOCKER__FG_ORANGE}START${DOCKER__NOCOLOR}"
 DOCKER__STATUS="${DOCKER__FG_ORANGE}STATUS${DOCKER__NOCOLOR}"
 DOCKER__STOPPED="${DOCKER__FG_ORANGE}STOPPED${DOCKER__NOCOLOR}"
 DOCKER__SUGGESTION="${DOCKER__FG_ORANGE}SUGGESTION${DOCKER__NOCOLOR}"
+DOCKER__UPDATE="${DOCKER__FG_ORANGE}UPDATE${DOCKER__NOCOLOR}"
 
 DOCKER__STATUS_DONE="${DOCKER__FG_GREEN}done${DOCKER__NOCOLOR}"
 DOCKER__STATUS_FAILED="${DOCKER__FG_LIGHTRED}failed${DOCKER__NOCOLOR}"
@@ -5438,7 +5439,7 @@ docker__ctrl_c__sub() {
     exit__func "${DOCKER__EXITCODE_99}" "${DOCKER__NUMOFLINES_2}"
 }
 
-docker__environmental_variables__sub() {
+docker__get_source_fullpath__sub() {
     #Check the number of input args
     if [[ -z ${docker__LTPP3_ROOTFS__dir} ]]; then   #must be equal to 3 input args
         #---Defin FOLDER
@@ -5773,7 +5774,7 @@ docker__create_exported_env_var_file__sub() {
 
 #---MAIN SUBROUTINE
 main__sub() {
-    docker__environmental_variables__sub
+    docker__get_source_fullpath__sub
 
     docker__create_dir__sub
 

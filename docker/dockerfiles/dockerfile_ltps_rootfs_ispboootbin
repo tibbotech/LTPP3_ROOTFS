@@ -14,4 +14,4 @@ ARG DEBIAN_FRONTEND=noninteractive
 RUN cd ~/LTPP3_ROOTFS && git pull
 
 #---Run Prepreparation of Disk (before Chroot)
-RUN cd ~ && ~/LTPP3_ROOTFS/build_BOOOT_BIN.sh
+RUN cd ~ && ~/LTPP3_ROOTFS/development_tools/docker_build_ispboootbin.sh

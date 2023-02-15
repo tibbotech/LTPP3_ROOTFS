@@ -6,7 +6,7 @@ ltpp3g2_ipAddr=${3}
 
 
 #---SUBROUTINES
-docker__environmental_variables__sub() {
+docker__get_source_fullpath__sub() {
 	docker__current_script_fpath="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
     docker__current_dir=$(dirname ${docker__current_script_fpath})	#/repo/LTPP3_ROOTFS/development_tools
 	docker__parent_dir=${docker__current_dir%/*}    #gets one directory up (/repo/LTPP3_ROOTFS)
@@ -584,7 +584,7 @@ docker__tab_handler__sub() {
 
 #---MAIN SUBROUTINE
 main__sub() {
-    docker__environmental_variables__sub
+    docker__get_source_fullpath__sub
 
     docker__load_source_files__sub
 

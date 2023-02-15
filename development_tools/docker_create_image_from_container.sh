@@ -38,7 +38,7 @@ function checkIf_repoTag_isUniq__func() {
 
 
 #---SUBROUTINES
-docker__environmental_variables__sub() {
+docker__get_source_fullpath__sub() {
 	# docker__current_dir=`pwd`
 	docker__current_script_fpath="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
     docker__current_dir=$(dirname ${docker__current_script_fpath})	#/repo/LTPP3_ROOTFS/development_tools
@@ -330,7 +330,7 @@ docker__create_image_exec__sub() {
 
 #---MAIN SUBROUTINE
 main_sub() {
-    docker__environmental_variables__sub
+    docker__get_source_fullpath__sub
 
     docker__load_source_files__sub
 

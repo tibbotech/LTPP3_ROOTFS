@@ -24,6 +24,106 @@ function checkIf_software_isInstalled__func() {
 
 
 #---SUBROUTINES
+docker__get_source_fullpath__sub() {
+    #Check if 'docker__global__fpath' is an 'Empty String'
+    #Remark:
+    #   'docker__global__fpath' is a global variable.
+    #   A parent script, which is calling 'this script', may have updated 'docker__global__fpath' already.
+    #   Therefore, this check has been implemented to prevent unnecessary overhead.
+    if [[ -z ${docker__global__fpath} ]]; then
+        #Define variables
+        local docker__current_dir="${EMPTYSTRING}"
+        local docker__home_dir=~
+
+        local docker__development_tools__foldername="${EMPTYSTRING}"
+        local docker__LTPP3_ROOTFS__foldername="${EMPTYSTRING}"
+        local docker__global__filename="${EMPTYSTRING}"
+        local docker__parentDir_of_LTPP3_ROOTFS__dir="${EMPTYSTRING}"
+
+        local docker__find_dir_result_arr=()
+        local docker__find_dir_result_arritem="${EMPTYSTRING}"
+        local docker__find_path_of_LTPP3_ROOTFS="${EMPTYSTRING}"
+
+        local docker__repo_of_LTPP3_ROOTFS="${EMPTYSTRING}"
+
+
+
+        #Set variables
+        current_dir=$(pwd)
+        docker__development_tools__foldername="development_tools"
+        docker__global__filename="docker_global.sh"
+        docker__LTPP3_ROOTFS__foldername="LTPP3_ROOTFS"
+        docker__repo_of_LTPP3_ROOTFS="git@github.com:tibbotech/${docker__LTPP3_ROOTFS__foldername}.git"
+
+
+
+        #Start loop
+        while true
+        do
+            #Get all the directories containing the foldername 'LTPP3_ROOTFS'...
+            #... and read to array 'find_result_arr'
+            readarray -t docker__find_dir_result_arr < <(find  / -type d -iname "${docker__LTPP3_ROOTFS__foldername}" 2> /dev/null)
+
+            for docker__find_dir_result_arritem in "${docker__find_dir_result_arr[@]}"
+            do
+                #Update variable 'docker__find_path_of_LTPP3_ROOTFS'
+                docker__find_path_of_LTPP3_ROOTFS="${docker__find_dir_result_arritem}/${docker__development_tools__foldername}"
+                #Check if 'directory' exist
+                if [[ -d "${docker__find_path_of_LTPP3_ROOTFS}" ]]; then    #directory exists
+                    #Update variable
+                    #Remark:
+                    #   'docker__LTPP3_ROOTFS_development_tools__dir' is a global variable.
+                    #   This variable will be passed 'globally' to script 'docker_global.sh'.
+                    docker__LTPP3_ROOTFS_development_tools__dir="${docker__find_path_of_LTPP3_ROOTFS}"
+
+                    break
+                fi
+            done
+
+            #Check if 'docker__LTPP3_ROOTFS_development_tools__dir' contains any data
+            if [[ -z "${docker__LTPP3_ROOTFS_development_tools__dir}" ]]; then  #contains no data
+                #Check if repo exists
+                git ls-remote --heads "${docker__repo_of_LTPP3_ROOTFS}" >1 /dev/null; exitcode=$?
+
+                #Exit if 'exitcode > 0'
+                if [[ ${exitcode} -ne 0 ]]; then
+                    exit ${exitcode}
+                fi
+
+                #Go to home-dir
+                cd "${docker__home_dir}"
+
+                #Clone repo
+                git clone "${docker__repo_of_LTPP3_ROOTFS}"
+
+                #Go back to current-dir
+                cd "${current_dir}"
+            else    #contains data
+                breaklinux_rootfs_initramfs_disk_dir
+            fi
+        done
+
+
+
+        #Retrieve directories
+        #Remark:
+        #   'docker__LTPP3_ROOTFS__dir' is a global variable.
+        #   This variable will be passed 'globally' to script 'docker_global.sh'.
+        docker__LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS_development_tools__dir%/*}    #move one directory up: LTPP3_ROOTFS/
+        docker__parentDir_of_LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS__dir%/*}    #move two directories up. This directory is the one-level higher than LTPP3_ROOTFS/
+
+        #Get full-path
+        #Remark:
+        #   'docker__global__fpath' is a global variable.
+        #   This variable will be passed 'globally' to script 'docker_global.sh'.
+        docker__global__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__global__filename}
+    fi
+}
+
+docker__load_source_files__sub() {
+    source ${docker__global__fpath}
+}
+
 docker__environmental_variables__sub() {
     #---Define PATHS
     docker__SP7xxx_foldername="SP7021"
@@ -31,36 +131,13 @@ docker__environmental_variables__sub() {
     docker__qemu_user_static_filename="qemu-user-static"
 
     docker__home_dir=~
-    docker__SP7xxx_dir=${docker__home_dir}/${docker__SP7xxx_foldername}
-    docker__SP7xxx_linux_rootfs_initramfs_dir=${docker__SP7xxx_dir}/linux/rootfs/initramfs
-    docker__SP7xxx_linux_rootfs_initramfs_disk_dir=${docker__SP7xxx_linux_rootfs_initramfs_dir}/${docker__disk_foldername}
+    docker__sp7021_dir=${docker__home_dir}/${docker__SP7xxx_foldername}
+    docker__sp7021_linux_rootfs_initramfs_dir=${docker__sp7021_dir}/linux/rootfs/initramfs
+    docker__sp7021_linux_rootfs_initramfs_disk_dir=${docker__sp7021_linux_rootfs_initramfs_dir}/${docker__disk_foldername}
 
     docker__usr_bin_dir=/usr/bin
     docker__qemu_fpath=${docker__usr_bin_dir}/qemu-arm-static
     docker__bash_fpath=${docker__usr_bin_dir}/bash
-
-    docker__current_script_fpath="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
-    docker__current_dir=$(dirname ${docker__current_script_fpath})
-    if [[ ${docker__current_dir} == ${DOCKER__DOT} ]]; then
-        docker__current_dir=$(pwd)
-    fi
-    docker__current_folder=`basename ${docker__current_dir}`
-    docker__current_folder=`basename ${docker__current_dir}`
-
-    docker__development_tools_folder="development_tools"
-    if [[ ${docker__current_folder} != ${docker__development_tools_folder} ]]; then
-        docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}/${docker__development_tools_folder}
-    else
-        docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}
-    fi
-
-    docker__global__filename="docker_global.sh"
-    docker__global__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__global__filename}
-}
-
-
-docker__load_source_files__sub() {
-    source ${docker__global__fpath}
 }
 
 docker__init_variables__sub() {
@@ -162,7 +239,7 @@ docker__preCheck__sub() {
 
         #Check if '~/SP7021/linux/rootfs/initramfs/disk' is present
         #Output: docker__numOf_errors_found
-        docker__preCheck_app_isPresent__sub "${docker__myContainerId}" "${docker__SP7xxx_linux_rootfs_initramfs_disk_dir}"
+        docker__preCheck_app_isPresent__sub "${docker__myContainerId}" "${docker__sp7021_linux_rootfs_initramfs_disk_dir}"
     fi
 
     #In case one or more failed check-items were found
@@ -217,7 +294,6 @@ docker__preCheck_app_isPresent__sub() {
     fi
 }
 
-
 docker__run_script__sub() {
     #Define local message constants
     # local MENUTITLE="Run ${DOCKER__FG_GREEN}Chroot${DOCKER__NOCOLOR} from *within* a ${DOCKER__FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}"
@@ -255,9 +331,9 @@ docker__run_script__sub() {
     #Run chroot command
     #REMARK: make a choice based on whether currently running in 'local-host' or 'container'
     if [[ ${docker__isRunning_inside_container} == true ]]; then   #running in docker container
-        chroot ${docker__SP7xxx_linux_rootfs_initramfs_disk_dir} ${docker__qemu_fpath} ${docker__bash_fpath}
+        chroot ${docker__sp7021_linux_rootfs_initramfs_disk_dir} ${docker__qemu_fpath} ${docker__bash_fpath}
     else    #NOT running in docker container
-        ${docker_exec_cmd} "chroot ${docker__SP7xxx_linux_rootfs_initramfs_disk_dir} ${docker__qemu_fpath} ${docker__bash_fpath}"
+        ${docker_exec_cmd} "chroot ${docker__sp7021_linux_rootfs_initramfs_disk_dir} ${docker__qemu_fpath} ${docker__bash_fpath}"
     fi
 
     #Check if there are any errors
@@ -272,9 +348,11 @@ docker__run_script__sub() {
 }
 
 docker__main__sub(){
-    docker__environmental_variables__sub
+    docker__get_source_fullpath__sub
 
     docker__load_source_files__sub
+
+    docker__environmental_variables__sub
 
     docker__init_variables__sub
 
