@@ -1,7 +1,7 @@
 #!/bin/bash -m
 #Remark: by using '-m' the INT will NOT propagate to the PARENT scripts
 #---SUBROUTINES
-docker__load_environment_variables__sub() {
+docker__get_source_fullpath__sub() {
     #Check the number of input args
     if [[ -z ${docker__global__fpath} ]]; then   #must be equal to 3 input args
         #---Defin FOLDER
@@ -287,7 +287,7 @@ docker__get_and_check_repoTag__sub() {
 
 #---MAIN SUBROUTINE
 main_sub() {
-    docker__load_environment_variables__sub
+    docker__get_source_fullpath__sub
 
     docker__load_source_files__sub
 

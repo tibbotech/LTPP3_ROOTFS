@@ -2,7 +2,7 @@
 #Remark: by using '-m' the INT will NOT propagate to the PARENT scripts
 
 #---SUBROUTINES
-docker__load_environment_variables__sub() {
+docker__get_source_fullpath__sub() {
     #Check the number of input args
     if [[ -z ${docker__global__fpath} ]]; then   #must be equal to 3 input args
         #---Defin FOLDER
@@ -47,7 +47,11 @@ docker__load_source_files__sub() {
 }
 
 docker__load_constants__sub() {
-    DOCKER__MENUTITLE="${DOCKER__FG_LIGHTBLUE}DOCKER: CREATE/REMOVE/RENAME IMAGE${DOCKER__NOCOLOR}"
+    DOCKER__MENUTITLE="${DOCKER__FG_LIGHTBLUE}DOCKER: "
+    DOCKER__MENUTITLE+="${DOCKER__FG_DARKBLUE}CREATE${DOCKER__NOCOLOR}/"
+    DOCKER__MENUTITLE+="${DOCKER__FG_DARKBLUE}REMOVE${DOCKER__NOCOLOR}/"
+    DOCKER__MENUTITLE+="${DOCKER__FG_DARKBLUE}RENAME ${DOCKER__FG_LIGHTBLUE}IMAGE${DOCKER__NOCOLOR}"
+    
 }
 
 docker__init_variables__sub() {
@@ -213,7 +217,7 @@ docker__get_git_info__sub() {
 
 #---MAIN SUBROUTINE
 main__sub() {
-    docker__load_environment_variables__sub
+    docker__get_source_fullpath__sub
 
     docker__load_source_files__sub
 

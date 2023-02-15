@@ -23,7 +23,7 @@ tibboHeader_prepend_numOfLines__input=${18}
 
 
 #---SUBROUTINES
-docker__load_environment_variables__sub() {
+docker__get_source_fullpath__sub() {
     #Check the number of input args
     if [[ -z ${docker__global__fpath} ]]; then   #must be equal to 3 input args
         #---Defin FOLDER
@@ -1857,7 +1857,7 @@ docker__any_del_skip_and_correct_indexes__sub() {
 
 #---MAIN SUBROUTINE
 main_sub() {
-    docker__load_environment_variables__sub
+    docker__get_source_fullpath__sub
 
     docker__load_source_files__sub
 

@@ -42,7 +42,7 @@ docker__get_source_fullpath__sub() {
 
         local docker__find_dir_result_arr=()
         local docker__find_dir_result_arritem="${EMPTYSTRING}"
-        local docker__find_path_of_LTPP3_ROOTFS="${EMPTYSTRING}"
+        local docker__find_path_of_development_tools="${EMPTYSTRING}"
 
         local docker__repo_of_LTPP3_ROOTFS="${EMPTYSTRING}"
 
@@ -66,15 +66,15 @@ docker__get_source_fullpath__sub() {
 
             for docker__find_dir_result_arritem in "${docker__find_dir_result_arr[@]}"
             do
-                #Update variable 'docker__find_path_of_LTPP3_ROOTFS'
-                docker__find_path_of_LTPP3_ROOTFS="${docker__find_dir_result_arritem}/${docker__development_tools__foldername}"
+                #Update variable 'docker__find_path_of_development_tools'
+                docker__find_path_of_development_tools="${docker__find_dir_result_arritem}/${docker__development_tools__foldername}"
                 #Check if 'directory' exist
-                if [[ -d "${docker__find_path_of_LTPP3_ROOTFS}" ]]; then    #directory exists
+                if [[ -d "${docker__find_path_of_development_tools}" ]]; then    #directory exists
                     #Update variable
                     #Remark:
                     #   'docker__LTPP3_ROOTFS_development_tools__dir' is a global variable.
                     #   This variable will be passed 'globally' to script 'docker_global.sh'.
-                    docker__LTPP3_ROOTFS_development_tools__dir="${docker__find_path_of_LTPP3_ROOTFS}"
+                    docker__LTPP3_ROOTFS_development_tools__dir="${docker__find_path_of_development_tools}"
 
                     break
                 fi

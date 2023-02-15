@@ -5440,8 +5440,17 @@ docker__ctrl_c__sub() {
 }
 
 docker__get_source_fullpath__sub() {
+    docker__tmp_dir=/tmp
+
+    docker__mainmenu_path_cache__filename="docker__mainmenu_path.cache"
+    docker__mainmenu_path_cache__fpath="${docker__tmp_dir}/${docker__mainmenu_path_cache__filename}"
+
     #Check the number of input args
-    if [[ -z ${docker__LTPP3_ROOTFS__dir} ]]; then   #must be equal to 3 input args
+    #Check if file exists
+    if [[ -f "${docker__mainmenu_path_cache__fpath}" ]]; then
+        #Get the line of file
+        docker__LTPP3_ROOTFS_development_tools__dir=$(awk 'NR==1' "${docker__mainmenu_path_cache__fpath}")
+    else
         #---Defin FOLDER
         docker__LTPP3_ROOTFS__foldername="LTPP3_ROOTFS"
         docker__development_tools__foldername="development_tools"
@@ -5506,8 +5515,8 @@ docker__get_source_fullpath__sub() {
     docker__containerlist_tableinfo__filename="docker_containerlist_tableinfo.sh"
     docker__containerlist_tableinfo__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__containerlist_tableinfo__filename}
 
-    docker__container_run_remove_menu__filename="docker_container_run_remove_menu.sh"
-    docker__container_run_remove_menu__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__container_run_remove_menu__filename}
+    docker__container_run_remove_build_menu__filename="docker__container_run_remove_build_menu.sh"
+    docker__container_run_remove_build_menu__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__container_run_remove_build_menu__filename}
 
     docker__cp_fromto_container__filename="docker_cp_fromto_container.sh"
     docker__cp_fromto_container__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__cp_fromto_container__filename}
