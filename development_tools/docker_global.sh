@@ -198,6 +198,7 @@ DOCKER__EXCL_CMD_ARR+=("${DOCKER__EXIT}")
 #---EXIT CONSTANTS
 DOCKER__EXITCODE_0=0    #no error
 DOCKER__EXITCODE_99=99  #an error which tells the device to exit
+DOCKER__EXITCODE_130=130    #job was terminted by the owner (not an error)
 
 
 
@@ -5509,13 +5510,16 @@ docker__get_source_fullpath__sub() {
     dirlist__readInput_w_autocomplete__filename="dirlist_readInput_w_autocomplete.sh"
     dirlist__readInput_w_autocomplete__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${dirlist__readInput_w_autocomplete__filename}
 
-    docker__run_chroot__filename="docker_run_chroot.sh"
-    docker__run_chroot__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__run_chroot__filename}
+    docker_build_ispboootbin_filename="docker_build_ispboootbin.sh"
+    docker_build_ispboootbin_fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker_build_ispboootbin_filename}
+
+    docker_container_build_ispboootbin_filename="docker_container_build_ispboootbin.sh"
+    docker_container_build_ispboootbin_fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker_container_build_ispboootbin_filename}
 
     docker__containerlist_tableinfo__filename="docker_containerlist_tableinfo.sh"
     docker__containerlist_tableinfo__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__containerlist_tableinfo__filename}
 
-    docker__container_run_remove_build_menu__filename="docker__container_run_remove_build_menu.sh"
+    docker__container_run_remove_build_menu__filename="docker_container_run_remove_build_menu.sh"
     docker__container_run_remove_build_menu__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__container_run_remove_build_menu__filename}
 
     docker__cp_fromto_container__filename="docker_cp_fromto_container.sh"
@@ -5574,6 +5578,9 @@ docker__get_source_fullpath__sub() {
 
 	docker__repolist_tableinfo__filename="docker_repolist_tableinfo.sh"
 	docker__repolist_tableinfo__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__repolist_tableinfo__filename}
+
+    docker__run_chroot__filename="docker_run_chroot.sh"
+    docker__run_chroot__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__run_chroot__filename}
 
     docker__run_container_from_a_repository__filename="docker_run_container_from_a_repository.sh"
     docker__run_container_from_a_repository__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__run_container_from_a_repository__filename}

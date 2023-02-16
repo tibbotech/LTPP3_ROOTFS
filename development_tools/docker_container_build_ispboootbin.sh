@@ -122,39 +122,35 @@ docker__load_source_files__sub() {
 
 docker__environmental_variables__sub() {
     #---Define PATHS
-    docker__SP7xxx_foldername="SP7021"
-    docker__disk_foldername="disk"
-    docker__qemu_user_static_filename="qemu-user-static"
-
     docker__home_dir=~
-    docker__sp7021_dir=${docker__home_dir}/${docker__SP7xxx_foldername}
-    docker__sp7021_linux_rootfs_initramfs_dir=${docker__sp7021_dir}/linux/rootfs/initramfs
-    docker__sp7021_linux_rootfs_initramfs_disk_dir=${docker__sp7021_linux_rootfs_initramfs_dir}/${docker__disk_foldername}
-
+    docker__sp7021_dir=${docker__home_dir}/SP7021
     docker__usr_bin_dir=/usr/bin
-    docker__qemu_fpath=${docker__usr_bin_dir}/qemu-arm-static
+    docker__ltpp3rootfs_dir=${docker__home_dir}/LTPP3_ROOTFS
+    docker__ltpp3rootfs_development_tools_dir=${docker__ltpp3rootfs_dir}/development_tools
+
+    docker__docker_build_ispboootbin_fpath=${docker__ltpp3rootfs_development_tools_dir}/docker_build_ispboootbin.sh
     docker__bash_fpath=${docker__usr_bin_dir}/bash
 }
 
 docker__init_variables__sub() {
     docker__myContainerId=${DOCKER__EMPTYSTRING}
-    docker__isRunning_inside_container=false
     docker__numOf_errors_found=0
-
     docker__exitCode=0
 
+    docker__isRunning_inside_container=false
     docker__showTable=true
-    docker__onEnter_breakLoop=true
+
 }
 
 docker__checkIf_isRunning_inside_container__sub() {
     #Define contants
     local PATTERN_DOCKER="docker"
 
-    #Define variablers
+    #Define variables
     local proc_1_cgroup_dir=/proc/1/cgroup
 
-    isDocker=`cat "${proc_1_cgroup_dir}" | grep "${PATTERN_DOCKER}"`
+    #Check if you are currently inside a docker container
+    local isDocker=`cat "${proc_1_cgroup_dir}" | grep "${PATTERN_DOCKER}"`
     if [[ ! -z ${isDocker} ]]; then
         docker__isRunning_inside_container=true
     else
@@ -165,7 +161,7 @@ docker__checkIf_isRunning_inside_container__sub() {
 docker__choose_containerID__sub() {
     #Define local message constants
     # local MENUTITLE="Current ${DOCKER__FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}-list"
-    local MENUTITLE="Run ${DOCKER__FG_GREEN}Chroot${DOCKER__NOCOLOR} from *within* a ${DOCKER__FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}"
+    local MENUTITLE="Build ${DOCKER__FG_LIGHTGREY}ISPBOOOT.BIN${DOCKER__NOCOLOR}"
     local READMSG_CHOOSE_A_CONTAINERID="Choose a ${DOCKER__FG_BRIGHTPRUPLE}Container-ID${DOCKER__NOCOLOR} (e.g. dfc5e2f3f7ee): "
     local ERRMSG_INVALID_INPUT_VALUE="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Invalid input value "
 
@@ -231,13 +227,13 @@ docker__preCheck__sub() {
         #Output: docker__numOf_errors_found
         docker__preCheck_app_isPresent__sub "${docker__myContainerId}" "${docker__bash_fpath}"
 
-        #Check if '/usr/bin/qemu-arm-static' is present
-        #Output: docker__numOf_errors_found
-        docker__preCheck_app_isPresent__sub "${docker__myContainerId}" "${docker__qemu_fpath}"
-
         #Check if '~/SP7021/linux/rootfs/initramfs/disk' is present
         #Output: docker__numOf_errors_found
-        docker__preCheck_app_isPresent__sub "${docker__myContainerId}" "${docker__sp7021_linux_rootfs_initramfs_disk_dir}"
+        docker__preCheck_app_isPresent__sub "${docker__myContainerId}" "${docker__sp7021_dir}"
+
+        #Check if '~/LTPP3_ROOTFS/development_tools/docker_build_ispboootbin.sh' is present
+        #Output: docker__numOf_errors_found
+        docker__preCheck_app_isPresent__sub "${docker__myContainerId}" "${docker__docker_build_ispboootbin_fpath}"
     fi
 
     #In case one or more failed check-items were found
@@ -293,50 +289,23 @@ docker__preCheck_app_isPresent__sub() {
 }
 
 docker__run_script__sub() {
-    #Define local message constants
-    # local MENUTITLE="Run ${DOCKER__FG_GREEN}Chroot${DOCKER__NOCOLOR} from *within* a ${DOCKER__FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}"
-
-    #Define local command variables
+    #Define variables
     local docker_exec_cmd="docker exec -it ${docker__myContainerId} ${docker__bash_fpath} -c"
-
-    #Define local variables
     local stdErr=${DOCKER__EMPTYSTRING}
-    
+    local cmd_outside_container="eval \"${docker__docker_build_ispboootbin_fpath}\""
+    local cmd_inside_container="eval \"${docker__docker_build_ispboootbin_fpath}\""
 
-
-    #Show menu-title
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-    # moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-    # duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-    # show_centered_string__func "${MENUTITLE}" "${DOCKER__TABLEWIDTH}"
-    # duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-    echo -e "---:${DOCKER__FG_ORANGE}NOTICE${DOCKER__NOCOLOR}: ..."
-    echo -e "---:${DOCKER__FG_ORANGE}NOTICE${DOCKER__NOCOLOR}: Before we continue..."
-    echo -e "---:${DOCKER__FG_ORANGE}NOTICE${DOCKER__NOCOLOR}: Please make sure that ${DOCKER__FG_ORANGE}${docker__qemu_user_static_filename}${DOCKER__NOCOLOR} is ${DOCKER__FG_YELLOW}manually${DOCKER__NOCOLOR} installed..." 
-    echo -e "---:${DOCKER__FG_ORANGE}NOTICE${DOCKER__NOCOLOR}: ... because using the already ${DOCKER__FG_YELLOW}built-in${DOCKER__NOCOLOR} ${DOCKER__FG_ORANGE}${docker__qemu_user_static_filename}${DOCKER__NOCOLOR}..."
-    echo -e "---:${DOCKER__FG_ORANGE}NOTICE${DOCKER__NOCOLOR}: ... may result in ${DOCKER__FG_LIGHTRED}unwanted${DOCKER__NOCOLOR} errors."
-
-    press_any_key__func
-
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-    echo -e "---:${DOCKER__FG_ORANGE}STATUS${DOCKER__NOCOLOR}: Entering ${DOCKER__FG_GREEN}Chroot${DOCKER__NOCOLOR} environment..."
-    echo -e "---:${DOCKER__FG_ORANGE}INFO${DOCKER__NOCOLOR}: Type ${DOCKER__FG_YELLOW}exit${DOCKER__NOCOLOR} to Exit ${DOCKER__FG_GREEN}Chroot${DOCKER__NOCOLOR}"
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-
-    #Run chroot command
-    #REMARK: make a choice based on whether currently running in 'local-host' or 'container'
-    if [[ ${docker__isRunning_inside_container} == true ]]; then   #running in docker container
-        chroot ${docker__sp7021_linux_rootfs_initramfs_disk_dir} ${docker__qemu_fpath} ${docker__bash_fpath}
-    else    #NOT running in docker container
-        ${docker_exec_cmd} "chroot ${docker__sp7021_linux_rootfs_initramfs_disk_dir} ${docker__qemu_fpath} ${docker__bash_fpath}"
+    #Execute script 'docker_build_ispboootbin_fpath'
+    if [[ ${docker__isRunning_inside_container} == true ]]; then   #currently in a container
+        ${cmd_outside_container}
+    else    #currently outside of a container
+        ${docker_exec_cmd} "${cmd_inside_container}"
     fi
 
     #Check if there are any errors
     docker__exitCode=$?
-    if [[ ${docker__exitCode} -ne 0 ]] && [[ ${docker__exitCode} -ne ${DOCKER__EXITCODE_130} ]]; then #no errors found
-        echo -e "---:${DOCKER__FG_ORANGE}STATUS${DOCKER__NOCOLOR}: *Unable* to enter ${DOCKER__FG_GREEN}Chroot${DOCKER__NOCOLOR} environment..."
+    if [[ ${docker__exitCode} -ne 0 ]]; then #no errors found
+        echo -e "---:${DOCKER__FG_ORANGE}STATUS${DOCKER__NOCOLOR}: Build ${DOCKER__FG_LIGHTGREY}ISPBOOOT.BIN${DOCKER__NOCOLOR} ${DOCKER__FG_LIGHTRED}FAILED${DOCKER__NOCOLOR}..."
 
         exit__func "${docker__exitCode}" "${DOCKER__NUMOFLINES_1}"
     else

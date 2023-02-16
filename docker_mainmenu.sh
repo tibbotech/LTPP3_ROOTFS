@@ -147,7 +147,7 @@ docker__load_source_files__sub() {
 }
 
 docker__load_constants__sub() {
-    DOCKER__MENUTITLE="${DOCKER__FG_LIGHTBLUE}DOCKER MAIN-MENU${DOCKER__NOCOLOR}"
+    DOCKER__MENUTITLE="${DOCKER__FG_LIGHTBLUE}DOCKER: ${DOCKER__FG_DARKBLUE}MAIN-MENU${DOCKER__NOCOLOR}"
 }
 
 docker__checkIf_user_is_root__sub()
@@ -215,7 +215,7 @@ docker__mainmenu__sub() {
         #Print menu-options
         echo -e "${DOCKER__FOURSPACES}1. ${DOCKER__MENU} create ${DOCKER__FG_BORDEAUX}image${DOCKER__NOCOLOR}(s) using docker-file/list"
         echo -e "${DOCKER__FOURSPACES}2. ${DOCKER__MENU} create${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}remove${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}rename ${DOCKER__FG_BORDEAUX}image${DOCKER__NOCOLOR}"
-        echo -e "${DOCKER__FOURSPACES}3. ${DOCKER__MENU} run${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}remove ${DOCKER__FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
+        echo -e "${DOCKER__FOURSPACES}3. ${DOCKER__MENU} run${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}remove${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}build ${DOCKER__FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
         echo -e "${DOCKER__FOURSPACES}8. Copy file from${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}to ${DOCKER__FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
         echo -e "${DOCKER__FOURSPACES}9. Chroot from inside${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}outside ${DOCKER__FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}" 
         echo -e "${DOCKER__FOURSPACES}0. Enter Command Prompt"

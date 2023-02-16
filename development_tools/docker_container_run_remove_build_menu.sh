@@ -195,7 +195,7 @@ docker__menu__sub() {
                 ${docker__remove_container__fpath}
                 ;;
             b)
-                
+                ${docker_container_build_ispboootbin_fpath}
                 ;;
             c)
                 docker__show_containerList_handler__sub

@@ -109,7 +109,9 @@ docker___env_var__sub() {
 
 docker__create_script__sub() {
     #Generate file-content
-    local filecontent="echo -e \"---:${DOCKER__UPDATE}: navigate to ${DOCKER__FG_LIGHTGREY}${docker__SP7021_dir}${DOCKER__NOCOLOR}\"\n"
+    local filecontent="echo -e \"\\r\"\n"
+    filecontent+="echo -e \"\\r\"\n"
+    filecontent+="echo -e \"---:${DOCKER__UPDATE}: navigate to ${DOCKER__FG_LIGHTGREY}${docker__SP7021_dir}${DOCKER__NOCOLOR}\"\n"
     filecontent+="cd ${docker__SP7021_dir}\n"
     filecontent+="\n"
     filecontent+="echo -e \"---:${DOCKER__UPDATE}: add to ${DOCKER__FG_LIGHTGREY}${docker__SP7021_boot_uboot_tools_dir}${DOCKER__NOCOLOR} to ${DOCKER__FG_LIGHTGREY}PATH${DOCKER__NOCOLOR}\"\n"
