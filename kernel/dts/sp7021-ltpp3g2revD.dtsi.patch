@@ -1,6 +1,6 @@
---- /root/SP7021/linux/kernel/arch/arm/boot/dts/sp7021-ltpp3g2revD.dtsi	2023-02-10 10:46:30.000000000 +0000
-+++ /root/LTPP3_ROOTFS/kernel/dts/sp7021-ltpp3g2revD.dtsi	2023-02-10 10:41:43.000000000 +0000
-@@ -1,359 +1,449 @@
+--- /root/SP7021/linux/kernel/arch/arm/boot/dts/sp7021-ltpp3g2revD.dtsi	2023-02-17 08:04:07.000000000 +0000
++++ /root/LTPP3_ROOTFS/kernel/dts/sp7021-ltpp3g2revD.dtsi	2023-02-17 07:49:25.000000000 +0000
+@@ -1,373 +1,449 @@
 -// SPDX-License-Identifier: GPL-2.0
 -/*
 - * Device Tree Source (include) for Sunplus SP7021 SoC
@@ -21,7 +21,8 @@
 -		stdout-path = "serial0:115200n8";
 -	};
 -
--	memory {
+-	memory@0 {
+-		device_type = "memory";
 -		reg = <0x00000000 0x20000000>; /* 512MB */
 -	};
 -};
@@ -69,6 +70,19 @@
 -&l2sw {
 - pinctrl-names = "default";
 - pinctrl-0 = <&ethA_pins &eth0_pins &eth1_pins>;
+-
+- phy-handle1 = <&eth_phy0>;
+- phy-handle2 = <&eth_phy1>;
+- mdio {
+-   #address-cells = <1>;
+-   #size-cells = <0>;
+-   eth_phy0: ethernet-phy@0 {
+-     reg = <0>;
+-   };
+-   eth_phy1: ethernet-phy@1 {
+-     reg = <1>;
+-   };
+- };
 -};
 -
 -&mmc0 {
