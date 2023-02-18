@@ -4,6 +4,7 @@
 DOCKER__GIT_MAIN="main"
 DOCKER__PATTERN1="repository:tag"
 DOCKER__PATTERN2="On branch"
+DOCKER__PATTERN3="origin"
 SED__PATTERN_SSH_FORMAT="git\@github.com:"
 SED__PATTERN_HTTPS_FORMAT="https:\/\/github.com\/"
 
@@ -19,6 +20,7 @@ function create_image__func() {
 
     #Define local message variables
     local statusMsg="---:${DOCKER__FG_ORANGE}STATUS${DOCKER__NOCOLOR}: Creating image..."
+    local errorMsg="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: No branch name found...abort"
 
     #Define local  variables
     # local docker__images_cmd="docker images"
@@ -28,7 +30,7 @@ function create_image__func() {
 
     local git_branch=${DOCKER__EMPTYSTRING}
     local git_https_link_isFound=${DOCKER__EMPTYSTRING}
-
+    local git_status=${DOCKER__EMPTYSTRING}
 
 
     #Get REPOSITORY:TAG from dockerfile
@@ -59,13 +61,28 @@ function create_image__func() {
             exported_env_var3=`echo "${exported_env_var3}" | sed "s/${SED__PATTERN_SSH_FORMAT}/${SED__PATTERN_HTTPS_FORMAT}/g"`
         fi
 
+        #Get the 'status' to see if we are in 'main'
+        #Remark:
+        #   'git status' cannot retrieve the 'branch' if it is DETACHED
+        git_status=`git status -uno | grep "${DOCKER__PATTERN2}" | rev | cut -d" " -f1 | rev`
+
         #Get the 'branch' from which the repo was cloned (e.g. main, fixonetimexec, etc.)
-        git_branch=`git status -uno | grep "${DOCKER__PATTERN2}" | rev | cut -d" " -f1 | rev`
+        #Remark:
+        #   Using the following command to get the 'branch' will always work (even if the branch is DETACHED)
+        git_branch=`git show -s --pretty=%d HEAD | grep -o "${DOCKER__PATTERN3}.*" | cut -d"/" -f2 | cut -d")" -f1`
 
         #Update 'exported_env_var3' by including 'git_branch' 
         #Remark:
-        #   Do this only if 'git_branch != main'
-        if [[ "${git_branch}" != "${DOCKER__GIT_MAIN}" ]]; then
+        #   Do this only if 'git_status != main'
+        if [[ "${git_status}" != "${DOCKER__GIT_MAIN}" ]]; then
+            if [[ -z "${git_branch}" ]]; then
+                moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+                echo -e "${errorMsg}"
+                moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+                exit__func "${DOCKER__EXITCODE_99}" "${DOCKER__NUMOFLINES_2}"
+            fi
+
             exported_env_var3="--branch ${git_branch} ${exported_env_var3}"
         fi
     fi
