@@ -1,6 +1,6 @@
 #!/bin/bash -m
 #Remark: by using '-m' the INT will NOT propagate to the PARENT scripts
-#--SUBROUTINES
+#---SUBROUTINES
 docker__get_source_fullpath__sub() {
     #Define constants
     local DOCKER__PHASE_CHECK_CACHE=1
@@ -27,13 +27,14 @@ docker__get_source_fullpath__sub() {
     local docker__find_dir_result_arrlinectr=0
     local docker__find_dir_result_arrprogressperc=0
 
-    local docker__find_path_of_development_tools=""
+    local docker__path_of_development_tools_found=""
+    local docker__parentpath_of_development_tools=""
 
     local docker__isfound=""
 
     #Set variables
     docker__phase="${DOCKER__PHASE_CHECK_CACHE}"
-    docker__current_dir=$(pwd)
+    docker__current_dir=$(dirname $(readlink -f $0))
     docker__tmp_dir=/tmp
     docker__development_tools__foldername="development_tools"
     docker__global__filename="docker_global.sh"
@@ -53,17 +54,18 @@ docker__get_source_fullpath__sub() {
                     #Get the directory stored in cache-file
                     docker__LTPP3_ROOTFS_development_tools__dir=$(awk 'NR==1' "${docker__mainmenu_path_cache__fpath}")
 
+                    #Move one directory up
+                    docker__parentpath_of_development_tools=$(dirname "${docker__LTPP3_ROOTFS_development_tools__dir}")
+
                     #Check if 'development_tools' is in the 'LTPP3_ROOTFS' folder
-                    docker__isfound=$(docker__checkif_parentdir_isfound_in_path "${docker__current_dir}" \
-                            "${docker__LTPP3_ROOTFS_development_tools__dir}" "${docker__LTPP3_ROOTFS__foldername}")
+                    docker__isfound=$(docker__checkif_paths_are_related "${docker__current_dir}" \
+                            "${docker__parentpath_of_development_tools}" "${docker__LTPP3_ROOTFS__foldername}")
                     if [[ ${docker__isfound} == false ]]; then
                         docker__phase="${DOCKER__PHASE_FIND_PATH}"
                     else
                         docker_result=true
 
                         docker__phase="${DOCKER__PHASE_EXIT}"
-
-                        echo -e "---:\e[30;38;5;215mSTATUS\e[0;0m: retrieve path from cache: \e[1;33mDONE\e[0;0m"
                     fi
                 else
                     docker__phase="${DOCKER__PHASE_FIND_PATH}"
@@ -89,11 +91,11 @@ docker__get_source_fullpath__sub() {
                     #Iterate thru each array-item
                     for docker__find_dir_result_arritem in "${docker__find_dir_result_arr[@]}"
                     do
-                        docker__isfound=$(docker__checkif_parentdir_isfound_in_path "${docker__current_dir}" \
+                        docker__isfound=$(docker__checkif_paths_are_related "${docker__current_dir}" \
                                 "${docker__find_dir_result_arritem}"  "${docker__LTPP3_ROOTFS__foldername}")
                         if [[ ${docker__isfound} == true ]]; then
-                            #Update variable 'docker__find_path_of_development_tools'
-                            docker__find_path_of_development_tools="${docker__find_dir_result_arritem}/${docker__development_tools__foldername}"
+                            #Update variable 'docker__path_of_development_tools_found'
+                            docker__path_of_development_tools_found="${docker__find_dir_result_arritem}/${docker__development_tools__foldername}"
 
                             # #Increment counter
                             docker__find_dir_result_arrlinectr=$((docker__find_dir_result_arrlinectr+1))
@@ -114,12 +116,12 @@ docker__get_source_fullpath__sub() {
                             fi
 
                             #Check if 'directory' exist
-                            if [[ -d "${docker__find_path_of_development_tools}" ]]; then    #directory exists
+                            if [[ -d "${docker__path_of_development_tools_found}" ]]; then    #directory exists
                                 #Update variable
                                 #Remark:
                                 #   'docker__LTPP3_ROOTFS_development_tools__dir' is a global variable.
                                 #   This variable will be passed 'globally' to script 'docker_global.sh'.
-                                docker__LTPP3_ROOTFS_development_tools__dir="${docker__find_path_of_development_tools}"
+                                docker__LTPP3_ROOTFS_development_tools__dir="${docker__path_of_development_tools_found}"
 
                                 #Print
                                 #Note: print the '100%' here
@@ -151,12 +153,13 @@ docker__get_source_fullpath__sub() {
 
                         #Update variable
                         docker_result=true
-
-                        #set phase
-                        docker__phase="${DOCKER__PHASE_EXIT}"
-
-                        break
                     fi
+
+                    #set phase
+                    docker__phase="${DOCKER__PHASE_EXIT}"
+
+                    #Exit loop
+                    break
                 done
                 ;;    
             "${DOCKER__PHASE_EXIT}")
@@ -183,10 +186,10 @@ docker__get_source_fullpath__sub() {
     #   This variable will be passed 'globally' to script 'docker_global.sh'.
     docker__global__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__global__filename}
 }
-docker__checkif_parentdir_isfound_in_path() {
+docker__checkif_paths_are_related() {
     #Input args
-    local parentdir__input=${1}
-    local path__input=${2}
+    local scriptdir__input=${1}
+    local finddir__input=${2}
     local pattern__input=${3}
 
     #Define constants
@@ -206,8 +209,8 @@ docker__checkif_parentdir_isfound_in_path() {
     do
         case "${phase}" in
             "${PHASE_PATTERN_CHECK1}")
-                #Check if 'pattern__input' is found in 'parentdir__input'
-                isfound1=$(echo "${parentdir__input}" | \
+                #Check if 'pattern__input' is found in 'scriptdir__input'
+                isfound1=$(echo "${scriptdir__input}" | \
                         grep -o "${pattern__input}.*" | \
                         cut -d"/" -f1 | grep -w "^${pattern__input}$")
                 if [[ -z "${isfound1}" ]]; then
@@ -219,8 +222,8 @@ docker__checkif_parentdir_isfound_in_path() {
                 fi                
                 ;;
             "${PHASE_PATTERN_CHECK2}")
-                #Check if 'pattern__input' is found in 'path__input'
-                isfound2=$(echo "${path__input}" | \
+                #Check if 'pattern__input' is found in 'finddir__input'
+                isfound2=$(echo "${finddir__input}" | \
                         grep -o "${pattern__input}.*" | \
                         cut -d"/" -f1 | grep -w "^${pattern__input}$")
                 if [[ -z "${isfound2}" ]]; then
@@ -233,8 +236,8 @@ docker__checkif_parentdir_isfound_in_path() {
                 ;;
             "${PHASE_PATH_COMPARISON}")
                 #Check if 'development_tools' is under the folder 'LTPP3_ROOTFS'
-                isfound3=$(echo "${path__input}" | \
-                        grep -w "${parentdir__input}.*")
+                isfound3=$(echo "${scriptdir__input}" | \
+                        grep -w "${finddir__input}.*")
                 if [[ -z "${isfound3}" ]]; then
                     ret=false
                 else
