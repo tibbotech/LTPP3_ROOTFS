@@ -264,22 +264,56 @@ docker__load_source_files__sub() {
 
 docker__load_constants__sub() {
     DOCKER__MENUTITLE="${DOCKER__FG_LIGHTBLUE}DOCKER: "
-    DOCKER__MENUTITLE+="${DOCKER__FG_DARKBLUE}RUN${DOCKER__NOCOLOR}/"
-    DOCKER__MENUTITLE+="${DOCKER__FG_DARKBLUE}REMOVE${DOCKER__NOCOLOR}/"
-    DOCKER__MENUTITLE+="${DOCKER__FG_DARKBLUE}BUILD${DOCKER__NOCOLOR} "
-    DOCKER__MENUTITLE+="CONTAINER"
+    DOCKER__MENUTITLE+="${DOCKER__FG_DARKBLUE}CONFIGURE${DOCKER__NOCOLOR} eMMC ${DOCKER__FG_DARKBLUE}STORAGE PARTITION${DOCKER__NOCOLOR}"
 }
 
 docker__init_variables__sub() {
-    docker__myChoice=${DOCKER__EMPTYSTRING}
-    docker__regEx="[1-3brcsiegq]"
-    docker__tibboHeader_prepend_numOfLines=0
+    docker__myChoice="${DOCKER__EMPTYSTRING}"
+    docker__overlaymode="${DOCKER__EMPTYSTRING}"
+    docker__overlayconfig="${DOCKER__EMPTYSTRING}"
+    docker__overlaymodestatus="${DOCKER__EMPTYSTRING}"
+    docker__overlayconfigstatus="${DOCKER__EMPTYSTRING}"
+    docker__overlayapplystatus="${DOCKER__EMPTYSTRING}"
+    docker__ispboootbinstatus="${DOCKER__EMPTYSTRING}"
+    docker__overlaymodestatus_print="${DOCKER__EMPTYSTRING}"
+    docker__overlayconfigstatus_print="${DOCKER__EMPTYSTRING}"
+    docker__overlayapplystatus_print="${DOCKER__EMPTYSTRING}"
+    docker__isboootbinstatus_print="${DOCKER__EMPTYSTRING}"
+    docker__regEx="[1-4]"
+}
+
+docker__get_git_info__sub() {
+    #Get information
+    docker__git_current_branchName=`git__get_current_branchName__func`
+
+    docker__git_current_abbrevCommitHash=`git__log_for_pushed_and_unpushed_commits__func "${DOCKER__EMPTYSTRING}" \
+                        "${GIT__LAST_COMMIT}" \
+                        "${GIT__PLACEHOLDER_ABBREV_COMMIT_HASH}"`
+      
+    docker__git_push_status=`git__checkIf_branch_isPushed__func "${docker__git_current_branchName}"`
+
+    docker__git_current_tag=`git__get_tag_for_specified_branchName__func "${docker__git_current_branchName}" "${DOCKER__FALSE}"`
+    if [[ -z "${docker__git_current_tag}" ]]; then
+        docker__git_current_tag="${GIT__NOT_TAGGED}"
+    fi
+
+    #Generate message to be shown
+    docker_git_current_info_msg="${DOCKER__FG_LIGHTBLUE}${docker__git_current_branchName}${DOCKER__NOCOLOR}:"
+    docker_git_current_info_msg+="${DOCKER__FG_DARKBLUE}${docker__git_current_abbrevCommitHash}${DOCKER__NOCOLOR}"
+    docker_git_current_info_msg+="(${DOCKER__FG_DARKBLUE}${docker__git_push_status}${DOCKER__NOCOLOR}):"
+    docker_git_current_info_msg+="${DOCKER__FG_LIGHTBLUE}${docker__git_current_tag}${DOCKER__NOCOLOR}"
 }
 
 docker__menu__sub() {
-    #Initialization
-    docker__tibboHeader_prepend_numOfLines=${DOCKER__NUMOFLINES_2}
+    #Initialize variables
+    docker__overlaymode="${DOCKER__DASH}"
+    docker__overlayconfig="${DOCKER__DASH}"
+    docker__overlaymodestatus=false
+    docker__overlayconfigstatus=false
+    docker__overlayapplystatus=false
+    docker__ispboootbinstatus=false
 
+    #Show menu
     while true
     do
         #Get Git-information
@@ -288,10 +322,7 @@ docker__menu__sub() {
         docker__get_git_info__sub
 
         #Load header
-        load_tibbo_title__func "${docker__tibboHeader_prepend_numOfLines}"
-
-        #Set 'docker__tibboHeader_prepend_numOfLines'
-        docker__tibboHeader_prepend_numOfLines=${DOCKER__NUMOFLINES_1}
+        load_tibbo_title__func "${DOCKER__NUMOFLINES_2}"
 
         #Print horizontal line
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
@@ -303,25 +334,32 @@ docker__menu__sub() {
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
 
         #Print menu-options
-        echo -e "${DOCKER__FOURSPACES}1. Run container from ${DOCKER__FG_BORDEAUX}image${DOCKER__NOCOLOR}"
-        echo -e "${DOCKER__FOURSPACES}2. Run exited container"
-        echo -e "${DOCKER__FOURSPACES}3. Remove container"
+        echo -e "${DOCKER__FOURSPACES}1. Choose ${DOCKER__FG_BROWN137}overlay${DOCKER__NOCOLOR} model (${DOCKER__FG_LIGHTGREY}${docker__overlaymode}${DOCKER__NOCOLOR})"
+        echo -e "${DOCKER__FOURSPACES}2. Configure ${DOCKER__FG_BROWN137}overlay${DOCKER__NOCOLOR} fs (${DOCKER__FG_LIGHTGREY}${docker__overlayconfig}${DOCKER__NOCOLOR})"
+        if [[ ${docker__overlaymodestatus} == true ]] && [[ ${docker__overlayconfigstatus} == true ]]; then
+            if [[ ${docker__overlayapplystatus} == true ]]; then
+                docker__overlayapplystatus_print="${DOCKER__STATUS_APPLIED}"
+            else
+                docker__overlayapplystatus_print="${DOCKER__STATUS_READY}"
+            fi
+        else
+            docker__overlayapplystatus_print="${DOCKER__STATUS_DISABLED}"
+        fi
+        echo -e "${DOCKER__FOURSPACES}3. Apply ${DOCKER__FG_BROWN137}overlay${DOCKER__NOCOLOR} config (${docker__overlayapplystatus_print})"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-        echo -e "${DOCKER__FOURSPACES}b. ${DOCKER__MENU} build ${DOCKER__FG_BROWN94}ISPBOOOT.BIN${DOCKER__NOCOLOR}"
-        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-        echo -e "${DOCKER__FOURSPACES}r. ${DOCKER__FG_PURPLE}Repository${DOCKER__NOCOLOR}-list"
-        echo -e "${DOCKER__FOURSPACES}c. ${DOCKER__FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}-list"
-        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-        echo -e "${DOCKER__FOURSPACES}s. ${DOCKER__FG_YELLOW}SSH${DOCKER__NOCOLOR} to a ${DOCKER__FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
-        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-        echo -e "${DOCKER__FOURSPACES}i. Load from File"
-        echo -e "${DOCKER__FOURSPACES}e. Save to File"
-        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-        echo -e "${DOCKER__FOURSPACES}g. ${DOCKER__FG_LIGHTGREY}Git${DOCKER__NOCOLOR} Menu"
+        if [[ ${docker__overlayapplystatus} == true ]]; then
+            if [[ ${docker__ispboootbinstatus} == true ]]; then
+                docker__isboootbinstatus_print="${DOCKER__STATUS_APPLIED}"
+            else
+                docker__isboootbinstatus_print="${DOCKER__STATUS_READY}"
+            fi
+        else
+            docker__isboootbinstatus_print="${DOCKER__STATUS_DISABLED}"
+        fi
+        echo -e "${DOCKER__FOURSPACES}4. build ${DOCKER__FG_BROWN94}ISPBOOOT.BIN${DOCKER__NOCOLOR} (${docker__isboootbinstatus_print})"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
         echo -e "${DOCKER__FOURSPACES}q. $DOCKER__QUIT_CTRL_C"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-        # moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
         #Show read-dialog
         while true
@@ -349,87 +387,22 @@ docker__menu__sub() {
         #Goto the selected option
         case ${docker__myChoice} in
             1)
-                ${docker__run_container_from_a_repository__fpath}
+                echo -e ""
                 ;;
             2)
-                ${docker__run_exited_container__fpath}
+                echo -e ""
                 ;;
             3)
-                ${docker__remove_container__fpath}
+                echo -e ""
                 ;;
-            b)
-                # ${docker_container_build_ispboootbin_fpath}
-                ${docker_configure_overlayfs_menu_fpath}
-                ;;
-            c)
-                docker__show_containerList_handler__sub
-                ;;
-            r)
-                docker__show_repositoryList_handler__sub
-                ;;
-            s)
-                ${docker__ssh_to_host__fpath}
-                ;;
-            e)
-                ${docker__save__fpath}
-                ;;
-            i)
-                ${docker__load__fpath}
-                ;;
-            g)  
-                ${docker__git_menu__fpath}
+            4)
+                echo -e ""
                 ;;
             q)
                 exit__func "${DOCKER__EXITCODE_99}" "${DOCKER__NUMOFLINES_1}"
                 ;;
         esac
     done
-}
-
-docker__show_repositoryList_handler__sub() {
-    #Show repo-list
-    show_repoList_or_containerList_w_menuTitle_w_confirmation__func "${DOCKER__MENUTITLE_REPOSITORYLIST}" \
-                        "${DOCKER__ERRMSG_NO_IMAGES_FOUND}" \
-                        "${docker__images_cmd}" \
-                        "${DOCKER__NUMOFLINES_0}" \
-                        "${DOCKER__TIMEOUT_10}" \
-                        "${DOCKER__NUMOFLINES_0}" \
-                        "${DOCKER__NUMOFLINES_0}" \
-                        "${DOCKER__NUMOFLINES_2}"
-}
-
-docker__show_containerList_handler__sub() {
-    #Show container-list
-    show_repoList_or_containerList_w_menuTitle_w_confirmation__func "${DOCKER__MENUTITLE_CONTAINERLIST}" \
-                        "${DOCKER__ERRMSG_NO_CONTAINERS_FOUND}" \
-                        "${docker__ps_a_cmd}" \
-                        "${DOCKER__NUMOFLINES_0}" \
-                        "${DOCKER__TIMEOUT_10}" \
-                        "${DOCKER__NUMOFLINES_0}" \
-                        "${DOCKER__NUMOFLINES_0}" \
-                        "${DOCKER__NUMOFLINES_2}"
-}
-
-docker__get_git_info__sub() {
-    #Get information
-    docker__git_current_branchName=`git__get_current_branchName__func`
-
-    docker__git_current_abbrevCommitHash=`git__log_for_pushed_and_unpushed_commits__func "${DOCKER__EMPTYSTRING}" \
-                        "${GIT__LAST_COMMIT}" \
-                        "${GIT__PLACEHOLDER_ABBREV_COMMIT_HASH}"`
-      
-    docker__git_push_status=`git__checkIf_branch_isPushed__func "${docker__git_current_branchName}"`
-
-    docker__git_current_tag=`git__get_tag_for_specified_branchName__func "${docker__git_current_branchName}" "${DOCKER__FALSE}"`
-    if [[ -z "${docker__git_current_tag}" ]]; then
-        docker__git_current_tag="${GIT__NOT_TAGGED}"
-    fi
-
-    #Generate message to be shown
-    docker_git_current_info_msg="${DOCKER__FG_LIGHTBLUE}${docker__git_current_branchName}${DOCKER__NOCOLOR}:"
-    docker_git_current_info_msg+="${DOCKER__FG_DARKBLUE}${docker__git_current_abbrevCommitHash}${DOCKER__NOCOLOR}"
-    docker_git_current_info_msg+="(${DOCKER__FG_DARKBLUE}${docker__git_push_status}${DOCKER__NOCOLOR}):"
-    docker_git_current_info_msg+="${DOCKER__FG_LIGHTBLUE}${docker__git_current_tag}${DOCKER__NOCOLOR}"
 }
 
 

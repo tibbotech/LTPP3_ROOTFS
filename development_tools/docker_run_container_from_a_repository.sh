@@ -1,5 +1,5 @@
 #!/bin/bash -m
-#Remark: by using '-m' the INT will NOT propagate to the PARENT scripts
+#Remark: by using '-m' the INTERRUPT executed here will NOT propagate to the UPPERLAYER scripts
 #---NUMERIC CONSTANTS
 DOCKER__SSH_LOCALPORT=10022
 DOCKER__SSH_PORT=22

@@ -379,8 +379,11 @@ DOCKER__STOPPED="${DOCKER__FG_ORANGE}STOPPED${DOCKER__NOCOLOR}"
 DOCKER__SUGGESTION="${DOCKER__FG_ORANGE}SUGGESTION${DOCKER__NOCOLOR}"
 DOCKER__UPDATE="${DOCKER__FG_ORANGE}UPDATE${DOCKER__NOCOLOR}"
 
+DOCKER__STATUS_APPLIED="${DOCKER__FG_GREEN}applied${DOCKER__NOCOLOR}"
+DOCKER__STATUS_DISABLED="${DOCKER__FG_LIGHTGREY}disabled${DOCKER__NOCOLOR}"
 DOCKER__STATUS_DONE="${DOCKER__FG_GREEN}done${DOCKER__NOCOLOR}"
 DOCKER__STATUS_FAILED="${DOCKER__FG_LIGHTRED}failed${DOCKER__NOCOLOR}"
+DOCKER__STATUS_READY="${DOCKER__FG_YELLOW}ready${DOCKER__NOCOLOR}"
 
 DOCKER__NO_ACTION_REQUIRED="No action required"
 
@@ -5478,10 +5481,10 @@ docker__get_source_fullpath__sub() {
                 break
             fi
         done
-
-        docker__LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS_development_tools__dir%/*}    #move one directory up: LTPP3_ROOTFS/
-        docker__parentDir_of_LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS__dir%/*}    #move two directories up. This directory is the one-level higher than LTPP3_ROOTFS/
     fi
+
+    docker__LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS_development_tools__dir%/*}    #move one directory up: LTPP3_ROOTFS/
+    docker__parentDir_of_LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS__dir%/*}    #move two directories up. This directory is the one-level higher than LTPP3_ROOTFS/
 
     docker__docker__dir=${docker__parentDir_of_LTPP3_ROOTFS__dir}/docker
     docker__docker_cache__dir=${docker__docker__dir}/cache
@@ -5512,6 +5515,9 @@ docker__get_source_fullpath__sub() {
 
     docker_build_ispboootbin_filename="docker_build_ispboootbin.sh"
     docker_build_ispboootbin_fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker_build_ispboootbin_filename}
+
+    docker_configure_overlayfs_menu_filename="docker_configure_overlayfs_menu.sh"
+    docker_configure_overlayfs_menu_fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker_configure_overlayfs_menu_filename}
 
     docker_container_build_ispboootbin_filename="docker_container_build_ispboootbin.sh"
     docker_container_build_ispboootbin_fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker_container_build_ispboootbin_filename}
