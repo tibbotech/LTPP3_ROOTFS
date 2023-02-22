@@ -393,7 +393,7 @@ docker__mainmenu__sub() {
                 ;;
 
             2)
-                ${docker_image_create_remove_rename_menu__fpath}
+                ${docker__image_create_remove_rename_menu__fpath}
                 ;;
 
             3)

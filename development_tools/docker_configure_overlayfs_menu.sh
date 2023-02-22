@@ -264,22 +264,21 @@ docker__load_source_files__sub() {
 
 docker__load_constants__sub() {
     DOCKER__MENUTITLE="${DOCKER__FG_LIGHTBLUE}DOCKER: "
-    DOCKER__MENUTITLE+="${DOCKER__FG_DARKBLUE}CONFIGURE${DOCKER__NOCOLOR} eMMC ${DOCKER__FG_DARKBLUE}STORAGE PARTITION${DOCKER__NOCOLOR}"
+    DOCKER__MENUTITLE+="${DOCKER__FG_DARKBLUE}CONFIGURE${DOCKER__NOCOLOR} ${DOCKER__FG_RED9}OVERLAY${DOCKER__NOCOLOR}"
 }
 
 docker__init_variables__sub() {
-    docker__myChoice="${DOCKER__EMPTYSTRING}"
-    docker__overlaymode="${DOCKER__EMPTYSTRING}"
+    docker__mychoice1="${DOCKER__EMPTYSTRING}"
+    docker__myinput="${DOCKER__EMPTYSTRING}"
+    docker__disksize="${DOCKER__EMPTYSTRING}"
     docker__overlayconfig="${DOCKER__EMPTYSTRING}"
-    docker__overlaymodestatus="${DOCKER__EMPTYSTRING}"
+    docker__disksizestatus="${DOCKER__EMPTYSTRING}"
     docker__overlayconfigstatus="${DOCKER__EMPTYSTRING}"
-    docker__overlayapplystatus="${DOCKER__EMPTYSTRING}"
-    docker__ispboootbinstatus="${DOCKER__EMPTYSTRING}"
-    docker__overlaymodestatus_print="${DOCKER__EMPTYSTRING}"
+    docker__disksizestatus_print="${DOCKER__EMPTYSTRING}"
     docker__overlayconfigstatus_print="${DOCKER__EMPTYSTRING}"
-    docker__overlayapplystatus_print="${DOCKER__EMPTYSTRING}"
-    docker__isboootbinstatus_print="${DOCKER__EMPTYSTRING}"
-    docker__regEx="[1-4]"
+    docker__regEx="${DOCKER__EMPTYSTRING}"
+    docker__regex1bq="[1bq]"
+    docker__regex12bq="[1-2bq]"
 }
 
 docker__get_git_info__sub() {
@@ -306,16 +305,16 @@ docker__get_git_info__sub() {
 
 docker__menu__sub() {
     #Initialize variables
-    docker__overlaymode="${DOCKER__DASH}"
-    docker__overlayconfig="${DOCKER__DASH}"
-    docker__overlaymodestatus=false
+    docker__disksize=0
+    docker__disksizestatus_print="${DOCKER__DASH}"
+    docker__overlayconfigstatus_print="${DOCKER__DASH}"
+    docker__disksizestatus=false
     docker__overlayconfigstatus=false
-    docker__overlayapplystatus=false
-    docker__ispboootbinstatus=false
+    docker__regEx="${docker__regex1bq}"
 
     #Show menu
     while true
-    do
+    do    
         #Get Git-information
         #Output:
         #   docker_git_current_info_msg
@@ -334,29 +333,31 @@ docker__menu__sub() {
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
 
         #Print menu-options
-        echo -e "${DOCKER__FOURSPACES}1. Choose ${DOCKER__FG_BROWN137}overlay${DOCKER__NOCOLOR} model (${DOCKER__FG_LIGHTGREY}${docker__overlaymode}${DOCKER__NOCOLOR})"
-        echo -e "${DOCKER__FOURSPACES}2. Configure ${DOCKER__FG_BROWN137}overlay${DOCKER__NOCOLOR} fs (${DOCKER__FG_LIGHTGREY}${docker__overlayconfig}${DOCKER__NOCOLOR})"
-        if [[ ${docker__overlaymodestatus} == true ]] && [[ ${docker__overlayconfigstatus} == true ]]; then
-            if [[ ${docker__overlayapplystatus} == true ]]; then
-                docker__overlayapplystatus_print="${DOCKER__STATUS_APPLIED}"
+        if [[ ${docker__disksize} -ne 0 ]]; then
+            docker__disksizestatus=true
+
+            docker__disksizestatus_print="${DOCKER__FG_LIGHTGREY}${docker__disksize}${DOCKER__NOCOLOR}M"
+        else
+            docker__disksizestatus=false
+
+            docker__disksizestatus_print="${DOCKER__FG_LIGHTGREY}${DOCKER__DASH}${DOCKER__NOCOLOR}"
+        fi
+        echo -e "${DOCKER__FOURSPACES}1. Choose ${DOCKER__FG_RED125}disk${DOCKER__NOCOLOR}-size (${DOCKER__FG_LIGHTGREY}${docker__disksizestatus_print}${DOCKER__NOCOLOR})"
+        if [[ ${docker__disksizestatus} == true ]]; then
+            docker__regEx="${docker__regex12bq}"
+
+            if [[ ${docker__overlayconfigstatus} == true ]]; then
+                echo -e "${DOCKER__FOURSPACES}2. Configure ${DOCKER__FG_RED9}overlay${DOCKER__NOCOLOR}-fs (${DOCKER__FG_LIGHTGREY} <INPUT THE OVERLAY INFO HERE> ${DOCKER__NOCOLOR})"
             else
-                docker__overlayapplystatus_print="${DOCKER__STATUS_READY}"
+                echo -e "${DOCKER__FOURSPACES}2. Configure ${DOCKER__FG_RED9}overlay${DOCKER__NOCOLOR}-fs (${DOCKER__FG_LIGHTGREY}${DOCKER__DASH}${DOCKER__NOCOLOR})"
             fi
         else
-            docker__overlayapplystatus_print="${DOCKER__STATUS_DISABLED}"
+            docker__regEx="${docker__regex1bq}"
+
+            echo -e "${DOCKER__FG_LIGHTGREY}${DOCKER__FOURSPACES}2.${DOCKER__NOCOLOR} Configure ${DOCKER__FG_RED9}overlay${DOCKER__NOCOLOR}-fs (${DOCKER__FG_LIGHTGREY}${DOCKER__STATUS_DISABLED}${DOCKER__NOCOLOR})"
         fi
-        echo -e "${DOCKER__FOURSPACES}3. Apply ${DOCKER__FG_BROWN137}overlay${DOCKER__NOCOLOR} config (${docker__overlayapplystatus_print})"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-        if [[ ${docker__overlayapplystatus} == true ]]; then
-            if [[ ${docker__ispboootbinstatus} == true ]]; then
-                docker__isboootbinstatus_print="${DOCKER__STATUS_APPLIED}"
-            else
-                docker__isboootbinstatus_print="${DOCKER__STATUS_READY}"
-            fi
-        else
-            docker__isboootbinstatus_print="${DOCKER__STATUS_DISABLED}"
-        fi
-        echo -e "${DOCKER__FOURSPACES}4. build ${DOCKER__FG_BROWN94}ISPBOOOT.BIN${DOCKER__NOCOLOR} (${docker__isboootbinstatus_print})"
+        echo -e "${DOCKER__FOURSPACES}b. build ${DOCKER__BG_LIGHTGREY}ISPBOOOT.BIN${DOCKER__NOCOLOR}"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
         echo -e "${DOCKER__FOURSPACES}q. $DOCKER__QUIT_CTRL_C"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
@@ -365,15 +366,15 @@ docker__menu__sub() {
         while true
         do
             #Select an option
-            read -N1 -r -p "Please choose an option: " docker__myChoice
+            read -N1 -r -p "Please choose an option: " docker__mychoice1
             moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
             #Only continue if a valid option is selected
-            if [[ ! -z ${docker__myChoice} ]]; then
-                if [[ ${docker__myChoice} =~ ${docker__regEx} ]]; then
+            if [[ ! -z ${docker__mychoice1} ]]; then
+                if [[ ${docker__mychoice1} =~ ${docker__regEx} ]]; then
                     break
                 else
-                    if [[ ${docker__myChoice} == ${DOCKER__ENTER} ]]; then
+                    if [[ ${docker__mychoice1} == ${DOCKER__ENTER} ]]; then
                         moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
                     else
                         moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
@@ -385,18 +386,16 @@ docker__menu__sub() {
         done
             
         #Goto the selected option
-        case ${docker__myChoice} in
+        case ${docker__mychoice1} in
             1)
-                echo -e ""
+                ${docker__configure_overlayfs_disksize_menu__fpath} "${docker__global__fpath}"
+                docker__disksize=$(read_1stline_from_file "${docker__configure_overlayfs_disksize_menu_output__fpath}")
                 ;;
             2)
-                echo -e ""
+                echo "2 in progress"
                 ;;
-            3)
-                echo -e ""
-                ;;
-            4)
-                echo -e ""
+            b)
+                echo "b in progresS"
                 ;;
             q)
                 exit__func "${DOCKER__EXITCODE_99}" "${DOCKER__NUMOFLINES_1}"

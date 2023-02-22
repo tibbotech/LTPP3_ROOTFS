@@ -356,7 +356,7 @@ docker__menu__sub() {
                 ${docker__remove_image__fpath}
                 ;;
             4)
-                ${docker_rename_repotag__fpath}
+                ${docker__rename_repotag__fpath}
                 ;;
             c)
                 docker__show_containerList_handler__sub

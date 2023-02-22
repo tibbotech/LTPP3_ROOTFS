@@ -86,6 +86,8 @@ DOCKER__FG_BROWN94=$'\e[30;38;5;94m'
 DOCKER__FG_BROWN137=$'\e[30;38;5;137m'
 DOCKER__FG_DARKBLUE=$'\e[30;38;5;33m'
 DOCKER__FG_RED1=$'\e[30;38;5;1m'
+DOCKER__FG_RED9=$'\e[30;38;5;9m'
+DOCKER__FG_RED125=$'\e[30;38;5;125m'
 DOCKER__FG_DEEPORANGE=$'\e[30;38;5;208m'
 DOCKER__FG_REDORANGE=$'\e[30;38;5;203m'
 DOCKER__FG_GREEN=$'\e[30;38;5;82m'
@@ -118,6 +120,7 @@ DOCKER__BG_ORANGE=$'\e[30;48;5;215m'
 DOCKER__BG_LIGHTBLUE=$'\e[30;48;5;45m'
 DOCKER__BG_LIGHTGREY=$'\e[30;48;5;246m'
 DOCKER__BG_LIGHTSOFTYELLOW=$'\e[30;48;5;229m'
+DOCKER__BG_SOFTDARKBLUE=$'\e[30;48;5;38m'
 DOCKER__BG_WHITE=$'\e[30;48;5;15m'
 
 DOCKER__BLINK=$'\e[5m'
@@ -180,6 +183,15 @@ DOCKER__WARNING="***${DOCKER__FG_BORDEAUX}WARNING${DOCKER__NOCOLOR}"
 
 DOCKER__CONFIGNAME____DOCKER__DOCKERFILE_FPATH="docker__dockerFile_fpath"
 
+
+
+#---DISK CAPACITY CONSTANTS
+DOCKER__0K_IN_BYTES=0
+DOCKER__1K_IN_BYTES=1024
+DOCKER__DISKSIZE_4G_IN_BYTES=3909091328
+DOCKER__DISKSIZE_4G_IN_MBYTES=$((DOCKER__DISKSIZE_4G_IN_BYTES/DOCKER__1K_IN_BYTES))
+DOCKER__DISKSIZE_8G_IN_BYTES=$((DOCKER__DISKSIZE_4G_IN_BYTES*2))
+DOCKER__DISKSIZE_8G_IN_MBYTES=$((DOCKER__DISKSIZE_8G_IN_BYTES/DOCKER__1K_IN_BYTES))
 
 
 #---ENV VARIABLES (WHICH ARE USED IN THE DOCKERFILE FILES)
@@ -557,8 +569,8 @@ docker__ps_a_containerIdColno=1
 #   Extern variables can be called from anywhere. 
 #   Therefore, use it with caution.
 #---------------------------------------------------------------------
-extern__req=${DOCKER__EMPTYSTRING}
-extern__ret=${DOCKER__EMPTYSTRING}
+extern__req="${DOCKER__EMPTYSTRING}"
+extern__ret="${DOCKER__EMPTYSTRING}"
 
 
 
@@ -735,7 +747,7 @@ function confirmation_w_timer__func() {
     local regEx="${confirmation_regEx__input}"
 
     #Initialization
-	local ret=${DOCKER__EMPTYSTRING}
+	local ret="${DOCKER__EMPTYSTRING}"
 	local tCounter=0
 
     local timeout=${timeout__input}
@@ -882,8 +894,8 @@ function checkFor_leading_partialMatch_of_pattern_within_array__func() {
     local arr__input=("$@")
 
     #Define variables
-    local arrItem=${DOCKER__EMPTYSTRING}
-    local isFound=${DOCKER__EMPTYSTRING}
+    local arrItem="${DOCKER__EMPTYSTRING}"
+    local isFound="${DOCKER__EMPTYSTRING}"
     local ret="false"
 
     #Loop thru array
@@ -1004,7 +1016,7 @@ function checkForMatch_of_pattern_within_array__func() {
     local dataArr__input=("$@")
 
     #Loop thru array-elements and find a match
-    local dataArrItem=${DOCKER__EMPTYSTRING}
+    local dataArrItem="${DOCKER__EMPTYSTRING}"
     local ret=false
     for dataArrItem in "${dataArr__input[@]}"
     do
@@ -1199,9 +1211,9 @@ function checkIf_repoTag_isUniq__func() {
 
     #Define variables
     local dataArr=()
-    local dataArr_item=${DOCKER__EMPTYSTRING}
-    local stdOutput1=${DOCKER__EMPTYSTRING}
-    local stdOutput2=${DOCKER__EMPTYSTRING}
+    local dataArr_item="${DOCKER__EMPTYSTRING}"
+    local stdOutput1="${DOCKER__EMPTYSTRING}"
+    local stdOutput2="${DOCKER__EMPTYSTRING}"
 
     #Write 'docker images' command output to array
     readarray dataArr <<< $(docker images)
@@ -1326,7 +1338,7 @@ function generate_cache_filenames_basedOn_specified_repositoryTag__func() {
 #---ESCAPE-KEY RELATED FUNCTIONS
 function functionKey_detection__func() {
     #Define variables
-    local ret=${DOCKER__EMPTYSTRING}
+    local ret="${DOCKER__EMPTYSTRING}"
 
     # Flush "^[" within 0.1 sec timeout.
     read -rsn1 -t 0.1 key2
@@ -1609,8 +1621,8 @@ function checkIf_fpaths_are_the_same__func() {
     #Define and initialize variables
     local fpath1_rev=${fpath1__input}
     local fpath2_rev=${fpath2__input}
-    local fpath1_lastChar=${DOCKER__EMPTYSTRING}
-    local fpath2_lastChar=${DOCKER__EMPTYSTRING}
+    local fpath1_lastChar="${DOCKER__EMPTYSTRING}"
+    local fpath2_lastChar="${DOCKER__EMPTYSTRING}"
 
     local fpath1_len=${#fpath1__input}
     local fpath2_len=${#fpath2__input}
@@ -1664,7 +1676,7 @@ function get_dirname_from_specified_path__func() {
 
     #Get dirname
     local dir=`echo ${fpath__input} | rev | cut -d"${DOCKER__SLASH}" -f2- | rev`
-    if [[ ${dir} == ${DOCKER__EMPTYSTRING} ]]; then
+    if [[ ${dir} == "${DOCKER__EMPTYSTRING}" ]]; then
         ret=${DOCKER__SLASH}
     else
         ret=${dir}${DOCKER__SLASH}
@@ -1702,8 +1714,19 @@ function get_output_from_file__func() {
     if [[ -f ${outputFpath__input} ]]; then
         ret=`cat ${outputFpath__input} | head -n${lineNum__input} | tail -n+${lineNum__input}`
     else
-        ret=${DOCKER__EMPTYSTRING}
+        ret="${DOCKER__EMPTYSTRING}"
     fi
+
+    #Output
+    echo -e "${ret}"
+}
+
+function read_1stline_from_file() {
+    #Input args
+    local targetFpath__input=${1}
+ 
+    #Read the first line from file
+    local ret=$(awk 'NR == 1' "${targetFpath__input}")
 
     #Output
     echo -e "${ret}"
@@ -1754,8 +1777,8 @@ function retrieve_files_from_specified_dir_basedOn_matching_patterns__func() {
     local arrPattern1=()
     local arrPattern2=()
     local arrMatch=()
-    local dir_w_asterisk=${DOCKER__EMPTYSTRING}
-    local ret=${DOCKER__EMPTYSTRING}
+    local dir_w_asterisk="${DOCKER__EMPTYSTRING}"
+    local ret="${DOCKER__EMPTYSTRING}"
 
     #Check if 'dir__input' is a directory
     if [[ ! -d ${dir__input} ]]; then
@@ -1848,7 +1871,7 @@ function write_array_to_file__func() {
     fi
 
     #Write
-    local dataArrItem=${DOCKER__EMPTYSTRING}
+    local dataArrItem="${DOCKER__EMPTYSTRING}"
     for dataArrItem in "${dataArr__input[@]}"
     do
         echo "${dataArrItem}" >> ${outputFpath__input}
@@ -1972,7 +1995,7 @@ function git__get_full_commitHash_for_specified_tag__func() {
     local location__input=${2}  #GIT__LOCATION_LOCAL or GIT__LOCATION_REMOTE
 
     #Define variables
-    local ret=${DOCKER__EMPTYSTRING}
+    local ret="${DOCKER__EMPTYSTRING}"
 
     #Check if 'tag__input' is an Empty String
     if [[ -z ${tag__input} ]]; then
@@ -2036,8 +2059,8 @@ function git__get_tag_for_specified_branchName__func() {
 
     #Loop thru array and check for each array-element (aka tag) if it contains the 'branchName__input'
     local match_isFound=false
-    local totalTags_sortUniq_arrItem=${DOCKER__EMPTYSTRING}
-    local ret=${DOCKER__EMPTYSTRING}
+    local totalTags_sortUniq_arrItem="${DOCKER__EMPTYSTRING}"
+    local ret="${DOCKER__EMPTYSTRING}"
     for totalTags_sortUniq_arrItem in "${totalTags_sortUniq_arr[@]}"
     do
         match_isFound=`git__checkIf_tag_contains_specified_branchName__func \
@@ -2087,7 +2110,7 @@ function git__get_tags__func() {
     fi
 
     #Get all tags
-    local ret=${DOCKER__EMPTYSTRING}
+    local ret="${DOCKER__EMPTYSTRING}"
     if [[ ${location__input} == ${GIT__LOCATION_LOCAL} ]]; then
         ret=`${GIT__CMD_GIT_SHOW_REF} --tags | rev | cut -d"/" -f1 | rev | sort | uniq | tr -d "[:blank:]"`
     else    #git_location__input = GIT__LOCATION_REMOTE
@@ -2149,7 +2172,7 @@ function git__log_for_unpushed_local_commits__func() {
     local placeHolder__input=${3}
 
     #Define variables
-    local ret=${DOCKER__EMPTYSTRING}
+    local ret="${DOCKER__EMPTYSTRING}"
 
     #Check if 'branchName__input' and 'last_nth_commit__input' are Empty Strings
     if [[ -z ${branchName__input} ]]; then
@@ -2222,7 +2245,7 @@ function git__retrieve_branchName_for_specified_tag__func() {
     local tag__input=${1}
 
     #Get branch-name
-    local ret=${DOCKER__EMPTYSTRING}
+    local ret="${DOCKER__EMPTYSTRING}"
     ret=`${GIT__CMD_GIT_BRANCH} --contains tags/${tag__input} | \
                         sed 's/*//g' | \
                         sed 's/^ *//g' | \
@@ -2236,8 +2259,8 @@ function git__retrieve_tag_for_specified_branchName__func() {
     local branchName__input=${1}
 
     #Get abbreviated commit hash
-    local abbrevCommitHash=`git__log_for_pushed_and_unpushed_commits__func "${DOCKER__EMPTYSTRING}" \
-                        "${DOCKER__EMPTYSTRING}" \
+    local abbrevCommitHash=`git__log_for_pushed_and_unpushed_commits__func ""${DOCKER__EMPTYSTRING}"" \
+                        ""${DOCKER__EMPTYSTRING}"" \
                         "${GIT__PLACEHOLDER_ABBREV_COMMIT_HASH}"`
 
     #Get tag
@@ -2347,6 +2370,24 @@ function moveDown_oneLine_then_moveUp_and_clean__func() {
 
     #Move-up and clean a specified number of times
     moveUp_and_cleanLines__func "${numOfLines__input}"
+}
+
+function moveLeft_and_clean_trailing_chars() {
+    #Input args
+    local numOfChars__input=${1}
+
+    local tCounter=1
+    while [[ ${tCounter} -le ${numOfChars__input} ]]
+    do
+        #Move-left 1 char
+        tput cub1
+
+        #Remove last char
+        tput el
+
+        #Increment tCounter by 1
+        tCounter=$((tCounter+1))
+    done
 }
 
 function moveUp_oneLine_then_moveRight__func() {
@@ -2606,7 +2647,7 @@ function show_msg_w_menuTitle_only_func() {
         #Remark:
         #   This means that NO indent should be applied
         if [[ ${msg_indent__input} == ${DOCKER__ZEROSPACE} ]]; then
-            msg_indent__input=${DOCKER__EMPTYSTRING}
+            msg_indent__input="${DOCKER__EMPTYSTRING}"
         fi
         echo -e "${msg_indent__input}${msg__input}"
     fi
@@ -2721,7 +2762,7 @@ function show_array_elements_w_menuTitle__func() {
     while [[ ${print_lineNum} -lt ${dataArr_pageSize__input} ]]
     do
         #Print an Empty Line
-        echo "${DOCKER__EMPTYSTRING}"
+        echo ""${DOCKER__EMPTYSTRING}""
 
         #increment line-number
         print_lineNum=$((print_lineNum + 1))
@@ -3002,7 +3043,7 @@ function readDialog_w_Output__func() {
 
     #Initialization
     local ret=${defaultVal__input}
-    local ret_semiColonVal=${DOCKER__EMPTYSTRING}
+    local ret_semiColonVal="${DOCKER__EMPTYSTRING}"
 
     #Start loop
     while true
@@ -3047,7 +3088,7 @@ function readDialog_w_Output__func() {
                     break
                 else    #'ret' is an Empty String
                     #Reset variable
-                    ret=${DOCKER__EMPTYSTRING}
+                    ret="${DOCKER__EMPTYSTRING}"
 
                     #First Move-down, then Move-up, after that clean line
                     moveToBeginning_and_cleanLine__func
@@ -3157,16 +3198,16 @@ function show_pathContent_w_selection__func() {
     local fpath_arr=()
     local fpath_arrIndex=0
     local fpath_arrLen=0
-    local fpath_arrItem=${DOCKER__EMPTYSTRING}
-    local fpath_arrItem_base=${DOCKER__EMPTYSTRING}
-    local fpath_arrItem_marked=${DOCKER__EMPTYSTRING}
-    local fpath_arrItem_conv=${DOCKER__EMPTYSTRING}
-    local fpath_arrItem_print=${DOCKER__EMPTYSTRING}
-    local fpath_arr_string=${DOCKER__EMPTYSTRING}
+    local fpath_arrItem="${DOCKER__EMPTYSTRING}"
+    local fpath_arrItem_base="${DOCKER__EMPTYSTRING}"
+    local fpath_arrItem_marked="${DOCKER__EMPTYSTRING}"
+    local fpath_arrItem_conv="${DOCKER__EMPTYSTRING}"
+    local fpath_arrItem_print="${DOCKER__EMPTYSTRING}"
+    local fpath_arr_string="${DOCKER__EMPTYSTRING}"
 
     local fpath_arrTmp=()
     local fpath_arrTmpLen=0
-    local fpath_arrTmp_string=${DOCKER__EMPTYSTRING}
+    local fpath_arrTmp_string="${DOCKER__EMPTYSTRING}"
 
     #Relative array, which contains only the number of elements equal to 'table_index_max__input'.
     #This array is renewed with each loop.
@@ -3174,13 +3215,13 @@ function show_pathContent_w_selection__func() {
     local fpath_relArrIndex=0
     local fpath_relArrIndex_sel=0
     local fpath_relArrLen=0
-    local fpath_relArrItem_sel=${DOCKER__EMPTYSTRING}
+    local fpath_relArrItem_sel="${DOCKER__EMPTYSTRING}"
 
-    local keyInput=${DOCKER__EMPTYSTRING}
-    local keyOutput=${DOCKER__EMPTYSTRING}
-    local pattern1_result=${DOCKER__EMPTYSTRING}
-    local pattern2_result=${DOCKER__EMPTYSTRING}
-    local ret=${DOCKER__EMPTYSTRING}
+    local keyInput="${DOCKER__EMPTYSTRING}"
+    local keyOutput="${DOCKER__EMPTYSTRING}"
+    local pattern1_result="${DOCKER__EMPTYSTRING}"
+    local pattern2_result="${DOCKER__EMPTYSTRING}"
+    local ret="${DOCKER__EMPTYSTRING}"
 
     local table_index=0
     local table_index_base=0
@@ -3192,7 +3233,7 @@ function show_pathContent_w_selection__func() {
     local lineNum_range_relMin=0
     local lineNum_range_msg_startPos=0
     local lineNum_range_msg_wo_regEx_len=0
-    local lineNum_range_msg=${DOCKER__EMPTYSTRING}
+    local lineNum_range_msg="${DOCKER__EMPTYSTRING}"
 
     local flag_break_main_whileLoop=false
     local flag_isSet_toBreak_loop=false
@@ -3477,7 +3518,7 @@ function show_pathContent_w_selection__func() {
                 table_index=$((table_index + 1))
 
                 #Print an Empty Line
-                echo "${DOCKER__EMPTYSTRING}"
+                echo ""${DOCKER__EMPTYSTRING}""
             done
         fi
 
@@ -3636,7 +3677,7 @@ function show_pathContent_w_selection__func() {
                         #     # #Exit
                         #     # exit__func "${DOCKER__EXITCODE_0}" "${DOCKER__NUMOFLINES_2}"
                         #     ;;
-                        ${DOCKER__EMPTYSTRING}) #arrow-key was pressed
+                        "${DOCKER__EMPTYSTRING}") #arrow-key was pressed
                             flag_matched_key_isPressed=false
                             ;;
                         *)  #OTHER F-KEYS AS SPECIFIED BY 'matchPattern__input'
@@ -3780,10 +3821,10 @@ function show_fileContent_wo_select__func() {
     local fpath_arr=()
     local fpath_arrIndex=0
     local fpath_arrLen=0
-    local fpath_arrItem=${DOCKER__EMPTYSTRING}
+    local fpath_arrItem="${DOCKER__EMPTYSTRING}"
 
-    local keyInput=${DOCKER__EMPTYSTRING}
-    local keyOutput=${DOCKER__EMPTYSTRING}
+    local keyInput="${DOCKER__EMPTYSTRING}"
+    local keyOutput="${DOCKER__EMPTYSTRING}"
 
     local table_index=0
     local table_index_base=0
@@ -3978,7 +4019,7 @@ function show_fileContent_wo_select__func() {
                 table_index=$((table_index + 1))
 
                 #Print an Empty Line
-                echo "${DOCKER__EMPTYSTRING}"
+                echo ""${DOCKER__EMPTYSTRING}""
             done
         fi
 
@@ -4590,10 +4631,10 @@ function get_endResult_ofString_with_semiColonChar__func() {
     local string__input=${1}
 
     #Define variables
-    local adjacentChar=${DOCKER__EMPTYSTRING}
-    local leftPart=${DOCKER__EMPTYSTRING}
-    local rightPart=${DOCKER__EMPTYSTRING}
-    local ret=${DOCKER__EMPTYSTRING}
+    local adjacentChar="${DOCKER__EMPTYSTRING}"
+    local leftPart="${DOCKER__EMPTYSTRING}"
+    local rightPart="${DOCKER__EMPTYSTRING}"
+    local ret="${DOCKER__EMPTYSTRING}"
 
     local backIsFound=false
     local clearIsFound=false
@@ -4769,7 +4810,7 @@ function prepend_backSlash_inFrontOf_specialChars__func() {
 	local SED_EXCLUDES="${DOCKER__DOTSLASH}"
 
 	#Prepend a backslash '\' in front of any special chars execpt for chars specified by 'SED_EXCLUDES'
-    local ret=${DOCKER__EMPTYSTRING}
+    local ret="${DOCKER__EMPTYSTRING}"
     if [[ ${flag_enableExcludes__input} == true ]]; then
 	    ret=`echo "${string__input}" | sed "s/[^[:alnum:]${SED_EXCLUDES}]/${SED__BACKSLASH}&/g"`
     else
@@ -4819,9 +4860,9 @@ function retrieve_data_specified_by_col_within_2Darray__func() {
     local dataArr__input=("$@")
 
 	#Define variables
-	local dataArrItem=${DOCKER__EMPTYSTRING}
-	local ret=${DOCKER__EMPTYSTRING}
-	local stdOutput=${DOCKER__EMPTYSTRING}
+	local dataArrItem="${DOCKER__EMPTYSTRING}"
+	local ret="${DOCKER__EMPTYSTRING}"
+	local stdOutput="${DOCKER__EMPTYSTRING}"
 
 	for dataArrItem in "${dataArr__input[@]}"
 	do
@@ -4867,7 +4908,7 @@ function retrieve_line_from_file__func() {
     local targetFpath__input=${2}
 
     #Define variable
-    local ret=${DOCKER__EMPTYSTRING}
+    local ret="${DOCKER__EMPTYSTRING}"
 
     #Check if 'lineNum__input = 0'
     if [[ ${lineNum__input} -eq ${DOCKER__NUMOFMATCH_0} ]]; then
@@ -4988,18 +5029,18 @@ function trim_string_toFit_specified_windowSize__func() {
     local flag_enableColor__input=${3}
 
     #Define variables
-    local constStr=${DOCKER__EMPTYSTRING}
+    local constStr="${DOCKER__EMPTYSTRING}"
     local dotdot_print=${DOCKER__DOTDOT}
-    local leadingStr=${DOCKER__EMPTYSTRING}
-    local leadingStr_lastChar=${DOCKER__EMPTYSTRING}
-    local leadingStr_left=${DOCKER__EMPTYSTRING}
-    local leadingStr_right=${DOCKER__EMPTYSTRING}
-    local ret=${DOCKER__EMPTYSTRING}
+    local leadingStr="${DOCKER__EMPTYSTRING}"
+    local leadingStr_lastChar="${DOCKER__EMPTYSTRING}"
+    local leadingStr_left="${DOCKER__EMPTYSTRING}"
+    local leadingStr_right="${DOCKER__EMPTYSTRING}"
+    local ret="${DOCKER__EMPTYSTRING}"
     local slash_print=${DOCKER__SLASH}
     local slas_dotdot_Slash_print=${DOCKER__SLASH_DOTDOT_SLASH}
-    local trailingStr=${DOCKER__EMPTYSTRING}
-    local trailingStr_left=${DOCKER__EMPTYSTRING}
-    local trailingStr_right=${DOCKER__EMPTYSTRING}
+    local trailingStr="${DOCKER__EMPTYSTRING}"
+    local trailingStr_left="${DOCKER__EMPTYSTRING}"
+    local trailingStr_right="${DOCKER__EMPTYSTRING}"
 
     local leadingStr_len=0
     local numOfTrailingChars=0
@@ -5044,7 +5085,7 @@ function trim_string_toFit_specified_windowSize__func() {
     #Select case based on the number of slashes
     case "${numOfSlashes}" in
         ${DOCKER__NUMOFMATCH_0})
-            leadingStr=${DOCKER__EMPTYSTRING}
+            leadingStr="${DOCKER__EMPTYSTRING}"
             ;;
         ${DOCKER__NUMOFMATCH_1})
             leadingStr_left=`echo "${string__input}" | cut -d"${DOCKER__SLASH}" -f1`
@@ -5115,19 +5156,19 @@ function skip_and_correct_unwanted_chars__func() {
     local string__input=${1}
 
     #Define variables
-	local char=${DOCKER__EMPTYSTRING}
+	local char="${DOCKER__EMPTYSTRING}"
 	local dash_isFound=false
 	local index=0
-    local ret=${DOCKER__EMPTYSTRING}
-    local string_noSpaces=${DOCKER__EMPTYSTRING}
-	local string_filtered=${DOCKER__EMPTYSTRING}
-	local string_final=${DOCKER__EMPTYSTRING}
-	local string_leftOfComma=${DOCKER__EMPTYSTRING}
-	local string_remain=${DOCKER__EMPTYSTRING}
-	local string_singleComma=${DOCKER__EMPTYSTRING}
-	local string_singleDash=${DOCKER__EMPTYSTRING}
-	local string_leftOfDash=${DOCKER__EMPTYSTRING}
-	local string_rightOfDash=${DOCKER__EMPTYSTRING}
+    local ret="${DOCKER__EMPTYSTRING}"
+    local string_noSpaces="${DOCKER__EMPTYSTRING}"
+	local string_filtered="${DOCKER__EMPTYSTRING}"
+	local string_final="${DOCKER__EMPTYSTRING}"
+	local string_leftOfComma="${DOCKER__EMPTYSTRING}"
+	local string_remain="${DOCKER__EMPTYSTRING}"
+	local string_singleComma="${DOCKER__EMPTYSTRING}"
+	local string_singleDash="${DOCKER__EMPTYSTRING}"
+	local string_leftOfDash="${DOCKER__EMPTYSTRING}"
+	local string_rightOfDash="${DOCKER__EMPTYSTRING}"
 
     #Step 1.1: remove all spaces
     string_noSpaces=`echo "${string__input}" | sed 's/ //g'`
@@ -5229,10 +5270,10 @@ function xtract_indexes_from_a_rangeAndOrGroup_in_descendingOrder__func() {
     local index_xtracted_arr=()
     local index_xtracted_arrIndex=0
 
-    local dataArrItem=${DOCKER__EMPTYSTRING}
-    local string_leftOfComma=${DOCKER__EMPTYSTRING}
-    local string_remain=${DOCKER__EMPTYSTRING}
-    local ret=${DOCKER__EMPTYSTRING}
+    local dataArrItem="${DOCKER__EMPTYSTRING}"
+    local string_leftOfComma="${DOCKER__EMPTYSTRING}"
+    local string_remain="${DOCKER__EMPTYSTRING}"
+    local ret="${DOCKER__EMPTYSTRING}"
 
     local counter=0
     local index_range_min=0
@@ -5358,7 +5399,7 @@ function update_exported_env_var__func() {
     local ERRMSG_EXPORTEDFILE_NOT_FOUND="${DOCKER__ERROR}: Environment variable file '${exported_env_var_fpath__input}' not Found"
 
     #Get repository:tag from file
-    local dockerfile_fpath_repositoryTag=${DOCKER__EMPTYSTRING}
+    local dockerfile_fpath_repositoryTag="${DOCKER__EMPTYSTRING}"
     if [[ -s ${dockerfile_fpath__input} ]]; then
         dockerfile_fpath_repositoryTag=`retrieve_repositoryTag_from_dockerfile__func "${dockerfile_fpath__input}"`
     else
@@ -5430,6 +5471,7 @@ function checkIf_webLink_isAccessible__func() {
 trap docker__ctrl_c__sub SIGINT
 
 docker__ctrl_c__sub() {
+    
     # #Turn-on Expansion
     # enable_expansion__func
     
@@ -5439,7 +5481,7 @@ docker__ctrl_c__sub() {
     # #Enable keyboard-input
     # enable_keyboard_input__func
 
-    #Exit with exit-code 99
+    #Unset variables
     exit__func "${DOCKER__EXITCODE_99}" "${DOCKER__NUMOFLINES_2}"
 }
 
@@ -5466,7 +5508,7 @@ docker__get_source_fullpath__sub() {
         readarray -t find_dir_result_arr < <(find  / -type d -iname "${docker__LTPP3_ROOTFS__foldername}" 2> /dev/null)
 
         #Define variable
-        local find_path_of_LTPP3_ROOTFS=${DOCKER__EMPTYSTRING}
+        local find_path_of_LTPP3_ROOTFS="${DOCKER__EMPTYSTRING}"
 
         #Loop thru array-elements
         for find_dir_result_arrItem in "${find_dir_result_arr[@]}"
@@ -5513,14 +5555,26 @@ docker__get_source_fullpath__sub() {
     dirlist__readInput_w_autocomplete__filename="dirlist_readInput_w_autocomplete.sh"
     dirlist__readInput_w_autocomplete__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${dirlist__readInput_w_autocomplete__filename}
 
-    docker_build_ispboootbin_filename="docker_build_ispboootbin.sh"
-    docker_build_ispboootbin_fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker_build_ispboootbin_filename}
+    docker__build_ispboootbin_filename="docker_build_ispboootbin.sh"
+    docker__build_ispboootbin_fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__build_ispboootbin_filename}
 
-    docker_configure_overlayfs_menu_filename="docker_configure_overlayfs_menu.sh"
-    docker_configure_overlayfs_menu_fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker_configure_overlayfs_menu_filename}
+    docker__configure_overlayfs_menu_filename="docker_configure_overlayfs_menu.sh"
+    docker__configure_overlayfs_menu_fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__configure_overlayfs_menu_filename}
 
-    docker_container_build_ispboootbin_filename="docker_container_build_ispboootbin.sh"
-    docker_container_build_ispboootbin_fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker_container_build_ispboootbin_filename}
+    docker__configure_overlayfs_disksize_menu__filename="docker_configure_overlayfs_disksize_menu.sh"
+    docker__configure_overlayfs_disksize_menu__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__configure_overlayfs_disksize_menu__filename}
+
+    docker__configure_overlayfs_disksize_menu_output__filename="docker_configure_overlayfs_disksize_menu.output"
+    docker__configure_overlayfs_disksize_menu_output__fpath=${docker__tmp_dir}/${docker__configure_overlayfs_disksize_menu_output__filename}
+
+    docker__configure_overlayfs_disksize_userdefined__filename="docker_configure_overlayfs_disksize_userdefined.sh"
+    docker__configure_overlayfs_disksize_userdefined__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__configure_overlayfs_disksize_userdefined__filename}
+
+    docker__configure_overlayfs_disksize_userdefined_output__filename="docker_configure_overlayfs_disksize_userdefined.output"
+    docker__configure_overlayfs_disksize_userdefined_output__fpath=${docker__tmp_dir}/${docker__configure_overlayfs_disksize_userdefined_output__filename}
+
+    docker__container_build_ispboootbin_filename="docker_container_build_ispboootbin.sh"
+    docker__container_build_ispboootbin_fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__container_build_ispboootbin_filename}
 
     docker__containerlist_tableinfo__filename="docker_containerlist_tableinfo.sh"
     docker__containerlist_tableinfo__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__containerlist_tableinfo__filename}
@@ -5558,8 +5612,8 @@ docker__get_source_fullpath__sub() {
     docker__git_menu__filename="git_menu.sh"
     docker__git_menu__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__git_menu__filename}
 
-    docker_image_create_remove_rename_menu__filename="docker_image_create_remove_rename_menu.sh"
-    docker_image_create_remove_rename_menu__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker_image_create_remove_rename_menu__filename}
+    docker__image_create_remove_rename_menu__filename="docker_image_create_remove_rename_menu.sh"
+    docker__image_create_remove_rename_menu__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__image_create_remove_rename_menu__filename}
 
     docker__load__filename="docker_load.sh"
     docker__load__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__load__filename}
@@ -5573,8 +5627,8 @@ docker__get_source_fullpath__sub() {
     docker__remove_image__filename="docker_remove_image.sh"
     docker__remove_image__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__remove_image__filename}
 
-    docker_rename_repotag__filename="docker_rename_repotag.sh"
-    docker_rename_repotag__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker_rename_repotag__filename}
+    docker__rename_repotag__filename="docker_rename_repotag.sh"
+    docker__rename_repotag__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__rename_repotag__filename}
 
     docker__repo_link_checkout_menu_select__filename="docker_repo_link_checkout_menu_select.sh"
     docker__repo_link_checkout_menu_select__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__repo_link_checkout_menu_select__filename}

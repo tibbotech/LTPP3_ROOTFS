@@ -307,7 +307,7 @@ docker__menu__sub() {
         echo -e "${DOCKER__FOURSPACES}2. Run exited container"
         echo -e "${DOCKER__FOURSPACES}3. Remove container"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-        echo -e "${DOCKER__FOURSPACES}b. ${DOCKER__MENU} build ${DOCKER__FG_BROWN94}ISPBOOOT.BIN${DOCKER__NOCOLOR}"
+        echo -e "${DOCKER__FOURSPACES}b. ${DOCKER__MENU} build ${DOCKER__BG_LIGHTGREY}ISPBOOOT.BIN${DOCKER__NOCOLOR}"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
         echo -e "${DOCKER__FOURSPACES}r. ${DOCKER__FG_PURPLE}Repository${DOCKER__NOCOLOR}-list"
         echo -e "${DOCKER__FOURSPACES}c. ${DOCKER__FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}-list"
@@ -358,8 +358,7 @@ docker__menu__sub() {
                 ${docker__remove_container__fpath}
                 ;;
             b)
-                # ${docker_container_build_ispboootbin_fpath}
-                ${docker_configure_overlayfs_menu_fpath}
+                ${docker__configure_overlayfs_menu_fpath}
                 ;;
             c)
                 docker__show_containerList_handler__sub

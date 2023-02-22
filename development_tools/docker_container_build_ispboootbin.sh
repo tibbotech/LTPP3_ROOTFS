@@ -292,7 +292,7 @@ docker__environmental_variables__sub() {
     docker__ltpp3rootfs_dir=${docker__home_dir}/LTPP3_ROOTFS
     docker__ltpp3rootfs_development_tools_dir=${docker__ltpp3rootfs_dir}/development_tools
 
-    docker__docker_build_ispboootbin_fpath=${docker__ltpp3rootfs_development_tools_dir}/docker_build_ispboootbin.sh
+    docker__docker__build_ispboootbin_fpath=${docker__ltpp3rootfs_development_tools_dir}/docker_build_ispboootbin.sh
     docker__bash_fpath=${docker__usr_bin_dir}/bash
 }
 
@@ -397,7 +397,7 @@ docker__preCheck__sub() {
 
         #Check if '~/LTPP3_ROOTFS/development_tools/docker_build_ispboootbin.sh' is present
         #Output: docker__numOf_errors_found
-        docker__preCheck_app_isPresent__sub "${docker__myContainerId}" "${docker__docker_build_ispboootbin_fpath}"
+        docker__preCheck_app_isPresent__sub "${docker__myContainerId}" "${docker__docker__build_ispboootbin_fpath}"
     fi
 
     #In case one or more failed check-items were found
@@ -456,10 +456,10 @@ docker__run_script__sub() {
     #Define variables
     local docker_exec_cmd="docker exec -it ${docker__myContainerId} ${docker__bash_fpath} -c"
     local stdErr=${DOCKER__EMPTYSTRING}
-    local cmd_outside_container="eval \"${docker__docker_build_ispboootbin_fpath}\""
-    local cmd_inside_container="eval \"${docker__docker_build_ispboootbin_fpath}\""
+    local cmd_outside_container="eval \"${docker__docker__build_ispboootbin_fpath}\""
+    local cmd_inside_container="eval \"${docker__docker__build_ispboootbin_fpath}\""
 
-    #Execute script 'docker_build_ispboootbin_fpath'
+    #Execute script 'docker__build_ispboootbin_fpath'
     if [[ ${docker__isRunning_inside_container} == true ]]; then   #currently in a container
         ${cmd_outside_container}
     else    #currently outside of a container
