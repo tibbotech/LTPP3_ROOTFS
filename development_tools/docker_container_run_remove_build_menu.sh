@@ -258,7 +258,7 @@ docker__checkif_paths_are_related() {
 
     return 0
 }
-docker__load_source_files__sub() {
+docker__load_global_fpath_paths__sub() {
     source ${docker__global__fpath}
 }
 
@@ -358,7 +358,7 @@ docker__menu__sub() {
                 ${docker__remove_container__fpath}
                 ;;
             b)
-                ${docker__configure_overlayfs_menu_fpath}
+                ${docker__fs_partition_menu__fpath}
                 ;;
             c)
                 docker__show_containerList_handler__sub
@@ -437,7 +437,7 @@ docker__get_git_info__sub() {
 main__sub() {
     docker__get_source_fullpath__sub
 
-    docker__load_source_files__sub
+    docker__load_global_fpath_paths__sub
 
     docker__load_constants__sub
 

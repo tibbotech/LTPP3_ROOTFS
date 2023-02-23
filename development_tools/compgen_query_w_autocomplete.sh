@@ -917,7 +917,7 @@ docker__checkif_paths_are_related() {
 
     return 0
 }
-docker__load_source_files__sub() {
+docker__load_global_fpath_paths__sub() {
     source ${docker__global__fpath}
 }
 
@@ -1452,7 +1452,7 @@ compgen__prep_print_rem_subString_onLeftSideOf_last_slash__sub() {
 main__sub() {
     docker__get_source_fullpath__sub
 
-    docker__load_source_files__sub
+    docker__load_global_fpath_paths__sub
 
     compgen__environmental_variables__sub
 

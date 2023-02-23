@@ -484,7 +484,7 @@ docker__checkif_paths_are_related() {
 
     return 0
 }
-docker__load_source_files__sub() {
+docker__load_global_fpath_paths__sub() {
     source ${docker__global__fpath}
 }
 
@@ -764,7 +764,7 @@ docker__show_infoTable__sub() {
 main__sub() {
     docker__get_source_fullpath__sub
 
-    docker__load_source_files__sub
+    docker__load_global_fpath_paths__sub
 
     docker__init_variables__sub
 

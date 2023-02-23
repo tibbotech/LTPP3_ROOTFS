@@ -423,7 +423,7 @@ docker__checkif_paths_are_related() {
 
     return 0
 }
-docker__load_source_files__sub() {
+docker__load_global_fpath_paths__sub() {
     source ${docker__global__fpath}
 }
 
@@ -520,7 +520,7 @@ docker__create_image_handler__sub() {
 main_sub() {
     docker__get_source_fullpath__sub
 
-    docker__load_source_files__sub
+    docker__load_global_fpath_paths__sub
 
     docker__load_constants__sub
 

@@ -257,7 +257,7 @@ docker__checkif_paths_are_related() {
 
     return 0
 }
-docker__load_source_files__sub() {
+docker__load_global_fpath_paths__sub() {
     source ${docker__global__fpath}
 }
 
@@ -890,7 +890,7 @@ docker__exit__sub() {
 #---MAIN SUBROUTINE
 main__sub() {
 	#Then the source file(s) must be loaded.
-	docker__load_source_files__sub
+	docker__load_global_fpath_paths__sub
 
 	#Disable EXPANSION
 	#Remark:

@@ -290,7 +290,7 @@ docker__checkif_paths_are_related() {
 
     return 0
 }
-docker__load_source_files__sub() {
+docker__load_global_fpath_paths__sub() {
     source ${docker__global__fpath}
 }
 
@@ -546,7 +546,7 @@ docker__handle_chosen_dockerfile_list__sub() {
 main_sub() {
     docker__get_source_fullpath__sub
 
-    docker__load_source_files__sub
+    docker__load_global_fpath_paths__sub
 
     load_tibbo_title__func "${DOCKER__NUMOFLINES_2}"
 

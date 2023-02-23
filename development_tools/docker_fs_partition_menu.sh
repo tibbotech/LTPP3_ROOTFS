@@ -1,6 +1,4 @@
 #!/bin/bash -m
-#Remark: by using '-m' the INTERRUPT executed here will NOT propagate to the UPPERLAYER scripts
-
 #---SUBROUTINES
 docker__get_source_fullpath__sub() {
     #Define constants
@@ -258,24 +256,25 @@ docker__checkif_paths_are_related() {
 
     return 0
 }
-docker__load_source_files__sub() {
+docker__load_global_fpath_paths__sub() {
     source ${docker__global__fpath}
 }
 
 docker__load_constants__sub() {
     DOCKER__MENUTITLE="${DOCKER__FG_LIGHTBLUE}DOCKER: "
-    DOCKER__MENUTITLE+="${DOCKER__FG_DARKBLUE}CONFIGURE${DOCKER__NOCOLOR} ${DOCKER__FG_RED9}OVERLAY${DOCKER__NOCOLOR}"
+    DOCKER__MENUTITLE+="${DOCKER__FG_DARKBLUE}FS PATITION${DOCKER__NOCOLOR}"
 }
 
 docker__init_variables__sub() {
     docker__mychoice1="${DOCKER__EMPTYSTRING}"
     docker__myinput="${DOCKER__EMPTYSTRING}"
-    docker__disksize="${DOCKER__EMPTYSTRING}"
-    docker__overlayconfig="${DOCKER__EMPTYSTRING}"
-    docker__disksizestatus="${DOCKER__EMPTYSTRING}"
-    docker__overlayconfigstatus="${DOCKER__EMPTYSTRING}"
-    docker__disksizestatus_print="${DOCKER__EMPTYSTRING}"
-    docker__overlayconfigstatus_print="${DOCKER__EMPTYSTRING}"
+    docker__diskpart="${DOCKER__EMPTYSTRING}"
+    docker__diskpartstatus_print="${DOCKER__DASH}"
+    docker__diskpartstatus_header_print="${DOCKER__EMPTYSTRING}"
+    docker__diskpartstatus=false
+    docker__disksize=0
+    docker__disksizestatus_print="${DOCKER__DASH}"
+    docker__disksizestatus=false
     docker__regEx="${DOCKER__EMPTYSTRING}"
     docker__regex1bq="[1bq]"
     docker__regex12bq="[1-2bq]"
@@ -305,11 +304,13 @@ docker__get_git_info__sub() {
 
 docker__menu__sub() {
     #Initialize variables
+    docker__diskpart="${DOCKER__EMPTYSTRING}"
+    docker__diskpartstatus_print="${DOCKER__DASH}"
+    docker__diskpartstatus_header_print="${DOCKER__EMPTYSTRING}"
+    docker__diskpartstatus=false
     docker__disksize=0
     docker__disksizestatus_print="${DOCKER__DASH}"
-    docker__overlayconfigstatus_print="${DOCKER__DASH}"
     docker__disksizestatus=false
-    docker__overlayconfigstatus=false
     docker__regEx="${docker__regex1bq}"
 
     #Show menu
@@ -342,20 +343,25 @@ docker__menu__sub() {
 
             docker__disksizestatus_print="${DOCKER__FG_LIGHTGREY}${DOCKER__DASH}${DOCKER__NOCOLOR}"
         fi
-        echo -e "${DOCKER__FOURSPACES}1. Choose ${DOCKER__FG_RED125}disk${DOCKER__NOCOLOR}-size (${DOCKER__FG_LIGHTGREY}${docker__disksizestatus_print}${DOCKER__NOCOLOR})"
+        echo -e "${DOCKER__FOURSPACES}1. Choose ${DOCKER__FG_RED125}disk${DOCKER__NOCOLOR}-${DOCKER__FG_RED125}size${DOCKER__NOCOLOR} (${DOCKER__FG_LIGHTGREY}${docker__disksizestatus_print}${DOCKER__NOCOLOR})"
         if [[ ${docker__disksizestatus} == true ]]; then
             docker__regEx="${docker__regex12bq}"
 
-            if [[ ${docker__overlayconfigstatus} == true ]]; then
-                echo -e "${DOCKER__FOURSPACES}2. Configure ${DOCKER__FG_RED9}overlay${DOCKER__NOCOLOR}-fs (${DOCKER__FG_LIGHTGREY} <INPUT THE OVERLAY INFO HERE> ${DOCKER__NOCOLOR})"
+            docker__diskpartstatus_header_print="${DOCKER__FOURSPACES}2. Configure ${DOCKER__FG_RED9}disk${DOCKER__NOCOLOR}-${DOCKER__FG_RED9}partition${DOCKER__NOCOLOR} "
+
+            if [[ ${docker__diskpartstatus} == true ]]; then
+                docker__diskpartstatus_print="(${DOCKER__FG_LIGHTGREY} <INPUT THE OVERLAY INFO HERE> ${DOCKER__NOCOLOR})"
             else
-                echo -e "${DOCKER__FOURSPACES}2. Configure ${DOCKER__FG_RED9}overlay${DOCKER__NOCOLOR}-fs (${DOCKER__FG_LIGHTGREY}${DOCKER__DASH}${DOCKER__NOCOLOR})"
+                docker__diskpartstatus_print="(${DOCKER__FG_LIGHTGREY}${DOCKER__DASH}${DOCKER__NOCOLOR})"
             fi
         else
             docker__regEx="${docker__regex1bq}"
 
-            echo -e "${DOCKER__FG_LIGHTGREY}${DOCKER__FOURSPACES}2.${DOCKER__NOCOLOR} Configure ${DOCKER__FG_RED9}overlay${DOCKER__NOCOLOR}-fs (${DOCKER__FG_LIGHTGREY}${DOCKER__STATUS_DISABLED}${DOCKER__NOCOLOR})"
+            docker__diskpartstatus_header_print="${DOCKER__FG_LIGHTGREY}${DOCKER__FOURSPACES}2.${DOCKER__NOCOLOR} Configure ${DOCKER__FG_RED9}disk${DOCKER__NOCOLOR}-${DOCKER__FG_RED9}partition${DOCKER__NOCOLOR} "
+
+            docker__diskpartstatus_print="(${DOCKER__FG_LIGHTGREY}${DOCKER__STATUS_DISABLED}${DOCKER__NOCOLOR})"
         fi
+        echo -e "${docker__diskpartstatus_header_print}${docker__diskpartstatus_print}"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
         echo -e "${DOCKER__FOURSPACES}b. build ${DOCKER__BG_LIGHTGREY}ISPBOOOT.BIN${DOCKER__NOCOLOR}"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
@@ -388,14 +394,16 @@ docker__menu__sub() {
         #Goto the selected option
         case ${docker__mychoice1} in
             1)
-                ${docker__configure_overlayfs_disksize_menu__fpath} "${docker__global__fpath}"
-                docker__disksize=$(read_1stline_from_file "${docker__configure_overlayfs_disksize_menu_output__fpath}")
+                ${docker__fs_partition_disksize_menu__fpath} "${docker__global__fpath}"
+                docker__disksize=$(read_1stline_from_file "${docker__fs_partition_disksize_menu_output__fpath}")
+
+                remove_file__func "${docker__fs_partition_disksize_menu_output__fpath}"
                 ;;
             2)
                 echo "2 in progress"
                 ;;
             b)
-                echo "b in progresS"
+                ${docker__container_build_ispboootbin_fpath}
                 ;;
             q)
                 exit__func "${DOCKER__EXITCODE_99}" "${DOCKER__NUMOFLINES_1}"
@@ -410,7 +418,7 @@ docker__menu__sub() {
 main__sub() {
     docker__get_source_fullpath__sub
 
-    docker__load_source_files__sub
+    docker__load_global_fpath_paths__sub
 
     docker__load_constants__sub
 

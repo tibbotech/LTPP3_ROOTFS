@@ -3,26 +3,43 @@
 #---INPUT ARGS
 global_fpath__input=${1}
 
-if [[ -z "${global_fpath__input}" ]]; then
-    echo -e "\r"
-    echo -e "***\e[1;31mERROR\e[0;0m: \e[30;38;5;246mInput argument\e[0;0m: \e[30;38;5;131mNOT provided\e[0;0m"
-    echo -e "\r"
-
-    exit 99
-fi
-
 
 
 #---SUBROUTINES
-docker__load_source_files__sub() {
+#Check if 'docker_global.sh' is already loaded.
+#Note: this can be simply done by trying to read the constant 'DOCKER__THISFILE_ISREACHABLE'
+docker__check_inputarg__sub() {
+    if [[ -z "${global_fpath__input}" ]]; then
+        docker__tmp_dir=/tmp
+        docker__development_tools__foldername="development_tools"
+        docker__global__filename="docker_global.sh"
+        docker__mainmenu_path_cache__filename="docker__mainmenu_path.cache"
+        docker__mainmenu_path_cache__fpath="${docker__tmp_dir}/${docker__mainmenu_path_cache__filename}"
+
+        if [[ ! -f "${docker__mainmenu_path_cache__fpath}" ]]; then
+            echo -e "\r"
+            echo -e "***\e[1;31mERROR\e[0;0m: \e[30;38;5;246mInput argument\e[0;0m: \e[30;38;5;131mNOT provided\e[0;0m"
+            echo -e "\r"
+
+            exit 99
+        else
+            #Get the directory stored in cache-file
+            docker__LTPP3_ROOTFS_development_tools__dir=$(awk 'NR==1' "${docker__mainmenu_path_cache__fpath}")
+
+            #Get fullpath of 'docker_global.sh'
+            global_fpath__input="${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__global__filename}"
+        fi
+    fi
+}
+
+docker__load_global_fpath_paths__sub() {
     source ${global_fpath__input}
 }
 
 docker__load_constants__sub() {
-    DOCKER__MENUTITLE="${DOCKER__FG_LIGHTBLUE}DOCKER: "
-    DOCKER__MENUTITLE+="${DOCKER__FG_DARKBLUE}CONFIGURE${DOCKER__NOCOLOR} ${DOCKER__FG_RED9}OVERLAY${DOCKER__NOCOLOR}"
-
-    DOCKER__SUBMENUTITLE_CHOOSE_DISKSIZE="${DOCKER__MENUTITLE}: CHOOSE ${DOCKER__FG_RED125}DISK${DOCKER__NOCOLOR}-SIZE: USER-DEFINED"
+    DOCKER__MENUTITLE="${DOCKER__FG_LIGHTBLUE}DOCKER:${DOCKER__NOCOLOR}"
+    DOCKER__SUBMENUTITLE_CHOOSE_DISKSIZE="${DOCKER__MENUTITLE}: ${DOCKER__FG_DARKBLUE}CHOOSE "
+    DOCKER__SUBMENUTITLE_CHOOSE_DISKSIZE+="${DOCKER__FG_RED125}DISK${DOCKER__NOCOLOR}-${DOCKER__FG_RED125}SIZE${DOCKER__NOCOLOR}"
 }
 
 docker__get_git_info__sub() {
@@ -50,16 +67,20 @@ docker__get_git_info__sub() {
 docker__menu__sub() {
     #Define variables
     local mychoice="${DOCKER__EMPTYSTRING}"
-    local regex1234q="[1-90]"
+    local exitcode=0
+    local regex1234q="[1-4q]"
     local ret=0
 
     #Write initial 'ret' value to file.
     #Note: this is done in case ctrl+c is pressed.
-    write_data_to_file__func "${ret}" "${docker__configure_overlayfs_disksize_menu_output__fpath}"
+    write_data_to_file__func "${ret}" "${docker__fs_partition_disksize_menu_output__fpath}"
 
     #Show menu
     while true
     do
+        #IMPORTANT: reset exitcode
+        exitcode=0
+
         #Get Git-information
         #Output:
         #   docker_git_current_info_msg
@@ -76,9 +97,14 @@ docker__menu__sub() {
 
         #Print horizontal line
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+        echo -e "${DOCKER__FOURSPACES}1. 4GB (ltpp3-g2-02)"
+        echo -e "${DOCKER__FOURSPACES}2. 8GB (ltpp3-g2-03)"
+        echo -e "${DOCKER__FOURSPACES}3. user-defined"
+        echo -e "${DOCKER__FOURSPACES}4. no overlay"
+        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+        echo -e "${DOCKER__FOURSPACES}q. $DOCKER__QUIT_CTRL_C"
+        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
 
-
-#<<<<>>>>>START FROM HERER
         while true
         do
             #Select an option
@@ -110,8 +136,15 @@ docker__menu__sub() {
                 ret=${DOCKER__DISKSIZE_8G_IN_MBYTES}
                 ;;
             3)
-                echo "$0: docker__configure_overlayfs_disksize_userdefined__fpath: in progress"
-                ${docker__configure_overlayfs_disksize_userdefined__fpath}
+                ${docker__fs_partition_disksize_userdefined__fpath}
+                exitcode=$?
+        
+                #Read from file
+                if [[ ${exitcode} -eq 0 ]]; then
+                    ret=$(read_1stline_from_file "${docker__fs_partition_disksize_userdefined_output__fpath}")
+                fi
+
+                remove_file__func "${docker__fs_partition_disksize_userdefined_output__fpath}"
                 ;;
             4)
                 ret=${DOCKER__0K_IN_BYTES}
@@ -121,18 +154,22 @@ docker__menu__sub() {
                 ;;
         esac
 
-        break
+        if [[ ${exitcode} -eq 0 ]]; then
+            break
+        fi
     done
 
     #Write to file
-    write_data_to_file__func "${ret}" "${docker__configure_overlayfs_disksize_menu_output__fpath}"
+    write_data_to_file__func "${ret}" "${docker__fs_partition_disksize_menu_output__fpath}"
 }
 
 
 
 #---MAIN SUBROUTINE
 main__sub() {
-    docker__load_source_files__sub
+    docker__check_inputarg__sub
+
+    docker__load_global_fpath_paths__sub
 
     docker__load_constants__sub
 

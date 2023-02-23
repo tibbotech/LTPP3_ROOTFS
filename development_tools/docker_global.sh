@@ -1,4 +1,6 @@
 #!/bin/bash
+#---INPUT ARGS
+pathlookup_isdisabled=${1}
 
 
 
@@ -185,15 +187,6 @@ DOCKER__CONFIGNAME____DOCKER__DOCKERFILE_FPATH="docker__dockerFile_fpath"
 
 
 
-#---DISK CAPACITY CONSTANTS
-DOCKER__0K_IN_BYTES=0
-DOCKER__1K_IN_BYTES=1024
-DOCKER__DISKSIZE_4G_IN_BYTES=3909091328
-DOCKER__DISKSIZE_4G_IN_MBYTES=$((DOCKER__DISKSIZE_4G_IN_BYTES/DOCKER__1K_IN_BYTES))
-DOCKER__DISKSIZE_8G_IN_BYTES=$((DOCKER__DISKSIZE_4G_IN_BYTES*2))
-DOCKER__DISKSIZE_8G_IN_MBYTES=$((DOCKER__DISKSIZE_8G_IN_BYTES/DOCKER__1K_IN_BYTES))
-
-
 #---ENV VARIABLES (WHICH ARE USED IN THE DOCKERFILE FILES)
 DOCKER__CONTAINER_ENV1="CONTAINER_ENV1"
 DOCKER__CONTAINER_ENV2="CONTAINER_ENV2"
@@ -345,6 +338,21 @@ DOCKER__TIMEOUT_10=10
 DOCKER__TIMEOUT_30=30
 
 DOCKER__TRAP_NUM_2=2
+
+
+
+#---OVERLAY CONSTANTS
+DOCKER__0K_IN_BYTES=0
+DOCKER__1K_IN_BYTES=1024
+DOCKER__DISKSIZE_4G_IN_BYTES=3909091328
+DOCKER__DISKSIZE_4G_IN_MBYTES=$((DOCKER__DISKSIZE_4G_IN_BYTES/DOCKER__1K_IN_BYTES))
+DOCKER__DISKSIZE_8G_IN_BYTES=$((DOCKER__DISKSIZE_4G_IN_BYTES*2))
+DOCKER__DISKSIZE_8G_IN_MBYTES=$((DOCKER__DISKSIZE_8G_IN_BYTES/DOCKER__1K_IN_BYTES))
+
+DOCKER__ROOTFS_DEFAULT=1536 #in MB
+DOCKER__OVERLAYMODE_DEFAULT="default"
+DOCKER__OVERLAYMODE_RW="rw"
+DOCKER__OVERLAYMODE_RO="ro"
 
 
 
@@ -1767,6 +1775,16 @@ function remove_all_lines_from_file_after_a_specified_lineNum__func() {
     cp ${tmpFpath__input} ${targetFpath__input}
 }
 
+function remove_file__func() {
+    #Input args
+    targetFpath__input=${1}
+
+    #Remove
+    if [[ -f "${targetFpath__input}" ]]; then
+        rm "${targetFpath__input}"
+    fi
+}
+
 function retrieve_files_from_specified_dir_basedOn_matching_patterns__func() {
     #Input args
     local dir__input=${1}
@@ -1884,7 +1902,7 @@ function write_data_to_file__func() {
     targetFpath__input=${2}
 
     #Write
-    echo "${string__input}" > ${targetFpath__input}
+    echo "${string__input}" | tee ${targetFpath__input} >/dev/null
 }
 
 
@@ -5497,9 +5515,12 @@ docker__get_source_fullpath__sub() {
         #Get the line of file
         docker__LTPP3_ROOTFS_development_tools__dir=$(awk 'NR==1' "${docker__mainmenu_path_cache__fpath}")
     else
-        #---Defin FOLDER
+        #---Define FOLDER
         docker__LTPP3_ROOTFS__foldername="LTPP3_ROOTFS"
         docker__development_tools__foldername="development_tools"
+
+        #Print
+        echo -e "---:\e[30;38;5;215mSTART\e[0;0m: find path of folder \e[30;38;5;246m'${docker__development_tools__foldername}\e[0;0m : \e[1;33mDONE\e[0;0m"
 
         #Get all the directories containing the foldername 'LTPP3_ROOTFS'...
         #... and read to array 'find_result_arr'
@@ -5523,6 +5544,16 @@ docker__get_source_fullpath__sub() {
                 break
             fi
         done
+
+        #Print
+        echo -e "---:\e[30;38;5;215mCOMPLETED\e[0;0m: find path of folder \e[30;38;5;246m'${docker__development_tools__foldername}\e[0;0m : \e[1;33mDONE\e[0;0m"
+
+
+        #Write to file
+        echo "${docker__LTPP3_ROOTFS_development_tools__dir}" | tee "${docker__mainmenu_path_cache__fpath}" >/dev/null
+
+        #Print
+        echo -e "---:\e[30;38;5;215mSTATUS\e[0;0m: write path to temporary cache-file: \e[1;33mDONE\e[0;0m"
     fi
 
     docker__LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS_development_tools__dir%/*}    #move one directory up: LTPP3_ROOTFS/
@@ -5558,20 +5589,26 @@ docker__get_source_fullpath__sub() {
     docker__build_ispboootbin_filename="docker_build_ispboootbin.sh"
     docker__build_ispboootbin_fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__build_ispboootbin_filename}
 
-    docker__configure_overlayfs_menu_filename="docker_configure_overlayfs_menu.sh"
-    docker__configure_overlayfs_menu_fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__configure_overlayfs_menu_filename}
+    docker__fs_partition_menu__filename="docker_fs_partition_menu.sh"
+    docker__fs_partition_menu__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__fs_partition_menu__filename}
 
-    docker__configure_overlayfs_disksize_menu__filename="docker_configure_overlayfs_disksize_menu.sh"
-    docker__configure_overlayfs_disksize_menu__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__configure_overlayfs_disksize_menu__filename}
+    docker__fs_partition_diskpartition_menu_filename="docker_fs_partition_diskpartition_menu.sh"
+    docker__fs_partition_diskpartition_menu_fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__fs_partition_diskpartition_menu_filename}
 
-    docker__configure_overlayfs_disksize_menu_output__filename="docker_configure_overlayfs_disksize_menu.output"
-    docker__configure_overlayfs_disksize_menu_output__fpath=${docker__tmp_dir}/${docker__configure_overlayfs_disksize_menu_output__filename}
+    docker__fs_partition_diskpartition_menu_output_filename="docker_fs_partition_diskpartition_menu.output"
+    docker__fs_partition_diskpartition_menu_output_fpath=${docker__tmp_dir}/${docker__fs_partition_diskpartition_menu_output_filename}
 
-    docker__configure_overlayfs_disksize_userdefined__filename="docker_configure_overlayfs_disksize_userdefined.sh"
-    docker__configure_overlayfs_disksize_userdefined__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__configure_overlayfs_disksize_userdefined__filename}
+    docker__fs_partition_disksize_menu__filename="docker_fs_partition_disksize_menu.sh"
+    docker__fs_partition_disksize_menu__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__fs_partition_disksize_menu__filename}
 
-    docker__configure_overlayfs_disksize_userdefined_output__filename="docker_configure_overlayfs_disksize_userdefined.output"
-    docker__configure_overlayfs_disksize_userdefined_output__fpath=${docker__tmp_dir}/${docker__configure_overlayfs_disksize_userdefined_output__filename}
+    docker__fs_partition_disksize_menu_output__filename="docker_fs_partition_disksize_menu.output"
+    docker__fs_partition_disksize_menu_output__fpath=${docker__tmp_dir}/${docker__fs_partition_disksize_menu_output__filename}
+
+    docker__fs_partition_disksize_userdefined__filename="docker_fs_partition_disksize_userdefined.sh"
+    docker__fs_partition_disksize_userdefined__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__fs_partition_disksize_userdefined__filename}
+
+    docker__fs_partition_disksize_userdefined_output__filename="docker_fs_partition_disksize_userdefined.output"
+    docker__fs_partition_disksize_userdefined_output__fpath=${docker__tmp_dir}/${docker__fs_partition_disksize_userdefined_output__filename}
 
     docker__container_build_ispboootbin_filename="docker_container_build_ispboootbin.sh"
     docker__container_build_ispboootbin_fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__container_build_ispboootbin_filename}
