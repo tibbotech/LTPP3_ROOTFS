@@ -1328,7 +1328,7 @@ compgen__prep_print__sub() {
                         "${SED__ETX}"`
                 if [[ ${trailingEtx_isFound} == true ]]; then
                     #Apply color to 'line'
-                    line_colored="${DOCKER__FG_DEEPORANGE}${line}${DOCKER__NOCOLOR}"
+                    line_colored="${DOCKER__FG_ORANGE208}${line}${DOCKER__NOCOLOR}"
         
                     #Get the length of 'line_colored' without color-regex
                     line_length=`get_stringlen_wo_regEx__func "${line_colored}"`
@@ -1395,11 +1395,11 @@ compgen__prep_header_print__sub() {
     compgen__numOfItems_max=`cat ${compgen__raw_all_tmp__fpath} | wc -l`
 
     #Update variable
-    compgen__print_numOfItems_shown="(${DOCKER__FG_DEEPORANGE}${compgen__numOfItems_toBeShown}${DOCKER__NOCOLOR} "
-    compgen__print_numOfItems_shown+="out-of ${DOCKER__FG_REDORANGE}${compgen__numOfItems_max}${DOCKER__NOCOLOR})"
+    compgen__print_numOfItems_shown="(${DOCKER__FG_ORANGE208}${compgen__numOfItems_toBeShown}${DOCKER__NOCOLOR} "
+    compgen__print_numOfItems_shown+="out-of ${DOCKER__FG_ORANGE203}${compgen__numOfItems_max}${DOCKER__NOCOLOR})"
 
-    compgen__listOfKeyWord="${table_leadingSpace__input}${DOCKER__FG_DEEPORANGE}List of keyword ${DOCKER__NOCOLOR} "
-    compgen__listOfKeyWord+="<${DOCKER__FG_REDORANGE}${query__input}${DOCKER__NOCOLOR}> ${compgen__print_numOfItems_shown}"
+    compgen__listOfKeyWord="${table_leadingSpace__input}${DOCKER__FG_ORANGE208}List of keyword ${DOCKER__NOCOLOR} "
+    compgen__listOfKeyWord+="<${DOCKER__FG_ORANGE203}${query__input}${DOCKER__NOCOLOR}> ${compgen__print_numOfItems_shown}"
 
     #Print message showing which directory's content is being shown
     echo "${compgen__dup_horizLine}" >> ${compgen__tablized_tmp__fpath}

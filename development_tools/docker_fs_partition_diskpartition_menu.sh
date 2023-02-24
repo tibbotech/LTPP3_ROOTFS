@@ -38,59 +38,59 @@ docker__load_global_fpath_paths__sub() {
 }
 
 docker__load_constants__sub() {
-    DOCKER__MENUTITLE="${DOCKER__FG_LIGHTBLUE}DOCKER:${DOCKER__NOCOLOR}"
-    DOCKER__SUBMENUTITLE_CHOOSE_DISKSIZE="${DOCKER__MENUTITLE}: ${DOCKER__FG_DARKBLUE}CONFIGURE "
-    DOCKER__SUBMENUTITLE_CHOOSE_DISKSIZE+="${DOCKER__FG_RED9}DISK${DOCKER__NOCOLOR}-${DOCKER__FG_RED9}PARTITION${DOCKER__NOCOLOR}"
+    DOCKER__MENUTITLE="${DOCKER__FG_LIGHTBLUE}DOCKER: "
+    DOCKER__MENUTITLE+="${DOCKER__FG_DARKBLUE}CONFIGURE "
+    DOCKER__MENUTITLE+="${DOCKER__FG_RED9}DISK${DOCKER__NOCOLOR}-${DOCKER__FG_RED9}PARTITION${DOCKER__NOCOLOR} "
+    DOCKER__MENUTITLE+="(${DOCKER__FG_DARKBLUE}MB${DOCKER__NOCOLOR})"
+
+    DOCKER__READDIALOG_ABORT="${DOCKER__FG_YELLOW}a${DOCKER__FG_LIGHTGREY}bort${DOCKER__NOCOLOR}"
+
+    DOCKER__READDIALOG_REDO_FINISH="${DOCKER__FG_YELLOW}r${DOCKER__FG_LIGHTGREY}edo${DOCKER__NOCOLOR}, "
+    DOCKER__READDIALOG_REDO_FINISH+="${DOCKER__FG_YELLOW}f${DOCKER__FG_LIGHTGREY}inish${DOCKER__NOCOLOR}"
 }
 
-docker__get_git_info__sub() {
-    #Get information
-    docker__git_current_branchName=`git__get_current_branchName__func`
+docker__init_variables__sub() {
+    docker__overlaymode="${DOCKER__OVERLAYMODE_DEFAULT}"
 
-    docker__git_current_abbrevCommitHash=`git__log_for_pushed_and_unpushed_commits__func "${DOCKER__EMPTYSTRING}" \
-                        "${GIT__LAST_COMMIT}" \
-                        "${GIT__PLACEHOLDER_ABBREV_COMMIT_HASH}"`
-      
-    docker__git_push_status=`git__checkIf_branch_isPushed__func "${docker__git_current_branchName}"`
+    docker__reservedfs_size=${DOCKER__RESERVED_SIZE_DEFAULT}
+    docker__rootfs_size=${DOCKER__ROOTFS_SIZE_DEFAULT}
+    docker__overlayfs_size=$((disksize__input - docker__reservedfs_size - docker__rootfs_size))
 
-    docker__git_current_tag=`git__get_tag_for_specified_branchName__func "${docker__git_current_branchName}" "${DOCKER__FALSE}"`
-    if [[ -z "${docker__git_current_tag}" ]]; then
-        docker__git_current_tag="${GIT__NOT_TAGGED}"
-    fi
+    docker__diskpart_arr=()
+    docker__diskpart_arr[0]="${DOCKER__RESERVED_FS} ${docker__reservedfs_size}"
+    docker__diskpart_arr[1]="${DOCKER__ROOTFS_FS} ${docker__rootfs_size}"
+    docker__diskpart_arr[2]="${DOCKER__OVERLAY_FS} ${docker__overlayfs_size}"
 
-    #Generate message to be shown
-    docker_git_current_info_msg="${DOCKER__FG_LIGHTBLUE}${docker__git_current_branchName}${DOCKER__NOCOLOR}:"
-    docker_git_current_info_msg+="${DOCKER__FG_DARKBLUE}${docker__git_current_abbrevCommitHash}${DOCKER__NOCOLOR}"
-    docker_git_current_info_msg+="(${DOCKER__FG_DARKBLUE}${docker__git_push_status}${DOCKER__NOCOLOR}):"
-    docker_git_current_info_msg+="${DOCKER__FG_LIGHTBLUE}${docker__git_current_tag}${DOCKER__NOCOLOR}"
+    docker__diskpart_default_arr=()
+    docker__diskpart_default_arr[0]="${DOCKER__RESERVED_FS} ${docker__reservedfs_size}"
+    docker__diskpart_default_arr[1]="${DOCKER__ROOTFS_FS} ${docker__rootfs_size}"
+    docker__diskpart_default_arr[2]="${DOCKER__OVERLAY_FS} ${docker__overlayfs_size}"
+    docker__diskpart_default_left="${DOCKER__EMPTYSTRING}"
+    docker__diskpart_default_right="${DOCKER__EMPTYSTRING}"
+
+    regex="[1-3q]"
+
+    applychange_status=false
 }
 
 docker__menu__sub() {
     #Define variables
-    local partitiondisk="${DOCKER__EMPTYSTRING}"
-    local partitiondisk_status=false
-    local overlaymode="${DOCKER__EMPTYSTRING}"
-    local overlaymode_status=false
-    local applychange_status="${DOCKER__EMPTYSTRING}"
+    local diskpart_arritem="${DOCKER__EMPTYSTRING}"
+
     local mychoice="${DOCKER__EMPTYSTRING}"
-    local regex="[1-3q]"
     local exitcode=0
     local ret=0
-
-    #Write initial 'ret' value to file.
-    #Note: this is done in case ctrl+c is pressed.
-    write_data_to_file__func "${ret}" "${docker__fs_partition_disksize_menu_output__fpath}"
 
     #Show menu
     while true
     do
-        #IMPORTANT: reset exitcode
+        #IMPORTANT: reset variables
         exitcode=0
 
         #Get Git-information
         #Output:
         #   docker_git_current_info_msg
-        docker__get_git_info__sub
+        docker__menu_get_git_info__sub
 
         #Load header
         load_tibbo_title__func "${DOCKER__NUMOFLINES_2}"
@@ -99,19 +99,24 @@ docker__menu__sub() {
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
 
         #Print menut-title
-        show_leadingAndTrailingStrings_separatedBySpaces__func "${DOCKER__SUBMENUTITLE_CHOOSE_DISKSIZE}" "${docker_git_current_info_msg}" "${DOCKER__TABLEWIDTH}"
+        show_leadingAndTrailingStrings_separatedBySpaces__func "${DOCKER__MENUTITLE}" "${docker_git_current_info_msg}" "${DOCKER__TABLEWIDTH}"
 
         #Print horizontal line
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-        echo -e "${DOCKER__FOURSPACES}1. Partition disk"
-        #overlay-modes:
-        #   default (do NOT change the pentagram_common.h)
-        #   rw (insert string 'tb_overlay' in pentagram_common.h)
-        #   ro (insert string 'tb_rootfs_ro' in pentagram_common.h)
-        echo -e "${DOCKER__FOURSPACES}2. Set overlay-mode"
-        echo -e "${DOCKER__FOURSPACES}3. Apply change" 
+
+        #Print body
+        docker__menu_body_print_sub
+
+        #Movedown and clean
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+        #Print horizontal line
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-        echo -e "${DOCKER__FOURSPACES}q. $DOCKER__QUIT_CTRL_C"
+
+        #Print menu-options
+        docker__menu_options_print_sub
+
+        #Print horizontal line
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
 
         while true
@@ -139,37 +144,304 @@ docker__menu__sub() {
         #Goto the selected option
         case ${mychoice} in
             1)
-                ret=${DOCKER__DISKSIZE_4G_IN_MBYTES}
+                docker__partitiondisk__sub
                 ;;
             2)
-                ret=${DOCKER__DISKSIZE_8G_IN_MBYTES}
+                echo "set overlay-mode: in progress"
                 ;;
             3)
-                ${docker__fs_partition_disksize_userdefined__fpath}
-                exitcode=$?
-        
-                #Read from file
-                if [[ ${exitcode} -eq 0 ]]; then
-                    ret=$(read_1stline_from_file "${docker__fs_partition_disksize_userdefined_output__fpath}")
-                fi
-
-                remove_file__func "${docker__fs_partition_disksize_userdefined_output__fpath}"
-                ;;
-            4)
-                ret=${DOCKER__0K_IN_BYTES}
+                echo "apply change: in progress"
                 ;;
             q)
                 exit__func "${DOCKER__EXITCODE_99}" "${DOCKER__NUMOFLINES_1}"
                 ;;
         esac
-
-        if [[ ${exitcode} -eq 0 ]]; then
-            break
-        fi
     done
 
     #Write to file
     write_data_to_file__func "${ret}" "${docker__fs_partition_disksize_menu_output__fpath}"
+}
+docker__menu_get_git_info__sub() {
+    #Get information
+    docker__git_current_branchName=`git__get_current_branchName__func`
+
+    docker__git_current_abbrevCommitHash=`git__log_for_pushed_and_unpushed_commits__func "${DOCKER__EMPTYSTRING}" \
+                        "${GIT__LAST_COMMIT}" \
+                        "${GIT__PLACEHOLDER_ABBREV_COMMIT_HASH}"`
+      
+    docker__git_push_status=`git__checkIf_branch_isPushed__func "${docker__git_current_branchName}"`
+
+    docker__git_current_tag=`git__get_tag_for_specified_branchName__func "${docker__git_current_branchName}" "${DOCKER__FALSE}"`
+    if [[ -z "${docker__git_current_tag}" ]]; then
+        docker__git_current_tag="${GIT__NOT_TAGGED}"
+    fi
+
+    #Generate message to be shown
+    docker_git_current_info_msg="${DOCKER__FG_LIGHTBLUE}${docker__git_current_branchName}${DOCKER__NOCOLOR}:"
+    docker_git_current_info_msg+="${DOCKER__FG_DARKBLUE}${docker__git_current_abbrevCommitHash}${DOCKER__NOCOLOR}"
+    docker_git_current_info_msg+="(${DOCKER__FG_DARKBLUE}${docker__git_push_status}${DOCKER__NOCOLOR}):"
+    docker_git_current_info_msg+="${DOCKER__FG_LIGHTBLUE}${docker__git_current_tag}${DOCKER__NOCOLOR}"
+}
+docker__menu_body_print_sub() {
+    #Define variables
+    local diskpart_arritem="${DOCKER__EMPTYSTRING}"
+    local diskpart_arritem_left="${DOCKER__EMPTYSTRING}"
+    local diskpart_arritem_right="${DOCKER__EMPTYSTRING}"
+    local diskpart_arritem_print="${DOCKER__EMPTYSTRING}"
+    local diskpart_arritem_left_len=0
+    local diskpart_arritem_left_max=0
+
+    #---THIS PART IS DEDICATED TO THE PRINTING OF THE:
+    #       LEFT-STRING (e.g. rootfs, reserved, overlay, etc.)
+    #       RIGHT-STRING (e.g. 1536, 128, 256 etc...)
+    #Determine the longest string of 'diskpart_arritem_left'
+    for diskpart_arritem in "${docker__diskpart_arr[@]}"
+    do  
+        #Get the left-string of array-item 'diskpart_arritem'
+        diskpart_arritem_left=$(echo "${diskpart_arritem}" | cut -d" " -f1)
+        #Get the length of left-string 'diskpart_arritem_left'
+        diskpart_arritem_left_len=${#diskpart_arritem_left}
+        #Update 'diskpart_arritem_left_max' (if applicable)
+        if [[ ${diskpart_arritem_left_len} -gt ${diskpart_arritem_left_max} ]]; then
+            diskpart_arritem_left_max=${diskpart_arritem_left_len}
+        fi
+    done
+
+    #Increase 'diskpart_arritem_left_max' with '4'
+    #Remark:
+    #   This is the Empty Space between the left-string and right-string
+    diskpart_arritem_left_max=$((diskpart_arritem_left_max + DOCKER__NUMOFCHARS_8))
+
+    #Show Partition Overview
+    for diskpart_arritem in "${docker__diskpart_arr[@]}"
+    do  
+        #Get the left-string 'diskpart_arritem_left'
+        diskpart_arritem_left=$(echo "${diskpart_arritem}" | cut -d" " -f1)
+
+        #Append 'Empty Spaces' to 'diskpart_arritem_left'
+        diskpart_arritem_left=$(append_a_specified_numofchars_to_string "${diskpart_arritem_left}" \
+                "${DOCKER__ONESPACE}" \
+                "${diskpart_arritem_left_max}")
+
+        #Get the right-string 'diskpart_arritem_right'
+        diskpart_arritem_right=$(echo "${diskpart_arritem}" | cut -d" " -f2)
+        
+        #Update variable
+        diskpart_arritem_print="${DOCKER__FOURSPACES}${DOCKER__FG_ORANGE172}${diskpart_arritem_left}${DOCKER__NOCOLOR}"
+        diskpart_arritem_print+="${DOCKER__FG_ORANGE215}${diskpart_arritem_right}${DOCKER__NOCOLOR}"
+
+        #Print
+        echo -e "${diskpart_arritem_print}"
+    done
+}
+docker__menu_options_print_sub() {
+    echo -e "${DOCKER__FOURSPACES}1. Partition disk"
+    #overlay-modes:
+    #   default (do NOT change the pentagram_common.h)
+    #   rw (insert string 'tb_overlay' in pentagram_common.h)
+    #   ro (insert string 'tb_rootfs_ro' in pentagram_common.h)
+    echo -e "${DOCKER__FOURSPACES}2. Set overlay-mode"
+    echo -e "${DOCKER__FOURSPACES}3. Apply change" 
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    echo -e "${DOCKER__FOURSPACES}q. $DOCKER__QUIT_CTRL_C"
+}
+
+docker__partitiondisk__sub() {
+    #Define constants
+    local READDIALOG_HEADER="---:${DOCKER__INPUT}"
+
+    #Define variables
+    local diskpart_new_arr=()
+    
+    local disksize_remain=0
+    local disksize_remain_bck=0
+
+    local mypartitionsize=0
+    local readdialog_partitionsize="${DOCKER__EMPTYSTRING}"
+
+    local i=0
+    local j=0
+    local k=0
+
+    #Initialize variables
+    disksize_remain=${disksize__input}
+    disksize_remain_bck=${disksize__input}
+
+    #Movedown and clean
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+    #Show read-dialog
+    while true
+    do
+        #Select readdialog_partitionsize-item
+        case ${j} in
+            0)  #rootfs
+                docker__diskpart_default_left=$(echo "${docker__diskpart_default_arr[j]}" | cut -d" " -f1)
+                docker__diskpart_default_right=$(echo "${docker__diskpart_default_arr[j]}" | cut -d" " -f2)
+                ;;
+            1)  #reserved
+                docker__diskpart_default_left=$(echo "${docker__diskpart_default_arr[j]}" | cut -d" " -f1)
+                docker__diskpart_default_right=$(echo "${docker__diskpart_default_arr[j]}" | cut -d" " -f2)
+                ;;
+            2)  #overlay
+                docker__diskpart_default_left=$(echo "${docker__diskpart_default_arr[j]}" | cut -d" " -f1)
+                docker__diskpart_default_right=$(echo "${docker__diskpart_default_arr[j]}" | cut -d" " -f2)
+                ;;
+            *)  #additional
+                docker__diskpart_default_left="${DOCKER__EMPTYSTRING}"
+                ;;
+        esac
+
+        #Partition-NAME read-dialog handler (only for additonal fs)
+        #Remark:
+        #   Provide the partition-name of the additonal fs
+        #   ...and write to variable 'docker__diskpart_default_left'
+        if [[ ${j} -gt 2 ]]; then   #j > 2
+            #Note: variable 'docker__diskpart_default_left' is updated in this subroutine
+            docker__partitionname__sub
+
+            #Note: if no additional partition-name is provided, then break loop
+            if [[ -z "${docker__diskpart_default_left}" ]]; then
+                break
+            fi
+        fi
+
+        #Partition-SIZE read-dialog handler
+        if [[ ${j} -gt 0 ]]; then   #j > 0
+            #Update 'readdialog_partitionsize'
+            readdialog_partitionsize="${READDIALOG_HEADER}: ${docker__diskpart_default_left} "
+            
+            #Remark:
+            #   Do not show this read-dialog part for 'rootfs' and 'overlay'
+            #   ...because for 'rootfs' and 'overlay' (if shown)
+            #   ...the partition-size MUST be filled in.
+            if [[ ${j} -gt 2 ]]; then   
+                readdialog_partitionsize+="(${DOCKER__READDIALOG_REDO_FINISH}) "
+            fi
+            readdialog_partitionsize+="(${DOCKER__FG_ORANGE215}${disksize_remain}${DOCKER__NOCOLOR}): "
+
+            #Show read-dialog
+            #Remark:
+            #   For rootfs: show the default-value
+            #   For overlay: show the remainder of the available disk-size
+            #   For additional: 
+            #   1. First show the read-dialog to provide partition-name (see above)
+            #   2. Then show the read-dialog to provide the partition-size
+            if [[ ${j} -eq 1 ]]; then   
+                read -e -p "${readdialog_partitionsize}" -i "${docker__diskpart_default_right}" mypartitionsize
+            else
+                read -e -p "${readdialog_partitionsize}" -i "${disksize_remain}" mypartitionsize
+            fi
+
+            #Remark:
+            #   If NO input was provided, then auto input as default value the 'docker__diskpart_default_right' (using switch -i)
+            #   Keep on looping until 'mypartitionsize' is NOT an 'Empty String'
+            while [[ -z "${mypartitionsize}" ]]
+            do
+                read -e -p "${readdialog_partitionsize}" -i "${disksize_remain}" mypartitionsize
+            done
+
+            #Only continue if a valid option is selected
+            if [[ ! -z ${mypartitionsize} ]]; then  #is NOT an Empty String
+                if [[ $(isNumeric__func "${mypartitionsize}") == true ]]; then  #is numeric
+                    #Calculate 'disksize_remain'
+                    disksize_remain=$((disksize_remain - mypartitionsize))
+
+                    if [[ ${disksize_remain} -gt 0 ]]; then
+                        #Update 'diskpart_new_arr'
+                        diskpart_new_arr[j]="${docker__diskpart_default_left} ${mypartitionsize}"
+
+                        #Backup 'disksize_remain'
+                        disksize_remain_bck=${disksize_remain}
+
+                        #Increment index
+                        ((j++))
+                    elif [[ ${disksize_remain} -eq 0 ]]; then
+                        #Update 'diskpart_new_arr'
+                        diskpart_new_arr[j]="${docker__diskpart_default_left} ${mypartitionsize}"
+
+                        break
+                    else    #disksize_remain < 0
+                        #Revert back to the backup
+                        disksize_remain=${disksize_remain_bck}
+                    fi
+                else    #is NOT numeric
+                    case "${mypartitionsize}" in
+                        "${DOCKER__REDO}")
+                            #Reset array
+                            diskpart_new_arr=()
+
+                            #Reset dvariables
+                            disksize_remain=${disksize__input}
+                            disksize_remain_bck=${disksize__input}
+
+                            #Reset index
+                            j=0
+                            ;;
+                        "${DOCKER__FINISH}")
+                            break
+                            ;;
+                        *)
+                            moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+                            ;;
+                    esac
+                fi
+            else    #is an Empty String
+                moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+            fi
+        else    #j = 0
+            #Update 'diskpart_new_arr'
+            diskpart_new_arr[j]="${docker__diskpart_default_left} ${DOCKER__RESERVED_SIZE_DEFAULT}"
+
+            #Calculate 'disksize_remain'
+            disksize_remain=$((disksize_remain - DOCKER__RESERVED_SIZE_DEFAULT))
+
+            #Backup 'disksize_remain'
+            disksize_remain_bck=${disksize_remain}
+
+            #Increment index
+            ((j++))
+        fi
+    done
+
+    #Reset array
+    docker__diskpart_arr=()
+    #Update 'docker__diskpart_arr' with the new values
+    for k in "${!diskpart_new_arr[@]}"; do 
+        docker__diskpart_arr[k]="${diskpart_new_arr[$k]}"
+    done
+    
+
+    echo "${docker__diskpart_arr[@]}"
+    echo "something for FINISH needs to be done here!" && sleep 3
+}
+docker__partitionname__sub() {
+    #Define variables
+    local readdialog_partitionname="${DOCKER__EMPTYSTRING}"
+    local mypartitionname="${DOCKER__EMPTYSTRING}"
+
+    #Update read-dialog
+    readdialog_partitionname="${READDIALOG_HEADER}: ${DOCKER__FG_LIGHTGREY}new${DOCKER__NOCOLOR} partition-name (${DOCKER__READDIALOG_ABORT}): "
+
+    #Read-dialog handler
+    while true
+    do
+        #Show read-dialog
+        read -e -p "${readdialog_partitionname}" mypartitionname
+
+        if [[ ! -z "${mypartitionname}" ]]; then  #is NOT an Empty String
+            if [[ "${mypartitionname}" == "${DOCKER__ABORT}" ]]; then
+                mypartitionname="${DOCKER__EMPTYSTRING}"
+            fi
+
+            break
+        else    #is an Empty String
+            moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+        fi
+    done
+
+    #Update variable
+    docker__diskpart_default_left="${mypartitionname}"
 }
 
 
@@ -181,6 +453,8 @@ main__sub() {
     docker__load_global_fpath_paths__sub
 
     docker__load_constants__sub
+
+    docker__init_variables__sub
 
     docker__menu__sub
 }

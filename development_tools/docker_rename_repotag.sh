@@ -367,7 +367,7 @@ docker__rename_image_handler__sub() {
     #Define message constants
     local MENUTITLE="Rename ${DOCKER__FG_PURPLE}Repository${DOCKER__NOCOLOR}:${DOCKER__FG_PINK}Tag${DOCKER__NOCOLOR}"
 
-    local SUMMARYTITLE="${DOCKER__FG_REDORANGE}Summary${DOCKER__NOCOLOR}: "
+    local SUMMARYTITLE="${DOCKER__FG_ORANGE203}Summary${DOCKER__NOCOLOR}: "
     SUMMARYTITLE+="rename ${DOCKER__FG_PURPLE}Repository${DOCKER__NOCOLOR}:${DOCKER__FG_PINK}Tag${DOCKER__NOCOLOR}"
 
     local READMSG_NEW_REPOSITORY_NAME="${DOCKER__FG_YELLOW}New${DOCKER__NOCOLOR} "

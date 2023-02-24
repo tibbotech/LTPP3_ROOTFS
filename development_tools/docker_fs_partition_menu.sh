@@ -262,7 +262,7 @@ docker__load_global_fpath_paths__sub() {
 
 docker__load_constants__sub() {
     DOCKER__MENUTITLE="${DOCKER__FG_LIGHTBLUE}DOCKER: "
-    DOCKER__MENUTITLE+="${DOCKER__FG_DARKBLUE}FS PATITION${DOCKER__NOCOLOR}"
+    DOCKER__MENUTITLE+="${DOCKER__FG_DARKBLUE}FS PATITION${DOCKER__NOCOLOR} (${DOCKER__FG_DARKBLUE}MB${DOCKER__NOCOLOR})"
 }
 
 docker__init_variables__sub() {
@@ -337,7 +337,7 @@ docker__menu__sub() {
         if [[ ${docker__disksize} -ne 0 ]]; then
             docker__disksizestatus=true
 
-            docker__disksizestatus_print="${DOCKER__FG_LIGHTGREY}${docker__disksize}${DOCKER__NOCOLOR}M"
+            docker__disksizestatus_print="${DOCKER__FG_LIGHTGREY}${docker__disksize}${DOCKER__NOCOLOR}"
         else
             docker__disksizestatus=false
 

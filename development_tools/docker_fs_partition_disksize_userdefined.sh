@@ -37,9 +37,10 @@ docker__load_global_fpath_paths__sub() {
 }
 
 docker__load_constants__sub() {
-    DOCKER__MENUTITLE="${DOCKER__FG_LIGHTBLUE}DOCKER:${DOCKER__NOCOLOR}"
-    DOCKER__SUBMENUTITLE_CHOOSE_DISKSIZE="${DOCKER__MENUTITLE}: ${DOCKER__FG_DARKBLUE}CHOOSE "
-    DOCKER__SUBMENUTITLE_CHOOSE_DISKSIZE+="${DOCKER__FG_RED125}DISK${DOCKER__NOCOLOR}-${DOCKER__FG_RED125}SIZE${DOCKER__NOCOLOR}: USER-DEFINED"
+    DOCKER__MENUTITLE="${DOCKER__FG_LIGHTBLUE}DOCKER: "
+    DOCKER__MENUTITLE+="${DOCKER__FG_DARKBLUE}CHOOSE "
+    DOCKER__MENUTITLE+="${DOCKER__FG_RED125}DISK${DOCKER__NOCOLOR}-${DOCKER__FG_RED125}SIZE${DOCKER__NOCOLOR}: "
+    DOCKER__MENUTITLE+="USER-DEFINED (${DOCKER__FG_DARKBLUE}MB${DOCKER__NOCOLOR})"
 }
 
 docker__get_git_info__sub() {
@@ -86,7 +87,7 @@ docker__menu__sub() {
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
 
     #Print menut-title
-    show_leadingAndTrailingStrings_separatedBySpaces__func "${DOCKER__SUBMENUTITLE_CHOOSE_DISKSIZE}" "${docker_git_current_info_msg}" "${DOCKER__TABLEWIDTH}"
+    show_leadingAndTrailingStrings_separatedBySpaces__func "${DOCKER__MENUTITLE}" "${docker_git_current_info_msg}" "${DOCKER__TABLEWIDTH}"
 
     #Print horizontal line
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"

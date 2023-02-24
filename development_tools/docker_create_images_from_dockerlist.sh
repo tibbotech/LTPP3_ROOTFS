@@ -425,13 +425,13 @@ docker__load_global_fpath_paths__sub() {
 docker__load_constants__sub() {
     DOCKER__DIR_MENUTITLE="${DOCKER__FG_YELLOW}Create${DOCKER__NOCOLOR} multiple ${DOCKER__FG_BORDEAUX}IMAGES${DOCKER__NOCOLOR} using a ${DOCKER__FG_LIGHTBLUE}docker-list${DOCKER__NOCOLOR}"
     DOCKER__DIR_REMARKS=${DOCKER__EMPTYSTRING}
-    DOCKER__DIR_LOCATIONINFO="${DOCKER__FOURSPACES}${DOCKER__FG_VERYLIGHTORANGE}Location${DOCKER__NOCOLOR}: ${docker__LTPP3_ROOTFS_docker_dockerfiles__dir}"
+    DOCKER__DIR_LOCATIONINFO="${DOCKER__FOURSPACES}${DOCKER__FG_ORANGE223}Location${DOCKER__NOCOLOR}: ${docker__LTPP3_ROOTFS_docker_dockerfiles__dir}"
     DOCKER__DIR_MENUOPTIONS="${DOCKER__FOURSPACES_Q_QUIT}"
     DOCKER__DIR_MATCHPATTERNS="${DOCKER__QUIT}"
     DOCKER__DIR_ERRMSG="${DOCKER__FOURSPACES}-:${DOCKER__FG_LIGHTRED}Directory is Empty${DOCKER__NOCOLOR}:-"
     DOCKER__DIR_READDIALOG="Choose a file: "
 
-    DOCKER__FILE_MENUTITLE="Show ${DOCKER__FG_VERYLIGHTORANGE}file${DOCKER__NOCOLOR}${DOCKER__FG_LIGHTGREY}-${DOCKER__NOCOLOR}content"
+    DOCKER__FILE_MENUTITLE="Show ${DOCKER__FG_ORANGE223}file${DOCKER__NOCOLOR}${DOCKER__FG_LIGHTGREY}-${DOCKER__NOCOLOR}content"
     DOCKER__FILE_READDIALOG="Do you wish to continue? "
     DOCKER__FILE_REMARKS=${DOCKER__EMPTYSTRING}
     DOCKER__FILE_MENUOPTIONS="${DOCKER__FOURSPACES_Y_YES}\n"
@@ -486,7 +486,7 @@ docker__show_dockerList_files_handler__sub() {
         docker__dockerList_filename=`basename ${docker__dockerList_fpath}`
 
         #Update variables
-        docker__file_locationInfo="${DOCKER__FOURSPACES}${DOCKER__FG_VERYLIGHTORANGE}File${DOCKER__NOCOLOR}: ${docker__dockerList_filename}"
+        docker__file_locationInfo="${DOCKER__FOURSPACES}${DOCKER__FG_ORANGE223}File${DOCKER__NOCOLOR}: ${docker__dockerList_filename}"
 
         #Show selected docker-file content
         docker__show_selected_dockerFile_content__sub

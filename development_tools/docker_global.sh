@@ -90,8 +90,10 @@ DOCKER__FG_DARKBLUE=$'\e[30;38;5;33m'
 DOCKER__FG_RED1=$'\e[30;38;5;1m'
 DOCKER__FG_RED9=$'\e[30;38;5;9m'
 DOCKER__FG_RED125=$'\e[30;38;5;125m'
-DOCKER__FG_DEEPORANGE=$'\e[30;38;5;208m'
-DOCKER__FG_REDORANGE=$'\e[30;38;5;203m'
+DOCKER__FG_ORANGE172=$'\e[30;38;5;172m'
+DOCKER__FG_ORANGE203=$'\e[30;38;5;203m'
+DOCKER__FG_ORANGE208=$'\e[30;38;5;208m'
+DOCKER__FG_ORANGE215=$'\e[30;38;5;215m'
 DOCKER__FG_GREEN=$'\e[30;38;5;82m'
 DOCKER__FG_GREEN41=$'\e[30;38;5;41m'
 DOCKER__FG_GREEN48=$'\e[30;38;5;48m'
@@ -111,7 +113,7 @@ DOCKER__FG_PURPLE=$'\e[30;38;5;93m'
 DOCKER__FG_PURPLERED=$'\e[30;38;5;198m'
 DOCKER__FG_SOFTDARKBLUE=$'\e[30;38;5;38m'
 DOCKER__FG_SOFTLIGHTRED=$'\e[30;38;5;131m'
-DOCKER__FG_VERYLIGHTORANGE=$'\e[30;38;5;223m'
+DOCKER__FG_ORANGE223=$'\e[30;38;5;223m'
 DOCKER__FG_WHITE=$'\e[30;38;5;231m'
 DOCKER__FG_YELLOW=$'\e[1;33m'
 
@@ -307,6 +309,13 @@ DOCKER__MINUS_ONE=-1
 
 DOCKER__NUMOFCHARS_1=1
 DOCKER__NUMOFCHARS_2=2
+DOCKER__NUMOFCHARS_3=3
+DOCKER__NUMOFCHARS_4=4
+DOCKER__NUMOFCHARS_5=5
+DOCKER__NUMOFCHARS_6=6
+DOCKER__NUMOFCHARS_7=7
+DOCKER__NUMOFCHARS_8=8
+DOCKER__NUMOFCHARS_9=9
 DOCKER__NUMOFCHARS_10=10
 
 DOCKER__NUMOFLINES_0=0
@@ -327,6 +336,11 @@ DOCKER__NUMOFMATCH_1=1
 DOCKER__NUMOFMATCH_2=2
 DOCKER__NUMOFMATCH_3=3
 DOCKER__NUMOFMATCH_4=4
+DOCKER__NUMOFMATCH_5=5
+DOCKER__NUMOFMATCH_6=6
+DOCKER__NUMOFMATCH_7=7
+DOCKER__NUMOFMATCH_8=8
+DOCKER__NUMOFMATCH_9=9
 DOCKER__NUMOFMATCH_10=10
 DOCKER__NUMOFMATCH_20=20
 
@@ -342,17 +356,23 @@ DOCKER__TRAP_NUM_2=2
 
 
 #---OVERLAY CONSTANTS
+DOCKER__ADDITIONAL_FS="additional"
+DOCKER__OVERLAY_FS="overlay"
+DOCKER__RESERVED_FS="reserved"
+DOCKER__ROOTFS_FS="rootfs"
+
 DOCKER__0K_IN_BYTES=0
 DOCKER__1K_IN_BYTES=1024
 DOCKER__DISKSIZE_4G_IN_BYTES=3909091328
-DOCKER__DISKSIZE_4G_IN_MBYTES=$((DOCKER__DISKSIZE_4G_IN_BYTES/DOCKER__1K_IN_BYTES))
+DOCKER__DISKSIZE_4G_IN_MBYTES=$((DOCKER__DISKSIZE_4G_IN_BYTES/DOCKER__1K_IN_BYTES/DOCKER__1K_IN_BYTES))
 DOCKER__DISKSIZE_8G_IN_BYTES=$((DOCKER__DISKSIZE_4G_IN_BYTES*2))
-DOCKER__DISKSIZE_8G_IN_MBYTES=$((DOCKER__DISKSIZE_8G_IN_BYTES/DOCKER__1K_IN_BYTES))
+DOCKER__DISKSIZE_8G_IN_MBYTES=$((DOCKER__DISKSIZE_8G_IN_BYTES/DOCKER__1K_IN_BYTES/DOCKER__1K_IN_BYTES))
 
-DOCKER__ROOTFS_DEFAULT=1536 #in MB
+DOCKER__RESERVED_SIZE_DEFAULT=128   #in MB
+DOCKER__ROOTFS_SIZE_DEFAULT=1536    #in MB
 DOCKER__OVERLAYMODE_DEFAULT="default"
-DOCKER__OVERLAYMODE_RW="rw"
-DOCKER__OVERLAYMODE_RO="ro"
+DOCKER__OVERLAYMODE_NONPERSISTENT="non-persistent"
+DOCKER__OVERLAYMODE_PERSISTENT="persistent"
 
 
 
@@ -410,8 +430,10 @@ DOCKER__NO_ACTION_REQUIRED="No action required"
 
 
 #---READ-INPUT CONSTANTS
+DOCKER__ABORT="a"
 DOCKER__BACK="b"
 DOCKER__CLEAR="c"
+DOCKER__FINISH="f"
 DOCKER__HOME="h"
 DOCKER__NO="n"
 DOCKER__OVERWRITE="o"
@@ -2454,252 +2476,6 @@ function center_string_and_writeTo_file__func() {
     printf "%s" "${emptySpaces_string}${string__input}" >> ${writeToThisFile__input}
 }
 
-function show_centered_string__func() {
-    #Input args
-    local string__input=${1}
-    local tableWidth__input=${2}
-    local bg_color__input=${3}
-
-    #Set 'bg_color__input' to 'DOCKER__NOCOLOR'
-    if [[ -z ${bg_color__input} ]]; then
-        bg_color__input=${DOCKER__NOCOLOR}
-    fi
-
-    #Get string 'without visiable' color characters
-    local strInput_wo_colorChars=`echo "${string__input}" | sed "s,\x1B\[[0-9;]*m,,g"`
-
-    #Get string-length
-    local strInput_wo_colorChars_len=${#strInput_wo_colorChars}
-
-    #Create string containing only empty spaces
-    local emptySpaces=`duplicate_char__func "${DOCKER__ONESPACE}" "${tableWidth__input}"`
-
-    #Calculated the number of spaces to-be-prepended
-    local string_startPos=$(( (tableWidth__input - strInput_wo_colorChars_len)/2 ))
-
-
-    #Print text including Leading Empty Spaces
-    echo -e "${bg_color__input}${emptySpaces}${DOCKER__NOCOLOR}"
-
-    #Move cursor up
-    tput cuu1
-
-    #cursor to the right specified by 'string_startPos'
-    tput cuf ${string_startPos}
-
-    #Print string
-    echo -e "${bg_color__input}${string__input}${DOCKER__NOCOLOR}"
-}
-
-function show_errMsg_wo_menuTitle_and_exit_func() {
-    #Input args
-    local msg__input=${1}
-    local prepend_numOfLines__input=${2}
-    local append_numOfLines__input=${3}
-
-    #Move down and clean
-    moveDown_and_cleanLines__func "${prepend_numOfLines__input}"
-    
-    #Print
-    echo -e "${msg__input}"
-
-    #Move down and clean
-    moveDown_and_cleanLines__func "${append_numOfLines__input}"
-
-    #Exit
-    exit__func "${DOCKER__EXITCODE_99}" "${DOCKER__NUMOFLINES_0}"
-}
-
-function show_header__func() {
-    #Input args
-    local menuTitle__input=${1}
-    local tableWidth__input=${2}
-    local bg_color__input=${3}
-    local prepend_numOfLines__input=${4}
-    local append_numOfLines__input=${5}
-
-    #Move-down and clean
-    moveDown_and_cleanLines__func "${prepend_numOfLines__input}"
-
-    #Print title
-    show_centered_string__func "${menuTitle__input}" "${tableWidth__input}" "${bg_color__input}"
-
-    #Move-down and clean
-    moveDown_and_cleanLines__func "${append_numOfLines__input}"
-}
-
-function show_leadingAndTrailingStrings_separatedBySpaces__func() {
-    #Input args
-    local leadStr__input=${1}
-    local trailStr__input=${2}
-    local tableWidth__input=${3}
-
-    #Get string 'without visiable' color characters
-    local leadStr_input_wo_colorChars=`echo "${leadStr__input}" | sed "s,\x1B\[[0-9;]*m,,g"`
-    local trailStr_input_wo_colorChars=`echo "${trailStr__input}" | sed "s,\x1B\[[0-9;]*m,,g"`
-
-    #Get string length
-    local leadStr_input_wo_colorChars_len=${#leadStr_input_wo_colorChars}
-    local trailStr_input_wo_colorChars_len=${#trailStr_input_wo_colorChars}
-
-    #Calculated the number of spaces to-be-added
-    local numOf_spaces=$(( tableWidth__input-(leadStr_input_wo_colorChars_len+trailStr_input_wo_colorChars_len) ))
-
-    #Create a string containing only EMPTY SPACES
-    local spaces_leading=`duplicate_char__func "${DOCKER__ONESPACE}" "${numOf_spaces}"`
-
-    #Print text including Leading Empty Spaces
-    echo -e "${leadStr__input}${spaces_leading}${trailStr__input}"
-}
-
-function show_msg_only__func() {
-    #Input args
-    local msg__input=${1}
-    local prepend_numOfLines__input=${2}
-    local append_numOfLines__input=${3}
-
-    #Initialization
-    if [[ -z ${prepend_numOfLines__input} ]]; then
-        prepend_numOfLines__input=${DOCKER__NUMOFLINES_0}
-    fi
-
-    if [[ -z ${append_numOfLines__input} ]]; then
-        append_numOfLines__input=${DOCKER__NUMOFLINES_0}
-    fi
-
-    #Prepend empty line
-    moveDown_and_cleanLines__func "${prepend_numOfLines__input}"
-
-    #Print
-    echo -e "${msg__input}"
-
-    #Append empty line
-    moveDown_and_cleanLines__func "${append_numOfLines__input}"
-}
-
-function show_msg_w_menuTitle_w_pressAnyKey_w_ctrlC_func() {
-    #Input args
-    local menuTitle__input=${1}
-    local msg__input=${2}
-    local exitCode__input=${3}
-
-    #Horizontal line
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-
-    #Print 'menuTitle__input'
-    show_centered_string__func "${menuTitle__input}" "${DOCKER__TABLEWIDTH}"
-
-    #Horizontal line
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-    
-    #Move-down and clean 1 line
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-
-    #Print message
-    show_centered_string__func "${msg__input}" "${DOCKER__TABLEWIDTH}"
-    
-    #Move-down and clean 1 line
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-
-    #Horizontal line
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-
-    #Move-down and clean 1 line
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-
-    #Show press any key
-    press_any_key__func "${DOCKER__TIMEOUT_10}" \
-                        "${DOCKER__NUMOFLINES_0}" \
-                        "${DOCKER__NUMOFLINES_0}"
-
-    #Exit
-    exit__func "${exitCode__input}" "${DOCKER__NUMOFLINES_2}"
-}
-
-function show_msg_w_menuTitle_only_func() {
-    #Input args
-    local menuTitle__input=${1}
-    local msg__input=${2}
-    local msg_indent__input=${3}    #If NO indent, specify 'DOCKER__ZEROSPACE' (however, DO NOT use DOCKER__EMPTYSTRING)
-    local prepend_numOfLines__input=${4}    #add number of empty lines BEFORE table
-    local afterMsg_numOfLines__input=${5}   #add number of empty lines AFTER 'msg__input'
-    local append_numOfLines__input=${6} #add number of empty lines AFTER table
-    local tibboHeader_prepend_numOfLines__input=${7}
-
-
-    #Initialization
-    if [[ -z ${prepend_numOfLines__input} ]]; then
-        prepend_numOfLines__input=${DOCKER__NUMOFLINES_0}
-    fi
-
-    if [[ -z ${afterMsg_numOfLines__input} ]]; then
-        afterMsg_numOfLines__input=${DOCKER__NUMOFLINES_0}
-    fi
-
-
-    if [[ -z ${append_numOfLines__input} ]]; then
-        append_numOfLines__input=${DOCKER__NUMOFLINES_0}
-    fi
-
-    #Print Tibbo-title (if applicable)
-    if [[ ! -z ${tibboHeader_prepend_numOfLines__input} ]]; then
-        load_tibbo_title__func "${tibboHeader_prepend_numOfLines__input}"
-    else
-        moveDown_and_cleanLines__func "${prepend_numOfLines__input}"
-    fi
-
-    #Horizontal line
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-
-    #Print 'menuTitle__input'
-    show_centered_string__func "${menuTitle__input}" "${DOCKER__TABLEWIDTH}"
-
-    #Horizontal line
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-    
-    #CHeck if 'msg_indent__input' is an Empty String or Not
-    if [[ -z ${msg_indent__input} ]]; then  #is an Empty String
-        show_centered_string__func "${msg__input}" "${DOCKER__TABLEWIDTH}"
-    else    #is NOT an Empty String
-        #Check if 'msg_indent__input' is 'DOCKER__ZEROSPACE'
-        #Remark:
-        #   This means that NO indent should be applied
-        if [[ ${msg_indent__input} == ${DOCKER__ZEROSPACE} ]]; then
-            msg_indent__input="${DOCKER__EMPTYSTRING}"
-        fi
-        echo -e "${msg_indent__input}${msg__input}"
-    fi
-    
-    #Append 1 emoty line
-    moveDown_and_cleanLines__func "${afterMsg_numOfLines__input}"
-
-    #Horizontal line
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-
-    #Append empty lines
-    moveDown_and_cleanLines__func "${append_numOfLines__input}"
-}
-
-function show_msg_wo_menuTitle_w_PressAnyKey__func() {
-    #Input args
-    local msg__input=${1}
-    local prepend_numOfLines__input=${2}
-    local confirmation_timeout__input=${3}
-    local confirmation_prepend_numOfLines__input=${4}
-    local confirmation_append_numOfLines__input=${5}
-
-    #Move-down cursor
-    moveDown_and_cleanLines__func "${prepend_numOfLines__input}"
-
-    #Print
-    echo -e "${msg__input}"
-
-    #Show press-any-key dialog
-    press_any_key__func "${confirmation_timeout__input}" \
-                        "${confirmation_prepend_numOfLines__input}" \
-                        "${confirmation_append_numOfLines__input}"
-}
-
 function show_array_elements_w_menuTitle__func() {
     #Input args
     local menuTitle__input=${1}
@@ -2857,6 +2633,333 @@ function show_array_elements_w_menuTitle__func() {
     enable_keyboard_input__func
 }
 
+function show_centered_string__func() {
+    #Input args
+    local string__input=${1}
+    local tableWidth__input=${2}
+    local bg_color__input=${3}
+
+    #Set 'bg_color__input' to 'DOCKER__NOCOLOR'
+    if [[ -z ${bg_color__input} ]]; then
+        bg_color__input=${DOCKER__NOCOLOR}
+    fi
+
+    #Get string 'without visiable' color characters
+    local strInput_wo_colorChars=`echo "${string__input}" | sed "s,\x1B\[[0-9;]*m,,g"`
+
+    #Get string-length
+    local strInput_wo_colorChars_len=${#strInput_wo_colorChars}
+
+    #Create string containing only empty spaces
+    local emptySpaces=`duplicate_char__func "${DOCKER__ONESPACE}" "${tableWidth__input}"`
+
+    #Calculated the number of spaces to-be-prepended
+    local string_startPos=$(( (tableWidth__input - strInput_wo_colorChars_len)/2 ))
+
+
+    #Print text including Leading Empty Spaces
+    echo -e "${bg_color__input}${emptySpaces}${DOCKER__NOCOLOR}"
+
+    #Move cursor up
+    tput cuu1
+
+    #cursor to the right specified by 'string_startPos'
+    tput cuf ${string_startPos}
+
+    #Print string
+    echo -e "${bg_color__input}${string__input}${DOCKER__NOCOLOR}"
+}
+
+function show_errMsg_wo_menuTitle_and_exit_func() {
+    #Input args
+    local msg__input=${1}
+    local prepend_numOfLines__input=${2}
+    local append_numOfLines__input=${3}
+
+    #Move down and clean
+    moveDown_and_cleanLines__func "${prepend_numOfLines__input}"
+    
+    #Print
+    echo -e "${msg__input}"
+
+    #Move down and clean
+    moveDown_and_cleanLines__func "${append_numOfLines__input}"
+
+    #Exit
+    exit__func "${DOCKER__EXITCODE_99}" "${DOCKER__NUMOFLINES_0}"
+}
+
+function show_header__func() {
+    #Input args
+    local menuTitle__input=${1}
+    local tableWidth__input=${2}
+    local bg_color__input=${3}
+    local prepend_numOfLines__input=${4}
+    local append_numOfLines__input=${5}
+
+    #Move-down and clean
+    moveDown_and_cleanLines__func "${prepend_numOfLines__input}"
+
+    #Print title
+    show_centered_string__func "${menuTitle__input}" "${tableWidth__input}" "${bg_color__input}"
+
+    #Move-down and clean
+    moveDown_and_cleanLines__func "${append_numOfLines__input}"
+}
+
+function show_leadingAndTrailingStrings_separatedBySpaces__func() {
+    #Input args
+    local leadStr__input=${1}
+    local trailStr__input=${2}
+    local tableWidth__input=${3}
+
+    #Get string 'without visiable' color characters
+    local leadStr_input_wo_colorChars=`echo "${leadStr__input}" | sed "s,\x1B\[[0-9;]*m,,g"`
+    local trailStr_input_wo_colorChars=`echo "${trailStr__input}" | sed "s,\x1B\[[0-9;]*m,,g"`
+
+    #Get string length
+    local leadStr_input_wo_colorChars_len=${#leadStr_input_wo_colorChars}
+    local trailStr_input_wo_colorChars_len=${#trailStr_input_wo_colorChars}
+
+    #Calculated the number of spaces to-be-added
+    local numOf_spaces=$(( tableWidth__input-(leadStr_input_wo_colorChars_len+trailStr_input_wo_colorChars_len) ))
+
+    #Create a string containing only EMPTY SPACES
+    local spaces_leading=`duplicate_char__func "${DOCKER__ONESPACE}" "${numOf_spaces}"`
+
+    #Print text including Leading Empty Spaces
+    echo -e "${leadStr__input}${spaces_leading}${trailStr__input}"
+}
+
+function show_msg_only__func() {
+    #Input args
+    local msg__input=${1}
+    local prepend_numOfLines__input=${2}
+    local append_numOfLines__input=${3}
+
+    #Initialization
+    if [[ -z ${prepend_numOfLines__input} ]]; then
+        prepend_numOfLines__input=${DOCKER__NUMOFLINES_0}
+    fi
+
+    if [[ -z ${append_numOfLines__input} ]]; then
+        append_numOfLines__input=${DOCKER__NUMOFLINES_0}
+    fi
+
+    #Prepend empty line
+    moveDown_and_cleanLines__func "${prepend_numOfLines__input}"
+
+    #Print
+    echo -e "${msg__input}"
+
+    #Append empty line
+    moveDown_and_cleanLines__func "${append_numOfLines__input}"
+}
+
+function show_msg_w_menuTitle_only_func() {
+    #Input args
+    local menuTitle__input=${1}
+    local msg__input=${2}
+    local msg_indent__input=${3}    #If NO indent, specify 'DOCKER__ZEROSPACE' (however, DO NOT use DOCKER__EMPTYSTRING)
+    local prepend_numOfLines__input=${4}    #add number of empty lines BEFORE table
+    local afterMsg_numOfLines__input=${5}   #add number of empty lines AFTER 'msg__input'
+    local append_numOfLines__input=${6} #add number of empty lines AFTER table
+    local tibboHeader_prepend_numOfLines__input=${7}
+
+
+    #Initialization
+    if [[ -z ${prepend_numOfLines__input} ]]; then
+        prepend_numOfLines__input=${DOCKER__NUMOFLINES_0}
+    fi
+
+    if [[ -z ${afterMsg_numOfLines__input} ]]; then
+        afterMsg_numOfLines__input=${DOCKER__NUMOFLINES_0}
+    fi
+
+
+    if [[ -z ${append_numOfLines__input} ]]; then
+        append_numOfLines__input=${DOCKER__NUMOFLINES_0}
+    fi
+
+    #Print Tibbo-title (if applicable)
+    if [[ ! -z ${tibboHeader_prepend_numOfLines__input} ]]; then
+        load_tibbo_title__func "${tibboHeader_prepend_numOfLines__input}"
+    else
+        moveDown_and_cleanLines__func "${prepend_numOfLines__input}"
+    fi
+
+    #Horizontal line
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+
+    #Print 'menuTitle__input'
+    show_centered_string__func "${menuTitle__input}" "${DOCKER__TABLEWIDTH}"
+
+    #Horizontal line
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    
+    #CHeck if 'msg_indent__input' is an Empty String or Not
+    if [[ -z ${msg_indent__input} ]]; then  #is an Empty String
+        show_centered_string__func "${msg__input}" "${DOCKER__TABLEWIDTH}"
+    else    #is NOT an Empty String
+        #Check if 'msg_indent__input' is 'DOCKER__ZEROSPACE'
+        #Remark:
+        #   This means that NO indent should be applied
+        if [[ ${msg_indent__input} == ${DOCKER__ZEROSPACE} ]]; then
+            msg_indent__input="${DOCKER__EMPTYSTRING}"
+        fi
+        echo -e "${msg_indent__input}${msg__input}"
+    fi
+    
+    #Append 1 emoty line
+    moveDown_and_cleanLines__func "${afterMsg_numOfLines__input}"
+
+    #Horizontal line
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+
+    #Append empty lines
+    moveDown_and_cleanLines__func "${append_numOfLines__input}"
+}
+
+function show_msg_w_menuTitle_w_pressAnyKey_w_ctrlC_func() {
+    #Input args
+    local menuTitle__input=${1}
+    local msg__input=${2}
+    local exitCode__input=${3}
+
+    #Horizontal line
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+
+    #Print 'menuTitle__input'
+    show_centered_string__func "${menuTitle__input}" "${DOCKER__TABLEWIDTH}"
+
+    #Horizontal line
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    
+    #Move-down and clean 1 line
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+    #Print message
+    show_centered_string__func "${msg__input}" "${DOCKER__TABLEWIDTH}"
+    
+    #Move-down and clean 1 line
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+    #Horizontal line
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+
+    #Move-down and clean 1 line
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+    #Show press any key
+    press_any_key__func "${DOCKER__TIMEOUT_10}" \
+                        "${DOCKER__NUMOFLINES_0}" \
+                        "${DOCKER__NUMOFLINES_0}"
+
+    #Exit
+    exit__func "${exitCode__input}" "${DOCKER__NUMOFLINES_2}"
+}
+
+function show_msg_wo_menuTitle_w_PressAnyKey__func() {
+    #Input args
+    local msg__input=${1}
+    local prepend_numOfLines__input=${2}
+    local confirmation_timeout__input=${3}
+    local confirmation_prepend_numOfLines__input=${4}
+    local confirmation_append_numOfLines__input=${5}
+
+    #Move-down cursor
+    moveDown_and_cleanLines__func "${prepend_numOfLines__input}"
+
+    #Print
+    echo -e "${msg__input}"
+
+    #Show press-any-key dialog
+    press_any_key__func "${confirmation_timeout__input}" \
+                        "${confirmation_prepend_numOfLines__input}" \
+                        "${confirmation_append_numOfLines__input}"
+}
+
+function show_msg_w_menuTitle_w_confirmation__func() {
+    #Input args
+    local menuTitle__input=${1}
+    local msg__input=${2}
+    local confirmation_choices__input=${3}
+    local confirmation_regEx__input=${4}
+    local prepend_numOfLines__input=${5}
+    local confirmation_timeout__input=${6}
+    local confirmation_prepend_numOfLines__input=${7}
+    local confirmation_append_numOfLines__input=${8}
+
+    #Move-down cursor
+    moveDown_and_cleanLines__func "${prepend_numOfLines__input}"
+
+    #Print horizontal line
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+
+    #Print menu-title
+    show_centered_string__func "${menuTitle__input}" "${DOCKER__TABLEWIDTH}"
+
+    #Print horizontal line
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+
+    #Print message
+    echo -e "${msg__input}"
+
+    #Move-down and clean 1 line
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+    #Print horizontal line
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+
+    #Show press-any-key dialog
+    confirmation_w_timer__func "${confirmation_choices__input}" \
+                        "${confirmation_regEx__input}" \
+                        "${confirmation_timeout__input}" \
+                        "${confirmation_prepend_numOfLines__input}" \
+                        "${confirmation_append_numOfLines__input}"
+}
+
+function show_msg_wo_menuTitle_w_confirmation__func() {
+    #Input args
+    local msg__input=${1}
+    local confirmation_choices__input=${2}
+    local confirmation_regEx__input=${3}
+    local prepend_numOfLines__input=${4}
+    local confirmation_timeout__input=${5}
+    local confirmation_prepend_numOfLines__input=${6}
+    local confirmation_append_numOfLines__input=${7}
+
+    #Move-down cursor
+    moveDown_and_cleanLines__func "${prepend_numOfLines__input}"
+
+    #Print
+    if [[ ! -z "${msg__input}" ]]; then
+        echo -e "${msg__input}"
+    fi
+
+    #Show press-any-key dialog
+    confirmation_w_timer__func "${confirmation_choices__input}" \
+                        "${confirmation_regEx__input}" \
+                        "${confirmation_timeout__input}" \
+                        "${confirmation_prepend_numOfLines__input}" \
+                        "${confirmation_append_numOfLines__input}"
+}
+
+function show_menuTitle_w_adjustable_indent__func() {
+    #Input args
+    local menuTitle__input=${1}
+    local menuTitle_indent__input=${2}
+
+    #Show list
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    if [[ -z ${menuTitle_indent__input} ]]; then
+        show_centered_string__func "${menuTitle__input}" "${DOCKER__TABLEWIDTH}"
+    else
+        echo "${menuTitle_indent__input}${menuTitle__input}"
+    fi
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+}
+
 function show_repoList_or_containerList_w_menuTitle__func() {
     #Input args
     local menuTitle__input=${1}
@@ -2943,88 +3046,6 @@ function show_repoList_or_containerList_w_menuTitle_w_confirmation__func() {
                             "${confirmation_prepend_numOfLines__input}" \
                             "${confirmation_append_numOfLines__input}"
     fi
-}
-
-
-function show_msg_w_menuTitle_w_confirmation__func() {
-    #Input args
-    local menuTitle__input=${1}
-    local msg__input=${2}
-    local confirmation_choices__input=${3}
-    local confirmation_regEx__input=${4}
-    local prepend_numOfLines__input=${5}
-    local confirmation_timeout__input=${6}
-    local confirmation_prepend_numOfLines__input=${7}
-    local confirmation_append_numOfLines__input=${8}
-
-    #Move-down cursor
-    moveDown_and_cleanLines__func "${prepend_numOfLines__input}"
-
-    #Print horizontal line
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-
-    #Print menu-title
-    show_centered_string__func "${menuTitle__input}" "${DOCKER__TABLEWIDTH}"
-
-    #Print horizontal line
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-
-    #Print message
-    echo -e "${msg__input}"
-
-    #Move-down and clean 1 line
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-
-    #Print horizontal line
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-
-    #Show press-any-key dialog
-    confirmation_w_timer__func "${confirmation_choices__input}" \
-                        "${confirmation_regEx__input}" \
-                        "${confirmation_timeout__input}" \
-                        "${confirmation_prepend_numOfLines__input}" \
-                        "${confirmation_append_numOfLines__input}"
-}
-
-function show_msg_wo_menuTitle_w_confirmation__func() {
-    #Input args
-    local msg__input=${1}
-    local confirmation_choices__input=${2}
-    local confirmation_regEx__input=${3}
-    local prepend_numOfLines__input=${4}
-    local confirmation_timeout__input=${5}
-    local confirmation_prepend_numOfLines__input=${6}
-    local confirmation_append_numOfLines__input=${7}
-
-    #Move-down cursor
-    moveDown_and_cleanLines__func "${prepend_numOfLines__input}"
-
-    #Print
-    if [[ ! -z "${msg__input}" ]]; then
-        echo -e "${msg__input}"
-    fi
-
-    #Show press-any-key dialog
-    confirmation_w_timer__func "${confirmation_choices__input}" \
-                        "${confirmation_regEx__input}" \
-                        "${confirmation_timeout__input}" \
-                        "${confirmation_prepend_numOfLines__input}" \
-                        "${confirmation_append_numOfLines__input}"
-}
-
-function show_menuTitle_w_adjustable_indent__func() {
-    #Input args
-    local menuTitle__input=${1}
-    local menuTitle_indent__input=${2}
-
-    #Show list
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-    if [[ -z ${menuTitle_indent__input} ]]; then
-        show_centered_string__func "${menuTitle__input}" "${DOCKER__TABLEWIDTH}"
-    else
-        echo "${menuTitle_indent__input}${menuTitle__input}"
-    fi
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
 }
 
 
@@ -4288,6 +4309,31 @@ function show_fileContent_wo_select__func() {
 
 
 #---STRING FUNCTIONS
+function append_a_specified_numofchars_to_string() {
+    #Input Args
+    local string__input=${1}
+    local char__input=${2}
+    local string_maxlen__input=${3}
+
+    #Define variables
+    local string_len=${#string__input}
+    local ret="${string__input}"
+
+    #Append 
+    while [[ ${string_len} -lt ${string_maxlen__input} ]]
+    do
+        #Append char
+        ret="${ret}${char__input}"
+
+        #Get string length
+        string_len=${#ret}
+    done
+
+    #Output
+    echo "${ret}"
+
+    return 0;
+}
 function checkForMatch_of_pattern_within_string__func() {
     #Turn-off Expansion
     disable_expansion__func

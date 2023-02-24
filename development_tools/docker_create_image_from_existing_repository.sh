@@ -597,7 +597,7 @@ docker__create_image_handler__sub() {
 docker__create_image_exec__sub() {
     #Define constants
     local ECHOMSG_CREATING_IMAGE="Creating image..."
-    local ECHOMSG_LOCATION_DOCKERFILE="${DOCKER__FG_VERYLIGHTORANGE}Location${DOCKER__NOCOLOR} docker-file: "
+    local ECHOMSG_LOCATION_DOCKERFILE="${DOCKER__FG_ORANGE223}Location${DOCKER__NOCOLOR} docker-file: "
 
     #Define variables
     local echomsg="${ECHOMSG_LOCATION_DOCKERFILE}${docker__docker_dockerfiles__dir}"

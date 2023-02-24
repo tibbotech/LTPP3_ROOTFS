@@ -308,7 +308,7 @@ docker__load_constants__sub() {
     DOCKER__ENTER_CMD_REMARKS+="${DOCKER__FOURSPACES}${DOCKER__FG_YELLOW}TAB${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}auto-complete${DOCKER__NOCOLOR}\n"
     DOCKER__ENTER_CMD_REMARKS+="${DOCKER__FOURSPACES}${DOCKER__FG_YELLOW};c${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}clear${DOCKER__NOCOLOR}"
 
-    DOCKER__ENTER_CMD_LOCATIONINFO="${DOCKER__FOURSPACES}${DOCKER__FG_VERYLIGHTORANGE}Location${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}${docker__enter_cmdline_mode_out__fpath}${DOCKER__NOCOLOR}"
+    DOCKER__ENTER_CMD_LOCATIONINFO="${DOCKER__FOURSPACES}${DOCKER__FG_ORANGE223}Location${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}${docker__enter_cmdline_mode_out__fpath}${DOCKER__NOCOLOR}"
     DOCKER__ENTER_CMD_MENUOPTIONS="${DOCKER__FOURSPACES}${DOCKER__FG_YELLOW}Press-any-key${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}go back to cmd-input${DOCKER__NOCOLOR}"
     DOCKER__ENTER_CMD_ERRORMSG="-:${DOCKER__FG_LIGHTRED}No results${DOCKER__NOCOLOR}:-" #this message will be centered within the function
 }
@@ -332,8 +332,8 @@ docker__show_fileContent_handler__sub() {
     local cmd__input=${1}
 
     #Update 'menuTitle'
-    local menuTitle="${DOCKER__FG_DEEPORANGE}Output of command ${DOCKER__NOCOLOR} "
-    menuTitle+="<${DOCKER__FG_REDORANGE}${cmd__input}${DOCKER__NOCOLOR}>"
+    local menuTitle="${DOCKER__FG_ORANGE208}Output of command ${DOCKER__NOCOLOR} "
+    menuTitle+="<${DOCKER__FG_ORANGE203}${cmd__input}${DOCKER__NOCOLOR}>"
 
     #Execute function
     show_fileContent_wo_select__func "${docker__enter_cmdline_mode_out__fpath}" \
