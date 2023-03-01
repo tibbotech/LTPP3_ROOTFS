@@ -403,6 +403,9 @@ docker__menu__sub() {
                 echo "2 in progress"
                 ;;
             b)
+                echo "in 'docker_build_ispboootbin.sh', a check has to be built in whether to copy the 'isp.sh' and 'pentagram_common.h' from source to destination"
+                echo "you could check whether 'docker__docker_overlayfs__dir' contains both files or not. If yes, then copy and build".
+                echo "if NOT, then just build without overlay"
                 ${docker__container_build_ispboootbin_fpath}
                 ;;
             q)

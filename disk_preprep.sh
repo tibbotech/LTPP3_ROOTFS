@@ -133,8 +133,8 @@ home_downloads_disk_lib_dir=${home_downloads_dir}/disk/lib
 
 scripts_dir=/${scripts_foldername}
 home_lttp3rootfs_dir=${home_dir}/LTPP3_ROOTFS
-home_lttp3rootfs_boot_pentagram_board_dir=${home_lttp3rootfs_dir}/boot/pentagram_board
-home_lttp3rootfs_build_isp_dir=${home_lttp3rootfs_dir}/build/isp
+home_lttp3rootfs_boot_drivers_dir=${home_lttp3rootfs_dir}/boot/drivers
+home_lttp3rootfs_build_drivers_dir=${home_lttp3rootfs_dir}/build/drivers
 home_lttp3rootfs_rootfs_initramfs_dir=${home_lttp3rootfs_dir}/rootfs/initramfs
 home_lttp3rootfs_rootfs_initramfs_disk_etc_dir=${home_lttp3rootfs_rootfs_initramfs_dir}/disk/etc
 home_lttp3rootfs_services_automount_dir=${home_lttp3rootfs_dir}/services/automount
@@ -274,12 +274,12 @@ src_usb_mount_rules_fpath=${home_lttp3rootfs_services_automount_dir}/${usb_mount
 dst_usb_mount_rules_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_udev_rulesd_dir}/${usb_mount_rules_filename}
 
 old_isp_c_fpath=${SP7xxx_build_tools_isp_dir}/${isp_c_filename}
-new_isp_c_fpath=${home_lttp3rootfs_build_isp_dir}/${isp_c_filename}
-isp_c_patch_fpath=${home_lttp3rootfs_build_isp_dir}/${isp_c_patch_filename}
+new_isp_c_fpath=${home_lttp3rootfs_build_drivers_dir}/${isp_c_filename}
+isp_c_patch_fpath=${home_lttp3rootfs_build_drivers_dir}/${isp_c_patch_filename}
 
 old_sp_go_c_fpath=${SP7xxx_boot_uboot_board_sunplus_pentagram_board_dir}/${sp_go_c_filename}
-new_sp_go_c_fpath=${home_lttp3rootfs_boot_pentagram_board_dir}/${sp_go_c_filename}
-sp_go_c_patch_fpath=${home_lttp3rootfs_boot_pentagram_board_dir}/${sp_go_c_patch_filename}
+new_sp_go_c_fpath=${home_lttp3rootfs_boot_drivers_dir}/${sp_go_c_filename}
+sp_go_c_patch_fpath=${home_lttp3rootfs_boot_drivers_dir}/${sp_go_c_patch_filename}
 
 old_irq_sp7021_intc_c_fpath=${SP7xxx_linux_kernel_drivers_irqchip_dir}/${irq_sp7021_intc_c_filename}
 new_irq_sp7021_intc_c_fpath=${home_lttp3rootfs_kernel_drivers_irqchip_dir}/${irq_sp7021_intc_c_filename}

@@ -6,6 +6,34 @@ global_fpath__input=${2}
 
 
 
+#---FUNCTIONS
+docker__readdialog_w_output__func() {
+    #Input args
+    local readdialog__input=${1}
+    local partitionsize_default__input=${2}
+    
+    #Define variables
+    local ret="${DOCKER__EMPTYSTRING}"
+
+    #Show read-dialog
+    readDialog_w_Output__func "${readdialog__input}" \
+            "${partitionsize_default__input}" \
+            "${docker__readDialog_w_Output__func_out__fpath}" \
+            "${DOCKER__NUMOFLINES_0}" \
+            "${DOCKER__NUMOFLINES_0}"
+
+    #Get the exitcode just in case a Ctrl-C was pressed in function 'readDialog_w_Output__func'
+    docker__exitcode=$?
+    if [[ ${docker__exitcode} -eq ${DOCKER__EXITCODE_99} ]]; then
+        docker__readdialog_output="${DOCKER__EMPTYSTRING}"
+    else
+        #Get docker__result_from_output
+        docker__readdialog_output=`retrieve_line_from_file__func "${DOCKER__LINENUM_1}" \
+                        "${docker__readDialog_w_Output__func_out__fpath}"`
+    fi
+}
+
+
 #---SUBROUTINES
 #Check if 'docker_global.sh' is already loaded.
 #Note: this can be simply done by trying to read the constant 'DOCKER__THISFILE_ISREACHABLE'
@@ -45,11 +73,25 @@ docker__load_constants__sub() {
 
     DOCKER__READDIALOG_ABORT="${DOCKER__FG_YELLOW}a${DOCKER__FG_LIGHTGREY}bort${DOCKER__NOCOLOR}"
 
-    DOCKER__READDIALOG_REDO_FINISH="${DOCKER__FG_YELLOW}r${DOCKER__FG_LIGHTGREY}edo${DOCKER__NOCOLOR}, "
-    DOCKER__READDIALOG_REDO_FINISH+="${DOCKER__FG_YELLOW}f${DOCKER__FG_LIGHTGREY}inish${DOCKER__NOCOLOR}"
+    DOCKER__READDIALOG_REDO="${DOCKER__FG_YELLOW}r${DOCKER__FG_LIGHTGREY}edo${DOCKER__NOCOLOR}"
+
+    DOCKER__READDIALOG_REDO_ABORT="${DOCKER__FG_YELLOW}r${DOCKER__FG_LIGHTGREY}edo${DOCKER__NOCOLOR}, "
+    DOCKER__READDIALOG_REDO_ABORT+="${DOCKER__FG_YELLOW}a${DOCKER__FG_LIGHTGREY}bort${DOCKER__NOCOLOR}"
+
+    DOCKER__READDIALOG_REDO_SKIP_ABORT="${DOCKER__FG_YELLOW}r${DOCKER__FG_LIGHTGREY}edo${DOCKER__NOCOLOR}, "
+    DOCKER__READDIALOG_REDO_SKIP_ABORT+="${DOCKER__FG_YELLOW}s${DOCKER__FG_LIGHTGREY}kip${DOCKER__NOCOLOR}, "
+    DOCKER__READDIALOG_REDO_SKIP_ABORT+="${DOCKER__FG_YELLOW}a${DOCKER__FG_LIGHTGREY}bort${DOCKER__NOCOLOR}"
+
+    DOCKER__READDIALOG_SKIP="${DOCKER__FG_YELLOW}s${DOCKER__FG_LIGHTGREY}kip${DOCKER__NOCOLOR}"
 }
 
 docker__init_variables__sub() {
+    applychange_status=false
+
+    disksize_remain=${disksize__input}
+
+    docker__readdialog_output="${DOCKER__EMPTYSTRING}"
+
     docker__overlaymode="${DOCKER__OVERLAYMODE_DEFAULT}"
 
     docker__reservedfs_size=${DOCKER__RESERVED_SIZE_DEFAULT}
@@ -68,9 +110,9 @@ docker__init_variables__sub() {
     docker__diskpart_default_left="${DOCKER__EMPTYSTRING}"
     docker__diskpart_default_right="${DOCKER__EMPTYSTRING}"
 
-    regex="[1-3q]"
+    docker__exitcode=0
 
-    applychange_status=false
+    regex="[1-3q]"
 }
 
 docker__menu__sub() {
@@ -84,6 +126,9 @@ docker__menu__sub() {
     #Show menu
     while true
     do
+        #Enable Ctrl+C
+        enable_ctrl_c__func
+
         #IMPORTANT: reset variables
         exitcode=0
 
@@ -151,6 +196,15 @@ docker__menu__sub() {
                 ;;
             3)
                 echo "apply change: in progress"
+                echo "make sure to write 'isp.sh' and 'pentagram_common.h' to 'docker__docker_overlayfs__dir'"
+                echo "the temp-files can be found in:"
+                echo "    /home/imcase/repo/LTPP3_ROOTFS/boot/configs/pentagram_common.h"
+                echo "    /home/imcase/repo/LTPP3_ROOTFS/build/scripts/isp.sh"
+                echo ""
+                ;;
+            3)
+                echo "apply change: in progress"
+                echo "make sure to REMOVE 'isp.sh' and 'pentagram_common.h' at 'docker__docker_overlayfs__dir'"
                 ;;
             q)
                 exit__func "${DOCKER__EXITCODE_99}" "${DOCKER__NUMOFLINES_1}"
@@ -241,23 +295,26 @@ docker__menu_options_print_sub() {
     #   rw (insert string 'tb_overlay' in pentagram_common.h)
     #   ro (insert string 'tb_rootfs_ro' in pentagram_common.h)
     echo -e "${DOCKER__FOURSPACES}2. Set overlay-mode"
-    echo -e "${DOCKER__FOURSPACES}3. Apply change" 
+    echo -e "${DOCKER__FOURSPACES}3. Apply overlay"
+    echo -e "${DOCKER__FOURSPACES}4. Remove overlay"
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
     echo -e "${DOCKER__FOURSPACES}q. $DOCKER__QUIT_CTRL_C"
 }
 
 docker__partitiondisk__sub() {
+    #Disable Ctrl+C
+    disable_ctrl_c__func
+
     #Define constants
     local READDIALOG_HEADER="---:${DOCKER__INPUT}"
 
     #Define variables
     local diskpart_new_arr=()
     
-    local disksize_remain=0
     local disksize_remain_bck=0
 
-    local mypartitionsize=0
     local readdialog_partitionsize="${DOCKER__EMPTYSTRING}"
+    local readdialog_partitionsize_default="${DOCKER__EMPTYSTRING}"
 
     local i=0
     local j=0
@@ -273,6 +330,8 @@ docker__partitiondisk__sub() {
     #Show read-dialog
     while true
     do
+        docker__readdialog_output="${DOCKER__EMPTYSTRING}"
+
         #Select readdialog_partitionsize-item
         case ${j} in
             0)  #rootfs
@@ -300,25 +359,31 @@ docker__partitiondisk__sub() {
             #Note: variable 'docker__diskpart_default_left' is updated in this subroutine
             docker__partitionname__sub
 
-            #Note: if no additional partition-name is provided, then break loop
+            #Remark:
+            #   If no additional partition-name is provided,
+            #   ...then it means that s(kip) was pressed.
             if [[ -z "${docker__diskpart_default_left}" ]]; then
                 break
             fi
         fi
 
         #Partition-SIZE read-dialog handler
-        if [[ ${j} -gt 0 ]]; then   #j > 0
+        if [[ ${j} -gt 0 ]]; then   #j > 0: do NOT show the read-dialog for the 'reserved-fs'
+            #Initalize variables
+            docker__readdialog_output="${DOCKER__EMPTYSTRING}"
+
             #Update 'readdialog_partitionsize'
             readdialog_partitionsize="${READDIALOG_HEADER}: ${docker__diskpart_default_left} "
             
-            #Remark:
-            #   Do not show this read-dialog part for 'rootfs' and 'overlay'
-            #   ...because for 'rootfs' and 'overlay' (if shown)
-            #   ...the partition-size MUST be filled in.
-            if [[ ${j} -gt 2 ]]; then   
-                readdialog_partitionsize+="(${DOCKER__READDIALOG_REDO_FINISH}) "
+            if [[ ${j} -eq 1 ]]; then  #rootfs
+                readdialog_partitionsize+="(${DOCKER__READDIALOG_ABORT}) "           
+            elif [[ ${j} -eq 2 ]]; then #overlay
+                readdialog_partitionsize+="(${DOCKER__READDIALOG_REDO_ABORT}) "
+            elif [[ ${j} -gt 2 ]]; then #anything else except for 'reserved'
+                readdialog_partitionsize+="(${DOCKER__READDIALOG_REDO_SKIP_ABORT}) "
             fi
             readdialog_partitionsize+="(${DOCKER__FG_ORANGE215}${disksize_remain}${DOCKER__NOCOLOR}): "
+
 
             #Show read-dialog
             #Remark:
@@ -327,38 +392,36 @@ docker__partitiondisk__sub() {
             #   For additional: 
             #   1. First show the read-dialog to provide partition-name (see above)
             #   2. Then show the read-dialog to provide the partition-size
-            if [[ ${j} -eq 1 ]]; then   
-                read -e -p "${readdialog_partitionsize}" -i "${docker__diskpart_default_right}" mypartitionsize
+            if [[ ${j} -eq 1 ]]; then
+                readdialog_partitionsize_default="${docker__diskpart_default_right}"
             else
-                read -e -p "${readdialog_partitionsize}" -i "${disksize_remain}" mypartitionsize
+                readdialog_partitionsize_default="${disksize_remain}"
             fi
 
-            #Remark:
-            #   If NO input was provided, then auto input as default value the 'docker__diskpart_default_right' (using switch -i)
-            #   Keep on looping until 'mypartitionsize' is NOT an 'Empty String'
-            while [[ -z "${mypartitionsize}" ]]
-            do
-                read -e -p "${readdialog_partitionsize}" -i "${disksize_remain}" mypartitionsize
-            done
+            #Remarks:
+            #   The read-dialog will not stop until a non Empty String is inputted.
+            #       This functionality is implicitely built-in.
+            #   This function outputs a value for variable 'docker__readdialog_output'
+            docker__readdialog_w_output__func "${readdialog_partitionsize}" "${readdialog_partitionsize_default}"
 
             #Only continue if a valid option is selected
-            if [[ ! -z ${mypartitionsize} ]]; then  #is NOT an Empty String
-                if [[ $(isNumeric__func "${mypartitionsize}") == true ]]; then  #is numeric
+            if [[ ! -z "${docker__readdialog_output}" ]]; then  #is NOT an Empty String
+                if [[ $(isNumeric__func "${docker__readdialog_output}") == true ]]; then  #is numeric
                     #Calculate 'disksize_remain'
-                    disksize_remain=$((disksize_remain - mypartitionsize))
+                    disksize_remain=$(echo ${disksize_remain} - ${docker__readdialog_output} | bc)
 
-                    if [[ ${disksize_remain} -gt 0 ]]; then
+                    if [[ "${disksize_remain}" -gt 0 ]]; then
                         #Update 'diskpart_new_arr'
-                        diskpart_new_arr[j]="${docker__diskpart_default_left} ${mypartitionsize}"
+                        diskpart_new_arr[j]="${docker__diskpart_default_left} ${docker__readdialog_output}"
 
                         #Backup 'disksize_remain'
                         disksize_remain_bck=${disksize_remain}
 
                         #Increment index
                         ((j++))
-                    elif [[ ${disksize_remain} -eq 0 ]]; then
+                    elif [[ "${disksize_remain}" -eq 0 ]]; then
                         #Update 'diskpart_new_arr'
-                        diskpart_new_arr[j]="${docker__diskpart_default_left} ${mypartitionsize}"
+                        diskpart_new_arr[j]="${docker__diskpart_default_left} ${docker__readdialog_output}"
 
                         break
                     else    #disksize_remain < 0
@@ -366,23 +429,34 @@ docker__partitiondisk__sub() {
                         disksize_remain=${disksize_remain_bck}
                     fi
                 else    #is NOT numeric
-                    case "${mypartitionsize}" in
+                    case "${docker__readdialog_output}" in
                         "${DOCKER__REDO}")
-                            #Reset array
-                            diskpart_new_arr=()
+                            #Remark:
+                            #   r(edo) is available starting from the 'overlay' input
+                            if [[ ${j} -gt 1 ]]; then
+                                #Reset array
+                                diskpart_new_arr=()
 
-                            #Reset dvariables
-                            disksize_remain=${disksize__input}
-                            disksize_remain_bck=${disksize__input}
+                                #Reset dvariables
+                                disksize_remain=${disksize__input}
+                                disksize_remain_bck=${disksize__input}
 
-                            #Reset index
-                            j=0
+                                #Reset index
+                                j=0
+                            fi
                             ;;
-                        "${DOCKER__FINISH}")
-                            break
+                        "${DOCKER__SKIP}")
+                            #Remark:
+                            #   s(kip) is available starting from the 'additional partition-name/size' input
+                            if [[ ${j} -gt 2 ]]; then
+                                break
+                            fi
+                            ;;
+                        "${DOCKER__ABORT}")
+                            return 0;
                             ;;
                         *)
-                            moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+                            moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_0}"
                             ;;
                     esac
                 fi
@@ -397,7 +471,7 @@ docker__partitiondisk__sub() {
             disksize_remain=$((disksize_remain - DOCKER__RESERVED_SIZE_DEFAULT))
 
             #Backup 'disksize_remain'
-            disksize_remain_bck=${disksize_remain}
+            disksize_remain_bck="${disksize_remain}"
 
             #Increment index
             ((j++))
@@ -410,28 +484,21 @@ docker__partitiondisk__sub() {
     for k in "${!diskpart_new_arr[@]}"; do 
         docker__diskpart_arr[k]="${diskpart_new_arr[$k]}"
     done
-    
-
-    echo "${docker__diskpart_arr[@]}"
-    echo "something for FINISH needs to be done here!" && sleep 3
 }
 docker__partitionname__sub() {
     #Define variables
-    local readdialog_partitionname="${DOCKER__EMPTYSTRING}"
-    local mypartitionname="${DOCKER__EMPTYSTRING}"
-
-    #Update read-dialog
-    readdialog_partitionname="${READDIALOG_HEADER}: ${DOCKER__FG_LIGHTGREY}new${DOCKER__NOCOLOR} partition-name (${DOCKER__READDIALOG_ABORT}): "
+    local readdialog_partitionname="${READDIALOG_HEADER}: ${DOCKER__FG_LIGHTGREY}new${DOCKER__NOCOLOR} partition-name (${DOCKER__READDIALOG_SKIP}): "
 
     #Read-dialog handler
     while true
     do
         #Show read-dialog
-        read -e -p "${readdialog_partitionname}" mypartitionname
+        #This function will output a value for variable 'docker__readdialog_output'
+        docker__readdialog_w_output__func "${readdialog_partitionname}" "${DOCKER__EMPTYSTRING}"
 
-        if [[ ! -z "${mypartitionname}" ]]; then  #is NOT an Empty String
-            if [[ "${mypartitionname}" == "${DOCKER__ABORT}" ]]; then
-                mypartitionname="${DOCKER__EMPTYSTRING}"
+        if [[ ! -z "${docker__readdialog_output}" ]]; then  #is NOT an Empty String
+            if [[ "${docker__readdialog_output}" == "${DOCKER__SKIP}" ]]; then
+                docker__readdialog_output="${DOCKER__EMPTYSTRING}"
             fi
 
             break
@@ -441,7 +508,7 @@ docker__partitionname__sub() {
     done
 
     #Update variable
-    docker__diskpart_default_left="${mypartitionname}"
+    docker__diskpart_default_left="${docker__readdialog_output}"
 }
 
 

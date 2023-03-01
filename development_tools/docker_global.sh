@@ -363,9 +363,9 @@ DOCKER__ROOTFS_FS="rootfs"
 
 DOCKER__0K_IN_BYTES=0
 DOCKER__1K_IN_BYTES=1024
-DOCKER__DISKSIZE_4G_IN_BYTES=3909091328
+DOCKER__DISKSIZE_4G_IN_BYTES=3909091328 #found this value via fdisk -l
 DOCKER__DISKSIZE_4G_IN_MBYTES=$((DOCKER__DISKSIZE_4G_IN_BYTES/DOCKER__1K_IN_BYTES/DOCKER__1K_IN_BYTES))
-DOCKER__DISKSIZE_8G_IN_BYTES=$((DOCKER__DISKSIZE_4G_IN_BYTES*2))
+DOCKER__DISKSIZE_8G_IN_BYTES=$((DOCKER__DISKSIZE_4G_IN_BYTES*2))    #it is assumed that the disksize of ltpp3g2-03 is 2 x DOCKER__DISKSIZE_4G_IN_BYTES
 DOCKER__DISKSIZE_8G_IN_MBYTES=$((DOCKER__DISKSIZE_8G_IN_BYTES/DOCKER__1K_IN_BYTES/DOCKER__1K_IN_BYTES))
 
 DOCKER__RESERVED_SIZE_DEFAULT=128   #in MB
@@ -439,6 +439,7 @@ DOCKER__NO="n"
 DOCKER__OVERWRITE="o"
 DOCKER__QUIT="q"
 DOCKER__REDO="r"
+DOCKER__SKIP="s"
 DOCKER__YES="y"
 
 DOCKER__Y_SLASH_N="${DOCKER__Y}/${DOCKER__N}"
@@ -5606,6 +5607,7 @@ docker__get_source_fullpath__sub() {
     docker__parentDir_of_LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS__dir%/*}    #move two directories up. This directory is the one-level higher than LTPP3_ROOTFS/
 
     docker__docker__dir=${docker__parentDir_of_LTPP3_ROOTFS__dir}/docker
+    docker__docker_overlayfs__dir=${docker__docker__dir}/overlayfs
     docker__docker_cache__dir=${docker__docker__dir}/cache
     docker__docker_config__dir=${docker__docker__dir}/config
     docker__docker_dockerfiles__dir=${docker__docker__dir}/dockerfiles
@@ -5895,6 +5897,9 @@ docker__get_source_fullpath__sub() {
 docker__create_dir__sub() {
     if [[ ! -d ${docker__docker__dir} ]]; then
         mkdir -p ${docker__docker__dir}
+    fi
+    if [[ ! -d ${docker__docker_overlayfs__dir} ]]; then
+        mkdir -p ${docker__docker_overlayfs__dir}
     fi
     if [[ ! -d ${docker__docker_cache__dir} ]]; then
         mkdir -p ${docker__docker_cache__dir}
