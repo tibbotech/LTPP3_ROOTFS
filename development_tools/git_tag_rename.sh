@@ -482,7 +482,7 @@ goto__func START
     docker__renameTo_readDialog="---:${DOCKER__INPUT}: Rename "
     docker__renameTo_readDialog+="${DOCKER__FG_LIGHTGREY}${docker__tag_chosen}${DOCKER__NOCOLOR} "
     docker__renameTo_readDialog+="to "
-    docker__renameTo_readDialog+="($DOCKER__SEMICOLON_BACK_SEMICOLON_CLEAR_COLORED): "
+    docker__renameTo_readDialog+="($DOCKER__SEMICOLON_BACK_CLEAR_COLORED): "
 
     #Start loop
     while true

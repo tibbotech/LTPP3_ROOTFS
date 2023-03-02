@@ -80,7 +80,9 @@ DOCKER__CTRL_H=\^H
 
 #---COLOR CONSTANTS
 DOCKER__NOCOLOR=$'\e[0;0m'
-
+DOCKER__BLINKING=$'\e[5m'
+DOCKER__DIM=$'\e[2m'
+DOCKER__ITALIC=$'\e[3m'
 DOCKER__FG_BORDEAUX=$'\e[30;38;5;198m'
 DOCKER__FG_BRIGHTPRUPLE=$'\e[30;38;5;141m'
 DOCKER__FG_BRIGHTLIGHTPURPLE=$'\e[30;38;5;147m'
@@ -90,10 +92,13 @@ DOCKER__FG_DARKBLUE=$'\e[30;38;5;33m'
 DOCKER__FG_RED1=$'\e[30;38;5;1m'
 DOCKER__FG_RED9=$'\e[30;38;5;9m'
 DOCKER__FG_RED125=$'\e[30;38;5;125m'
+DOCKER__FG_ORANGE130=$'\e[30;38;5;130m'
+DOCKER__FG_ORANGE131=$'\e[30;38;5;131m'
 DOCKER__FG_ORANGE172=$'\e[30;38;5;172m'
 DOCKER__FG_ORANGE203=$'\e[30;38;5;203m'
 DOCKER__FG_ORANGE208=$'\e[30;38;5;208m'
 DOCKER__FG_ORANGE215=$'\e[30;38;5;215m'
+DOCKER__FG_ORANGE223=$'\e[30;38;5;223m'
 DOCKER__FG_GREEN=$'\e[30;38;5;82m'
 DOCKER__FG_GREEN41=$'\e[30;38;5;41m'
 DOCKER__FG_GREEN48=$'\e[30;38;5;48m'
@@ -113,7 +118,6 @@ DOCKER__FG_PURPLE=$'\e[30;38;5;93m'
 DOCKER__FG_PURPLERED=$'\e[30;38;5;198m'
 DOCKER__FG_SOFTDARKBLUE=$'\e[30;38;5;38m'
 DOCKER__FG_SOFTLIGHTRED=$'\e[30;38;5;131m'
-DOCKER__FG_ORANGE223=$'\e[30;38;5;223m'
 DOCKER__FG_WHITE=$'\e[30;38;5;231m'
 DOCKER__FG_YELLOW=$'\e[1;33m'
 
@@ -360,6 +364,7 @@ DOCKER__ADDITIONAL_FS="additional"
 DOCKER__OVERLAY_FS="overlay"
 DOCKER__RESERVED_FS="reserved"
 DOCKER__ROOTFS_FS="rootfs"
+DOCKER__REMAINING="remaining"
 
 DOCKER__0K_IN_BYTES=0
 DOCKER__1K_IN_BYTES=1024
@@ -424,6 +429,8 @@ DOCKER__STATUS_DISABLED="${DOCKER__FG_LIGHTGREY}disabled${DOCKER__NOCOLOR}"
 DOCKER__STATUS_DONE="${DOCKER__FG_GREEN}done${DOCKER__NOCOLOR}"
 DOCKER__STATUS_FAILED="${DOCKER__FG_LIGHTRED}failed${DOCKER__NOCOLOR}"
 DOCKER__STATUS_READY="${DOCKER__FG_YELLOW}ready${DOCKER__NOCOLOR}"
+DOCKER__STATUS_SET="${DOCKER__FG_GREEN}set${DOCKER__NOCOLOR}"
+DOCKER__STATUS_UNSET="${DOCKER__FG_LIGHTGREY}unset${DOCKER__NOCOLOR}"
 
 DOCKER__NO_ACTION_REQUIRED="No action required"
 
@@ -461,18 +468,28 @@ DOCKER__Y_SLASH_N_SLASH_O_SLASH_B_SLASH_H="${DOCKER__Y_SLASH_N_SLASH_O}/"
 DOCKER__Y_SLASH_N_SLASH_O_SLASH_B_SLASH_H+="${DOCKER__BACK}${DOCKER__FG_LIGHTGREY}ack${DOCKER__NOCOLOR}/"
 DOCKER__Y_SLASH_N_SLASH_O_SLASH_B_SLASH_H+="${DOCKER__HOME}${DOCKER__FG_LIGHTGREY}ome${DOCKER__NOCOLOR}"
 
+DOCKER__SEMICOLON_ABORT=";a"
 DOCKER__SEMICOLON_BACK=";b"
 DOCKER__SEMICOLON_CLEAR=";c"
 DOCKER__SEMICOLON_DELETE=";d"
+DOCKER__SEMICOLON_FINISH=";f"
 DOCKER__SEMICOLON_HOME=";h"
+DOCKER__SEMICOLON_REDO=";r"
+DOCKER__SEMICOLON_SKIP=";s"
 
-DOCKER__SEMICOLON_BACK_COLORED="${DOCKER__FG_YELLOW}${DOCKER__SEMICOLON_BACK}${DOCKER__NOCOLOR}ack"
-DOCKER__SEMICOLON_CLEAR_COLORED="${DOCKER__FG_YELLOW}${DOCKER__SEMICOLON_CLEAR}${DOCKER__NOCOLOR}lear"
+DOCKER__SEMICOLON_ABORT_COLORED="${DOCKER__FG_YELLOW}${DOCKER__SEMICOLON_ABORT}${DOCKER__NOCOLOR}${DOCKER__FG_LIGHTGREY}bort${DOCKER__NOCOLOR}"
+DOCKER__SEMICOLON_BACK_COLORED="${DOCKER__FG_YELLOW}${DOCKER__SEMICOLON_BACK}${DOCKER__NOCOLOR}${DOCKER__FG_LIGHTGREY}ack${DOCKER__NOCOLOR}"
+DOCKER__SEMICOLON_CLEAR_COLORED="${DOCKER__FG_YELLOW}${DOCKER__SEMICOLON_CLEAR}${DOCKER__NOCOLOR}${DOCKER__FG_LIGHTGREY}lear${DOCKER__NOCOLOR}"
+DOCKER__SEMICOLON_FINISH_COLORED="${DOCKER__FG_YELLOW}${DOCKER__SEMICOLON_FINISH}${DOCKER__NOCOLOR}${DOCKER__FG_LIGHTGREY}inish${DOCKER__NOCOLOR}"
+DOCKER__SEMICOLON_REDO_COLORED="${DOCKER__FG_YELLOW}${DOCKER__SEMICOLON_REDO}${DOCKER__NOCOLOR}${DOCKER__FG_LIGHTGREY}edo${DOCKER__NOCOLOR}"
+DOCKER__SEMICOLON_SKIP_COLORED="${DOCKER__FG_YELLOW}${DOCKER__SEMICOLON_SKIP}${DOCKER__NOCOLOR}${DOCKER__FG_LIGHTGREY}kip${DOCKER__NOCOLOR}"
 
 DOCKER__COMMA_COLORED="${DOCKER__FG_LIGHTGREY},${DOCKER__NOCOLOR}"
-DOCKER__SEMICOLON_BACK_SEMICOLON_CLEAR_COLORED="${DOCKER__SEMICOLON_BACK_COLORED}${DOCKER__COMMA_COLORED}${DOCKER__SEMICOLON_CLEAR_COLORED}"
-
-
+DOCKER__SEMICOLON_BACK_CLEAR_COLORED="${DOCKER__SEMICOLON_BACK_COLORED}${DOCKER__SEMICOLON_CLEAR_COLORED}"
+DOCKER__SEMICOLON_CLEAR_ABORT_COLORED="${DOCKER__SEMICOLON_CLEAR_COLORED}${DOCKER__SEMICOLON_ABORT_COLORED}"
+DOCKER__SEMICOLON_CLEAR_REDO_ABORT_COLORED="${DOCKER__SEMICOLON_CLEAR_COLORED}${DOCKER__SEMICOLON_REDO_COLORED}${DOCKER__SEMICOLON_ABORT_COLORED}"
+DOCKER__SEMICOLON_CLEAR_REDO_FINISH_ABORT_COLORED="${DOCKER__SEMICOLON_CLEAR_COLORED}${DOCKER__SEMICOLON_REDO_COLORED}${DOCKER__SEMICOLON_FINISH_COLORED}${DOCKER__SEMICOLON_ABORT_COLORED}"
+DOCKER__SEMICOLON_CLEAR_FINISH_ABORT_COLORED="${DOCKER__SEMICOLON_CLEAR_COLORED}${DOCKER__SEMICOLON_FINISH_COLORED}${DOCKER__SEMICOLON_ABORT_COLORED}"
 
 #---REGEX CONSTANTS
 DOCKER__REGEX_YN="[yn]"
@@ -3100,8 +3117,13 @@ function readDialog_w_Output__func() {
             ${DOCKER__ENTER})
                 #Check if there were any ';b', ';c', ';h' issued.
                 #In other words, whether 'ret' contains any of the above semi-colon chars.
-                #If that's the case then function 'get_endResult_ofString_with_semiColonChar__func'
-                #   will handle and return a modified 'ret'.
+                #Remarks:
+                #   1. If that's the case then function 'get_endResult_ofString_with_semiColonChar__func'
+                #   ...will handle and return a modified 'ret'.
+                #   2. If the input arg 'ret_bck' contains a ';c', then function 'get_endResult_ofString_with_semiColonChar__func'
+                #   ...will return remaining substring which is on the RIGHT-side of ';c'.
+                #   In case this substring is an <Empty String>, then 'ret' will be resetted to 'DOCKER__EMPTYSTRING'
+                #   ...and the readdialog will be shown again.
                 ret_bck=${ret}  #set value
                 ret=`get_endResult_ofString_with_semiColonChar__func "${ret_bck}"`
          
@@ -4701,14 +4723,62 @@ function get_endResult_ofString_with_semiColonChar__func() {
     local rightPart="${DOCKER__EMPTYSTRING}"
     local ret="${DOCKER__EMPTYSTRING}"
 
+    local abortIsFound=false
     local backIsFound=false
     local clearIsFound=false
+    local finishIsFound=false
     local homeIsFound=false
+    local redoIsFound=false
+    local skipIsFound=false
 
     local rightPart_len=0
 
+    #Check if ';a' is found.
+    #If TRUE, then return 'DOCKER__SEMICOLON_ABORT'
+    abortIsFound=`checkForMatch_of_pattern_within_string__func "${DOCKER__SEMICOLON_ABORT}" "${string__input}"`
+    if [[ ${abortIsFound} == true ]]; then
+        ret="${DOCKER__SEMICOLON_ABORT}"
+
+        echo "${ret}"
+        
+        return
+    fi
+
+    #Check if ';f' is found
+    #If TRUE, then return 'DOCKER__SEMICOLON_FINISH'
+    finishIsFound=`checkForMatch_of_pattern_within_string__func "${DOCKER__SEMICOLON_FINISH}" "${string__input}"`
+    if [[ ${finishIsFound} == true ]]; then
+        ret=${DOCKER__SEMICOLON_FINISH}
+
+        echo "${ret}"
+
+        return
+    fi
+
+    #Check if ';f' is found
+    #If TRUE, then return 'DOCKER__SEMICOLON_REDO'
+    redoIsFound=`checkForMatch_of_pattern_within_string__func "${DOCKER__SEMICOLON_REDO}" "${string__input}"`
+    if [[ ${redoIsFound} == true ]]; then
+        ret=${DOCKER__SEMICOLON_REDO}
+
+        echo "${ret}"
+
+        return
+    fi
+
+    #Check if ';s' is found
+    #If TRUE, then return 'DOCKER__SEMICOLON_SKIP'
+    skipIsFound=`checkForMatch_of_pattern_within_string__func "${DOCKER__SEMICOLON_SKIP}" "${string__input}"`
+    if [[ ${skipIsFound} == true ]]; then
+        ret=${DOCKER__SEMICOLON_SKIP}
+
+        echo "${ret}"
+
+        return
+    fi
+
     #Check if ';h' is found
-    #If TRUE, then return with the original 'DOCKER__SEMICOLON_HOME'
+    #If TRUE, then return 'DOCKER__SEMICOLON_HOME'
     homeIsFound=`checkForMatch_of_pattern_within_string__func "${DOCKER__SEMICOLON_HOME}" "${string__input}"`
     if [[ ${homeIsFound} == true ]]; then
         ret=${DOCKER__SEMICOLON_HOME}
@@ -4719,7 +4789,7 @@ function get_endResult_ofString_with_semiColonChar__func() {
     fi
 
     #Check if ';b' is found
-    #If TRUE, then return with the original 'DOCKER__SEMICOLON_BACK'
+    #If TRUE, then return 'DOCKER__SEMICOLON_BACK'
     backIsFound=`checkForMatch_of_pattern_within_string__func "${DOCKER__SEMICOLON_BACK}" "${string__input}"`
     if [[ ${backIsFound} == true ]]; then
         ret=${DOCKER__SEMICOLON_BACK}
@@ -4730,7 +4800,7 @@ function get_endResult_ofString_with_semiColonChar__func() {
     fi
 
     #Check if ';c' is found.
-    #If FALSE, then return with the original 'string__input'.
+    #If FALSE, then return the original 'string__input'.
     clearIsFound=`checkForMatch_of_pattern_within_string__func "${DOCKER__SEMICOLON_CLEAR}" "${string__input}"`
     if [[ ${clearIsFound} == false ]]; then
         ret="${string__input}"
@@ -5316,6 +5386,20 @@ function skip_and_correct_unwanted_chars__func() {
     echo "${ret}"
 }
 
+function substract_x_from_y() {
+    #Input args
+    local x=${1}
+    local y=${2}
+
+    #Substract x from y
+    local ret=$(echo ${x} - ${y} | bc)
+
+    #Output
+    echo "${ret}"
+
+    return 0;
+}
+
 function xtract_indexes_from_a_rangeAndOrGroup_in_descendingOrder__func() {
     #---------------------------------------------------------------------
     # Remarks:
@@ -5606,26 +5690,53 @@ docker__get_source_fullpath__sub() {
     docker__LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS_development_tools__dir%/*}    #move one directory up: LTPP3_ROOTFS/
     docker__parentDir_of_LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS__dir%/*}    #move two directories up. This directory is the one-level higher than LTPP3_ROOTFS/
 
+    docker__enter_cmdline_mode__dir=${docker__parentDir_of_LTPP3_ROOTFS__dir}/enter_cmd_mode
+    docker__enter_cmdline_mode_cache__dir=${docker__enter_cmdline_mode__dir}/cache
+
+    docker__LTPP3_ROOTFS_boot__dir=${docker__LTPP3_ROOTFS__dir}/boot
+    docker__LTPP3_ROOTFS_boot_configs__dir=${docker__LTPP3_ROOTFS_boot__dir}/configs
+    docker__LTPP3_ROOTFS_build__dir=${docker__LTPP3_ROOTFS__dir}/build
+    docker__LTPP3_ROOTFS_build_scripts__dir=${docker__LTPP3_ROOTFS_build__dir}/scripts
+    docker__LTPP3_ROOTFS_docker__dir=${docker__LTPP3_ROOTFS__dir}/docker
+    docker__LTPP3_ROOTFS_docker_dockerfiles__dir=${docker__LTPP3_ROOTFS_docker__dir}/dockerfiles
+    docker__LTPP3_ROOTFS_docker_list__dir=${docker__LTPP3_ROOTFS_docker__dir}/list
+    docker__LTPP3_ROOTFS_linux__dir=${docker__LTPP3_ROOTFS__dir}/linux
+    docker__LTPP3_ROOTFS_linux_scripts__dir=${docker__LTPP3_ROOTFS_linux__dir}/scripts
+
+    docker__bin_bash__dir=/bin/bash
+    docker__tmp_dir=/tmp
+
+
+#---filenames used at multiple places
+    docker__diskpart_arr_bck__filename="diskpart_arr.bck"
+    docker__isp_sh__filename="isp.sh"
+    docker__pentagram_common_h__filename="pentagram_common.h"
+    docker__tb_init_sh__filename="tb_init.sh"
+
+
+#---docker__docker__dir - contents
     docker__docker__dir=${docker__parentDir_of_LTPP3_ROOTFS__dir}/docker
-    docker__docker_overlayfs__dir=${docker__docker__dir}/overlayfs
     docker__docker_cache__dir=${docker__docker__dir}/cache
     docker__docker_config__dir=${docker__docker__dir}/config
     docker__docker_dockerfiles__dir=${docker__docker__dir}/dockerfiles
     docker__docker_images__dir=${docker__docker__dir}/images
+    docker__docker_overlayfs__dir=${docker__docker__dir}/overlayfs
 
-    docker__enter_cmdline_mode__dir=${docker__parentDir_of_LTPP3_ROOTFS__dir}/enter_cmd_mode
-    docker__enter_cmdline_mode_cache__dir=${docker__enter_cmdline_mode__dir}/cache
+    docker__docker_overlayfs_dispart_arr_bck__fpath=${docker__docker_overlayfs__dir}/${docker__diskpart_arr_bck__filename}
+    docker__docker_overlayfs_isp_sh__fpath=${docker__docker_overlayfs__dir}/${docker__isp_sh__filename}
+    docker__docker_overlayfs_pentagram_common_h__fpath=${docker__docker_overlayfs__dir}/${docker__pentagram_common_h__filename}
+    docker__docker_overlayfs_tb_init_sh__fpath=${docker__docker_overlayfs__dir}/${docker__tb_init_sh__filename}
 
-    docker__LTPP3_ROOTFS_docker__dir=${docker__LTPP3_ROOTFS__dir}/docker
-    docker__LTPP3_ROOTFS_docker_dockerfiles__dir=${docker__LTPP3_ROOTFS_docker__dir}/dockerfiles
-    docker__LTPP3_ROOTFS_docker_list__dir=${docker__LTPP3_ROOTFS_docker__dir}/list
 
-    docker__tmp_dir=/tmp
-    docker__bin_bash__dir=/bin/bash
+#---docker__docker_config__dir - contents
+    docker__export_env_var_menu_cfg__filename="docker_export_env_var_menu.cfg"
+    docker__export_env_var_menu_cfg__fpath=${docker__docker_config__dir}/${docker__export_env_var_menu_cfg__filename}
+
 
 #---docker__enter_cmdline_mode_cache__dir - contents
     docker__enter_cmdline_mode_cache__filename="docker_enter_cmdline_mode.cache"
     docker__enter_cmdline_mode_cache__fpath=${docker__enter_cmdline_mode_cache__dir}/${docker__enter_cmdline_mode_cache__filename}
+
 
 #---docker__LTPP3_ROOTFS_development_tools__dir - contents
     compgen__query_w_autocomplete__filename="compgen_query_w_autocomplete.sh"
@@ -5682,8 +5793,8 @@ docker__get_source_fullpath__sub() {
     docker__create_image_from_existing_repository__filename="docker_create_image_from_existing_repository.sh"
     docker__create_image_from_existing_repository__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__create_image_from_existing_repository__filename}
 
-    docker_create_images_from_dockerfile_dockerlist_menu__filename="docker_create_images_from_dockerfile_dockerlist_menu.sh"
-    docker_create_images_from_dockerfile_dockerlist_menu__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker_create_images_from_dockerfile_dockerlist_menu__filename}
+    docker__create_images_from_dockerfile_dockerlist_menu__filename="docker_create_images_from_dockerfile_dockerlist_menu.sh"
+    docker__create_images_from_dockerfile_dockerlist_menu__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__create_images_from_dockerfile_dockerlist_menu__filename}
 
     docker__enter_command__filename="docker_enter_command.sh"
     docker__enter_command__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__enter_command__filename}
@@ -5795,9 +5906,21 @@ docker__get_source_fullpath__sub() {
     docker__exported_env_var_default_filename="exported_env_var_default.txt"
     docker__exported_env_var_default_fpath=${docker__LTPP3_ROOTFS_docker_environment_dir}/${docker__exported_env_var_default_filename}
 
-#---docker__docker_config__dir - contents
-    docker__export_env_var_menu_cfg__filename="docker_export_env_var_menu.cfg"
-    docker__export_env_var_menu_cfg__fpath=${docker__docker_config__dir}/${docker__export_env_var_menu_cfg__filename}
+    docker__LTPP3_ROOTFS_build_scripts_isp_sh__fpath=${docker__LTPP3_ROOTFS_build_scripts__dir}/${docker__isp_sh__filename}
+    docker__LTPP3_ROOTFS_boot_configs_pentagram_common_h__fpath=${docker__LTPP3_ROOTFS_boot_configs__dir}/${docker__pentagram_common_h__filename}
+    docker__LTPP3_ROOTFS_linux_scripts_tb_init_sh__fpath=${docker__LTPP3_ROOTFS_linux_scripts__dir}/${docker__tb_init_sh__filename}
+
+
+#---docker__SP7021__dir - contents
+    #Note: this directory MUST be the same as the 'SP7021_dir' which is defined in 'sunplus_inst.sh'
+    docker__SP7021__dir="~/SP7021"
+    docker__SP7021_boot_uboot_include_configs__dir=${docker__SP7021__dir}/boot/uboot/include/configs
+    docker__SP7021_build__dir==${docker__SP7021__dir}/build
+    docker__SP7021_linux_rootfs_initramfs_disk_sbin__dir=${docker__SP7021__dir}/linux/rootfs/initramfs/disk/sbin
+    docker__SP7021_build_isp_h__fpath=${docker__SP7021_build__dir}/${docker__isp_sh__filename}
+    docker__SP7021_boot_uboot_include_configs_pentagram_common_h__fpath=${docker__SP7021_boot_uboot_include_configs__dir}/${docker__pentagram_common_h__filename}
+    docker__SP7021_linux_rootfs_initramfs_disk_sbin_tb_init_sh__fpath=${docker__SP7021_linux_rootfs_initramfs_disk_sbin__dir}/${docker__tb_init_sh__filename}
+
 
 #---docker__tmp_dir - contents
     compgen__query_w_autocomplete_out__filename="compgen_query_w_autocomplete.out"

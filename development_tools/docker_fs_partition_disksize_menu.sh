@@ -100,7 +100,7 @@ docker__menu__sub() {
         echo -e "${DOCKER__FOURSPACES}1. 4GB (ltpp3-g2-02)"
         echo -e "${DOCKER__FOURSPACES}2. 8GB (ltpp3-g2-03)"
         echo -e "${DOCKER__FOURSPACES}3. user-defined"
-        echo -e "${DOCKER__FOURSPACES}4. no overlay"
+        echo -e "${DOCKER__FOURSPACES}4. Unset (do Not use overlay-fs)"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
         echo -e "${DOCKER__FOURSPACES}q. $DOCKER__QUIT_CTRL_C"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"

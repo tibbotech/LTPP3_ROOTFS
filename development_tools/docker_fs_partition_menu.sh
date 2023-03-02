@@ -262,7 +262,7 @@ docker__load_global_fpath_paths__sub() {
 
 docker__load_constants__sub() {
     DOCKER__MENUTITLE="${DOCKER__FG_LIGHTBLUE}DOCKER: "
-    DOCKER__MENUTITLE+="${DOCKER__FG_DARKBLUE}FS PATITION${DOCKER__NOCOLOR} (${DOCKER__FG_DARKBLUE}MB${DOCKER__NOCOLOR})"
+    DOCKER__MENUTITLE+="${DOCKER__FG_DARKBLUE}FS PATITION${DOCKER__NOCOLOR} [${DOCKER__FG_DARKBLUE}MB${DOCKER__NOCOLOR}]"
 }
 
 docker__init_variables__sub() {
@@ -274,6 +274,7 @@ docker__init_variables__sub() {
     docker__diskpartstatus=false
     docker__disksize=0
     docker__disksizestatus_print="${DOCKER__DASH}"
+    docker__disksizestatus_header_print="${DOCKER__EMPTYSTRING}"
     docker__disksizestatus=false
     docker__regEx="${DOCKER__EMPTYSTRING}"
     docker__regex1bq="[1bq]"
@@ -310,6 +311,7 @@ docker__menu__sub() {
     docker__diskpartstatus=false
     docker__disksize=0
     docker__disksizestatus_print="${DOCKER__DASH}"
+    docker__disksizestatus_header_print="${DOCKER__EMPTYSTRING}"
     docker__disksizestatus=false
     docker__regEx="${docker__regex1bq}"
 
@@ -334,34 +336,21 @@ docker__menu__sub() {
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
 
         #Print menu-options
-        if [[ ${docker__disksize} -ne 0 ]]; then
-            docker__disksizestatus=true
+        #Remark:
+        #   This subroutine will implicitely update the varaiables:
+        #   1. docker__disksizestatus
+        #   2. docker__disksizestatus_print
+        docker__menu_update_disksizestatus_boolean_and_print_values__sub
+        echo -e "${docker__disksizestatus_header_print} (${DOCKER__FG_LIGHTGREY}${docker__disksizestatus_print}${DOCKER__NOCOLOR})"
+        
+        #Remark:
+        #   This subroutine will implicitely update the varaiables:
+        #   1. docker__regEx
+        #   2. docker__diskpartstatus_header_print    
+        #   3. docker__diskpartstatus_print
+        docker__menu_update_regex_and_diskpartstatus_print_values__sub
+        echo -e "${docker__diskpartstatus_header_print} (${docker__diskpartstatus_print})"
 
-            docker__disksizestatus_print="${DOCKER__FG_LIGHTGREY}${docker__disksize}${DOCKER__NOCOLOR}"
-        else
-            docker__disksizestatus=false
-
-            docker__disksizestatus_print="${DOCKER__FG_LIGHTGREY}${DOCKER__DASH}${DOCKER__NOCOLOR}"
-        fi
-        echo -e "${DOCKER__FOURSPACES}1. Choose ${DOCKER__FG_RED125}disk${DOCKER__NOCOLOR}-${DOCKER__FG_RED125}size${DOCKER__NOCOLOR} (${DOCKER__FG_LIGHTGREY}${docker__disksizestatus_print}${DOCKER__NOCOLOR})"
-        if [[ ${docker__disksizestatus} == true ]]; then
-            docker__regEx="${docker__regex12bq}"
-
-            docker__diskpartstatus_header_print="${DOCKER__FOURSPACES}2. Configure ${DOCKER__FG_RED9}disk${DOCKER__NOCOLOR}-${DOCKER__FG_RED9}partition${DOCKER__NOCOLOR} "
-
-            if [[ ${docker__diskpartstatus} == true ]]; then
-                docker__diskpartstatus_print="(${DOCKER__FG_LIGHTGREY} <INPUT THE OVERLAY INFO HERE> ${DOCKER__NOCOLOR})"
-            else
-                docker__diskpartstatus_print="(${DOCKER__FG_LIGHTGREY}${DOCKER__DASH}${DOCKER__NOCOLOR})"
-            fi
-        else
-            docker__regEx="${docker__regex1bq}"
-
-            docker__diskpartstatus_header_print="${DOCKER__FG_LIGHTGREY}${DOCKER__FOURSPACES}2.${DOCKER__NOCOLOR} Configure ${DOCKER__FG_RED9}disk${DOCKER__NOCOLOR}-${DOCKER__FG_RED9}partition${DOCKER__NOCOLOR} "
-
-            docker__diskpartstatus_print="(${DOCKER__FG_LIGHTGREY}${DOCKER__STATUS_DISABLED}${DOCKER__NOCOLOR})"
-        fi
-        echo -e "${docker__diskpartstatus_header_print}${docker__diskpartstatus_print}"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
         echo -e "${DOCKER__FOURSPACES}b. build ${DOCKER__BG_LIGHTGREY}ISPBOOOT.BIN${DOCKER__NOCOLOR}"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
@@ -414,8 +403,41 @@ docker__menu__sub() {
         esac
     done
 }
+docker__menu_update_disksizestatus_boolean_and_print_values__sub() {
+    docker__disksizestatus_header_print="${DOCKER__FOURSPACES}1. Choose ${DOCKER__FG_RED125}disk${DOCKER__NOCOLOR}-${DOCKER__FG_RED125}size${DOCKER__NOCOLOR}"
+
+    if [[ ${docker__disksize} -ne 0 ]]; then
+        docker__disksizestatus=true
+
+        docker__disksizestatus_print="${DOCKER__FG_LIGHTGREY}${docker__disksize}${DOCKER__NOCOLOR}"
+    else
+        docker__disksizestatus=false
+
+        docker__disksizestatus_print="${DOCKER__STATUS_UNSET}"
+    fi
+}
 
 
+docker__menu_update_regex_and_diskpartstatus_print_values__sub () {
+docker__disksizestatus=true
+    if [[ ${docker__disksizestatus} == true ]]; then
+        docker__regEx="${docker__regex12bq}"
+
+        docker__diskpartstatus_header_print="${DOCKER__FOURSPACES}2. Configure ${DOCKER__FG_RED9}disk${DOCKER__NOCOLOR}-${DOCKER__FG_RED9}partition${DOCKER__NOCOLOR}"
+docker__diskpartstatus=true
+        if [[ ${docker__diskpartstatus} == true ]]; then
+            docker__diskpartstatus_print="${DOCKER__STATUS_SET}"
+        else
+            docker__diskpartstatus_print="${DOCKER__STATUS_UNSET}"
+        fi
+    else
+        docker__regEx="${docker__regex1bq}"
+
+        docker__diskpartstatus_header_print="${DOCKER__FG_LIGHTGREY}${DOCKER__FOURSPACES}2.${DOCKER__NOCOLOR} Configure ${DOCKER__FG_RED9}disk${DOCKER__NOCOLOR}-${DOCKER__FG_RED9}partition${DOCKER__NOCOLOR}"
+
+        docker__diskpartstatus_print="${DOCKER__STATUS_UNSET}"
+    fi
+}
 
 #---MAIN SUBROUTINE
 main__sub() {

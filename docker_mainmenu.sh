@@ -389,7 +389,7 @@ docker__mainmenu__sub() {
         #Goto the selected option
         case ${docker__myChoice} in
             1)
-                ${docker_create_images_from_dockerfile_dockerlist_menu__fpath}
+                ${docker__create_images_from_dockerfile_dockerlist_menu__fpath}
                 ;;
 
             2)
