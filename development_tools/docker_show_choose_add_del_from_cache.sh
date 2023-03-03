@@ -697,7 +697,7 @@ docker__show_fileContent__sub() {
                         #Check for match
                         #Remark:
                         #   In this case 'line' represents 'docker__env_var_link' or 'docker__env_var_checkout'
-                        match_isFound=`checkForMatch_pattern_of_a_column_within_file__func "${line}" \
+                        match_isFound=`checkForMatch_of_a_pattern_of_a_column_within_file__func "${line}" \
                                 "${docker__repositoryTag}" \
                                 "${docker__colnum}" \
                                 "${exported_env_var_fpath__input}"`
@@ -1092,7 +1092,7 @@ docker__enter_add_handler__sub() {
 }
 docker__enter_add_link_checkout_or_profile_handler__sub() {
     #Check if 'docker__totInput' is already added to 'target_cacheFpath'?
-    local isFound=`checkFor_exact_match_of_pattern_within_file__func "${docker__totInput}" "${target_cacheFpath}"`
+    local isFound=`checkForExactMatch_of_a_pattern_within_file__func "${docker__totInput}" "${target_cacheFpath}"`
     if [[ ${isFound} == true ]]; then
         local ERRMSG_GITLINK_ALREADY_ADDED="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: ${exp_env_var_type__input} already added"
         show_msg_wo_menuTitle_w_PressAnyKey__func "${ERRMSG_GITLINK_ALREADY_ADDED}" \

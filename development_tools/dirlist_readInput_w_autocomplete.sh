@@ -257,7 +257,7 @@ function remove_asterisk_from_string() {
     local asterisk_isFound=false
 
     #Check if asterisk is present in 'str__input'
-    asterisk_isFound=`checkForMatch_of_pattern_within_string__func "${DOCKER__ASTERISK}" "${str__input}"`
+    asterisk_isFound=`checkForMatch_of_a_pattern_within_string__func "${DOCKER__ASTERISK}" "${str__input}"`
     if [[ ${asterisk_isFound} == true ]]; then  #match found
         str_len=${#str__input}  #get length
 
@@ -287,7 +287,7 @@ function process_str_basedOn_numOf_results__func() {
         ret=${str_autocompleted__input}
     else    #autocomplete found multiple matches
         #Check if asterisk is present in 'str__input'
-        asterisk_isFound=`checkForMatch_of_pattern_within_string__func "${DOCKER__ASTERISK}" "${str_bck__input}"`
+        asterisk_isFound=`checkForMatch_of_a_pattern_within_string__func "${DOCKER__ASTERISK}" "${str_bck__input}"`
         if [[ ${asterisk_isFound} == true ]]; then  #asterisk was found
             ret=${str_bck__input}
         else    #no asterisk found
@@ -1006,7 +1006,7 @@ dirlist__readInput_w_autocomplete__sub() {
                         if [[ ${autocomplete_numOfMatches} -ne ${DOCKER__NUMOFMATCH_0} ]]; then #at least one match is found
                             if [[ ${autocomplete_numOfMatches} -gt ${DOCKER__NUMOFMATCH_1} ]]; then #at least one match is found
                                 #Check if an asterisk is already present
-                                asterisk_isFound=`checkForMatch_of_pattern_within_string__func "${DOCKER__ASTERISK}" "${ret}"`
+                                asterisk_isFound=`checkForMatch_of_a_pattern_within_string__func "${DOCKER__ASTERISK}" "${ret}"`
                                 if [[ ${asterisk_isFound} == false ]]; then  #asterisk was NOT found
                                     ret=${ret}${DOCKER__ASTERISK} #append asterisk
                                 fi

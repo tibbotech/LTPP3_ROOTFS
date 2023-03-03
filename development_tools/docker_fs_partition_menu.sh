@@ -271,14 +271,16 @@ docker__init_variables__sub() {
     docker__diskpart="${DOCKER__EMPTYSTRING}"
     docker__diskpartstatus_print="${DOCKER__DASH}"
     docker__diskpartstatus_header_print="${DOCKER__EMPTYSTRING}"
-    docker__diskpartstatus=false
-    docker__disksize=0
+    docker__disksize_set=0
     docker__disksizestatus_print="${DOCKER__DASH}"
     docker__disksizestatus_header_print="${DOCKER__EMPTYSTRING}"
     docker__disksizestatus=false
     docker__regEx="${DOCKER__EMPTYSTRING}"
     docker__regex1bq="[1bq]"
     docker__regex12bq="[1-2bq]"
+
+    docker__overlaymode_set="${docker__overlaymode_set}"
+    docker__overlayfs_set="${docker__overlaymode_set}"
 }
 
 docker__get_git_info__sub() {
@@ -308,8 +310,7 @@ docker__menu__sub() {
     docker__diskpart="${DOCKER__EMPTYSTRING}"
     docker__diskpartstatus_print="${DOCKER__DASH}"
     docker__diskpartstatus_header_print="${DOCKER__EMPTYSTRING}"
-    docker__diskpartstatus=false
-    docker__disksize=0
+    docker__disksize_set=0
     docker__disksizestatus_print="${DOCKER__DASH}"
     docker__disksizestatus_header_print="${DOCKER__EMPTYSTRING}"
     docker__disksizestatus=false
@@ -384,12 +385,9 @@ docker__menu__sub() {
         case ${docker__mychoice1} in
             1)
                 ${docker__fs_partition_disksize_menu__fpath} "${docker__global__fpath}"
-                docker__disksize=$(read_1stline_from_file "${docker__fs_partition_disksize_menu_output__fpath}")
-
-                remove_file__func "${docker__fs_partition_disksize_menu_output__fpath}"
                 ;;
             2)
-                echo "2 in progress"
+                ${docker__fs_partition_diskpartition_menu_fpath} "${docker__disksize_set}" "${docker__global__fpath}"
                 ;;
             b)
                 echo "in 'docker_build_ispboootbin.sh', a check has to be built in whether to copy the 'isp.sh' and 'pentagram_common.h' from source to destination"
@@ -404,38 +402,75 @@ docker__menu__sub() {
     done
 }
 docker__menu_update_disksizestatus_boolean_and_print_values__sub() {
+    #Generate 'docker__disksizestatus_header_print'
     docker__disksizestatus_header_print="${DOCKER__FOURSPACES}1. Choose ${DOCKER__FG_RED125}disk${DOCKER__NOCOLOR}-${DOCKER__FG_RED125}size${DOCKER__NOCOLOR}"
 
-    if [[ ${docker__disksize} -ne 0 ]]; then
+    #Initialize variables
+    docker__disksize_set=0
+    docker__disksizestatus=false
+    docker__disksizestatus_print="${DOCKER__FG_LIGHTGREY}${DOCKER__DASH}${DOCKER__NOCOLOR}"
+
+    #Get 'docker__disksize_set' from file
+    if [[ -f "${docker__docker_fs_partition_conf__fpath}" ]]; then
+        docker__disksize_set=$(retrieve__data_specified_by_col_within_file__func "${DOCKER__DISKSIZESETTING}" \
+                "${DOCKER__COLNUM_2}" \
+                "${docker__docker_fs_partition_conf__fpath}")
+    fi
+
+
+    #1. Set 'docker__disksizestatus'
+    #2. Generate 'docker__disksizestatus_print'
+    if [[ ${docker__disksize_set} -ne 0 ]]; then
         docker__disksizestatus=true
 
-        docker__disksizestatus_print="${DOCKER__FG_LIGHTGREY}${docker__disksize}${DOCKER__NOCOLOR}"
-    else
-        docker__disksizestatus=false
-
-        docker__disksizestatus_print="${DOCKER__STATUS_UNSET}"
+        docker__disksizestatus_print="${DOCKER__FG_LIGHTGREY}${docker__disksize_set}${DOCKER__NOCOLOR}"
     fi
 }
 
 
 docker__menu_update_regex_and_diskpartstatus_print_values__sub () {
-docker__disksizestatus=true
+    #1. Generate 'docker__diskpartstatus_header_print'
+    #2. Select 'docker__regEx'
     if [[ ${docker__disksizestatus} == true ]]; then
         docker__regEx="${docker__regex12bq}"
 
-        docker__diskpartstatus_header_print="${DOCKER__FOURSPACES}2. Configure ${DOCKER__FG_RED9}disk${DOCKER__NOCOLOR}-${DOCKER__FG_RED9}partition${DOCKER__NOCOLOR}"
-docker__diskpartstatus=true
-        if [[ ${docker__diskpartstatus} == true ]]; then
-            docker__diskpartstatus_print="${DOCKER__STATUS_SET}"
-        else
-            docker__diskpartstatus_print="${DOCKER__STATUS_UNSET}"
-        fi
+        docker__diskpartstatus_header_print="${DOCKER__FOURSPACES}2. Configure "
     else
         docker__regEx="${docker__regex1bq}"
 
-        docker__diskpartstatus_header_print="${DOCKER__FG_LIGHTGREY}${DOCKER__FOURSPACES}2.${DOCKER__NOCOLOR} Configure ${DOCKER__FG_RED9}disk${DOCKER__NOCOLOR}-${DOCKER__FG_RED9}partition${DOCKER__NOCOLOR}"
+        docker__diskpartstatus_header_print="${DOCKER__FG_LIGHTGREY}${DOCKER__FOURSPACES}2.${DOCKER__NOCOLOR} Configure "
+    fi
+    docker__diskpartstatus_header_print+="${DOCKER__FG_RED9}disk${DOCKER__NOCOLOR}-${DOCKER__FG_RED9}partition${DOCKER__NOCOLOR}"
 
-        docker__diskpartstatus_print="${DOCKER__STATUS_UNSET}"
+
+    #Initialize variables
+    docker__overlaymode_set=${DOCKER__EMPTYSTRING}
+    docker__overlayfs_set=${DOCKER__EMPTYSTRING}
+
+    #Get 'docker__overlaymode_set' from file
+    if [[ -f "${docker__docker_fs_partition_conf__fpath}" ]]; then
+        docker__overlaymode_set=$(retrieve__data_specified_by_col_within_file__func "${DOCKER__OVERLAYMODE}" \
+                "${DOCKER__COLNUM_2}" \
+                "${docker__docker_fs_partition_conf__fpath}")
+
+        docker__overlayfs_set=$(retrieve__data_specified_by_col_within_file__func "${DOCKER__OVERLAYSETTING}" \
+                "${DOCKER__COLNUM_2}" \
+                "${docker__docker_fs_partition_conf__fpath}")
+    fi
+
+    #Generate 'docker__disksizestatus_print'
+    if [[ -n "${docker__overlaymode_set}" ]]; then
+        docker__diskpartstatus_print="${DOCKER__FG_LIGHTGREY}${docker__overlaymode_set}${DOCKER__NOCOLOR}"
+    else
+        docker__diskpartstatus_print="${DOCKER__FG_LIGHTGREY}${DOCKER__DASH}${DOCKER__NOCOLOR}"
+    fi
+
+    docker__diskpartstatus_print+="/"
+
+    if [[ -n "${docker__overlayfs_set}" ]]; then
+        docker__diskpartstatus_print+="${DOCKER__FG_LIGHTGREY}${docker__overlayfs_set}${DOCKER__NOCOLOR}"
+    else
+        docker__diskpartstatus_print+="${DOCKER__FG_LIGHTGREY}${DOCKER__DASH}${DOCKER__NOCOLOR}"
     fi
 }
 

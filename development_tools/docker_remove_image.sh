@@ -583,7 +583,7 @@ docker_imageId_input__sub() {
                     docker__myImageId="${docker__myImageId_input}"
                 else    #'docker__myImageId' contains data
                     #Check if 'docker__myImageId_input' was already added
-                    isFound=`checkForMatch_of_pattern_within_string__func "${docker__myImageId_input}" "${docker__myImageId}"`
+                    isFound=`checkForMatch_of_a_pattern_within_string__func "${docker__myImageId_input}" "${docker__myImageId}"`
 
                     #If false, then add 'docker__myImageId_input' to 'docker__myImageId'
                     if [[ ${isFound} == false ]]; then

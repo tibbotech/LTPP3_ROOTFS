@@ -397,10 +397,10 @@ goto__func START
     docker__markedtotalTag_arrIndex=0
     for docker__uniqtotalTag_arrItem in "${docker__uniqtotalTag_arr[@]}"
     do
-        tag_isLocal=`checkForMatch_of_pattern_within_array__func "${docker__uniqtotalTag_arrItem}" \
+        tag_isLocal=`checkForMatch_of_pattern_within_1darray__func "${docker__uniqtotalTag_arrItem}" \
                         "${docker__localTag_arr[@]}"`
 
-        tag_isRemote=`checkForMatch_of_pattern_within_array__func "${docker__uniqtotalTag_arrItem}" \
+        tag_isRemote=`checkForMatch_of_pattern_within_1darray__func "${docker__uniqtotalTag_arrItem}" \
                         "${docker__remoteTag_arr[@]}"`
         if [[ ${tag_isLocal} = true ]] && [[ ${tag_isRemote} = false ]]; then
             docker__markedtotalTag_arr[docker__markedtotalTag_arrIndex]="${docker__uniqtotalTag_arrItem} ${DOCKER__MARK_AS_LOCAL}"
@@ -515,7 +515,7 @@ goto__func START
             *)  #all other cases
                 if [[ ! -z ${docker__tag_new} ]]; then  #is Not an Empty String
                     #Check if 'docker__tag_new' is already in-use
-                    newTag_isAlready_inUse=`checkForMatch_of_pattern_within_array__func \
+                    newTag_isAlready_inUse=`checkForMatch_of_pattern_within_1darray__func \
                         "${docker__tag_new}" \
                         "${docker__uniqtotalTag_arr[@]}"`
                     if [[ ${newTag_isAlready_inUse} == false ]]; then   #is Not in-use

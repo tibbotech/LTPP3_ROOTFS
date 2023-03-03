@@ -594,7 +594,7 @@ docker__src_path_selection__sub() {
 
 	#Update 'docker__src_dir' and 'docker__src_file'
 	#Check if 'docker__path_output' contains an 'asterisk'
-	asterisk_isFound=`checkForMatch_of_pattern_within_string__func "${DOCKER__ASTERISK}" "${docker__path_output}"`
+	asterisk_isFound=`checkForMatch_of_a_pattern_within_string__func "${DOCKER__ASTERISK}" "${docker__path_output}"`
 	if [[ ${asterisk_isFound} == true ]]; then	#asterisk was found
 		docker__src_dir=`get_dirname_from_specified_path__func "${docker__path_output}"`
 
@@ -823,7 +823,7 @@ docker__copy_from_src_to_dst__sub() {
 	docker__copy_msg+="Destination: ${DOCKER__FG_LIGHTGREY}${docker__dst_dir}${DOCKER__NOCOLOR}"
 
 	#Check if 'asterisk' is found (MUST BE DONE HERE!)
-	asterisk_isFound=`checkForMatch_of_pattern_within_string__func "${DOCKER__ASTERISK}" "${docker__src_file}"`
+	asterisk_isFound=`checkForMatch_of_a_pattern_within_string__func "${DOCKER__ASTERISK}" "${docker__src_file}"`
 
 	if [[ ${docker__mycopychoice} -eq ${DOCKER__CONTAINER_TO_HOST} ]]; then	#Container to Local Host
 		#Show Title

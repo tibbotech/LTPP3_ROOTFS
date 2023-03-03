@@ -302,6 +302,7 @@ DOCKER__MENU="(${DOCKER__FG_LIGHTGREY}Menu${DOCKER__NOCOLOR})"
 
 
 #---NUMERIC CONSTANTS
+DOCKER__COLNUM_1=1
 DOCKER__COLNUM_2=2
 DOCKER__COLNUM_3=3
 
@@ -360,25 +361,29 @@ DOCKER__TRAP_NUM_2=2
 
 
 #---OVERLAY CONSTANTS
-DOCKER__ADDITIONAL_FS="additional"
-DOCKER__OVERLAY_FS="overlay"
-DOCKER__RESERVED_FS="reserved"
-DOCKER__ROOTFS_FS="rootfs"
-DOCKER__REMAINING="remaining"
+DOCKER__DISKPARTNAME_OVERLAY="overlay"
+DOCKER__DISKPARTNAME_RESERVED="reserved"
+DOCKER__DISKPARTNAME_ROOTFS="rootfs"
+DOCKER__DISKPARTNAME_REMAINING="remaining"
 
-DOCKER__0K_IN_BYTES=0
-DOCKER__1K_IN_BYTES=1024
+DOCKER__DISKSIZESETTING="Disksize-setting"
+DOCKER__DISKSIZE_0K_IN_BYTES=0
+DOCKER__DISKSIZE_1K_IN_BYTES=1024
 DOCKER__DISKSIZE_4G_IN_BYTES=3909091328 #found this value via fdisk -l
-DOCKER__DISKSIZE_4G_IN_MBYTES=$((DOCKER__DISKSIZE_4G_IN_BYTES/DOCKER__1K_IN_BYTES/DOCKER__1K_IN_BYTES))
+DOCKER__DISKSIZE_4G_IN_MBYTES=$((DOCKER__DISKSIZE_4G_IN_BYTES/DOCKER__DISKSIZE_1K_IN_BYTES/DOCKER__DISKSIZE_1K_IN_BYTES))
 DOCKER__DISKSIZE_8G_IN_BYTES=$((DOCKER__DISKSIZE_4G_IN_BYTES*2))    #it is assumed that the disksize of ltpp3g2-03 is 2 x DOCKER__DISKSIZE_4G_IN_BYTES
-DOCKER__DISKSIZE_8G_IN_MBYTES=$((DOCKER__DISKSIZE_8G_IN_BYTES/DOCKER__1K_IN_BYTES/DOCKER__1K_IN_BYTES))
+DOCKER__DISKSIZE_8G_IN_MBYTES=$((DOCKER__DISKSIZE_8G_IN_BYTES/DOCKER__DISKSIZE_1K_IN_BYTES/DOCKER__DISKSIZE_1K_IN_BYTES))
 
 DOCKER__RESERVED_SIZE_DEFAULT=128   #in MB
 DOCKER__ROOTFS_SIZE_DEFAULT=1536    #in MB
-DOCKER__OVERLAYMODE_DEFAULT="default"
+
+DOCKER__OVERLAYPATTERN_DUMMY="Dummy"
+DOCKER__OVERLAYMODE="Overlay-mode"
 DOCKER__OVERLAYMODE_NONPERSISTENT="non-persistent"
 DOCKER__OVERLAYMODE_PERSISTENT="persistent"
-
+DOCKER__OVERLAYSETTING="Overlay-setting"
+DOCKER__OVERLAYFS_APPLY="apply"
+DOCKER__OVERLAYFS_NONAPPLY="non-apply"
 
 
 #---PATH CONSTANTS
@@ -424,13 +429,11 @@ DOCKER__STOPPED="${DOCKER__FG_ORANGE}STOPPED${DOCKER__NOCOLOR}"
 DOCKER__SUGGESTION="${DOCKER__FG_ORANGE}SUGGESTION${DOCKER__NOCOLOR}"
 DOCKER__UPDATE="${DOCKER__FG_ORANGE}UPDATE${DOCKER__NOCOLOR}"
 
-DOCKER__STATUS_APPLIED="${DOCKER__FG_GREEN}applied${DOCKER__NOCOLOR}"
 DOCKER__STATUS_DISABLED="${DOCKER__FG_LIGHTGREY}disabled${DOCKER__NOCOLOR}"
 DOCKER__STATUS_DONE="${DOCKER__FG_GREEN}done${DOCKER__NOCOLOR}"
 DOCKER__STATUS_FAILED="${DOCKER__FG_LIGHTRED}failed${DOCKER__NOCOLOR}"
 DOCKER__STATUS_READY="${DOCKER__FG_YELLOW}ready${DOCKER__NOCOLOR}"
-DOCKER__STATUS_SET="${DOCKER__FG_GREEN}set${DOCKER__NOCOLOR}"
-DOCKER__STATUS_UNSET="${DOCKER__FG_LIGHTGREY}unset${DOCKER__NOCOLOR}"
+DOCKER__STATUS_APPLIED="${DOCKER__FG_GREEN}applied${DOCKER__NOCOLOR}"
 
 DOCKER__NO_ACTION_REQUIRED="No action required"
 
@@ -650,6 +653,8 @@ function disable_keyboard_input__func() {
 
 function enable_ctrl_c__func() {
     trap ${DOCKER__TRAP_NUM_2}
+
+    trap docker__ctrl_c__sub SIGINT
 }
 
 function disable_ctrl_c__func() {
@@ -1057,7 +1062,7 @@ function array_subst_string__func() {
     echo "${ret[@]}"
 }
 
-function checkForMatch_of_pattern_within_array__func() {
+function checkForMatch_of_pattern_within_1darray__func() {
     #Input args
     local pattern__input=${1}
     shift
@@ -1069,6 +1074,37 @@ function checkForMatch_of_pattern_within_array__func() {
     for dataArrItem in "${dataArr__input[@]}"
     do
         if [[ "${pattern__input}" == "${dataArrItem}" ]]; then
+            ret=true
+
+            break
+        fi
+    done
+
+    #Output
+    echo "${ret}"
+}
+
+function checkForExactMatch_of_pattern_within_2darray__func() {
+    #Input args
+    local pattern__input=${1}
+    local colNum__input=${2}
+    local delimiter__input=${3}
+    shift
+    shift
+    shift
+    local dataArr__input=("$@")
+    
+    #Define variables
+    local dataArrItem="${DOCKER__EMPTYSTRING}"
+    local colValue="${DOCKER__EMPTYSTRING}"
+    local ret=false
+
+    #Loop thru array-elements and find a match
+    for dataArrItem in "${dataArr__input[@]}"
+    do
+        #Get value of the 1st column
+        colValue=$(echo "${dataArrItem}" | cut -d"${delimiter__input}" -f"${colNum__input}")
+        if [[ "${pattern__input}" == "${colValue}" ]]; then
             ret=true
 
             break
@@ -1231,7 +1267,38 @@ function show_array_w_menuTitle_w_confirmation__func() {
                         "${confirmation_append_numOfLines__input}"
 }
 
+#---BC RELATED FUNCTIONS
+function bc_substract_x_from_y() {
+    #Input args
+    local x=${1}
+    local y=${2}
 
+    #Substract x from y
+    local ret=$(echo ${x} - ${y} | bc)
+
+    #Output
+    echo "${ret}"
+
+    return 0;
+}
+
+function bc_is_x_greaterthan_zero() {
+    #Input args
+    local x=${1}
+
+    #Define variables
+    local ret=false
+
+    #Check if value 'x > 0'
+    if [[ $(bc <<< "${x} > 0") -gt 0 ]]; then
+        ret=true
+    fi
+
+    #Output
+    echo "${ret}"
+
+    return 0;
+}
 
 #---DOCKER RELATED FUNCTIONS
 function check_containerID_state__func() {
@@ -1943,6 +2010,15 @@ function write_data_to_file__func() {
 
     #Write
     echo "${string__input}" | tee ${targetFpath__input} >/dev/null
+}
+
+function Append_data_to_file__func() {
+    #Input args
+    string__input=${1}
+    targetFpath__input=${2}
+
+    #Write
+    echo "${string__input}" | tee -a ${targetFpath__input} >/dev/null
 }
 
 
@@ -3745,7 +3821,7 @@ function show_pathContent_w_selection__func() {
                         *)  #OTHER F-KEYS AS SPECIFIED BY 'matchPattern__input'
                             if [[ ! -z ${matchPattern__input} ]]; then  #not an Empty String             
                                 #Check if the retrieved function-key 'keyOutput' matches the pattern 'matchPattern__input'
-                                flag_matched_key_isPressed=`checkForMatch_of_pattern_within_string__func \
+                                flag_matched_key_isPressed=`checkForMatch_of_a_pattern_within_string__func \
                                         "${keyOutput}" \
                                         "${matchPattern__input}"`
 
@@ -3818,7 +3894,7 @@ function show_pathContent_w_selection__func() {
                         #   This part has been tested, but NOT thoroughly.                
                         if [[ ! -z ${matchPattern__input} ]]; then  #not an Empty String
                             #Check if the retrieved function-key 'keyInput' matches the pattern 'matchPattern__input'
-                            flag_matched_key_isPressed=`checkForMatch_of_pattern_within_string__func \
+                            flag_matched_key_isPressed=`checkForMatch_of_a_pattern_within_string__func \
                                     "${keyInput}" \
                                     "${matchPattern__input}"`
 
@@ -4357,7 +4433,8 @@ function append_a_specified_numofchars_to_string() {
 
     return 0;
 }
-function checkForMatch_of_pattern_within_string__func() {
+
+function checkForMatch_of_a_pattern_within_string__func() {
     #Turn-off Expansion
     disable_expansion__func
 
@@ -4377,7 +4454,9 @@ function checkForMatch_of_pattern_within_string__func() {
     enable_expansion__func
 }
 
-function checkFor_exact_match_of_pattern_within_file__func() {
+
+
+function checkForExactMatch_of_a_pattern_within_file__func() {
     #Turn-off Expansion
     disable_expansion__func
 
@@ -4404,7 +4483,22 @@ function checkFor_exact_match_of_pattern_within_file__func() {
     enable_expansion__func
 }
 
-function checkFor_any_match_of_pattern_within_file__func() {
+function checkForMatch_dockerCmd_result__func() {
+    #Input Args
+    local pattern__input=${1}
+    local dockerCmd__input=${2}
+    local dockerTableColno__input=${3}
+
+    #Find any match (not exact)
+    local stdOutput=`${dockerCmd__input} | awk -v COLNUM=${dockerTableColno__input} '{print $COLNUM}' | grep -w ${pattern__input}`
+    if [[ -z ${stdOutput} ]]; then  #no match
+        echo "false"
+    else    #match
+        echo "true"
+    fi
+}
+
+function checkForMatch_of_a_pattern_within_file__func() {
     #Turn-off Expansion
     disable_expansion__func
 
@@ -4468,7 +4562,7 @@ function checkForMatch_of_patterns_within_file__func() {
     enable_expansion__func
 }
 
-function checkForMatch_pattern_of_a_column_within_file__func() {
+function checkForMatch_of_a_pattern_of_a_column_within_file__func() {
     #Turn-off Expansion
     disable_expansion__func
 
@@ -4506,13 +4600,13 @@ function checkForMatch_multi_patterns_under_specified_columns_within_file__func(
     local dataFpath__input=${7}
 
     #FIRST MATCH: check if a match can be found for 'targetString1__input'
-   local  match1_isFound=`checkForMatch_pattern_of_a_column_within_file__func "${targetString1__input}" \
+   local  match1_isFound=`checkForMatch_of_a_pattern_of_a_column_within_file__func "${targetString1__input}" \
         "${pattern1__input}" \
         "${col1__input}" \
         "${dataFpath__input}"`    
 
     #SECOND MATCH: check if a match can be found for 'targetString2__input'
-    local match2_isFound=`checkForMatch_pattern_of_a_column_within_file__func "${targetString2__input}" \
+    local match2_isFound=`checkForMatch_of_a_pattern_of_a_column_within_file__func "${targetString2__input}" \
         "${pattern2__input}" \
         "${col2__input}" \
         "${dataFpath__input}"`    
@@ -4528,19 +4622,31 @@ function checkForMatch_multi_patterns_under_specified_columns_within_file__func(
     enable_expansion__func
 }
 
-function checkForMatch_dockerCmd_result__func() {
+function checkForMatch_of_a_word_within_file__func() {
+    #Turn-off Expansion
+    disable_expansion__func
+
     #Input Args
     local pattern__input=${1}
-    local dockerCmd__input=${2}
-    local dockerTableColno__input=${3}
+    local dataFpath__input=${2}
 
-    #Find any match (not exact)
-    local stdOutput=`${dockerCmd__input} | awk -v COLNUM=${dockerTableColno__input} '{print $COLNUM}' | grep -w ${pattern__input}`
-    if [[ -z ${stdOutput} ]]; then  #no match
+    #Check if file exists
+    if [[ ! -s ${dataFpath__input} ]]; then #does not exist
+        echo "false"
+
+        return
+    fi
+
+    #Find match
+    local isFound=`cat "${dataFpath__input}" | grep -w "${pattern__input}"`
+    if [[ -z ${isFound} ]]; then  #no match
         echo "false"
     else    #match
         echo "true"
     fi
+
+    #Turn-on Expansion
+    enable_expansion__func
 }
 
 function checkIf_string_contains_a_leading_specified_chars__func() {
@@ -4735,7 +4841,7 @@ function get_endResult_ofString_with_semiColonChar__func() {
 
     #Check if ';a' is found.
     #If TRUE, then return 'DOCKER__SEMICOLON_ABORT'
-    abortIsFound=`checkForMatch_of_pattern_within_string__func "${DOCKER__SEMICOLON_ABORT}" "${string__input}"`
+    abortIsFound=`checkForMatch_of_a_pattern_within_string__func "${DOCKER__SEMICOLON_ABORT}" "${string__input}"`
     if [[ ${abortIsFound} == true ]]; then
         ret="${DOCKER__SEMICOLON_ABORT}"
 
@@ -4746,7 +4852,7 @@ function get_endResult_ofString_with_semiColonChar__func() {
 
     #Check if ';f' is found
     #If TRUE, then return 'DOCKER__SEMICOLON_FINISH'
-    finishIsFound=`checkForMatch_of_pattern_within_string__func "${DOCKER__SEMICOLON_FINISH}" "${string__input}"`
+    finishIsFound=`checkForMatch_of_a_pattern_within_string__func "${DOCKER__SEMICOLON_FINISH}" "${string__input}"`
     if [[ ${finishIsFound} == true ]]; then
         ret=${DOCKER__SEMICOLON_FINISH}
 
@@ -4757,7 +4863,7 @@ function get_endResult_ofString_with_semiColonChar__func() {
 
     #Check if ';f' is found
     #If TRUE, then return 'DOCKER__SEMICOLON_REDO'
-    redoIsFound=`checkForMatch_of_pattern_within_string__func "${DOCKER__SEMICOLON_REDO}" "${string__input}"`
+    redoIsFound=`checkForMatch_of_a_pattern_within_string__func "${DOCKER__SEMICOLON_REDO}" "${string__input}"`
     if [[ ${redoIsFound} == true ]]; then
         ret=${DOCKER__SEMICOLON_REDO}
 
@@ -4768,7 +4874,7 @@ function get_endResult_ofString_with_semiColonChar__func() {
 
     #Check if ';s' is found
     #If TRUE, then return 'DOCKER__SEMICOLON_SKIP'
-    skipIsFound=`checkForMatch_of_pattern_within_string__func "${DOCKER__SEMICOLON_SKIP}" "${string__input}"`
+    skipIsFound=`checkForMatch_of_a_pattern_within_string__func "${DOCKER__SEMICOLON_SKIP}" "${string__input}"`
     if [[ ${skipIsFound} == true ]]; then
         ret=${DOCKER__SEMICOLON_SKIP}
 
@@ -4779,7 +4885,7 @@ function get_endResult_ofString_with_semiColonChar__func() {
 
     #Check if ';h' is found
     #If TRUE, then return 'DOCKER__SEMICOLON_HOME'
-    homeIsFound=`checkForMatch_of_pattern_within_string__func "${DOCKER__SEMICOLON_HOME}" "${string__input}"`
+    homeIsFound=`checkForMatch_of_a_pattern_within_string__func "${DOCKER__SEMICOLON_HOME}" "${string__input}"`
     if [[ ${homeIsFound} == true ]]; then
         ret=${DOCKER__SEMICOLON_HOME}
 
@@ -4790,7 +4896,7 @@ function get_endResult_ofString_with_semiColonChar__func() {
 
     #Check if ';b' is found
     #If TRUE, then return 'DOCKER__SEMICOLON_BACK'
-    backIsFound=`checkForMatch_of_pattern_within_string__func "${DOCKER__SEMICOLON_BACK}" "${string__input}"`
+    backIsFound=`checkForMatch_of_a_pattern_within_string__func "${DOCKER__SEMICOLON_BACK}" "${string__input}"`
     if [[ ${backIsFound} == true ]]; then
         ret=${DOCKER__SEMICOLON_BACK}
 
@@ -4801,7 +4907,7 @@ function get_endResult_ofString_with_semiColonChar__func() {
 
     #Check if ';c' is found.
     #If FALSE, then return the original 'string__input'.
-    clearIsFound=`checkForMatch_of_pattern_within_string__func "${DOCKER__SEMICOLON_CLEAR}" "${string__input}"`
+    clearIsFound=`checkForMatch_of_a_pattern_within_string__func "${DOCKER__SEMICOLON_CLEAR}" "${string__input}"`
     if [[ ${clearIsFound} == false ]]; then
         ret="${string__input}"
 
@@ -4897,7 +5003,7 @@ function insert_string_into_file_at_specified_lineNum__func() {
     #Check if 'string__input' is found in file 'targetFpath__input'
     local isFound=false
     if [[ ${flag_checkIf_already_inserted__input} == true ]]; then
-        isFound=`checkFor_exact_match_of_pattern_within_file__func "${string__input}" "${targetFpath__input}"`
+        isFound=`checkForExactMatch_of_a_pattern_within_file__func "${string__input}" "${targetFpath__input}"`
         if [[ ${isFound} == true ]]; then
             return
         fi
@@ -4986,6 +5092,31 @@ function remove_whiteSpaces__func() {
     echo -e "${ret}"
 }
 
+function replace_or_append_string_in_file__func() {
+    #Input args
+    local string__input=${1}
+    local pattern__input=${2}
+    local targetFpath__input=${3}
+
+    #Check if file exists
+    if [[ ! -f "${targetFpath__input}" ]]; then #file does NOT exist
+        #Write to file
+        echo -e "${string__input}" | tee ${targetFpath__input} >/dev/null
+
+        #Exit
+        return 0;
+    fi
+
+    #Check if 'pattern__input' is found in file 'targetFpath__input'
+    #...and get the 'line' containing this 'pattern__input'.
+    local line=$(grep -F "${pattern__input}" "${targetFpath__input}")
+    if [[ -n "${line}" ]]; then
+        sed -i "s/${line}/${string__input}/g" ${targetFpath__input}
+    else
+        echo -e "${string__input}" | tee -a ${targetFpath__input} >/dev/null
+    fi
+}
+
 function retrieve_data_specified_by_col_within_2Darray__func() {
 	#Input args
 	local inString__input=${1}
@@ -5030,7 +5161,8 @@ function retrieve__data_specified_by_col_within_file__func() {
     local line=`cat ${targetFpath__input} | grep "${inString__input}"`
 
     #Get data
-    local ret=`echo "${line}" | awk -v COLNUM="${outString_col__input}" '{print $COLNUM}'`
+    # local ret=`echo "${line}" | awk -v COLNUM="${outString_col__input}" '{print $COLNUM}'`
+    local ret=$(grep -F "${inString__input}" ${targetFpath__input} | awk -vCOL="${outString_col__input}" '{print $COL}')
 
     #Output
     echo "${ret}"
@@ -5103,7 +5235,7 @@ function retrieve_subStrings_delimited_by_lastChar_within_string__func() {
     local ret=${EMPTYSTRING}
 
     #Check if 'char__input' is found in 'string__input'
-    local char_isFound=`checkForMatch_of_pattern_within_string__func "${char__input}" "${string__input}"`
+    local char_isFound=`checkForMatch_of_a_pattern_within_string__func "${char__input}" "${string__input}"`
 
     #Retrieve the sub-string which is on the left-side of the specified 'char__input'.
     if [[ ${char_isFound} == true ]]; then
@@ -5336,7 +5468,7 @@ function skip_and_correct_unwanted_chars__func() {
         string_leftOfComma=`echo "${string_remain}" | cut -d"${DOCKER__COMMA}" -f1`
         if [[ ! -z ${string_leftOfComma} ]]; then  #contains data
             #Check if a dash '-' is found in 'string_leftOfComma'
-            dash_isFound=`checkForMatch_of_pattern_within_string__func "${DOCKER__DASH}" "${string_leftOfComma}"`
+            dash_isFound=`checkForMatch_of_a_pattern_within_string__func "${DOCKER__DASH}" "${string_leftOfComma}"`
             if [[ ${dash_isFound} == false ]]; then #dash not found
 				#Append to 'string_final'
 				string_final="${string_final}${DOCKER__COMMA}${string_leftOfComma}"
@@ -5386,20 +5518,6 @@ function skip_and_correct_unwanted_chars__func() {
     echo "${ret}"
 }
 
-function substract_x_from_y() {
-    #Input args
-    local x=${1}
-    local y=${2}
-
-    #Substract x from y
-    local ret=$(echo ${x} - ${y} | bc)
-
-    #Output
-    echo "${ret}"
-
-    return 0;
-}
-
 function xtract_indexes_from_a_rangeAndOrGroup_in_descendingOrder__func() {
     #---------------------------------------------------------------------
     # Remarks:
@@ -5444,7 +5562,7 @@ function xtract_indexes_from_a_rangeAndOrGroup_in_descendingOrder__func() {
         string_leftOfComma=`echo "${string_remain}" | cut -d"${DOCKER__COMMA}" -f1`
         if [[ ! -z ${string_leftOfComma} ]]; then  #contains data
             #Check if a dash '-' is found in 'string_leftOfComma'
-            dash_isFound=`checkForMatch_of_pattern_within_string__func "${DOCKER__DASH}" "${string_leftOfComma}"`
+            dash_isFound=`checkForMatch_of_a_pattern_within_string__func "${DOCKER__DASH}" "${string_leftOfComma}"`
             if [[ ${dash_isFound} == false ]]; then #dash not found
                 #Add 'string_leftOfComma' to array 'index_xtracted_arr'
                 index_xtracted_arr[${index_xtracted_arrIndex}]=${string_leftOfComma}
@@ -5693,23 +5811,19 @@ docker__get_source_fullpath__sub() {
     docker__enter_cmdline_mode__dir=${docker__parentDir_of_LTPP3_ROOTFS__dir}/enter_cmd_mode
     docker__enter_cmdline_mode_cache__dir=${docker__enter_cmdline_mode__dir}/cache
 
-    docker__LTPP3_ROOTFS_boot__dir=${docker__LTPP3_ROOTFS__dir}/boot
-    docker__LTPP3_ROOTFS_boot_configs__dir=${docker__LTPP3_ROOTFS_boot__dir}/configs
-    docker__LTPP3_ROOTFS_build__dir=${docker__LTPP3_ROOTFS__dir}/build
-    docker__LTPP3_ROOTFS_build_scripts__dir=${docker__LTPP3_ROOTFS_build__dir}/scripts
     docker__LTPP3_ROOTFS_docker__dir=${docker__LTPP3_ROOTFS__dir}/docker
     docker__LTPP3_ROOTFS_docker_dockerfiles__dir=${docker__LTPP3_ROOTFS_docker__dir}/dockerfiles
-    docker__LTPP3_ROOTFS_docker_list__dir=${docker__LTPP3_ROOTFS_docker__dir}/list
-    docker__LTPP3_ROOTFS_linux__dir=${docker__LTPP3_ROOTFS__dir}/linux
-    docker__LTPP3_ROOTFS_linux_scripts__dir=${docker__LTPP3_ROOTFS_linux__dir}/scripts
+    # docker__LTPP3_ROOTFS_docker_list__dir=${docker__LTPP3_ROOTFS_docker__dir}/list
 
     docker__bin_bash__dir=/bin/bash
     docker__tmp_dir=/tmp
 
 
 #---filenames used at multiple places
-    docker__diskpart_arr_bck__filename="diskpart_arr.bck"
+    docker__docker_fs_partition_diskpartsize_dat__filename="docker_fs_partition_diskpartsize.dat"
+    docker__docker_fs_partition_conf__filename="docker_fs_partition.conf"
     docker__isp_sh__filename="isp.sh"
+    docker__isp_c__filename="isp.c"
     docker__pentagram_common_h__filename="pentagram_common.h"
     docker__tb_init_sh__filename="tb_init.sh"
 
@@ -5722,7 +5836,9 @@ docker__get_source_fullpath__sub() {
     docker__docker_images__dir=${docker__docker__dir}/images
     docker__docker_overlayfs__dir=${docker__docker__dir}/overlayfs
 
-    docker__docker_overlayfs_dispart_arr_bck__fpath=${docker__docker_overlayfs__dir}/${docker__diskpart_arr_bck__filename}
+    docker__docker_fs_partition_diskpartsize_dat__fpath=${docker__docker_overlayfs__dir}/${docker__docker_fs_partition_diskpartsize_dat__filename}
+    docker__docker_fs_partition_conf__fpath=${docker__docker_overlayfs__dir}/${docker__docker_fs_partition_conf__filename}
+    docker__docker_overlayfs_isp_c__fpath=${docker__docker_overlayfs__dir}/${docker__isp_c__filename}
     docker__docker_overlayfs_isp_sh__fpath=${docker__docker_overlayfs__dir}/${docker__isp_sh__filename}
     docker__docker_overlayfs_pentagram_common_h__fpath=${docker__docker_overlayfs__dir}/${docker__pentagram_common_h__filename}
     docker__docker_overlayfs_tb_init_sh__fpath=${docker__docker_overlayfs__dir}/${docker__tb_init_sh__filename}
@@ -5760,8 +5876,8 @@ docker__get_source_fullpath__sub() {
     docker__fs_partition_disksize_menu__filename="docker_fs_partition_disksize_menu.sh"
     docker__fs_partition_disksize_menu__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__fs_partition_disksize_menu__filename}
 
-    docker__fs_partition_disksize_menu_output__filename="docker_fs_partition_disksize_menu.output"
-    docker__fs_partition_disksize_menu_output__fpath=${docker__tmp_dir}/${docker__fs_partition_disksize_menu_output__filename}
+    # docker__fs_partition_disksize_menu_output__filename="docker_fs_partition_disksize_menu.output"
+    # docker__fs_partition_disksize_menu_output__fpath=${docker__tmp_dir}/${docker__fs_partition_disksize_menu_output__filename}
 
     docker__fs_partition_disksize_userdefined__filename="docker_fs_partition_disksize_userdefined.sh"
     docker__fs_partition_disksize_userdefined__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__fs_partition_disksize_userdefined__filename}
@@ -5906,17 +6022,16 @@ docker__get_source_fullpath__sub() {
     docker__exported_env_var_default_filename="exported_env_var_default.txt"
     docker__exported_env_var_default_fpath=${docker__LTPP3_ROOTFS_docker_environment_dir}/${docker__exported_env_var_default_filename}
 
-    docker__LTPP3_ROOTFS_build_scripts_isp_sh__fpath=${docker__LTPP3_ROOTFS_build_scripts__dir}/${docker__isp_sh__filename}
-    docker__LTPP3_ROOTFS_boot_configs_pentagram_common_h__fpath=${docker__LTPP3_ROOTFS_boot_configs__dir}/${docker__pentagram_common_h__filename}
-    docker__LTPP3_ROOTFS_linux_scripts_tb_init_sh__fpath=${docker__LTPP3_ROOTFS_linux_scripts__dir}/${docker__tb_init_sh__filename}
-
 
 #---docker__SP7021__dir - contents
     #Note: this directory MUST be the same as the 'SP7021_dir' which is defined in 'sunplus_inst.sh'
     docker__SP7021__dir="~/SP7021"
     docker__SP7021_boot_uboot_include_configs__dir=${docker__SP7021__dir}/boot/uboot/include/configs
-    docker__SP7021_build__dir==${docker__SP7021__dir}/build
+    docker__SP7021_build__dir=${docker__SP7021__dir}/build
+    docker__SP7021_build_tools_isp_dir=${docker__SP7021__dir}/build/tools/isp
     docker__SP7021_linux_rootfs_initramfs_disk_sbin__dir=${docker__SP7021__dir}/linux/rootfs/initramfs/disk/sbin
+
+    docker__SP7021_build_tools_isp_isp_c__fpath=${docker__SP7021_build_tools_isp_dir}/${docker__isp_c__filename}
     docker__SP7021_build_isp_h__fpath=${docker__SP7021_build__dir}/${docker__isp_sh__filename}
     docker__SP7021_boot_uboot_include_configs_pentagram_common_h__fpath=${docker__SP7021_boot_uboot_include_configs__dir}/${docker__pentagram_common_h__filename}
     docker__SP7021_linux_rootfs_initramfs_disk_sbin_tb_init_sh__fpath=${docker__SP7021_linux_rootfs_initramfs_disk_sbin__dir}/${docker__tb_init_sh__filename}

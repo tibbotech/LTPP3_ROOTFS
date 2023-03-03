@@ -100,7 +100,7 @@ docker__menu__sub() {
         echo -e "${DOCKER__FOURSPACES}1. 4GB (ltpp3-g2-02)"
         echo -e "${DOCKER__FOURSPACES}2. 8GB (ltpp3-g2-03)"
         echo -e "${DOCKER__FOURSPACES}3. user-defined"
-        echo -e "${DOCKER__FOURSPACES}4. Unset (do Not use overlay-fs)"
+        echo -e "${DOCKER__FOURSPACES}4. Unset (do not use overlay-fs)"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
         echo -e "${DOCKER__FOURSPACES}q. $DOCKER__QUIT_CTRL_C"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
@@ -147,7 +147,7 @@ docker__menu__sub() {
                 remove_file__func "${docker__fs_partition_disksize_userdefined_output__fpath}"
                 ;;
             4)
-                ret=${DOCKER__0K_IN_BYTES}
+                ret=${DOCKER__DISKSIZE_0K_IN_BYTES}
                 ;;
             q)
                 exit__func "${DOCKER__EXITCODE_99}" "${DOCKER__NUMOFLINES_1}"
@@ -159,8 +159,14 @@ docker__menu__sub() {
         fi
     done
 
-    #Write to file
-    write_data_to_file__func "${ret}" "${docker__fs_partition_disksize_menu_output__fpath}"
+
+   #Update variable
+    filecontent="${DOCKER__DISKSIZESETTING} ${ret}"
+
+    #Replace/Append to file
+    replace_or_append_string_in_file__func "${filecontent}" \
+            "${DOCKER__DISKSIZESETTING}" \
+            "${docker__docker_fs_partition_conf__fpath}"
 }
 
 
