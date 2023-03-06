@@ -671,7 +671,7 @@ docker__get_source_fullpath__sub() {
     local docker__phase=""
 
     local docker__current_dir=
-    local docker__tmp_dir=""
+    local docker__tmp__dir=""
 
     local docker__development_tools__foldername=""
     local docker__LTPP3_ROOTFS__foldername=""
@@ -695,13 +695,13 @@ docker__get_source_fullpath__sub() {
     #Set variables
     docker__phase="${DOCKER__PHASE_CHECK_CACHE}"
     docker__current_dir=$(dirname $(readlink -f $0))
-    docker__tmp_dir=/tmp
+    docker__tmp__dir=/tmp
     docker__development_tools__foldername="development_tools"
     docker__global__filename="docker_global.sh"
     docker__LTPP3_ROOTFS__foldername="LTPP3_ROOTFS"
 
     docker__mainmenu_path_cache__filename="docker__mainmenu_path.cache"
-    docker__mainmenu_path_cache__fpath="${docker__tmp_dir}/${docker__mainmenu_path_cache__filename}"
+    docker__mainmenu_path_cache__fpath="${docker__tmp__dir}/${docker__mainmenu_path_cache__filename}"
 
     docker_result=false
 
@@ -923,20 +923,20 @@ docker__load_global_fpath_paths__sub() {
 
 compgen__environmental_variables__sub() {
     compgen__raw_headed_tmp__filename="compgen_raw_headed.tmp"
-    compgen__raw_headed_tmp__fpath=${docker__tmp_dir}/${compgen__raw_headed_tmp__filename}
+    compgen__raw_headed_tmp__fpath=${docker__tmp__dir}/${compgen__raw_headed_tmp__filename}
     compgen__raw_headed2_tmp__filename="compgen_raw_headed2.tmp"
-    compgen__raw_headed2_tmp__fpath=${docker__tmp_dir}/${compgen__raw_headed2_tmp__filename}
+    compgen__raw_headed2_tmp__fpath=${docker__tmp__dir}/${compgen__raw_headed2_tmp__filename}
     compgen__raw_headed3_tmp__filename="compgen_raw_headed3.tmp"
-    compgen__raw_headed3_tmp__fpath=${docker__tmp_dir}/${compgen__raw_headed3_tmp__filename}
+    compgen__raw_headed3_tmp__fpath=${docker__tmp__dir}/${compgen__raw_headed3_tmp__filename}
     compgen__raw_backslash_prepended_tmp__filename="compgen_raw_backslash_prepended.tmp"
-    compgen__raw_backslash_prepended_tmp__fpath=${docker__tmp_dir}/${compgen__raw_backslash_prepended_tmp__filename}
+    compgen__raw_backslash_prepended_tmp__fpath=${docker__tmp__dir}/${compgen__raw_backslash_prepended_tmp__filename}
     compgen__raw_all_tmp__filename="compgen_raw_all.tmp"
-    compgen__raw_all_tmp__fpath=${docker__tmp_dir}/${compgen__raw_all_tmp__filename}
+    compgen__raw_all_tmp__fpath=${docker__tmp__dir}/${compgen__raw_all_tmp__filename}
     compgen__tablized_tmp__filename="compgen_tablized.tmp"
-    compgen__tablized_tmp__fpath=${docker__tmp_dir}/${compgen__tablized_tmp__filename}
+    compgen__tablized_tmp__fpath=${docker__tmp__dir}/${compgen__tablized_tmp__filename}
 
     compgen__query_w_autocomplete_out__filename="compgen_query_w_autocomplete.out"
-    compgen__query_w_autocomplete_out__fpath=${docker__tmp_dir}/${compgen__query_w_autocomplete_out__filename}
+    compgen__query_w_autocomplete_out__fpath=${docker__tmp__dir}/${compgen__query_w_autocomplete_out__filename}
 }
 
 compgen__load_constants__sub() {

@@ -42,11 +42,11 @@ docker__readdialog_w_output__func() {
 #Note: this can be simply done by trying to read the constant 'DOCKER__THISFILE_ISREACHABLE'
 docker__check_inputarg__sub() {
     if [[ -z "${global_fpath__input}" ]]; then
-        docker__tmp_dir=/tmp
+        docker__tmp__dir=/tmp
         docker__development_tools__foldername="development_tools"
         docker__global__filename="docker_global.sh"
         docker__mainmenu_path_cache__filename="docker__mainmenu_path.cache"
-        docker__mainmenu_path_cache__fpath="${docker__tmp_dir}/${docker__mainmenu_path_cache__filename}"
+        docker__mainmenu_path_cache__fpath="${docker__tmp__dir}/${docker__mainmenu_path_cache__filename}"
 
         if [[ ! -f "${docker__mainmenu_path_cache__fpath}" ]]; then
             echo -e "\r"
@@ -89,7 +89,7 @@ docker__init_variables__sub() {
     docker__disksize_remain=${disksize__input}
     
     docker__overlaymode_set="${DOCKER__OVERLAYMODE_PERSISTENT}"
-    docker__overlayfs_set="${DOCKER__OVERLAYFS_NONAPPLY}"
+    docker__overlayfs_set="${DOCKER__OVERLAYFS_DISABLED}"
 
     docker__readdialog_output="${DOCKER__EMPTYSTRING}"
 
@@ -175,12 +175,12 @@ docker__preprep__sub() {
         #   It can happen that 'docker__overlayfs_set' is an 'Empty String'
         #   ...in case file 'docker__docker_fs_partition_conf__fpath' has
         #   ...no 'DOCKER__OVERLAYSETTING' input.
-        #   In that case, automatically set 'docker__overlayfs_set = DOCKER__OVERLAYFS_NONAPPLY'.
+        #   In that case, automatically set 'docker__overlayfs_set = DOCKER__OVERLAYFS_DISABLED'.
         if [[ -z "${docker__overlayfs_set}" ]]; then
-            docker__overlayfs_set="${DOCKER__OVERLAYFS_NONAPPLY}"
+            docker__overlayfs_set="${DOCKER__OVERLAYFS_DISABLED}"
 
             #Generate 'filecontent'
-            filecontent="${DOCKER__OVERLAYSETTING} ${DOCKER__OVERLAYFS_NONAPPLY}"
+            filecontent="${DOCKER__OVERLAYSETTING} ${DOCKER__OVERLAYFS_DISABLED}"
 
             #Replace/Append to file
             replace_or_append_string_in_file__func "${filecontent}" \
@@ -190,7 +190,7 @@ docker__preprep__sub() {
     else
         #Generate 'filecontent'
         filecontent="${DOCKER__OVERLAYMODE} ${DOCKER__OVERLAYMODE_PERSISTENT}\n"
-        filecontent+="${DOCKER__OVERLAYSETTING} ${DOCKER__OVERLAYFS_NONAPPLY}"
+        filecontent+="${DOCKER__OVERLAYSETTING} ${DOCKER__OVERLAYFS_DISABLED}"
 
         #Replace/Append to file
         replace_or_append_string_in_file__func "${filecontent}" \
@@ -383,14 +383,32 @@ docker__menu_body_print_sub() {
     echo -e "${diskpart_arritem_print}"
 }
 docker__menu_options_print_sub() {
+    #Define variables
+    local overlaymode_print="${DOCKER__EMPTYSTRING}"
+    local overlayfs_print="${DOCKER__EMPTYSTRING}"
+
+    #Print options
     echo -e "${DOCKER__FOURSPACES}1. Configure ${DOCKER__BLINKING}new${DOCKER__NOCOLOR} partition"
     echo -e "${DOCKER__FOURSPACES}2. Configure ${DOCKER__DIM}existing${DOCKER__NOCOLOR} partition"
+
     #overlay-mode:
     #   default (do NOT change the pentagram_common.h)
     #   rw (insert string 'tb_overlay' in pentagram_common.h)
     #   ro (insert string 'tb_rootfs_ro' in pentagram_common.h)
-    echo -e "${DOCKER__FOURSPACES}3. ${DOCKER__OVERLAYMODE} (${DOCKER__FG_LIGHTGREY}${docker__overlaymode_set}${DOCKER__NOCOLOR})"
-    echo -e "${DOCKER__FOURSPACES}4. ${DOCKER__OVERLAYSETTING} (${DOCKER__FG_LIGHTGREY}${docker__overlayfs_set}${DOCKER__NOCOLOR})"
+    if [[ "${docker__overlaymode_set}" == "${DOCKER__OVERLAYMODE_PERSISTENT}" ]]; then
+        overlaymode_print="${DOCKER__FG_GREEN158}${docker__overlaymode_set}${DOCKER__NOCOLOR}"
+    else
+        overlaymode_print="${DOCKER__FG_RED187}${docker__overlaymode_set}${DOCKER__NOCOLOR}"
+    fi
+    echo -e "${DOCKER__FOURSPACES}3. ${DOCKER__OVERLAYMODE} (${DOCKER__FG_LIGHTGREY}${overlaymode_print}${DOCKER__NOCOLOR})"
+
+    if [[ "${docker__overlayfs_set}" == "${DOCKER__OVERLAYFS_ENABLED}" ]]; then
+        overlayfs_print="${DOCKER__FG_GREEN158}${docker__overlayfs_set}${DOCKER__NOCOLOR}"
+    else
+        overlayfs_print="${DOCKER__FG_RED187}${docker__overlayfs_set}${DOCKER__NOCOLOR}"
+    fi
+
+    echo -e "${DOCKER__FOURSPACES}4. ${DOCKER__OVERLAYSETTING} (${DOCKER__FG_LIGHTGREY}${overlayfs_print}${DOCKER__NOCOLOR})"
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
     echo -e "${DOCKER__FOURSPACES}q. $DOCKER__QUIT_CTRL_C"
 }
@@ -769,10 +787,10 @@ docker__overlayfs__sub() {
     local filecontent="${DOCKER__EMPTYSTRING}"
 
     #Flip 'docker__overlayfs_set' value
-    if [[ "${docker__overlayfs_set}" == "${DOCKER__OVERLAYFS_NONAPPLY}" ]]; then
-        docker__overlayfs_set="${DOCKER__OVERLAYFS_APPLY}"
+    if [[ "${docker__overlayfs_set}" == "${DOCKER__OVERLAYFS_DISABLED}" ]]; then
+        docker__overlayfs_set="${DOCKER__OVERLAYFS_ENABLED}"
     else
-        docker__overlayfs_set="${DOCKER__OVERLAYFS_NONAPPLY}"
+        docker__overlayfs_set="${DOCKER__OVERLAYFS_DISABLED}"
     fi
 
     #Update variable

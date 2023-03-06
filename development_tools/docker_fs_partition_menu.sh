@@ -10,7 +10,7 @@ docker__get_source_fullpath__sub() {
     local docker__phase=""
 
     local docker__current_dir=
-    local docker__tmp_dir=""
+    local docker__tmp__dir=""
 
     local docker__development_tools__foldername=""
     local docker__LTPP3_ROOTFS__foldername=""
@@ -34,13 +34,13 @@ docker__get_source_fullpath__sub() {
     #Set variables
     docker__phase="${DOCKER__PHASE_CHECK_CACHE}"
     docker__current_dir=$(dirname $(readlink -f $0))
-    docker__tmp_dir=/tmp
+    docker__tmp__dir=/tmp
     docker__development_tools__foldername="development_tools"
     docker__global__filename="docker_global.sh"
     docker__LTPP3_ROOTFS__foldername="LTPP3_ROOTFS"
 
     docker__mainmenu_path_cache__filename="docker__mainmenu_path.cache"
-    docker__mainmenu_path_cache__fpath="${docker__tmp_dir}/${docker__mainmenu_path_cache__filename}"
+    docker__mainmenu_path_cache__fpath="${docker__tmp__dir}/${docker__mainmenu_path_cache__filename}"
 
     docker_result=false
 
@@ -262,7 +262,7 @@ docker__load_global_fpath_paths__sub() {
 
 docker__load_constants__sub() {
     DOCKER__MENUTITLE="${DOCKER__FG_LIGHTBLUE}DOCKER: "
-    DOCKER__MENUTITLE+="${DOCKER__FG_DARKBLUE}FS PATITION${DOCKER__NOCOLOR} [${DOCKER__FG_DARKBLUE}MB${DOCKER__NOCOLOR}]"
+    DOCKER__MENUTITLE+="${DOCKER__FG_DARKBLUE}Overlay${DOCKER__NOCOLOR} & ${DOCKER__FG_DARKBLUE}ISPBOOOT.BIN${DOCKER__NOCOLOR}"
 }
 
 docker__init_variables__sub() {
@@ -353,7 +353,7 @@ docker__menu__sub() {
         echo -e "${docker__diskpartstatus_header_print} (${docker__diskpartstatus_print})"
 
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-        echo -e "${DOCKER__FOURSPACES}b. build ${DOCKER__BG_LIGHTGREY}ISPBOOOT.BIN${DOCKER__NOCOLOR}"
+        echo -e "${DOCKER__FOURSPACES}b. ${DOCKER__MENU} build ${DOCKER__BG_LIGHTGREY}ISPBOOOT.BIN${DOCKER__NOCOLOR}"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
         echo -e "${DOCKER__FOURSPACES}q. $DOCKER__QUIT_CTRL_C"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
@@ -390,9 +390,6 @@ docker__menu__sub() {
                 ${docker__fs_partition_diskpartition_menu_fpath} "${docker__disksize_set}" "${docker__global__fpath}"
                 ;;
             b)
-                echo "in 'docker_build_ispboootbin.sh', a check has to be built in whether to copy the 'isp.sh' and 'pentagram_common.h' from source to destination"
-                echo "you could check whether 'docker__docker_overlayfs__dir' contains both files or not. If yes, then copy and build".
-                echo "if NOT, then just build without overlay"
                 ${docker__container_build_ispboootbin_fpath}
                 ;;
             q)
@@ -403,7 +400,7 @@ docker__menu__sub() {
 }
 docker__menu_update_disksizestatus_boolean_and_print_values__sub() {
     #Generate 'docker__disksizestatus_header_print'
-    docker__disksizestatus_header_print="${DOCKER__FOURSPACES}1. Choose ${DOCKER__FG_RED125}disk${DOCKER__NOCOLOR}-${DOCKER__FG_RED125}size${DOCKER__NOCOLOR}"
+    docker__disksizestatus_header_print="${DOCKER__FOURSPACES}1. ${DOCKER__MENU} Choose ${DOCKER__FG_RED125}disk${DOCKER__NOCOLOR}-${DOCKER__FG_RED125}size${DOCKER__NOCOLOR}"
 
     #Initialize variables
     docker__disksize_set=0
@@ -434,11 +431,11 @@ docker__menu_update_regex_and_diskpartstatus_print_values__sub () {
     if [[ ${docker__disksizestatus} == true ]]; then
         docker__regEx="${docker__regex12bq}"
 
-        docker__diskpartstatus_header_print="${DOCKER__FOURSPACES}2. Configure "
+        docker__diskpartstatus_header_print="${DOCKER__FOURSPACES}2. ${DOCKER__MENU} Configure "
     else
         docker__regEx="${docker__regex1bq}"
 
-        docker__diskpartstatus_header_print="${DOCKER__FG_LIGHTGREY}${DOCKER__FOURSPACES}2.${DOCKER__NOCOLOR} Configure "
+        docker__diskpartstatus_header_print="${DOCKER__FG_LIGHTGREY}${DOCKER__FOURSPACES}2. ${DOCKER__MENU} ${DOCKER__NOCOLOR}Configure "
     fi
     docker__diskpartstatus_header_print+="${DOCKER__FG_RED9}disk${DOCKER__NOCOLOR}-${DOCKER__FG_RED9}partition${DOCKER__NOCOLOR}"
 
@@ -460,7 +457,11 @@ docker__menu_update_regex_and_diskpartstatus_print_values__sub () {
 
     #Generate 'docker__disksizestatus_print'
     if [[ -n "${docker__overlaymode_set}" ]]; then
-        docker__diskpartstatus_print="${DOCKER__FG_LIGHTGREY}${docker__overlaymode_set}${DOCKER__NOCOLOR}"
+        if [[ "${docker__overlaymode_set}" == "${DOCKER__OVERLAYMODE_PERSISTENT}" ]]; then
+            docker__diskpartstatus_print="${DOCKER__FG_GREEN158}${docker__overlaymode_set}${DOCKER__NOCOLOR}"
+        else
+            docker__diskpartstatus_print="${DOCKER__FG_RED187}${docker__overlaymode_set}${DOCKER__NOCOLOR}"
+        fi
     else
         docker__diskpartstatus_print="${DOCKER__FG_LIGHTGREY}${DOCKER__DASH}${DOCKER__NOCOLOR}"
     fi
@@ -468,7 +469,11 @@ docker__menu_update_regex_and_diskpartstatus_print_values__sub () {
     docker__diskpartstatus_print+="/"
 
     if [[ -n "${docker__overlayfs_set}" ]]; then
-        docker__diskpartstatus_print+="${DOCKER__FG_LIGHTGREY}${docker__overlayfs_set}${DOCKER__NOCOLOR}"
+        if [[ "${docker__overlayfs_set}" == "${DOCKER__OVERLAYFS_ENABLED}" ]]; then
+            docker__diskpartstatus_print+="${DOCKER__FG_GREEN158}${docker__overlayfs_set}${DOCKER__NOCOLOR}"
+        else
+            docker__diskpartstatus_print+="${DOCKER__FG_RED187}${docker__overlayfs_set}${DOCKER__NOCOLOR}"
+        fi
     else
         docker__diskpartstatus_print+="${DOCKER__FG_LIGHTGREY}${DOCKER__DASH}${DOCKER__NOCOLOR}"
     fi

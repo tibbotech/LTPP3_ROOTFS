@@ -10,7 +10,7 @@ docker__get_source_fullpath__sub() {
     local docker__phase=""
 
     local docker__current_dir=
-    local docker__tmp_dir=""
+    local docker__tmp__dir=""
 
     local docker__development_tools__foldername=""
     local docker__LTPP3_ROOTFS__foldername=""
@@ -34,13 +34,13 @@ docker__get_source_fullpath__sub() {
     #Set variables
     docker__phase="${DOCKER__PHASE_CHECK_CACHE}"
     docker__current_dir=$(dirname $(readlink -f $0))
-    docker__tmp_dir=/tmp
+    docker__tmp__dir=/tmp
     docker__development_tools__foldername="development_tools"
     docker__global__filename="docker_global.sh"
     docker__LTPP3_ROOTFS__foldername="LTPP3_ROOTFS"
 
     docker__mainmenu_path_cache__filename="docker__mainmenu_path.cache"
-    docker__mainmenu_path_cache__fpath="${docker__tmp_dir}/${docker__mainmenu_path_cache__filename}"
+    docker__mainmenu_path_cache__fpath="${docker__tmp__dir}/${docker__mainmenu_path_cache__filename}"
 
     docker_result=false
 
@@ -260,34 +260,27 @@ docker__load_global_fpath_paths__sub() {
     source ${docker__global__fpath}
 }
 
-docker___env_var__sub() {
-    docker__home_dir=~
-    docker__tmp_dir=/tmp
-    docker__SP7021_foldername="SP7021"
-    docker__SP7021_dir=${docker__home_dir}/${docker__SP7021_foldername}
-    docker__SP7021_boot_uboot_tools_dir=${docker__SP7021_dir}/boot/uboot/tools
+docker__overlay_handler__sub() {
 
-    docker_build_ispboootbin_tmp_sh_filename="docker_build_ispboootbin_tmp.sh"
-    docker_build_ispboootbin_tmp_sh_fpath="${docker__tmp_dir}/${docker_build_ispboootbin_tmp_sh_filename}"
 }
 
-docker__create_script__sub() {
+docker__build_ispboootbin__sub() {
     #Generate file-content
     local filecontent="echo -e \"\\r\"\n"
     filecontent+="echo -e \"\\r\"\n"
-    filecontent+="echo -e \"---:${DOCKER__UPDATE}: navigate to ${DOCKER__FG_LIGHTGREY}${docker__SP7021_dir}${DOCKER__NOCOLOR}\"\n"
-    filecontent+="cd ${docker__SP7021_dir}\n"
+    filecontent+="echo -e \"---:${DOCKER__UPDATE}: navigate to ${DOCKER__FG_LIGHTGREY}${docker__SP7021__dir}${DOCKER__NOCOLOR}\"\n"
+    filecontent+="cd ${docker__SP7021__dir}\n"
     filecontent+="\n"
-    filecontent+="echo -e \"---:${DOCKER__UPDATE}: add to ${DOCKER__FG_LIGHTGREY}${docker__SP7021_boot_uboot_tools_dir}${DOCKER__NOCOLOR} to ${DOCKER__FG_LIGHTGREY}PATH${DOCKER__NOCOLOR}\"\n"
-    filecontent+="export PATH=\$PATH:${docker__SP7021_boot_uboot_tools_dir}\n"
+    filecontent+="echo -e \"---:${DOCKER__UPDATE}: add to ${DOCKER__FG_LIGHTGREY}${docker__SP7021_boot_uboot_tools__dir}${DOCKER__NOCOLOR} to ${DOCKER__FG_LIGHTGREY}PATH${DOCKER__NOCOLOR}\"\n"
+    filecontent+="export PATH=\$PATH:${docker__SP7021_boot_uboot_tools__dir}\n"
     filecontent+="\n"
-    filecontent+="checkif_matchisFound=\$(cat ${docker__home_dir}/.bashrc | grep \"${docker__SP7021_boot_uboot_tools_dir}\")\n"
+    filecontent+="checkif_matchisFound=\$(cat ${docker__home_dotbashrc__fpath} | grep \"${docker__SP7021_boot_uboot_tools__dir}\")\n"
     filecontent+="if [[ -z \"\${checkif_matchisFound}\" ]]; then\n"
-    filecontent+="    echo -e \"export PATH=\$PATH:${docker__SP7021_boot_uboot_tools_dir}\" | tee -a ${docker__home_dir}/.bashrc\n"
+    filecontent+="    echo -e \"export PATH=\$PATH:${docker__SP7021_boot_uboot_tools__dir}\" | tee -a ${docker__home_dotbashrc__fpath}\n"
     filecontent+="fi\n"
     filecontent+="\n"
-    filecontent+="echo -e \"---:${DOCKER__UPDATE}: excecute ${DOCKER__FG_LIGHTGREY}source ${docker__home_dir}/.bashrc${DOCKER__NOCOLOR}\"\n"
-    filecontent+="source ${docker__home_dir}/.bashrc\n"
+    filecontent+="echo -e \"---:${DOCKER__UPDATE}: excecute ${DOCKER__FG_LIGHTGREY}source ${docker__home_dotbashrc__fpath}${DOCKER__NOCOLOR}\"\n"
+    filecontent+="source ${docker__home_dotbashrc__fpath}\n"
     filecontent+="\n"
     filecontent+="echo -e \"---:${DOCKER__UPDATE}: excecute ${DOCKER__FG_LIGHTGREY}env \"PATH=\$PATH\" make all${DOCKER__NOCOLOR}\"\n"
     filecontent+="env \"PATH=\$PATH\" make all"
@@ -317,7 +310,7 @@ docker__main__sub() {
 
     docker___env_var__sub
 
-    docker__create_script__sub
+    docker__build_ispboootbin__sub
     docker__execute_scripts__sub
 }
 

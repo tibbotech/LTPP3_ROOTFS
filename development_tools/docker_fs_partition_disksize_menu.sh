@@ -10,11 +10,11 @@ global_fpath__input=${1}
 #Note: this can be simply done by trying to read the constant 'DOCKER__THISFILE_ISREACHABLE'
 docker__check_inputarg__sub() {
     if [[ -z "${global_fpath__input}" ]]; then
-        docker__tmp_dir=/tmp
+        docker__tmp__dir=/tmp
         docker__development_tools__foldername="development_tools"
         docker__global__filename="docker_global.sh"
         docker__mainmenu_path_cache__filename="docker__mainmenu_path.cache"
-        docker__mainmenu_path_cache__fpath="${docker__tmp_dir}/${docker__mainmenu_path_cache__filename}"
+        docker__mainmenu_path_cache__fpath="${docker__tmp__dir}/${docker__mainmenu_path_cache__filename}"
 
         if [[ ! -f "${docker__mainmenu_path_cache__fpath}" ]]; then
             echo -e "\r"

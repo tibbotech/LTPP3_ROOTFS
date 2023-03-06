@@ -106,6 +106,7 @@ DOCKER__FG_GREEN71=$'\e[30;38;5;71m'
 DOCKER__FG_GREEN85=$'\e[30;38;5;85m'
 DOCKER__FG_GREEN119=$'\e[30;38;5;119m'
 DOCKER__FG_GREEN155=$'\e[30;38;5;155m'
+DOCKER__FG_GREEN158=$'\e[30;38;5;158m'
 DOCKER__FG_LIGHTBLUE=$'\e[30;38;5;45m'
 DOCKER__FG_LIGHTGREEN=$'\e[1;32m'
 DOCKER__FG_LIGHTGREY=$'\e[30;38;5;246m'
@@ -116,6 +117,7 @@ DOCKER__FG_ORANGE=$'\e[30;38;5;215m'
 DOCKER__FG_PINK=$'\e[30;38;5;213m'
 DOCKER__FG_PURPLE=$'\e[30;38;5;93m'
 DOCKER__FG_PURPLERED=$'\e[30;38;5;198m'
+DOCKER__FG_RED187=$'\e[30;38;5;187m'
 DOCKER__FG_SOFTDARKBLUE=$'\e[30;38;5;38m'
 DOCKER__FG_SOFTLIGHTRED=$'\e[30;38;5;131m'
 DOCKER__FG_WHITE=$'\e[30;38;5;231m'
@@ -382,8 +384,8 @@ DOCKER__OVERLAYMODE="Overlay-mode"
 DOCKER__OVERLAYMODE_NONPERSISTENT="non-persistent"
 DOCKER__OVERLAYMODE_PERSISTENT="persistent"
 DOCKER__OVERLAYSETTING="Overlay-setting"
-DOCKER__OVERLAYFS_APPLY="apply"
-DOCKER__OVERLAYFS_NONAPPLY="non-apply"
+DOCKER__OVERLAYFS_ENABLED="enabled"
+DOCKER__OVERLAYFS_DISABLED="disabled"
 
 
 #---PATH CONSTANTS
@@ -5695,7 +5697,7 @@ function update_exported_env_var__func() {
             sed -i "${repository_tag_lineNum}d" ${exported_env_var_fpath__input}
         fi
 
-        #Add the new data to file 'docker__exported_env_var_fpath' as follows:
+        #Add the new data to file 'docker__exported_env_var__fpath' as follows:
         #   dockerfile_fpath_repositoryTag<space>docker_arg1__input<space>DOCKER_ARG2__input
         #Remark:
         #   1. This data will be retrieved in 'docker__create_an_image_from_dockerfile.sh' and 'docker_create_images_from_dockerlist.sh'
@@ -5753,10 +5755,12 @@ docker__ctrl_c__sub() {
 }
 
 docker__get_source_fullpath__sub() {
-    docker__tmp_dir=/tmp
+    #Mandatory directories
+    docker__bin_bash__dir=/bin/bash
+    docker__tmp__dir=/tmp
 
     docker__mainmenu_path_cache__filename="docker__mainmenu_path.cache"
-    docker__mainmenu_path_cache__fpath="${docker__tmp_dir}/${docker__mainmenu_path_cache__filename}"
+    docker__mainmenu_path_cache__fpath="${docker__tmp__dir}/${docker__mainmenu_path_cache__filename}"
 
     #Check the number of input args
     #Check if file exists
@@ -5815,9 +5819,6 @@ docker__get_source_fullpath__sub() {
     docker__LTPP3_ROOTFS_docker_dockerfiles__dir=${docker__LTPP3_ROOTFS_docker__dir}/dockerfiles
     # docker__LTPP3_ROOTFS_docker_list__dir=${docker__LTPP3_ROOTFS_docker__dir}/list
 
-    docker__bin_bash__dir=/bin/bash
-    docker__tmp_dir=/tmp
-
 
 #---filenames used at multiple places
     docker__docker_fs_partition_diskpartsize_dat__filename="docker_fs_partition_diskpartsize.dat"
@@ -5871,19 +5872,19 @@ docker__get_source_fullpath__sub() {
     docker__fs_partition_diskpartition_menu_fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__fs_partition_diskpartition_menu_filename}
 
     docker__fs_partition_diskpartition_menu_output_filename="docker_fs_partition_diskpartition_menu.output"
-    docker__fs_partition_diskpartition_menu_output_fpath=${docker__tmp_dir}/${docker__fs_partition_diskpartition_menu_output_filename}
+    docker__fs_partition_diskpartition_menu_output_fpath=${docker__tmp__dir}/${docker__fs_partition_diskpartition_menu_output_filename}
 
     docker__fs_partition_disksize_menu__filename="docker_fs_partition_disksize_menu.sh"
     docker__fs_partition_disksize_menu__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__fs_partition_disksize_menu__filename}
 
     # docker__fs_partition_disksize_menu_output__filename="docker_fs_partition_disksize_menu.output"
-    # docker__fs_partition_disksize_menu_output__fpath=${docker__tmp_dir}/${docker__fs_partition_disksize_menu_output__filename}
+    # docker__fs_partition_disksize_menu_output__fpath=${docker__tmp__dir}/${docker__fs_partition_disksize_menu_output__filename}
 
     docker__fs_partition_disksize_userdefined__filename="docker_fs_partition_disksize_userdefined.sh"
     docker__fs_partition_disksize_userdefined__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__fs_partition_disksize_userdefined__filename}
 
     docker__fs_partition_disksize_userdefined_output__filename="docker_fs_partition_disksize_userdefined.output"
-    docker__fs_partition_disksize_userdefined_output__fpath=${docker__tmp_dir}/${docker__fs_partition_disksize_userdefined_output__filename}
+    docker__fs_partition_disksize_userdefined_output__fpath=${docker__tmp__dir}/${docker__fs_partition_disksize_userdefined_output__filename}
 
     docker__container_build_ispboootbin_filename="docker_container_build_ispboootbin.sh"
     docker__container_build_ispboootbin_fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__container_build_ispboootbin_filename}
@@ -6009,120 +6010,132 @@ docker__get_source_fullpath__sub() {
     git__git_undo_last_unpushed_commit__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${git__git_undo_last_unpushed_commit__filename}
 
 
+#---docker__home__dir - contents
+    docker__home__dir="~"
+    docker__home_dotbashrc__fpath="${docker__home__dir}/.bashrc"
+
 
 #---docker__LTPP3_ROOTFS_docker__dir - contents
-    docker__dockerfile_ltps_sunplus_filename="dockerfile_ltps_sunplus"
-    docker__dockerfile_ltps_sunplus_fpath=${docker__LTPP3_ROOTFS_docker_dockerfiles__dir}/${docker__dockerfile_ltps_sunplus_filename}
+    docker__dockerfile_ltps_sunplus__filename="dockerfile_ltps_sunplus"
+    docker__dockerfile_ltps_sunplus_fpath=${docker__LTPP3_ROOTFS_docker_dockerfiles__dir}/${docker__dockerfile_ltps_sunplus__filename}
 
-    docker__LTPP3_ROOTFS_docker_environment_dir=${docker__LTPP3_ROOTFS_docker__dir}/environment
-    docker__exported_env_var_filename="exported_env_var.txt"
-    docker__exported_env_var_fpath=${docker__LTPP3_ROOTFS_docker_environment_dir}/${docker__exported_env_var_filename}
+    docker__LTPP3_ROOTFS_docker_environment__dir=${docker__LTPP3_ROOTFS_docker__dir}/environment
+    docker__exported_env_var__filename="exported_env_var.txt"
+    docker__exported_env_var__fpath=${docker__LTPP3_ROOTFS_docker_environment__dir}/${docker__exported_env_var__filename}
 
-    docker__LTPP3_ROOTFS_docker_environment_dir=${docker__LTPP3_ROOTFS_docker__dir}/environment
-    docker__exported_env_var_default_filename="exported_env_var_default.txt"
-    docker__exported_env_var_default_fpath=${docker__LTPP3_ROOTFS_docker_environment_dir}/${docker__exported_env_var_default_filename}
+    docker__LTPP3_ROOTFS_docker_environment__dir=${docker__LTPP3_ROOTFS_docker__dir}/environment
+    docker__exported_env_var_default__filename="exported_env_var_default.txt"
+    docker__exported_env_var_default__fpath=${docker__LTPP3_ROOTFS_docker_environment__dir}/${docker__exported_env_var_default__filename}
+
+    docker__LTPP3_ROOTFS_build_scripts_isp_sh__fpath=${docker__LTPP3_ROOTFS_build_scripts__dir}/${docker__isp_sh__filename}
+    docker__LTPP3_ROOTFS_boot_configs_pentagram_common_h__fpath=${docker__LTPP3_ROOTFS_boot_configs__dir}/${docker__pentagram_common_h__filename}
+    docker__LTPP3_ROOTFS_linux_scripts_tb_init_sh__fpath=${docker__LTPP3_ROOTFS_linux_scripts__dir}/${docker__tb_init_sh__filename}
 
 
 #---docker__SP7021__dir - contents
     #Note: this directory MUST be the same as the 'SP7021_dir' which is defined in 'sunplus_inst.sh'
-    docker__SP7021__dir="~/SP7021"
+    docker__SP7021__dir="${docker__home__dir}/SP7021"
     docker__SP7021_boot_uboot_include_configs__dir=${docker__SP7021__dir}/boot/uboot/include/configs
+    docker__SP7021_boot_uboot_tools__dir=${docker__SP7021__dir}/boot/uboot/tools
     docker__SP7021_build__dir=${docker__SP7021__dir}/build
-    docker__SP7021_build_tools_isp_dir=${docker__SP7021__dir}/build/tools/isp
+    docker__SP7021_build_tools_isp__dir=${docker__SP7021__dir}/build/tools/isp
     docker__SP7021_linux_rootfs_initramfs_disk_sbin__dir=${docker__SP7021__dir}/linux/rootfs/initramfs/disk/sbin
 
-    docker__SP7021_build_tools_isp_isp_c__fpath=${docker__SP7021_build_tools_isp_dir}/${docker__isp_c__filename}
+    docker__SP7021_build_tools_isp_isp_c__fpath=${docker__SP7021_build_tools_isp__dir}/${docker__isp_c__filename}
     docker__SP7021_build_isp_h__fpath=${docker__SP7021_build__dir}/${docker__isp_sh__filename}
     docker__SP7021_boot_uboot_include_configs_pentagram_common_h__fpath=${docker__SP7021_boot_uboot_include_configs__dir}/${docker__pentagram_common_h__filename}
     docker__SP7021_linux_rootfs_initramfs_disk_sbin_tb_init_sh__fpath=${docker__SP7021_linux_rootfs_initramfs_disk_sbin__dir}/${docker__tb_init_sh__filename}
 
 
-#---docker__tmp_dir - contents
+#---docker__tmp__dir - contents
     compgen__query_w_autocomplete_out__filename="compgen_query_w_autocomplete.out"
-    compgen__query_w_autocomplete_out__fpath=${docker__tmp_dir}/${compgen__query_w_autocomplete_out__filename}
+    compgen__query_w_autocomplete_out__fpath=${docker__tmp__dir}/${compgen__query_w_autocomplete_out__filename}
 
     dirlist__readInput_w_autocomplete_out__filename="dirlist_readInput_w_autocomplete.out"
-    dirlist__readInput_w_autocomplete_out__fpath=${docker__tmp_dir}/${dirlist__readInput_w_autocomplete_out__filename}
+    dirlist__readInput_w_autocomplete_out__fpath=${docker__tmp__dir}/${dirlist__readInput_w_autocomplete_out__filename}
 
     dirlist__src_ls_1aA_output__filename="dirlist_src_ls_1aA.output"
-    dirlist__src_ls_1aA_output__fpath=${docker__tmp_dir}/${dirlist__src_ls_1aA_output__filename}
+    dirlist__src_ls_1aA_output__fpath=${docker__tmp__dir}/${dirlist__src_ls_1aA_output__filename}
     dirlist__src_ls_1aA_tmp__filename="dirlist_src_ls_1aA.tmp"
-    dirlist__src_ls_1aA_tmp__fpath=${docker__tmp_dir}/${dirlist__src_ls_1aA_tmp__filename}
+    dirlist__src_ls_1aA_tmp__fpath=${docker__tmp__dir}/${dirlist__src_ls_1aA_tmp__filename}
     dirlist__dst_ls_1aA_output__filename="dirlist_dst_ls_1aA.output"
-    dirlist__dst_ls_1aA_output__fpath=${docker__tmp_dir}/${dirlist__dst_ls_1aA_output__filename}
+    dirlist__dst_ls_1aA_output__fpath=${docker__tmp__dir}/${dirlist__dst_ls_1aA_output__filename}
     dirlist__dst_ls_1aA_tmp__filename="dirlist_dst_ls_1aA.tmp"
-    dirlist__dst_ls_1aA_tmp__fpath=${docker__tmp_dir}/${dirlist__dst_ls_1aA_tmp__filename}
+    dirlist__dst_ls_1aA_tmp__fpath=${docker__tmp__dir}/${dirlist__dst_ls_1aA_tmp__filename}
 
     dclcau_lh_ls__filename="dclcau_lh_ls.sh"
     dclcau_lh_ls__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${dclcau_lh_ls__filename}
     dclcau_dc_ls__filename="dclcau_dc_ls.sh"
     dclcau_dc_ls__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${dclcau_dc_ls__filename}
 
+    docker_build_ispboootbin_tmp_sh_filename="docker_build_ispboootbin_tmp.sh"
+    docker_build_ispboootbin_tmp_sh_fpath="${docker__tmp__dir}/${docker_build_ispboootbin_tmp_sh_filename}"
+
     docker__create_an_image_from_dockerfile_out__filename="docker_create_an_image_from_dockerfile.out"
-    docker__create_an_image_from_dockerfile_out__fpath=${docker__tmp_dir}/${docker__create_an_image_from_dockerfile_out__filename}
+    docker__create_an_image_from_dockerfile_out__fpath=${docker__tmp__dir}/${docker__create_an_image_from_dockerfile_out__filename}
 
     docker__create_images_from_dockerlist_out__filename="docker_create_images_from_dockerlist.out"
-    docker__create_images_from_dockerlist_out__fpath=${docker__tmp_dir}/${docker__create_images_from_dockerlist_out__filename}
+    docker__create_images_from_dockerlist_out__fpath=${docker__tmp__dir}/${docker__create_images_from_dockerlist_out__filename}
 
     docker__enter_cmdline_mode_out__filename="docker_enter_cmdline_mode.out"
-    docker__enter_cmdline_mode_out__fpath=${docker__tmp_dir}/${docker__enter_cmdline_mode_out__filename}
+    docker__enter_cmdline_mode_out__fpath=${docker__tmp__dir}/${docker__enter_cmdline_mode_out__filename}
 
     docker__enter_cmdline_mode_tmp__filename="docker_enter_cmdline_mode.tmp"
-    docker__enter_cmdline_mode_tmp__fpath=${docker__tmp_dir}/${docker__enter_cmdline_mode_tmp__filename}
+    docker__enter_cmdline_mode_tmp__fpath=${docker__tmp__dir}/${docker__enter_cmdline_mode_tmp__filename}
 
     docker__export_env_var_menu_out__filename="docker_export_env_var_menu.out"
-    docker__export_env_var_menu_out__fpath=${docker__tmp_dir}/${docker__export_env_var_menu_out__filename}
+    docker__export_env_var_menu_out__fpath=${docker__tmp__dir}/${docker__export_env_var_menu_out__filename}
 
     docker__readInput_w_autocomplete_out__filename="docker_readInput_w_autocomplete.out"
-    docker__readInput_w_autocomplete_out__fpath=${docker__tmp_dir}/${docker__readInput_w_autocomplete_out__filename}
+    docker__readInput_w_autocomplete_out__fpath=${docker__tmp__dir}/${docker__readInput_w_autocomplete_out__filename}
 
     docker__repo_link_checkout_menu_select_out__filname="docker_repo_link_checkout_menu_select.out"
-    docker__repo_link_checkout_menu_select_out__fpath=${docker__tmp_dir}/${docker__repo_link_checkout_menu_select_out__filname}
+    docker__repo_link_checkout_menu_select_out__fpath=${docker__tmp__dir}/${docker__repo_link_checkout_menu_select_out__filname}
 
     docker__repo_linkcheckout_profile_menu_select_out__filename="docker_repo_linkcheckout_profile_menu_select.out"
-    docker__repo_linkcheckout_profile_menu_select_out__fpath=${docker__tmp_dir}/${docker__repo_linkcheckout_profile_menu_select_out__filename}
+    docker__repo_linkcheckout_profile_menu_select_out__fpath=${docker__tmp__dir}/${docker__repo_linkcheckout_profile_menu_select_out__filename}
 
     docker__readDialog_w_Output__func_out__filename="readDialog_w_Output__func.out"
-    docker__readDialog_w_Output__func_out__fpath=${docker__tmp_dir}/${docker__readDialog_w_Output__func_out__filename}
+    docker__readDialog_w_Output__func_out__fpath=${docker__tmp__dir}/${docker__readDialog_w_Output__func_out__filename}
 
     docker__select_dockerfile_out__filename="docker_select_dockerfile.out"
-    docker__select_dockerfile_out__fpath=${docker__tmp_dir}/${docker__select_dockerfile_out__filename}
+    docker__select_dockerfile_out__fpath=${docker__tmp__dir}/${docker__select_dockerfile_out__filename}
 
     docker__show_choose_add_del_from_cache_out__filename="docker_show_choose_add_del_from_cache.out"
-    docker__show_choose_add_del_from_cache_out__fpath=${docker__tmp_dir}/${docker__show_choose_add_del_from_cache_out__filename}
+    docker__show_choose_add_del_from_cache_out__fpath=${docker__tmp__dir}/${docker__show_choose_add_del_from_cache_out__filename}
 
     docker__show_fileContent_wo_select_func_out__filename="show_fileContent_wo_select__func.out"
-    docker__show_fileContent_wo_select_func_out__fpath=${docker__tmp_dir}/${docker__show_fileContent_wo_select_func_out__filename}
+    docker__show_fileContent_wo_select_func_out__fpath=${docker__tmp__dir}/${docker__show_fileContent_wo_select_func_out__filename}
 
     docker__show_pathContent_w_selection_func_out__filename="show_pathContent_w_selection__func.out"
-    docker__show_pathContent_w_selection_func_out__fpath=${docker__tmp_dir}/${docker__show_pathContent_w_selection_func_out__filename}
+    docker__show_pathContent_w_selection_func_out__fpath=${docker__tmp__dir}/${docker__show_pathContent_w_selection_func_out__filename}
 
     git__git_create_checkout_local_branch_out__filename="git_create_checkout_local_branch.out"
-    git__git_create_checkout_local_branch_out__fpath=${docker__tmp_dir}/${git__git_create_checkout_local_branch_out__filename}
+    git__git_create_checkout_local_branch_out__fpath=${docker__tmp__dir}/${git__git_create_checkout_local_branch_out__filename}
 
     git__git_tag_create_link_and_push_out__filename="git_tag_create_link_and_push.out"
-    git__git_tag_create_link_and_push_out__fpath=${docker__tmp_dir}/${git__git_tag_create_link_and_push_out__filename}
+    git__git_tag_create_link_and_push_out__fpath=${docker__tmp__dir}/${git__git_tag_create_link_and_push_out__filename}
 
     git__git_delete_local_branch_out__filename="git_delete_local_branch.out"
-    git__git_delete_local_branch_out__fpath=${docker__tmp_dir}/${git__git_delete_local_branch_out__filename}
+    git__git_delete_local_branch_out__fpath=${docker__tmp__dir}/${git__git_delete_local_branch_out__filename}
 
     git__git_push_out__filename="git_push.out"
-    git__git_push_out__fpath=${docker__tmp_dir}/${git__git_push_out__filename}
+    git__git_push_out__fpath=${docker__tmp__dir}/${git__git_push_out__filename}
 
     git__git_readInput_w_autocomplete_out__filename="git_readInput_w_autocomplete.out"
-    git__git_readInput_w_autocomplete_out__fpath=${docker__tmp_dir}/${git__git_readInput_w_autocomplete_out__filename}
+    git__git_readInput_w_autocomplete_out__fpath=${docker__tmp__dir}/${git__git_readInput_w_autocomplete_out__filename}
 
     git__git_tag_create_and_push_out__filename="git_tag_create_and_push.out"
-    git__git_tag_create_and_push_out__fpath=${docker__tmp_dir}/${git__git_tag_create_and_push_out__filename}
+    git__git_tag_create_and_push_out__fpath=${docker__tmp__dir}/${git__git_tag_create_and_push_out__filename}
 
     git__git_tag_rename_out__filename="git_tag_rename.out"
-    git__git_tag_rename_out__fpath=${docker__tmp_dir}/${git__git_tag_rename_out__filename}
+    git__git_tag_rename_out__fpath=${docker__tmp__dir}/${git__git_tag_rename_out__filename}
 
     git__git_tag_remove_out__filename="git_tag_remove.out"
-    git__git_tag_remove_out__fpath=${docker__tmp_dir}/${git__git_tag_remove_out__filename}
+    git__git_tag_remove_out__fpath=${docker__tmp__dir}/${git__git_tag_remove_out__filename}
 
     git__git_undo_last_unpushed_commit_out__filename="git_undo_last_unpushed_commit.out"
-    git__git_undo_last_unpushed_commit_out__fpath=${docker__tmp_dir}/${git__git_undo_last_unpushed_commit_out__filename}
+    git__git_undo_last_unpushed_commit_out__fpath=${docker__tmp__dir}/${git__git_undo_last_unpushed_commit_out__filename}
 
 
     #OLD VERSION (is temporarily present for backwards compaitibility)
@@ -6157,18 +6170,18 @@ docker__create_dir__sub() {
     if [[ ! -d ${docker__enter_cmdline_mode_cache__dir} ]]; then
         mkdir -p ${docker__enter_cmdline_mode_cache__dir}
     fi
-    if [[ ! -d ${docker__tmp_dir} ]]; then
-        mkdir -p ${docker__tmp_dir}
+    if [[ ! -d ${docker__tmp__dir} ]]; then
+        mkdir -p ${docker__tmp__dir}
     fi
 }
 
 docker__create_exported_env_var_file__sub() {
     #Check if 'docker__exported_env_var.txt' is present
-    if [[ ! -f ${docker__exported_env_var_fpath} ]]; then
-        #Copy from 'docker__exported_env_var_default_fpath' to 'docker__exported_env_var_fpath'
+    if [[ ! -f ${docker__exported_env_var__fpath} ]]; then
+        #Copy from 'docker__exported_env_var_default__fpath' to 'docker__exported_env_var__fpath'
         #Remark:
         #   Both paths are defined in 'docker__global__fpath'
-        cp ${docker__exported_env_var_default_fpath} ${docker__exported_env_var_fpath}
+        cp ${docker__exported_env_var_default__fpath} ${docker__exported_env_var__fpath}
     fi
 }
 

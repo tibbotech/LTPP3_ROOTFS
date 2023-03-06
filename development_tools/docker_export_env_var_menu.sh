@@ -12,7 +12,7 @@ docker__get_source_fullpath__sub() {
     local docker__phase=""
 
     local docker__current_dir=
-    local docker__tmp_dir=""
+    local docker__tmp__dir=""
 
     local docker__development_tools__foldername=""
     local docker__LTPP3_ROOTFS__foldername=""
@@ -36,13 +36,13 @@ docker__get_source_fullpath__sub() {
     #Set variables
     docker__phase="${DOCKER__PHASE_CHECK_CACHE}"
     docker__current_dir=$(dirname $(readlink -f $0))
-    docker__tmp_dir=/tmp
+    docker__tmp__dir=/tmp
     docker__development_tools__foldername="development_tools"
     docker__global__filename="docker_global.sh"
     docker__LTPP3_ROOTFS__foldername="LTPP3_ROOTFS"
 
     docker__mainmenu_path_cache__filename="docker__mainmenu_path.cache"
-    docker__mainmenu_path_cache__fpath="${docker__tmp_dir}/${docker__mainmenu_path_cache__filename}"
+    docker__mainmenu_path_cache__fpath="${docker__tmp__dir}/${docker__mainmenu_path_cache__filename}"
 
     docker_result=false
 
@@ -348,16 +348,16 @@ docker__retrieve_link_and_checkout_from_file__sub() {
     #   this subroutine MUST be executed AFTER 'docker__retrieve_data_from_configFile__sub'
     #----------------------------------------------------------------
 
-    #Check if 'docker__dockerFile_fpath' or 'docker__exported_env_var_fpath' does exist?
-    if [[ ! -f ${docker__dockerFile_fpath} ]] || [[ ! -f ${docker__exported_env_var_fpath} ]]; then  #true
+    #Check if 'docker__dockerFile_fpath' or 'docker__exported_env_var__fpath' does exist?
+    if [[ ! -f ${docker__dockerFile_fpath} ]] || [[ ! -f ${docker__exported_env_var__fpath} ]]; then  #true
         return
     fi
 
-    #Get 'docker__env_var_link' from 'docker__exported_env_var_fpath'
-    docker__env_var_link=`retrieve_env_var_link_from_file__func "${docker__dockerFile_fpath}" "${docker__exported_env_var_fpath}"`
+    #Get 'docker__env_var_link' from 'docker__exported_env_var__fpath'
+    docker__env_var_link=`retrieve_env_var_link_from_file__func "${docker__dockerFile_fpath}" "${docker__exported_env_var__fpath}"`
 
-    #Get 'docker__env_var_checkout' from 'docker__exported_env_var_fpath'
-    docker__env_var_checkout=`retrieve_env_var_checkout_from_file__func "${docker__dockerFile_fpath}" "${docker__exported_env_var_fpath}"`
+    #Get 'docker__env_var_checkout' from 'docker__exported_env_var__fpath'
+    docker__env_var_checkout=`retrieve_env_var_checkout_from_file__func "${docker__dockerFile_fpath}" "${docker__exported_env_var__fpath}"`
 }
 
 docker__calc_const_string_lengths__sub() {
@@ -559,7 +559,7 @@ docker__retrieve_and_prep_variables__sub() {
     #Retrieve data from 'docker__export_env_var_menu_cfg__fpath'
     docker__retrieve_data_from_configFile__sub
 
-    #Retrieve the 'link' and 'checkout' values from 'docker__exported_env_var_fpath'
+    #Retrieve the 'link' and 'checkout' values from 'docker__exported_env_var__fpath'
     docker__retrieve_link_and_checkout_from_file__sub
 
     #Calculate the string lengths

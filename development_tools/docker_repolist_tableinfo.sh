@@ -1,10 +1,10 @@
 #!/bin/bash
 #---ENVIRONMENT VARIABLES
-docker__tmp_dir="/tmp"
+docker__tmp__dir="/tmp"
 docker__docker_repoList_tmp__filename="docker__docker_repoList.tmp"
-docker__docker_repoList_tmp__fpath=${docker__tmp_dir}/${docker__docker_repoList_tmp__filename}
+docker__docker_repoList_tmp__fpath=${docker__tmp__dir}/${docker__docker_repoList_tmp__filename}
 docker__docker_repoList_print__filename="docker__docker_repoList.prn"
-docker__docker_repoList_print__fpath=${docker__tmp_dir}/${docker__docker_repoList_print__filename}
+docker__docker_repoList_print__fpath=${docker__tmp__dir}/${docker__docker_repoList_print__filename}
 
 
 

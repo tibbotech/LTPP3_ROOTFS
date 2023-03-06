@@ -37,8 +37,8 @@ function create_image__func() {
         dockerfile_repository_tag="${dockerfile}:${DOCKER__LATEST}"
     else    #is Not an Empty String
         #Retrieve to-be-exported Environment variables
-        exported_env_var1=`retrieve_env_var_link_from_file__func "${dockerfile_fpath}" "${docker__exported_env_var_fpath}"`
-        exported_env_var2=`retrieve_env_var_checkout_from_file__func "${dockerfile_fpath}" "${docker__exported_env_var_fpath}"`
+        exported_env_var1=`retrieve_env_var_link_from_file__func "${dockerfile_fpath}" "${docker__exported_env_var__fpath}"`
+        exported_env_var2=`retrieve_env_var_checkout_from_file__func "${dockerfile_fpath}" "${docker__exported_env_var__fpath}"`
         exported_env_var3=`git config --get remote.origin.url`
 
         #For now, lets assume that the git-repo was cloned via HTTPS.
@@ -172,7 +172,7 @@ docker__get_source_fullpath__sub() {
     local docker__phase=""
 
     local docker__current_dir=
-    local docker__tmp_dir=""
+    local docker__tmp__dir=""
 
     local docker__development_tools__foldername=""
     local docker__LTPP3_ROOTFS__foldername=""
@@ -196,13 +196,13 @@ docker__get_source_fullpath__sub() {
     #Set variables
     docker__phase="${DOCKER__PHASE_CHECK_CACHE}"
     docker__current_dir=$(dirname $(readlink -f $0))
-    docker__tmp_dir=/tmp
+    docker__tmp__dir=/tmp
     docker__development_tools__foldername="development_tools"
     docker__global__filename="docker_global.sh"
     docker__LTPP3_ROOTFS__foldername="LTPP3_ROOTFS"
 
     docker__mainmenu_path_cache__filename="docker__mainmenu_path.cache"
-    docker__mainmenu_path_cache__fpath="${docker__tmp_dir}/${docker__mainmenu_path_cache__filename}"
+    docker__mainmenu_path_cache__fpath="${docker__tmp__dir}/${docker__mainmenu_path_cache__filename}"
 
     docker_result=false
 

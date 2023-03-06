@@ -34,7 +34,7 @@ docker__get_source_fullpath__sub() {
     local docker__phase=""
 
     local docker__current_dir=
-    local docker__tmp_dir=""
+    local docker__tmp__dir=""
 
     local docker__development_tools__foldername=""
     local docker__LTPP3_ROOTFS__foldername=""
@@ -58,13 +58,13 @@ docker__get_source_fullpath__sub() {
     #Set variables
     docker__phase="${DOCKER__PHASE_CHECK_CACHE}"
     docker__current_dir=$(dirname $(readlink -f $0))
-    docker__tmp_dir=/tmp
+    docker__tmp__dir=/tmp
     docker__development_tools__foldername="development_tools"
     docker__global__filename="docker_global.sh"
     docker__LTPP3_ROOTFS__foldername="LTPP3_ROOTFS"
 
     docker__mainmenu_path_cache__filename="docker__mainmenu_path.cache"
-    docker__mainmenu_path_cache__fpath="${docker__tmp_dir}/${docker__mainmenu_path_cache__filename}"
+    docker__mainmenu_path_cache__fpath="${docker__tmp__dir}/${docker__mainmenu_path_cache__filename}"
 
     docker_result=false
 
@@ -452,6 +452,25 @@ docker__preCheck_app_isPresent__sub() {
     fi
 }
 
+
+
+
+docker__overlay__sub() {
+    #Define constants
+    local PHASE_
+
+    #Define variables
+    local phase
+
+echo -e "\n docker__overlay__sub: continue here!!!"
+
+
+exit
+}
+
+
+
+
 docker__run_script__sub() {
     #Define variables
     local docker_exec_cmd="docker exec -it ${docker__myContainerId} ${docker__bash_fpath} -c"
@@ -494,6 +513,8 @@ docker__main__sub(){
     #   This pre-check has run AFTER 'docker__choose_containerID__sub',
     #   ...because the 'container-ID' may be needed.
     docker__preCheck__sub
+
+    docker__overlay__sub
 
     docker__run_script__sub
 }
