@@ -422,6 +422,8 @@ DOCKER__COMPLETED="${DOCKER__FG_ORANGE}COMPLETED${DOCKER__NOCOLOR}"
 DOCKER__EXECUTED="${DOCKER__FG_ORANGE}EXECUTED${DOCKER__NOCOLOR}"
 DOCKER__INFO="${DOCKER__FG_ORANGE}INFO${DOCKER__NOCOLOR}"
 DOCKER__INPUT="${DOCKER__FG_YELLOW}INPUT${DOCKER__NOCOLOR}"
+DOCKER__PRECHECK="${DOCKER__FG_PURPLERED}PRE${NOCOLOR}${FG_ORANGE}-CHECK:${DOCKER__NOCOLOR}"
+DOCKER__LOCATION="${DOCKER__FG_YELLOW}LOCATION${DOCKER__NOCOLOR}"
 DOCKER__QUESTION="${DOCKER__FG_YELLOW}QUESTION${DOCKER__NOCOLOR}"
 DOCKER__REQUEST="${DOCKER__FG_ORANGE}REQUEST${DOCKER__NOCOLOR}"
 DOCKER__RESULT="${DOCKER__FG_ORANGE}RESULT${DOCKER__NOCOLOR}"
@@ -431,11 +433,19 @@ DOCKER__STOPPED="${DOCKER__FG_ORANGE}STOPPED${DOCKER__NOCOLOR}"
 DOCKER__SUGGESTION="${DOCKER__FG_ORANGE}SUGGESTION${DOCKER__NOCOLOR}"
 DOCKER__UPDATE="${DOCKER__FG_ORANGE}UPDATE${DOCKER__NOCOLOR}"
 
-DOCKER__STATUS_DISABLED="${DOCKER__FG_LIGHTGREY}disabled${DOCKER__NOCOLOR}"
-DOCKER__STATUS_DONE="${DOCKER__FG_GREEN}done${DOCKER__NOCOLOR}"
-DOCKER__STATUS_FAILED="${DOCKER__FG_LIGHTRED}failed${DOCKER__NOCOLOR}"
-DOCKER__STATUS_READY="${DOCKER__FG_YELLOW}ready${DOCKER__NOCOLOR}"
-DOCKER__STATUS_APPLIED="${DOCKER__FG_GREEN}applied${DOCKER__NOCOLOR}"
+DOCKER__LOCATION_LLOCAL="local"
+
+DOCKER__STATUS_FAILED="${DOCKER__FG_LIGHTRED}FAILED${DOCKER__NOCOLOR}"
+DOCKER__STATUS_SUCCESSFUL="${DOCKER__FG_GREEN}SUCCESSFUL${DOCKER__NOCOLOR}"
+
+DOCKER__STATUS_LDISABLED="${DOCKER__FG_LIGHTGREY}disabled${DOCKER__NOCOLOR}"
+DOCKER__STATUS_LDONE="${DOCKER__FG_GREEN}done${DOCKER__NOCOLOR}"
+DOCKER__STATUS_LFAILED="${DOCKER__FG_LIGHTRED}failed${DOCKER__NOCOLOR}"
+DOCKER__STATUS_LINSTALLED="${DOCKER__FG_GREEN}installed${DOCKER__NOCOLOR}"
+DOCKER__STATUS_LNOTINSTALLED="${DOCKER__FG_LIGHTRED}not-installed${DOCKER__NOCOLOR}"
+DOCKER__STATUS_LPRESENT="${DOCKER__FG_GREEN}present${DOCKER__NOCOLOR}"
+DOCKER__STATUS_LNOTPRESENT="${DOCKER__FG_LIGHTRED}not-present${DOCKER__NOCOLOR}"
+DOCKER__STATUS_LNOTPRESENT_IGNORE="${DOCKER__FG_LIGHTRED}not-present${DOCKER__NOCOLOR} (ignore)"
 
 DOCKER__NO_ACTION_REQUIRED="No action required"
 
@@ -560,6 +570,7 @@ DOCKER__THREESPACES=${DOCKER__TWOSPACES}${DOCKER__ONESPACE}
 DOCKER__FOURSPACES=${DOCKER__TWOSPACES}${DOCKER__TWOSPACES}
 DOCKER__FIVESPACES=${DOCKER__FOURSPACES}${DOCKER__ONESPACE}
 DOCKER__SEVENSPACES=${DOCKER__FOURSPACES}${DOCKER__THREESPACES}
+DOCKER__EIGHTSPACES=${DOCKER__FOURSPACES}${DOCKER__FOURSPACES}
 DOCKER__TENSPACES=${DOCKER__FIVESPACES}${DOCKER__FIVESPACES}
 
 
@@ -1301,6 +1312,7 @@ function bc_is_x_greaterthan_zero() {
 
     return 0;
 }
+
 
 #---DOCKER RELATED FUNCTIONS
 function check_containerID_state__func() {
@@ -5755,76 +5767,199 @@ docker__ctrl_c__sub() {
 }
 
 docker__get_source_fullpath__sub() {
-    #Mandatory directories
+    #Define constants
+    DOCKER__PHASE_CHECK_CACHE=1
+    DOCKER__PHASE_FIND_PATH=10
+    DOCKER__PHASE_EXIT=100
+
+    #Define variables
+    docker__phase=""
+
+    docker__current__dir=""
+    docker__parent__dir=""
+    docker__search__dir=""
+    docker__tmp__dir=""
+
+    docker__development_tools__foldername=""
+    docker__LTPP3_ROOTFS__foldername=""
+    docker__global__filename=""
+    locaocker__parentDir_of_LTPP3_ROOTFS__dir=""
+
+    docker__mainmenu_path_cache__filename=""
+    docker__mainmenu_path_cache__fpath=""
+
+    docker__find_dir_result__arr=()
+    docker__find_dir_result__arritem=""
+
+    docker__path_of_development_tools__found=""
+    docker__parentpath_of_development__tools=""
+
+    docker__isfound=""
+
+    docker__retry_ctr=0
+
+    #Update variables
     docker__bin_bash__dir=/bin/bash
+    docker__current__dir=$(dirname $(readlink -f $0))
+    docker__parent__dir="$(dirname "${docker__current__dir}")"
     docker__tmp__dir=/tmp
+
+    docker__development_tools__foldername="development_tools"
+    docker__global__filename="docker_global.sh"
+    docker__LTPP3_ROOTFS__foldername="LTPP3_ROOTFS"
 
     docker__mainmenu_path_cache__filename="docker__mainmenu_path.cache"
     docker__mainmenu_path_cache__fpath="${docker__tmp__dir}/${docker__mainmenu_path_cache__filename}"
 
-    #Check the number of input args
-    #Check if file exists
-    if [[ -f "${docker__mainmenu_path_cache__fpath}" ]]; then
-        #Get the line of file
-        docker__LTPP3_ROOTFS_development_tools__dir=$(awk 'NR==1' "${docker__mainmenu_path_cache__fpath}")
-    else
-        #---Define FOLDER
-        docker__LTPP3_ROOTFS__foldername="LTPP3_ROOTFS"
-        docker__development_tools__foldername="development_tools"
+    #Initialize variables
+    docker__phase="${DOCKER__PHASE_CHECK_CACHE}"
+    docker__result=false
 
-        #Print
-        echo -e "---:\e[30;38;5;215mSTART\e[0;0m: find path of folder \e[30;38;5;246m'${docker__development_tools__foldername}\e[0;0m : \e[1;33mDONE\e[0;0m"
 
-        #Get all the directories containing the foldername 'LTPP3_ROOTFS'...
-        #... and read to array 'find_result_arr'
-        #Remark:
-        #   By using '2> /dev/null', the errors are not shown.
-        readarray -t find_dir_result_arr < <(find  / -type d -iname "${docker__LTPP3_ROOTFS__foldername}" 2> /dev/null)
+    #Start loop
+    while true
+    do
+        case "${docker__phase}" in
+            "${DOCKER__PHASE_CHECK_CACHE}")
+                if [[ -f "${docker__mainmenu_path_cache__fpath}" ]]; then
+                    #Get the directory stored in cache-file
+                    docker__LTPP3_ROOTFS_development_tools__dir=$(awk 'NR==1' "${docker__mainmenu_path_cache__fpath}")
 
-        #Define variable
-        local find_path_of_LTPP3_ROOTFS="${DOCKER__EMPTYSTRING}"
+                    #Move one directory up
+                    docker__parentpath_of_development__tools=$(dirname "${docker__LTPP3_ROOTFS_development_tools__dir}")
 
-        #Loop thru array-elements
-        for find_dir_result_arrItem in "${find_dir_result_arr[@]}"
-        do
-            #Update variable 'find_path_of_LTPP3_ROOTFS'
-            find_path_of_LTPP3_ROOTFS="${find_dir_result_arrItem}/${docker__development_tools__foldername}"
-            #Check if 'directory' exist
-            if [[ -d "${find_path_of_LTPP3_ROOTFS}" ]]; then    #directory exists
-                #Update variable
-                docker__LTPP3_ROOTFS_development_tools__dir="${find_path_of_LTPP3_ROOTFS}"
+                    #Check if 'development_tools' is in the 'LTPP3_ROOTFS' folder
+                    docker__isfound=$(docker__checkif_paths_are_related "${docker__current__dir}" \
+                            "${docker__parentpath_of_development__tools}" "${docker__LTPP3_ROOTFS__foldername}")
+                    if [[ ${docker__isfound} == false ]]; then
+                        docker__phase="${DOCKER__PHASE_FIND_PATH}"
+                    else
+                        docker__result=true
 
+                        docker__phase="${DOCKER__PHASE_EXIT}"
+                    fi
+                else
+                    docker__phase="${DOCKER__PHASE_FIND_PATH}"
+                fi
+                ;;
+            "${DOCKER__PHASE_FIND_PATH}")   
+                #Print
+                echo -e "---:\e[30;38;5;215mSTART\e[0;0m: find path of folder \e[30;38;5;246m'${docker__development_tools__foldername}\e[0;0m"
+
+                #Initialize variables
+                docker__LTPP3_ROOTFS_development_tools__dir=""
+                docker__search__dir="${docker__current__dir}"   #start with search in the current dir
+
+                #Start loop
+                while true
+                do
+                    #Get all the directories containing the foldername 'LTPP3_ROOTFS'...
+                    #... and read to array 'find_result_arr'
+                    readarray -t docker__find_dir_result__arr < <(find  "${docker__search__dir}" -type d -iname "${docker__LTPP3_ROOTFS__foldername}" 2> /dev/null)
+
+                    #Iterate thru each array-item
+                    for docker__find_dir_result__arritem in "${docker__find_dir_result__arr[@]}"
+                    do
+                        echo -e "---:\e[30;38;5;215mCHECKING\e[0;0m: ${docker__find_dir_result__arritem}"
+
+                        #Find path
+                        docker__isfound=$(docker__checkif_paths_are_related "${docker__current__dir}" \
+                                "${docker__find_dir_result__arritem}"  "${docker__LTPP3_ROOTFS__foldername}")
+                        if [[ ${docker__isfound} == true ]]; then
+                            #Update variable 'docker__path_of_development_tools__found'
+                            docker__path_of_development_tools__found="${docker__find_dir_result__arritem}/${docker__development_tools__foldername}"
+
+                            #Check if 'directory' exist
+                            if [[ -d "${docker__path_of_development_tools__found}" ]]; then    #directory exists
+                                #Update variable
+                                #Remark:
+                                #   'docker__LTPP3_ROOTFS_development_tools__dir' is a global variable.
+                                #   This variable will be passed 'globally' to script 'docker_global.sh'.
+                                docker__LTPP3_ROOTFS_development_tools__dir="${docker__path_of_development_tools__found}"
+
+                                break
+                            fi
+                        fi
+                    done
+
+                    #Check if 'docker__LTPP3_ROOTFS_development_tools__dir' contains any data
+                    if [[ -z "${docker__LTPP3_ROOTFS_development_tools__dir}" ]]; then  #contains no data
+                        case "${docker__retry_ctr}" in
+                            0)
+                                docker__search__dir="${docker__parent__dir}"    #next search in the 'parent' directory
+                                ;;
+                            1)
+                                docker__search__dir="/" #finally search in the 'main' directory (the search may take longer)
+                                ;;
+                            *)
+                                echo -e "\r"
+                                echo -e "***\e[1;31mERROR\e[0;0m: folder \e[30;38;5;246m${docker__development_tools__foldername}\e[0;0m: \e[30;38;5;131mNot Found\e[0;0m"
+                                echo -e "\r"
+
+                                #Update variable
+                                docker__result=false
+                                ;;
+                        esac
+                    else    #contains data
+                        #Print
+                        echo -e "---:\e[30;38;5;215mCOMPLETED\e[0;0m: find path of folder \e[30;38;5;246m'${docker__development_tools__foldername}\e[0;0m"
+
+
+                        #Write to file
+                        echo "${docker__LTPP3_ROOTFS_development_tools__dir}" | tee "${docker__mainmenu_path_cache__fpath}" >/dev/null
+
+                        #Print
+                        echo -e "---:\e[30;38;5;215mSTATUS\e[0;0m: write path to temporary cache-file: \e[1;33mDONE\e[0;0m"
+
+                        #Update variable
+                        docker__result=true
+                    fi
+
+                    #set phase
+                    docker__phase="${DOCKER__PHASE_EXIT}"
+
+                    #Exit loop
+                    break
+                done
+                ;;    
+            "${DOCKER__PHASE_EXIT}")
                 break
-            fi
-        done
+                ;;
+        esac
+    done
 
-        #Print
-        echo -e "---:\e[30;38;5;215mCOMPLETED\e[0;0m: find path of folder \e[30;38;5;246m'${docker__development_tools__foldername}\e[0;0m : \e[1;33mDONE\e[0;0m"
-
-
-        #Write to file
-        echo "${docker__LTPP3_ROOTFS_development_tools__dir}" | tee "${docker__mainmenu_path_cache__fpath}" >/dev/null
-
-        #Print
-        echo -e "---:\e[30;38;5;215mSTATUS\e[0;0m: write path to temporary cache-file: \e[1;33mDONE\e[0;0m"
+    #Exit if 'docker__result = false'
+    if [[ ${docker__result} == false ]]; then
+        exit 99
     fi
 
+    #Retrieve directories
+    #Remark:
+    #   'docker__LTPP3_ROOTFS__dir' is a global variable.
+    #   This variable will be passed 'globally' to script 'docker_global.sh'.
     docker__LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS_development_tools__dir%/*}    #move one directory up: LTPP3_ROOTFS/
     docker__parentDir_of_LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS__dir%/*}    #move two directories up. This directory is the one-level higher than LTPP3_ROOTFS/
 
     docker__enter_cmdline_mode__dir=${docker__parentDir_of_LTPP3_ROOTFS__dir}/enter_cmd_mode
     docker__enter_cmdline_mode_cache__dir=${docker__enter_cmdline_mode__dir}/cache
 
+    docker__LTPP3_ROOTFS_boot__dir=${docker__LTPP3_ROOTFS__dir}/boot
+    docker__LTPP3_ROOTFS_boot_configs__dir=${docker__LTPP3_ROOTFS_boot__dir}/configs
+    docker__LTPP3_ROOTFS_build__dir=${docker__LTPP3_ROOTFS__dir}/build
+    docker__LTPP3_ROOTFS_build_scripts__dir=${docker__LTPP3_ROOTFS_build__dir}/scripts
     docker__LTPP3_ROOTFS_docker__dir=${docker__LTPP3_ROOTFS__dir}/docker
     docker__LTPP3_ROOTFS_docker_dockerfiles__dir=${docker__LTPP3_ROOTFS_docker__dir}/dockerfiles
-    # docker__LTPP3_ROOTFS_docker_list__dir=${docker__LTPP3_ROOTFS_docker__dir}/list
+    docker__LTPP3_ROOTFS_docker_list__dir=${docker__LTPP3_ROOTFS_docker__dir}/list
+    docker__LTPP3_ROOTFS_linux__dir=${docker__LTPP3_ROOTFS__dir}/linux
+    docker__LTPP3_ROOTFS_linux_scripts__dir=${docker__LTPP3_ROOTFS_linux__dir}/scripts
 
 
 #---filenames used at multiple places
     docker__docker_fs_partition_diskpartsize_dat__filename="docker_fs_partition_diskpartsize.dat"
     docker__docker_fs_partition_conf__filename="docker_fs_partition.conf"
-    docker__isp_sh__filename="isp.sh"
     docker__isp_c__filename="isp.c"
+    docker__isp_c_overlaybck__filename="isp.c.overlaybck"
+    docker__isp_sh__filename="isp.sh"
     docker__pentagram_common_h__filename="pentagram_common.h"
     docker__tb_init_sh__filename="tb_init.sh"
 
@@ -6010,9 +6145,9 @@ docker__get_source_fullpath__sub() {
     git__git_undo_last_unpushed_commit__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${git__git_undo_last_unpushed_commit__filename}
 
 
-#---docker__home__dir - contents
-    docker__home__dir="~"
-    docker__home_dotbashrc__fpath="${docker__home__dir}/.bashrc"
+#---docker__root__dir - contents
+    docker__root__dir="/root"   #this is the 
+    docker__home_dotbashrc__fpath="${docker__root__dir}/.bashrc"
 
 
 #---docker__LTPP3_ROOTFS_docker__dir - contents
@@ -6034,7 +6169,7 @@ docker__get_source_fullpath__sub() {
 
 #---docker__SP7021__dir - contents
     #Note: this directory MUST be the same as the 'SP7021_dir' which is defined in 'sunplus_inst.sh'
-    docker__SP7021__dir="${docker__home__dir}/SP7021"
+    docker__SP7021__dir="${docker__root__dir}/SP7021"
     docker__SP7021_boot_uboot_include_configs__dir=${docker__SP7021__dir}/boot/uboot/include/configs
     docker__SP7021_boot_uboot_tools__dir=${docker__SP7021__dir}/boot/uboot/tools
     docker__SP7021_build__dir=${docker__SP7021__dir}/build
@@ -6042,7 +6177,8 @@ docker__get_source_fullpath__sub() {
     docker__SP7021_linux_rootfs_initramfs_disk_sbin__dir=${docker__SP7021__dir}/linux/rootfs/initramfs/disk/sbin
 
     docker__SP7021_build_tools_isp_isp_c__fpath=${docker__SP7021_build_tools_isp__dir}/${docker__isp_c__filename}
-    docker__SP7021_build_isp_h__fpath=${docker__SP7021_build__dir}/${docker__isp_sh__filename}
+    docker__SP7021_build_tools_isp_isp_c_overlaybck_fpath=${docker__SP7021_build_tools_isp__dir}/${docker__isp_c_overlaybck__filename}
+    docker__SP7021_build_isp_sh__fpath=${docker__SP7021_build__dir}/${docker__isp_sh__filename}
     docker__SP7021_boot_uboot_include_configs_pentagram_common_h__fpath=${docker__SP7021_boot_uboot_include_configs__dir}/${docker__pentagram_common_h__filename}
     docker__SP7021_linux_rootfs_initramfs_disk_sbin_tb_init_sh__fpath=${docker__SP7021_linux_rootfs_initramfs_disk_sbin__dir}/${docker__tb_init_sh__filename}
 

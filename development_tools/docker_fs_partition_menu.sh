@@ -481,6 +481,7 @@ docker__menu_update_regex_and_diskpartstatus_print_values__sub () {
 
 #---MAIN SUBROUTINE
 main__sub() {
+echo ">"
     docker__get_source_fullpath__sub
 
     docker__load_global_fpath_paths__sub

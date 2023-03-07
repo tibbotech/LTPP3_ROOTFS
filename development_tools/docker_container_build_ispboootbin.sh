@@ -1,6 +1,6 @@
 #!/bin/bash
 #---FUNCTIONS
-function checkIf_software_isInstalled__func() {
+function checkif_software_isinstalled__func() {
     #Input args
     local package_input=${1}
 
@@ -26,129 +26,110 @@ function checkIf_software_isInstalled__func() {
 #---SUBROUTINES
 docker__get_source_fullpath__sub() {
     #Define constants
-    local DOCKER__PHASE_CHECK_CACHE=1
-    local DOCKER__PHASE_FIND_PATH=10
-    local DOCKER__PHASE_EXIT=100
+    local PHASE_CHECK_CACHE=1
+    local PHASE_FIND_PATH=10
+    local PHASE_EXIT=100
 
     #Define variables
-    local docker__phase=""
+    local phase=""
 
-    local docker__current_dir=
-    local docker__tmp__dir=""
+    local current_dir=""
+    local parent_dir=""
+    local search_dir=""
+    local tmp_dir=""
 
-    local docker__development_tools__foldername=""
-    local docker__LTPP3_ROOTFS__foldername=""
-    local docker__global__filename=""
-    local docker__parentDir_of_LTPP3_ROOTFS__dir=""
+    local development_tools_foldername=""
+    local lTPP3_ROOTFS_foldername=""
+    local global_filename=""
+    local parentDir_of_LTPP3_ROOTFS_dir=""
 
-    local docker__mainmenu_path_cache__filename=""
-    local docker__mainmenu_path_cache__fpath=""
+    local mainmenu_path_cache_filename=""
+    local mainmenu_path_cache_fpath=""
 
-    local docker__find_dir_result_arr=()
-    local docker__find_dir_result_arritem=""
-    local docker__find_dir_result_arrlen=0
-    local docker__find_dir_result_arrlinectr=0
-    local docker__find_dir_result_arrprogressperc=0
+    local find_dir_result_arr=()
+    local find_dir_result_arritem=""
 
-    local docker__path_of_development_tools_found=""
-    local docker__parentpath_of_development_tools=""
+    local path_of_development_tools_found=""
+    local parentpath_of_development_tools=""
 
-    local docker__isfound=""
+    local isfound=""
+
+    local retry_ctr=0
 
     #Set variables
-    docker__phase="${DOCKER__PHASE_CHECK_CACHE}"
-    docker__current_dir=$(dirname $(readlink -f $0))
-    docker__tmp__dir=/tmp
-    docker__development_tools__foldername="development_tools"
-    docker__global__filename="docker_global.sh"
-    docker__LTPP3_ROOTFS__foldername="LTPP3_ROOTFS"
+    phase="${PHASE_CHECK_CACHE}"
+    current_dir=$(dirname $(readlink -f $0))
+    parent_dir="$(dirname "${current_dir}")"
+    tmp_dir=/tmp
+    development_tools_foldername="development_tools"
+    global_filename="docker_global.sh"
+    lTPP3_ROOTFS_foldername="LTPP3_ROOTFS"
 
-    docker__mainmenu_path_cache__filename="docker__mainmenu_path.cache"
-    docker__mainmenu_path_cache__fpath="${docker__tmp__dir}/${docker__mainmenu_path_cache__filename}"
+    mainmenu_path_cache_filename="docker__mainmenu_path.cache"
+    mainmenu_path_cache_fpath="${tmp_dir}/${mainmenu_path_cache_filename}"
 
-    docker_result=false
+    result=false
 
     #Start loop
     while true
     do
-        case "${docker__phase}" in
-            "${DOCKER__PHASE_CHECK_CACHE}")
-                if [[ -f "${docker__mainmenu_path_cache__fpath}" ]]; then
+        case "${phase}" in
+            "${PHASE_CHECK_CACHE}")
+                if [[ -f "${mainmenu_path_cache_fpath}" ]]; then
                     #Get the directory stored in cache-file
-                    docker__LTPP3_ROOTFS_development_tools__dir=$(awk 'NR==1' "${docker__mainmenu_path_cache__fpath}")
+                    docker__LTPP3_ROOTFS_development_tools__dir=$(awk 'NR==1' "${mainmenu_path_cache_fpath}")
 
                     #Move one directory up
-                    docker__parentpath_of_development_tools=$(dirname "${docker__LTPP3_ROOTFS_development_tools__dir}")
+                    parentpath_of_development_tools=$(dirname "${docker__LTPP3_ROOTFS_development_tools__dir}")
 
                     #Check if 'development_tools' is in the 'LTPP3_ROOTFS' folder
-                    docker__isfound=$(docker__checkif_paths_are_related "${docker__current_dir}" \
-                            "${docker__parentpath_of_development_tools}" "${docker__LTPP3_ROOTFS__foldername}")
-                    if [[ ${docker__isfound} == false ]]; then
-                        docker__phase="${DOCKER__PHASE_FIND_PATH}"
+                    isfound=$(docker__checkif_paths_are_related "${current_dir}" \
+                            "${parentpath_of_development_tools}" "${lTPP3_ROOTFS_foldername}")
+                    if [[ ${isfound} == false ]]; then
+                        phase="${PHASE_FIND_PATH}"
                     else
-                        docker_result=true
+                        result=true
 
-                        docker__phase="${DOCKER__PHASE_EXIT}"
+                        phase="${PHASE_EXIT}"
                     fi
                 else
-                    docker__phase="${DOCKER__PHASE_FIND_PATH}"
+                    phase="${PHASE_FIND_PATH}"
                 fi
                 ;;
-            "${DOCKER__PHASE_FIND_PATH}")   
+            "${PHASE_FIND_PATH}")   
                 #Print
-                echo -e "---:\e[30;38;5;215mSTART\e[0;0m: find path of folder \e[30;38;5;246m'${docker__development_tools__foldername}\e[0;0m : \e[1;33mDONE\e[0;0m"
+                echo -e "---:\e[30;38;5;215mSTART\e[0;0m: find path of folder \e[30;38;5;246m'${development_tools_foldername}\e[0;0m"
 
-                #Reset variable
+                #Initialize variables
                 docker__LTPP3_ROOTFS_development_tools__dir=""
+                search_dir="${current_dir}"   #start with search in the current dir
 
                 #Start loop
                 while true
                 do
                     #Get all the directories containing the foldername 'LTPP3_ROOTFS'...
                     #... and read to array 'find_result_arr'
-                    readarray -t docker__find_dir_result_arr < <(find  / -type d -iname "${docker__LTPP3_ROOTFS__foldername}" 2> /dev/null)
-
-                    #Get array-length
-                    docker__find_dir_result_arrlen=${#docker__find_dir_result_arr[@]}
+                    readarray -t find_dir_result_arr < <(find  "${search_dir}" -type d -iname "${lTPP3_ROOTFS_foldername}" 2> /dev/null)
 
                     #Iterate thru each array-item
-                    for docker__find_dir_result_arritem in "${docker__find_dir_result_arr[@]}"
+                    for find_dir_result_arritem in "${find_dir_result_arr[@]}"
                     do
-                        docker__isfound=$(docker__checkif_paths_are_related "${docker__current_dir}" \
-                                "${docker__find_dir_result_arritem}"  "${docker__LTPP3_ROOTFS__foldername}")
-                        if [[ ${docker__isfound} == true ]]; then
-                            #Update variable 'docker__path_of_development_tools_found'
-                            docker__path_of_development_tools_found="${docker__find_dir_result_arritem}/${docker__development_tools__foldername}"
+                        echo -e "---:\e[30;38;5;215mCHECKING\e[0;0m: ${find_dir_result_arritem}"
 
-                            # #Increment counter
-                            docker__find_dir_result_arrlinectr=$((docker__find_dir_result_arrlinectr+1))
-
-                            #Calculate the progress percentage value
-                            docker__find_dir_result_arrprogressperc=$(( docker__find_dir_result_arrlinectr*100/docker__find_dir_result_arrlen ))
-
-                            #Moveup and clean
-                            if [[ ${docker__find_dir_result_arrlinectr} -gt 1 ]]; then
-                                tput cuu1
-                                tput el
-                            fi
-
-                            #Print
-                            #Note: do not print the '100%'
-                            if [[ ${docker__find_dir_result_arrlinectr} -lt ${docker__find_dir_result_arrlen} ]]; then
-                                echo -e "------:PROGRESS: ${docker__find_dir_result_arrprogressperc}%"
-                            fi
+                        #Find path
+                        isfound=$(docker__checkif_paths_are_related "${current_dir}" \
+                                "${find_dir_result_arritem}"  "${lTPP3_ROOTFS_foldername}")
+                        if [[ ${isfound} == true ]]; then
+                            #Update variable 'path_of_development_tools_found'
+                            path_of_development_tools_found="${find_dir_result_arritem}/${development_tools_foldername}"
 
                             #Check if 'directory' exist
-                            if [[ -d "${docker__path_of_development_tools_found}" ]]; then    #directory exists
+                            if [[ -d "${path_of_development_tools_found}" ]]; then    #directory exists
                                 #Update variable
                                 #Remark:
                                 #   'docker__LTPP3_ROOTFS_development_tools__dir' is a global variable.
                                 #   This variable will be passed 'globally' to script 'docker_global.sh'.
-                                docker__LTPP3_ROOTFS_development_tools__dir="${docker__path_of_development_tools_found}"
-
-                                #Print
-                                #Note: print the '100%' here
-                                echo -e "------:PROGRESS: 100%"
+                                docker__LTPP3_ROOTFS_development_tools__dir="${path_of_development_tools_found}"
 
                                 break
                             fi
@@ -157,42 +138,52 @@ docker__get_source_fullpath__sub() {
 
                     #Check if 'docker__LTPP3_ROOTFS_development_tools__dir' contains any data
                     if [[ -z "${docker__LTPP3_ROOTFS_development_tools__dir}" ]]; then  #contains no data
-                        echo -e "\r"
-                        echo -e "***\e[1;31mERROR\e[0;0m: folder \e[30;38;5;246m${docker__development_tools__foldername}\e[0;0m: \e[30;38;5;131mNot Found\e[0;0m"
-                        echo -e "\r"
+                        case "${retry_ctr}" in
+                            0)
+                                search_dir="${parent_dir}"    #next search in the 'parent' directory
+                                ;;
+                            1)
+                                search_dir="/" #finally search in the 'main' directory (the search may take longer)
+                                ;;
+                            *)
+                                echo -e "\r"
+                                echo -e "***\e[1;31mERROR\e[0;0m: folder \e[30;38;5;246m${development_tools_foldername}\e[0;0m: \e[30;38;5;131mNot Found\e[0;0m"
+                                echo -e "\r"
 
-                         #Update variable
-                        docker_result=false
+                                #Update variable
+                                result=false
+                                ;;
+                        esac
                     else    #contains data
                         #Print
-                        echo -e "---:\e[30;38;5;215mCOMPLETED\e[0;0m: find path of folder \e[30;38;5;246m'${docker__development_tools__foldername}\e[0;0m : \e[1;33mDONE\e[0;0m"
+                        echo -e "---:\e[30;38;5;215mCOMPLETED\e[0;0m: find path of folder \e[30;38;5;246m'${development_tools_foldername}\e[0;0m"
 
 
                         #Write to file
-                        echo "${docker__LTPP3_ROOTFS_development_tools__dir}" | tee "${docker__mainmenu_path_cache__fpath}" >/dev/null
+                        echo "${docker__LTPP3_ROOTFS_development_tools__dir}" | tee "${mainmenu_path_cache_fpath}" >/dev/null
 
                         #Print
                         echo -e "---:\e[30;38;5;215mSTATUS\e[0;0m: write path to temporary cache-file: \e[1;33mDONE\e[0;0m"
 
                         #Update variable
-                        docker_result=true
+                        result=true
                     fi
 
                     #set phase
-                    docker__phase="${DOCKER__PHASE_EXIT}"
+                    phase="${PHASE_EXIT}"
 
                     #Exit loop
                     break
                 done
                 ;;    
-            "${DOCKER__PHASE_EXIT}")
+            "${PHASE_EXIT}")
                 break
                 ;;
         esac
     done
 
-    #Exit if 'docker_result = false'
-    if [[ ${docker_result} == false ]]; then
+    #Exit if 'result = false'
+    if [[ ${result} == false ]]; then
         exit 99
     fi
 
@@ -201,13 +192,13 @@ docker__get_source_fullpath__sub() {
     #   'docker__LTPP3_ROOTFS__dir' is a global variable.
     #   This variable will be passed 'globally' to script 'docker_global.sh'.
     docker__LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS_development_tools__dir%/*}    #move one directory up: LTPP3_ROOTFS/
-    docker__parentDir_of_LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS__dir%/*}    #move two directories up. This directory is the one-level higher than LTPP3_ROOTFS/
+    parentDir_of_LTPP3_ROOTFS_dir=${docker__LTPP3_ROOTFS__dir%/*}    #move two directories up. This directory is the one-level higher than LTPP3_ROOTFS/
 
     #Get full-path
     #Remark:
     #   'docker__global__fpath' is a global variable.
     #   This variable will be passed 'globally' to script 'docker_global.sh'.
-    docker__global__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__global__filename}
+    docker__global__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${global_filename}
 }
 docker__checkif_paths_are_related() {
     #Input args
@@ -296,12 +287,28 @@ docker__environmental_variables__sub() {
     docker__bash_fpath=${docker__usr_bin_dir}/bash
 }
 
+
+
+docker__load_constants__sub() {
+    DOCKER__MENUTITLE="Build ${DOCKER__FG_LIGHTGREY}ISPBOOOT.BIN${DOCKER__NOCOLOR}"
+
+    DOCKER__PRINT_MANDATORY_SOFTWARE_AND_FILES="---:${DOCKER__PRECHECK}: MANDATORY SOFTWARE & FILES"
+    DOCKER__PRINT_OVERLAY_RELATED_FILES="---:${DOCKER__PRECHECK}: OVERLAY RELATED FILES"
+    DOCKER__PRINT_START_COPY_FILES="---:${DOCKER__START}: START COPY FILES"
+    DOCKER__PRINT_COMPLETED_COPY_FILES="---:${DOCKER__COMPLETED}: COMPLETED COPY FILES"
+
+
+    DOCKER__ERRMSG_ONE_OR_MORE_CHECKITEMS_FAILED="${DOCKER__ERROR}: one or more precheck items failed to pass!"
+    DOCKER__ERRMSG_ONE_OR_MORE_FILES_COULD_NOT_BE_COPIED="${DOCKER__ERROR}: one or more files could NOT be copied!"
+}
+
 docker__init_variables__sub() {
     docker__myContainerId=${DOCKER__EMPTYSTRING}
     docker__numOf_errors_found=0
     docker__exitCode=0
 
     docker__isRunning_inside_container=false
+    docker__isp_c_overlaybck_isfound=true
     docker__showTable=true
 
 }
@@ -324,10 +331,8 @@ docker__checkIf_isRunning_inside_container__sub() {
 
 docker__choose_containerID__sub() {
     #Define local message constants
-    # local MENUTITLE="Current ${DOCKER__FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}-list"
-    local MENUTITLE="Build ${DOCKER__FG_LIGHTGREY}ISPBOOOT.BIN${DOCKER__NOCOLOR}"
     local READMSG_CHOOSE_A_CONTAINERID="Choose a ${DOCKER__FG_BRIGHTPRUPLE}Container-ID${DOCKER__NOCOLOR} (e.g. dfc5e2f3f7ee): "
-    local ERRMSG_INVALID_INPUT_VALUE="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Invalid input value "
+    local ERRMSG_INVALID_INPUT_VALUE="${DOCKER__ERROR}: Invalid input value "
 
 
     #Check if running inside Docker Container
@@ -337,7 +342,7 @@ docker__choose_containerID__sub() {
     fi
 
     #Get container-ID (if running outside a container)
-    ${docker__readInput_w_autocomplete__fpath} "${MENUTITLE}" \
+    ${docker__readInput_w_autocomplete__fpath} "${DOCKER__MENUTITLE}" \
                         "${READMSG_CHOOSE_A_CONTAINERID}" \
                         "${DOCKER__EMPTYSTRING}" \
                         "${DOCKER__EMPTYSTRING}" \
@@ -366,22 +371,25 @@ docker__choose_containerID__sub() {
 }
 
 docker__preCheck__sub() {
-    #Define local message constants
-    local ERRMSG_ONE_OR_MORE_CHECKITEMS_FAILED="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: one or more precheck items failed to pass!"
+    #Define variables
+    local printmsg="${DOCKER__EMPTYSTRING}"
+
+    #Reset variables
+    docker__numOf_errors_found=0
 
     #Print Tibbo-title
     load_tibbo_title__func "${DOCKER__NUMOFLINES_2}"
 
     #Print
-    echo -e "---:${DOCKER__FG_PURPLERED}PRE${NOCOLOR}${FG_ORANGE}-CHECK:${DOCKER__NOCOLOR}: MANDATORY SOFTWARE & FILES"
+    show_msg_only__func "${DOCKER__PRINT_MANDATORY_SOFTWARE_AND_FILES}" "${DOCKER__NUMOFLINES_1}" "${DOCKER__NUMOFLINES_0}"
 
     #Check if running inside docker container
     if [[ ${docker__isRunning_inside_container} == true ]]; then   #running in docker container
-        echo -e "---:${DOCKER__FG_ORANGE}STATUS${DOCKER__NOCOLOR}: Inside Container: true"
+        printmsg="${DOCKER__STATUS}: (${DOCKER__FG_LIGHTGREY}${DOCKER__LOCATION_LLOCAL}${DOCKER__NOCOLOR}) Inside Container: true"
 
         docker__numOf_errors_found=0
     else    #NOT running in docker container
-        echo -e "---:${DOCKER__FG_ORANGE}STATUS${DOCKER__NOCOLOR}: Inside Container: false"
+        printmsg="---:${DOCKER__STATUS}: (${DOCKER__FG_LIGHTGREY}${DOCKER__LOCATION_LLOCAL}${DOCKER__NOCOLOR}) Inside Container: false"
 
         #Check if docker.io is installed
         #Output: docker__numOf_errors_found
@@ -400,9 +408,12 @@ docker__preCheck__sub() {
         docker__preCheck_app_isPresent__sub "${docker__myContainerId}" "${docker__docker__build_ispboootbin_fpath}"
     fi
 
+    #Print
+    show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+
     #In case one or more failed check-items were found
     if [[ ${docker__numOf_errors_found} -gt ${DOCKER__NUMOFMATCH_0} ]]; then
-        show_errMsg_wo_menuTitle_and_exit_func "${ERRMSG_ONE_OR_MORE_CHECKITEMS_FAILED}" \
+        show_errMsg_wo_menuTitle_and_exit_func "${DOCKER__ERRMSG_ONE_OR_MORE_CHECKITEMS_FAILED}" \
                         ${DOCKER__NUMOFLINES_1} \
                         ${DOCKER__NUMOFLINES_1}
     fi
@@ -411,72 +422,297 @@ docker__preCheck_app_isInstalled__sub() {
     #Input args
     local appName__input=${1}
 
-    #Define local constants
-    local INSTALLED="installed"
-    local NOTINSTALLED="not-installed"
+    #Define variables
+    local printmsg="${DOCKER__EMPTYSTRING}"
 
     #Check
-    local docker_isInstalled=`checkIf_software_isInstalled__func "${appName__input}"`
+    local docker_isInstalled=`checkif_software_isinstalled__func "${appName__input}"`
     if [[ ${docker_isInstalled} == true ]]; then
-        echo -e "---:${DOCKER__FG_ORANGE}STATUS${DOCKER__NOCOLOR}: ${appName__input}: ${DOCKER__FG_GREEN}${INSTALLED}${DOCKER__NOCOLOR}"
+        printmsg="---:${DOCKER__STATUS}: ${appName__input}: ${DOCKER__STATUS_LINSTALLED}"
     else    #NOT running in docker container
-        echo -e "---:${DOCKER__FG_ORANGE}STATUS${DOCKER__NOCOLOR}: ${appName__input}: ${DOCKER__FG_LIGHTRED}${NOTINSTALLED}${DOCKER__NOCOLOR}"
+        printmsg="---:${DOCKER__STATUS}: ${appName__input}: ${DOCKER__STATUS_LNOTINSTALLED}"
 
-        docker__numOf_errors_found=$((docker__numOf_errors_found+1))
+        ((docker__numOf_errors_found++))
     fi
+
+    #Print
+    show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
 }
 docker__preCheck_app_isPresent__sub() {
     #Input args
-    local constainerID__input=${1}
+    local containerid__input=${1}
     local path__input=${2}
 
-    #Define local variables
+    #Define variables
     local isFound=false
+    local printmsg="${DOCKER__EMPTYSTRING}"
 
     #Perform preCheck
     #First check if it's a directory
-    isFound=`checkIf_dir_exists__func "${constainerID__input}" "${path__input}"`
+    isFound=`checkIf_dir_exists__func "${containerid__input}" "${path__input}"`
     if [[ ${isFound} == true ]]; then
-        echo -e "---:${DOCKER__FG_ORANGE}STATUS${DOCKER__NOCOLOR}: ${path__input}: ${DOCKER__FG_GREEN}present${DOCKER__NOCOLOR}"
+        printmsg="---:${DOCKER__STATUS}: ${path__input}: ${DOCKER__STATUS_LPRESENT}"
     else
         #Second: if not a directory, then check if it's a file
-        isFound=`checkIf_file_exists__func "${constainerID__input}" "${path__input}"`
+        isFound=`checkIf_file_exists__func "${containerid__input}" "${path__input}"`
         if [[ ${isFound} == true ]]; then
-            echo -e "---:${DOCKER__FG_ORANGE}STATUS${DOCKER__NOCOLOR}: ${path__input}: ${DOCKER__FG_GREEN}present${DOCKER__NOCOLOR}"
+            printmsg="---:${DOCKER__STATUS}: ${path__input}: ${DOCKER__STATUS_LPRESENT}"
         else
-            echo -e "---:${DOCKER__FG_ORANGE}STATUS${DOCKER__NOCOLOR}: ${path__input}: ${DOCKER__FG_LIGHTRED}not-present${DOCKER__NOCOLOR}"
+            printmsg="---:${DOCKER__STATUS}: ${path__input}: ${DOCKER__STATUS_LNOTPRESENT}"
 
-            #Increment counter
-            docker__numOf_errors_found=$((docker__numOf_errors_found+1))
+            ((docker__numOf_errors_found++))
         fi
     fi
+
+    #Print
+    show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
 }
-
-
-
 
 docker__overlay__sub() {
     #Define constants
-    local PHASE_
+    local PHASE_OVERLAY_DOCKER_FS_PARTITION_CONF_CONTENT_CHECK=1
+    local PHASE_OVERLAY_DOCKER_FS_PARTITION_DISKPARTSIZE_DAT_CONTENT_CHECK=10
+    local PHASE_OVERLAY_SRC_FILES_CHECK=20
+    local PHASE_OVERLAY_COPY_FILES_FROM_SRC_TO_TMP=30
+    local PHASE_OVERLAY_TMP_FILES_REVISE=40
+    local PHASE_OVERLAY_COPY_FILES_FROM_TMP_TO_DST=50
+    local PHASE_OVERLAY_DST_FILES_CHANGE_MOD=60
+    local PHASE_OVERLAY_EXIT=100
 
     #Define variables
-    local phase
+    local phase="${PHASE_OVERLAY_DOCKER_FS_PARTITION_CONF_CONTENT_CHECK}"
 
-echo -e "\n docker__overlay__sub: continue here!!!"
+    #Go thru phases
+    while true
+    do
+        case "${phase}" in
+            "${PHASE_OVERLAY_DOCKER_FS_PARTITION_CONF_CONTENT_CHECK}")
+                docker__overlay_docker_fs_partition_conf_content_check_handler__sub
 
+A function has to be created to retrieve the line containing the specified pattern
 
-exit
+CONTINUE HERE!!!
+                phase="${PHASE_OVERLAY_DOCKER_FS_PARTITION_DISKPARTSIZE_DAT_CONTENT_CHECK}"
+                ;;
+            "${PHASE_OVERLAY_DOCKER_FS_PARTITION_DISKPARTSIZE_DAT_CONTENT_CHECK}")
+
+                phase="${PHASE_OVERLAY_SRC_FILES_CHECK}"
+                ;;
+            "${PHASE_OVERLAY_SRC_FILES_CHECK}")
+                docker__overlay_src_files_check_handler__sub
+
+                phase="${PHASE_OVERLAY_COPY_FILES_FROM_SRC_TO_TMP}"
+                ;;
+            "${PHASE_OVERLAY_COPY_FILES_FROM_SRC_TO_TMP}")
+                docker__overlay_copy_files_from_src_to_tmp_handler__sub
+
+                phase="${PHASE_OVERLAY_TMP_FILES_REVISE}"
+                ;;
+            "${PHASE_OVERLAY_TMP_FILES_REVISE}")
+                docker__overlay_tmp_files_revise_handler__sub
+
+                phase="${PHASE_OVERLAY_COPY_FILES_FROM_TMP_TO_DST}"
+                ;;
+            "${PHASE_OVERLAY_COPY_FILES_FROM_TMP_TO_DST}")
+                exit
+                ;;
+            "${PHASE_OVERLAY_DST_FILES_CHANGE_MOD}")
+                exit
+                ;;
+            "${PHASE_OVERLAY_EXIT}")
+                exit
+                ;;
+        esac
+    done
 }
 
+docker__overlay_src_files_check_handler__sub() {
+    #Define variables
+    local printmsg="${DOCKER__EMPTYSTRING}"
+
+    #Reset variables
+    docker__numOf_errors_found=0
+    docker__isp_c_overlaybck_isfound=true
+
+    #Print
+    show_msg_only__func "${DOCKER__PRINT_OVERLAY_RELATED_FILES}" "${DOCKER__NUMOFLINES_1}" "${DOCKER__NUMOFLINES_0}"
+
+    #Check fullpath and print status
+    docker__overlay_checkif_file_ispresent__sub "${DOCKER__EMPTYSTRING}" \
+            "${docker__LTPP3_ROOTFS_build_scripts_isp_sh__fpath}" "false"
+    docker__overlay_checkif_file_ispresent__sub "${DOCKER__EMPTYSTRING}" \
+            "${docker__LTPP3_ROOTFS_boot_configs_pentagram_common_h__fpath}" "false"
+    docker__overlay_checkif_file_ispresent__sub "${DOCKER__EMPTYSTRING}" \
+            "${docker__LTPP3_ROOTFS_linux_scripts_tb_init_sh__fpath}" "false"
+    docker__overlay_checkif_file_ispresent__sub "${docker__myContainerId}" \
+            "${docker__SP7021_build_tools_isp_isp_c_overlaybck_fpath}" "true"
+
+    #Incase file '~/SP7021/build/tools/isp/isp.c.overlaybck' was NOT found in the container
+    if [[ ${docker__isp_c_overlaybck_isfound} == false ]]; then
+        #Make a copy of file '~/SP7021/build/tools/isp/isp.c' and copy it as '~/SP7021/build/tools/isp/isp.c.overlaybck' (same location in the container)
+        docker__overlay_copy_files__sub "${docker__myContainerId}" \
+                "${docker__SP7021_build_tools_isp_isp_c__fpath}" \
+                "${docker__myContainerId}" \
+                "${docker__SP7021_build_tools_isp_isp_c_overlaybck_fpath}"
+                
+        docker__overlay_checkif_file_ispresent__sub "${docker__myContainerId}" \
+                "${docker__SP7021_build_tools_isp_isp_c_overlaybck_fpath}" "false"
+    fi
+
+    #Show error message and exit (if applicable)
+    if [[ ${docker__numOf_errors_found} -gt 0 ]]; then
+        show_errMsg_wo_menuTitle_and_exit_func "${DOCKER__ERRMSG_ONE_OR_MORE_CHECKITEMS_FAILED}" \
+                ${DOCKER__NUMOFLINES_1} \
+                ${DOCKER__NUMOFLINES_1}
+    fi
+}
+docker__overlay_checkif_file_ispresent__sub() {
+    #Remark:
+    #   This subroutine implicitely outputs the variables:
+    #       docker__isp_c_overlaybck_isfound (bool)
+    #       docker__numOf_errors_found (integer)
+    #Input args
+    local containerid__input=${1}
+    local path__input=${2}
+
+    #Update 'printmsg'
+    local printmsg="${DOCKER__EMPTYSTRING}"
+    if [[ -z "${containerid__input}" ]]; then
+        printmsg="---:${DOCKER__STATUS}: (${DOCKER__FG_LIGHTGREY}${DOCKER__LOCATION_LLOCAL}${DOCKER__NOCOLOR})"
+    else
+        printmsg="---:${DOCKER__STATUS}: (${DOCKER__FG_LIGHTGREY}${containerid__input}${DOCKER__NOCOLOR})"
+    fi
+
+    #Check if 'path__input' exists and update 'printmsg'
+    if [[ $(checkIf_file_exists__func "${containerid__input}" \
+            "${path__input}") == true ]]; then  #file is exists
+        printmsg+=" ${path__input}: ${DOCKER__STATUS_LPRESENT}"
+    else    #file does not exist
+        #Check if 'path__input = '~/SP7021/build/tools/isp/isp.c.overlaybck'
+        if [[ "${path__input}" == "${docker__SP7021_build_tools_isp_isp_c_overlaybck_fpath}" ]]; then   #true
+            docker__isp_c_overlaybck_isfound=false
+
+            printmsg+=" ${path__input}: ${DOCKER__STATUS_LNOTPRESENT_IGNORE}"
+        else    #false
+            printmsg+=" ${path__input}: ${DOCKER__STATUS_LNOTPRESENT}"
+
+            ((docker__numOf_errors_found++))
+        fi
+    fi
+
+    #Print
+    show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+}
+
+docker__overlay_copy_files_from_src_to_tmp_handler__sub() {
+    #Reset variables
+    docker__numOf_errors_found=0
+
+    #Print
+    show_msg_only__func "${DOCKER__PRINT_START_COPY_FILES}" "${DOCKER__NUMOFLINES_1}" "${DOCKER__NUMOFLINES_0}"
+
+    #Copy files
+    docker__overlay_copy_files__sub "${DOCKER__EMPTYSTRING}" \
+            "${docker__LTPP3_ROOTFS_build_scripts_isp_sh__fpath}" \
+            "${DOCKER__EMPTYSTRING}" \
+            "${docker__docker_overlayfs_isp_sh__fpath}"
+
+    docker__overlay_copy_files__sub "${DOCKER__EMPTYSTRING}" \
+            "${docker__LTPP3_ROOTFS_boot_configs_pentagram_common_h__fpath}" \
+            "${DOCKER__EMPTYSTRING}" \
+            "${docker__docker_overlayfs_pentagram_common_h__fpath}"
+
+    docker__overlay_copy_files__sub "${DOCKER__EMPTYSTRING}" \
+            "${docker__LTPP3_ROOTFS_linux_scripts_tb_init_sh__fpath}" \
+            "${DOCKER__EMPTYSTRING}" \
+            "${docker__docker_overlayfs_tb_init_sh__fpath}"
+
+    docker__overlay_copy_files__sub "${docker__myContainerId}" \
+            "${docker__SP7021_build_tools_isp_isp_c_overlaybck_fpath}" \
+            "${DOCKER__EMPTYSTRING}" \
+            "${docker__docker_overlayfs_isp_c__fpath}"
+
+    #Show error message and exit (if applicable)
+    if [[ ${docker__numOf_errors_found} -gt 0 ]]; then
+        show_errMsg_wo_menuTitle_and_exit_func "${DOCKER__ERRMSG_ONE_OR_MORE_CHECKITEMS_FAILED}" \
+                ${DOCKER__NUMOFLINES_1} \
+                ${DOCKER__NUMOFLINES_1}
+    fi
+
+    #Print
+    show_msg_only__func "${DOCKER__PRINT_COMPLETED_COPY_FILES}" "${DOCKER__NUMOFLINES_1}" "${DOCKER__NUMOFLINES_0}"
+}
+docker__overlay_copy_files__sub() {
+    #Remark:
+    #   This subroutine implicitely outputs the variable:
+    #       docker__numOf_errors_found (integer)
+    #Input args
+    local src_cid__input=${1}
+    local srcfpath__input=${2}
+    local dst_cid__input=${3}
+    local dstfpath__input=${4}
+
+    #Define variables
+    local exitcode=0
+    local srcfilename=$(basename ${srcfpath__input})
+    local srcdir=$(dirname ${srcfpath__input})
+    local srcfpath_tmp=${docker__tmp__dir}/${srcfilename}
+    local dstdir=$(dirname ${dstfpath__input})
+    local printmsg="${DOCKER__EMPTYSTRING}"
+
+    #Copy
+    if [[ -z "${src_cid__input}" ]] && [[ -z ${dst_cid__input} ]]; then
+        cp "${srcfpath__input}" "${dstfpath__input}"; exitcode=$?
+    elif [[ -z "${src_cid__input}" ]] && [[ -n ${dst_cid__input} ]]; then
+        docker cp ${srcfpath__input} ${dst_cid__input}:${dstfpath__input}; exitcode=$?
+    elif [[ -n "${src_cid__input}" ]] && [[ -z ${dst_cid__input} ]]; then
+        docker cp ${src_cid__input}:${srcfpath__input} ${dstfpath__input}; exitcode=$?
+    else    #src_cid__input != Empty String && dst_cid__input != Empty String
+        #IMPORTANT TO KNOW:
+        #   Copying between containers is NOT supported.
+        #   In order to be able to make this work, the following workaround will be applied:
+        #   1. copy from container to local (/tmp)
+        docker cp ${src_cid__input}:${srcfpath__input} ${srcfpath_tmp}; exitcode=$?
+        #   2. copy from local (/tmp) to container
+        docker cp ${srcfpath_tmp} ${dst_cid__input}:${dstfpath__input}; exitcode=$?
+    fi
+
+    #Check 'exitcode' and update 'printmsg'
+    if [[ ${exitcode} -eq 0 ]]; then
+        printmsg="---:${DOCKER__STATUS}: copy file ${DOCKER__FG_LIGHTGREY}${srcfilename}${DOCKER__NOCOLOR}: ${DOCKER__STATUS_SUCCESSFUL}\n"
+    else
+        printmsg="---:${DOCKER__STATUS}: copy file ${DOCKER__FG_LIGHTGREY}${srcfilename}${DOCKER__NOCOLOR}: ${DOCKER__STATUS_FAILED}\n"
+
+        ((docker__numOf_errors_found++))
+    fi
+
+    #Update 'printmsg'
+    if [[ -z "${src_cid__input}" ]]; then
+        printmsg+="---:${DOCKER__LOCATION}: (${DOCKER__FG_LIGHTGREY}${DOCKER__LOCATION_LLOCAL}${DOCKER__NOCOLOR})"
+    else
+        printmsg+="---:${DOCKER__LOCATION}: (${DOCKER__FG_LIGHTGREY}${src_cid__input}${DOCKER__NOCOLOR})"
+    fi
+    printmsg+=" from: ${DOCKER__FG_LIGHTGREY}${srcdir}${DOCKER__NOCOLOR}\n"
+
+    if [[ -z "${dst_cid__input}" ]]; then
+        printmsg+="---:${DOCKER__LOCATION}: (${DOCKER__FG_LIGHTGREY}${DOCKER__LOCATION_LLOCAL}${DOCKER__NOCOLOR})"
+    else
+        printmsg+="---:${DOCKER__LOCATION}: (${DOCKER__FG_LIGHTGREY}${dst_cid__input}${DOCKER__NOCOLOR})"
+    fi
+    printmsg+=" to: ${DOCKER__FG_LIGHTGREY}${dstdir}${DOCKER__NOCOLOR}"
+
+    #Print
+    show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+}
 
 
 
 docker__run_script__sub() {
     #Define variables
     local docker_exec_cmd="docker exec -it ${docker__myContainerId} ${docker__bash_fpath} -c"
-    local stdErr=${DOCKER__EMPTYSTRING}
     local cmd_outside_container="eval \"${docker__docker__build_ispboootbin_fpath}\""
     local cmd_inside_container="eval \"${docker__docker__build_ispboootbin_fpath}\""
+    local printmsg="${DOCKER__EMPTYSTRING}"
 
     #Execute script 'docker__build_ispboootbin_fpath'
     if [[ ${docker__isRunning_inside_container} == true ]]; then   #currently in a container
@@ -488,7 +724,8 @@ docker__run_script__sub() {
     #Check if there are any errors
     docker__exitCode=$?
     if [[ ${docker__exitCode} -ne 0 ]]; then #no errors found
-        echo -e "---:${DOCKER__FG_ORANGE}STATUS${DOCKER__NOCOLOR}: Build ${DOCKER__FG_LIGHTGREY}ISPBOOOT.BIN${DOCKER__NOCOLOR} ${DOCKER__FG_LIGHTRED}FAILED${DOCKER__NOCOLOR}..."
+        printmsg="---:${DOCKER__STATUS}: build ${DOCKER__FG_LIGHTGREY}ISPBOOOT.BIN${DOCKER__NOCOLOR}: ${DOCKER__STATUS_FAILED}"
+        show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_1}" "${DOCKER__NUMOFLINES_0}"
 
         exit__func "${docker__exitCode}" "${DOCKER__NUMOFLINES_1}"
     else
@@ -502,6 +739,8 @@ docker__main__sub(){
     docker__load_global_fpath_paths__sub
 
     docker__environmental_variables__sub
+
+    docker__load_constants__sub
 
     docker__init_variables__sub
 

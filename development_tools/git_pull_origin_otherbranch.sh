@@ -336,13 +336,13 @@ goto__func START
 @EXIT_FAILED:
     if [[ ${myChosen_remoteBranch_isFound} == ${DOCKER__TRUE} ]]; then 
         moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-        echo -e "${DOCKER__ERROR}: git checkout ${DOCKER__FG_LIGHTGREY}${myChosen_remoteBranch}${DOCKER__NOCOLOR} (${DOCKER__STATUS_FAILED})"
+        echo -e "${DOCKER__ERROR}: git checkout ${DOCKER__FG_LIGHTGREY}${myChosen_remoteBranch}${DOCKER__NOCOLOR} (${DOCKER__STATUS_LFAILED})"
         moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
         
         exit 99
     else
         moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-        echo -e "${DOCKER__ERROR}: git checkout -b ${DOCKER__FG_LIGHTGREY}${myChosen_remoteBranch}${DOCKER__NOCOLOR} (${DOCKER__STATUS_FAILED})"
+        echo -e "${DOCKER__ERROR}: git checkout -b ${DOCKER__FG_LIGHTGREY}${myChosen_remoteBranch}${DOCKER__NOCOLOR} (${DOCKER__STATUS_LFAILED})"
         moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
         
         exit 99
