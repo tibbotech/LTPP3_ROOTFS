@@ -991,7 +991,19 @@ docker__overlay_tempfile_isp_sh_patch__sub() {
 
     #Find and get line containing pattern 'rootfs 0x1e0000000'
     linenum_containing_rootfs_0x1e0000000=$(grep -nF "${DOCKER__PATTERN_ROOTFS_0X1E0000000}"  "${docker__docker_overlayfs_isp_sh__fpath}" | cut -d"${DOCKER__COLON}" -f1)
+    if [[ ${linenum_containing_rootfs_0x1e0000000} -lt ${emmc_linenumstart} ]] || \
+            [[ ${linenum_containing_rootfs_0x1e0000000} -gt ${emmc_linenumend} ]]; then
+        #Increment index
+        ((docker__numOf_errors_found++))
 
+        #Update 'printmsg'
+        printmsg+="${DOCKER__STATUS_FAILED}"
+        
+        #Print
+        show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+
+        return 0;
+    fi
 
     #Prepare 'isp_partition_array' (See tb_overlay.sh)
     #Remark:
