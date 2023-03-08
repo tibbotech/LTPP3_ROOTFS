@@ -379,7 +379,10 @@ DOCKER__DISKSIZE_8G_IN_MBYTES=$((DOCKER__DISKSIZE_8G_IN_BYTES/DOCKER__DISKSIZE_1
 DOCKER__RESERVED_SIZE_DEFAULT=128   #in MB
 DOCKER__ROOTFS_SIZE_DEFAULT=1536    #in MB
 
-DOCKER__OVERLAYPATTERN_DUMMY="Dummy"
+DOCKER__PATTERN_EMMC="EMMC"
+DOCKER__PATTERN_ROOTFS_0X1E0000000="rootfs 0x1e0000000"
+DOCKER__PATTERN_DUMMY="Dummy"
+
 DOCKER__OVERLAYMODE="Overlay-mode"
 DOCKER__OVERLAYMODE_NONPERSISTENT="non-persistent"
 DOCKER__OVERLAYMODE_PERSISTENT="persistent"
@@ -401,6 +404,7 @@ DOCKER__COLOR_SLASH_DOTDOT_SLASH_DOTDOT="${DOCKER__COLOR_SLASH}${DOCKER__COLOR_D
 
 #---PATTERN CONSTANTS
 DOCKER__PATTERN_DOCKER_IO="docker.io"
+DOCKER__PATTERN_IF="if"
 DOCKER__PATTERN_TOP="top"
 
 
@@ -446,6 +450,8 @@ DOCKER__STATUS_LNOTINSTALLED="${DOCKER__FG_LIGHTRED}not-installed${DOCKER__NOCOL
 DOCKER__STATUS_LPRESENT="${DOCKER__FG_GREEN}present${DOCKER__NOCOLOR}"
 DOCKER__STATUS_LNOTPRESENT="${DOCKER__FG_LIGHTRED}not-present${DOCKER__NOCOLOR}"
 DOCKER__STATUS_LNOTPRESENT_IGNORE="${DOCKER__FG_LIGHTRED}not-present${DOCKER__NOCOLOR} (ignore)"
+DOCKER__STATUS_LVALID="${DOCKER__FG_GREEN}valid${DOCKER__NOCOLOR}"
+DOCKER__STATUS_LINVALID="${DOCKER__FG_LIGHTRED}invalid${DOCKER__NOCOLOR}"
 
 DOCKER__NO_ACTION_REQUIRED="No action required"
 
@@ -1101,7 +1107,7 @@ function checkForExactMatch_of_pattern_within_2darray__func() {
     #Input args
     local pattern__input=${1}
     local colNum__input=${2}
-    local delimiter__input=${3}
+    local delimiterchar__input=${3}
     shift
     shift
     shift
@@ -1116,7 +1122,7 @@ function checkForExactMatch_of_pattern_within_2darray__func() {
     for dataArrItem in "${dataArr__input[@]}"
     do
         #Get value of the 1st column
-        colValue=$(echo "${dataArrItem}" | cut -d"${delimiter__input}" -f"${colNum__input}")
+        colValue=$(echo "${dataArrItem}" | cut -d"${delimiterchar__input}" -f"${colNum__input}")
         if [[ "${pattern__input}" == "${colValue}" ]]; then
             ret=true
 
@@ -1538,18 +1544,18 @@ function append_caretReturn_ifNotPresent_within_file__func() {
     disable_expansion__func
 
     #Input args
-    local targetFpath__input=${1}
+    local targetfpath__input=${1}
 
     #Check if file exists
-    if [[ ! -s ${targetFpath__input} ]]; then   #does not exist
+    if [[ ! -s ${targetfpath__input} ]]; then   #does not exist
         return
     fi
 
     #Check if file ends with a 'newline' (aka caret-return)
-    local caretReturn_isFound=`tail -c1 ${targetFpath__input} | wc -l`
+    local caretReturn_isFound=`tail -c1 ${targetfpath__input} | wc -l`
     if [[ ${caretReturn_isFound} -eq ${DOCKER__NUMOFMATCH_0} ]]; then   #no caret-return found
         #Append caret-return
-        echo "" >> ${targetFpath__input}
+        echo "" >> ${targetfpath__input}
     fi
 
     enable_expansion__func
@@ -1620,11 +1626,11 @@ function lh_checkIf_dir_exists__func() {
 
 function checkIf_file_contains_only_dots_and_Slashes__func() {
     #Input args
-    local targetFpath__input=${1}
+    local targetfpath__input=${1}
     local tmpFpath__input=${2}
 
-    #Backup 'targetFpath__input'
-    cp ${targetFpath__input} ${tmpFpath__input}
+    #Backup 'targetfpath__input'
+    cp ${targetfpath__input} ${tmpFpath__input}
 
     #Replace all dots and slashes with an Empty String
     sed -i 's/\(\.*\/*\)//g' ${tmpFpath__input}
@@ -1634,8 +1640,8 @@ function checkIf_file_contains_only_dots_and_Slashes__func() {
 
     #Check file 'tmpFpath__input' contains any data
     #Remarks:
-    #   file is empty -> 'targetFpath__input' contains only dot and/or slash.
-    #   file is not empty -> 'targetFpath__input' contains NOT only dot and/or slash.
+    #   file is empty -> 'targetfpath__input' contains only dot and/or slash.
+    #   file is not empty -> 'targetfpath__input' contains NOT only dot and/or slash.
     if [[ ! -s ${tmpFpath__input} ]]; then  #file is empty
         echo "true"
     else    #file is NOT empty
@@ -1817,18 +1823,18 @@ function get_dirname_from_specified_path__func() {
 
 function get_numOfLines_wo_emptyLines_in_file__func() {
     #Input args
-    local targetFpath__input=${1}
+    local targetfpath__input=${1}
 
     #Define variables
     local ret=0
 
     #Check if file exists
-    if [[ ! -f ${targetFpath__input} ]]; then
+    if [[ ! -f ${targetfpath__input} ]]; then
         echo "${ret}"
     fi
 
     #Check number of lines WITHOUT empty lines!!!
-    ret=`<${targetFpath__input} grep -c '[^[:space:]]'`
+    ret=`<${targetfpath__input} grep -c '[^[:space:]]'`
 
     #Output
     echo "${ret}"
@@ -1852,10 +1858,10 @@ function get_output_from_file__func() {
 
 function read_1stline_from_file() {
     #Input args
-    local targetFpath__input=${1}
+    local targetfpath__input=${1}
  
     #Read the first line from file
-    local ret=$(awk 'NR == 1' "${targetFpath__input}")
+    local ret=$(awk 'NR == 1' "${targetfpath__input}")
 
     #Output
     echo -e "${ret}"
@@ -1863,25 +1869,25 @@ function read_1stline_from_file() {
 
 function remove_allEmptyLines_within_file__func() {
     #Input args
-    targetFpath__input=${1}
+    targetfpath__input=${1}
 
     #Check if file exists
-    if [[ ! -s ${targetFpath__input} ]]; then   #does not exist
+    if [[ ! -s ${targetfpath__input} ]]; then   #does not exist
         return
     fi
 
     #Remove all empty lines
-    sed -i '/^$/d' ${targetFpath__input}
+    sed -i '/^$/d' ${targetfpath__input}
 }
 
 function remove_all_lines_from_file_after_a_specified_lineNum__func() {
     #Input args
-    local targetFpath__input="${1}"
+    local targetfpath__input="${1}"
     local tmpFpath__input="${2}"
     local lineNumMax__input="${3}"
 
-    #Check if the number of linies of file 'targetFpath__input'
-    local targetFpath_numOfLines=`cat ${targetFpath__input} | wc -l`
+    #Check if the number of linies of file 'targetfpath__input'
+    local targetFpath_numOfLines=`cat ${targetfpath__input} | wc -l`
     #Check if 'targetFpath_numOfLines < lineNumMax__input'
     #If true, then do nothing and exit function
     if [[ ${targetFpath_numOfLines} -le ${lineNumMax__input} ]]; then
@@ -1890,19 +1896,40 @@ function remove_all_lines_from_file_after_a_specified_lineNum__func() {
 
     #Remove all lines which follows AFTER 'lineNumMax__input'...
     #...and write to a temporary file 'tmpFpath__input'
-    head -n${lineNumMax__input} "${targetFpath__input}" > ${tmpFpath__input}
+    head -n${lineNumMax__input} "${targetfpath__input}" > ${tmpFpath__input}
 
-    #Copy 'tmpFpath__input' to 'targetFpath__input'
-    cp ${tmpFpath__input} ${targetFpath__input}
+    #Copy 'tmpFpath__input' to 'targetfpath__input'
+    cp ${tmpFpath__input} ${targetfpath__input}
 }
 
 function remove_file__func() {
     #Input args
-    targetFpath__input=${1}
+    targetfpath__input=${1}
+    prependstring__input=${2}
 
-    #Remove
-    if [[ -f "${targetFpath__input}" ]]; then
-        rm "${targetFpath__input}"
+    #Start with generating 'printmsg'
+    local printmsg="---:"
+    
+    #Override the default 'printmsg' (as defined above)
+    if [[ -n "${prependstring__input}" ]]; then
+        printmsg="${prependstring__input}"
+    fi
+
+    #Continue with updating 'printmsg'
+    printmsg+="${DOCKER__STATUS}: remove ${DOCKER__FG_LIGHTGREY}${targetfpath__input}${DOCKER__NOCOLOR}: "
+
+    #Remove file and update 'printmsg' based on the exitcode
+    if [[ -f "${targetfpath__input}" ]]; then
+        rm "${targetfpath__input}"; exitcode=$?
+
+        if [[ ${exitcode} -eq 0 ]]; then
+            printmsg+="${DOCKER__STATUS_SUCCESSFUL}"
+        else
+            printmsg+="${DOCKER__STATUS_FAILED}"
+        fi
+
+        #Print
+        show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
     fi
 }
 
@@ -1962,11 +1989,27 @@ function retrieve_files_from_specified_dir_basedOn_matching_patterns__func() {
     echo "${ret}"
 }
 
+function retrieve_data_from_file_based_on_specified_pattern_colnum_delimiterchar__func() {
+    #Input args
+    local targetfpath__input=${1}
+    local pattern__input=${2}
+    local colnum__input=${3}
+    local delimiterchar__input=${4}
+
+    #Find result based on provded 'pattern__input'
+    local ret=$(grep -F "${pattern__input}" "${targetfpath__input}" | cut -d"${delimiterchar__input}" -f"${colnum__input}")
+
+    #Output
+    echo "${ret}"
+
+    return 0;
+}
+
 function subst_leading_string_with_another_string_within_file__func() {
     #Input args
     local oldSubString__input=${1}
     local newSubString__input=${2}
-    local targetFpath__input=${3}
+    local targetfpath__input=${3}
     local flag_enableExcludes__input=${4}
 
     #IMPORTANT:
@@ -1977,14 +2020,14 @@ function subst_leading_string_with_another_string_within_file__func() {
 
     #Substitute
     #Note: notice the (^), which tells sed to only replace the LEADING substring.
-    sed -i "s/^${oldSubString__input}/${newSubString__input}/g" "${targetFpath__input}"
+    sed -i "s/^${oldSubString__input}/${newSubString__input}/g" "${targetfpath__input}"
 }
 
 function subst_trailing_string_with_another_string_within_file__func() {
     #Input args
     local oldSubString__input=${1}
     local newSubString__input=${2}
-    local targetFpath__input=${3}
+    local targetfpath__input=${3}
     local flag_enableExcludes__input=${4}
 
     #IMPORTANT:
@@ -1995,7 +2038,7 @@ function subst_trailing_string_with_another_string_within_file__func() {
 
     #Substitute
     #Note: notice the (^), which tells sed to only replace the LEADING substring.
-    sed -i "s/${oldSubString__input}$/${newSubString__input}/g" "${targetFpath__input}"
+    sed -i "s/${oldSubString__input}$/${newSubString__input}/g" "${targetfpath__input}"
 }
 
 function write_array_to_file__func() {
@@ -2020,19 +2063,19 @@ function write_array_to_file__func() {
 function write_data_to_file__func() {
     #Input args
     string__input=${1}
-    targetFpath__input=${2}
+    targetfpath__input=${2}
 
     #Write
-    echo "${string__input}" | tee ${targetFpath__input} >/dev/null
+    echo "${string__input}" | tee ${targetfpath__input} >/dev/null
 }
 
 function Append_data_to_file__func() {
     #Input args
     string__input=${1}
-    targetFpath__input=${2}
+    targetfpath__input=${2}
 
     #Write
-    echo "${string__input}" | tee -a ${targetFpath__input} >/dev/null
+    echo "${string__input}" | tee -a ${targetfpath__input} >/dev/null
 }
 
 
@@ -4780,24 +4823,24 @@ function delete_lineNum_from_file__func() {
     #Input args
     local lineNum__input=${1}
     local excludeVal__input=${2}
-    local targetFpath__input=${3}
+    local targetfpath__input=${3}
 
     #Check if 'lineNum__input = 0'
     if [[ ${lineNum__input} -eq ${DOCKER__NUMOFMATCH_0} ]]; then
         return
     fi
 
-    #Check if 'targetFpath__input' does NOT exist
-    if [[ ! -f ${targetFpath__input} ]]; then
+    #Check if 'targetfpath__input' does NOT exist
+    if [[ ! -f ${targetfpath__input} ]]; then
         return
     fi
 
     #Get the 'line' for 'lineNum__input'
-    local line=`retrieve_line_from_file__func "${lineNum__input}" "${targetFpath__input}"`
+    local line=`retrieve_line_from_file__func "${lineNum__input}" "${targetfpath__input}"`
 
     #Delete line-number
     if [[ "${line}" != "${excludeVal__input}" ]]; then
-        sed -i "${lineNum__input}d" ${targetFpath__input}
+        sed -i "${lineNum__input}d" ${targetfpath__input}
     fi
 }
 
@@ -5011,33 +5054,33 @@ function insert_string_into_file_at_specified_lineNum__func() {
     #Input args
     local string__input=${1}
     local lineNum__input=${2}
-    local targetFpath__input=${3}
+    local targetfpath__input=${3}
     local flag_checkIf_already_inserted__input=${4}
 
-    #Check if 'string__input' is found in file 'targetFpath__input'
+    #Check if 'string__input' is found in file 'targetfpath__input'
     local isFound=false
     if [[ ${flag_checkIf_already_inserted__input} == true ]]; then
-        isFound=`checkForExactMatch_of_a_pattern_within_file__func "${string__input}" "${targetFpath__input}"`
+        isFound=`checkForExactMatch_of_a_pattern_within_file__func "${string__input}" "${targetfpath__input}"`
         if [[ ${isFound} == true ]]; then
             return
         fi
     fi
 
-    #Get number of lines of 'targetFpath__input'
-    local targetFpath_numOfLines=`get_numOfLines_for_specified_string_or_file__func "${targetFpath__input}"`
+    #Get number of lines of 'targetfpath__input'
+    local targetFpath_numOfLines=`get_numOfLines_for_specified_string_or_file__func "${targetfpath__input}"`
 
     #Check if file contains data
     #If true, then insert
     #If false, then just write
-    if [[ -s ${targetFpath__input} ]]; then #contains data
-        #Check if 'targetFpath__input' contains at least the number of lines equal or greater than 'lineNum__input'
+    if [[ -s ${targetfpath__input} ]]; then #contains data
+        #Check if 'targetfpath__input' contains at least the number of lines equal or greater than 'lineNum__input'
         if [[ ${targetFpath_numOfLines} -ge ${lineNum__input} ]]; then
-            sed -i "${lineNum__input}i${string__input}" ${targetFpath__input}   #insert at 'lineNum__input'
+            sed -i "${lineNum__input}i${string__input}" ${targetfpath__input}   #insert at 'lineNum__input'
         else
-            echo "${string__input}" >> ${targetFpath__input}    #append
+            echo "${string__input}" >> ${targetfpath__input}    #append
         fi
     else    #contains no data
-        echo "${string__input}" > ${targetFpath__input}
+        echo "${string__input}" > ${targetfpath__input}
     fi
 }
 
@@ -5110,24 +5153,24 @@ function replace_or_append_string_in_file__func() {
     #Input args
     local string__input=${1}
     local pattern__input=${2}
-    local targetFpath__input=${3}
+    local targetfpath__input=${3}
 
     #Check if file exists
-    if [[ ! -f "${targetFpath__input}" ]]; then #file does NOT exist
+    if [[ ! -f "${targetfpath__input}" ]]; then #file does NOT exist
         #Write to file
-        echo -e "${string__input}" | tee ${targetFpath__input} >/dev/null
+        echo -e "${string__input}" | tee ${targetfpath__input} >/dev/null
 
         #Exit
         return 0;
     fi
 
-    #Check if 'pattern__input' is found in file 'targetFpath__input'
+    #Check if 'pattern__input' is found in file 'targetfpath__input'
     #...and get the 'line' containing this 'pattern__input'.
-    local line=$(grep -F "${pattern__input}" "${targetFpath__input}")
+    local line=$(grep -F "${pattern__input}" "${targetfpath__input}")
     if [[ -n "${line}" ]]; then
-        sed -i "s/${line}/${string__input}/g" ${targetFpath__input}
+        sed -i "s/${line}/${string__input}/g" ${targetfpath__input}
     else
-        echo -e "${string__input}" | tee -a ${targetFpath__input} >/dev/null
+        echo -e "${string__input}" | tee -a ${targetfpath__input} >/dev/null
     fi
 }
 
@@ -5169,14 +5212,14 @@ function retrieve__data_specified_by_col_within_file__func() {
     #Input args
     local inString__input=${1}
     local outString_col__input=${2}
-    local targetFpath__input=${3}
+    local targetfpath__input=${3}
 
     #Find 'pattern__input'
-    local line=`cat ${targetFpath__input} | grep "${inString__input}"`
+    local line=`cat ${targetfpath__input} | grep "${inString__input}"`
 
     #Get data
     # local ret=`echo "${line}" | awk -v COLNUM="${outString_col__input}" '{print $COLNUM}'`
-    local ret=$(grep -F "${inString__input}" ${targetFpath__input} | awk -vCOL="${outString_col__input}" '{print $COL}')
+    local ret=$(grep -F "${inString__input}" ${targetfpath__input} | awk -vCOL="${outString_col__input}" '{print $COL}')
 
     #Output
     echo "${ret}"
@@ -5186,7 +5229,7 @@ function retrieve__data_specified_by_col_within_file__func() {
 function retrieve_line_from_file__func() {
     #Input args
     local lineNum__input=${1}
-    local targetFpath__input=${2}
+    local targetfpath__input=${2}
 
     #Define variable
     local ret="${DOCKER__EMPTYSTRING}"
@@ -5196,14 +5239,14 @@ function retrieve_line_from_file__func() {
         return
     fi
 
-    #Check if 'targetFpath__input' does NOT exist
-    if [[ ! -f ${targetFpath__input} ]]; then
+    #Check if 'targetfpath__input' does NOT exist
+    if [[ ! -f ${targetfpath__input} ]]; then
         return
     fi
 
 
     #Retrieve line based on the specified 'lineNum__input'
-    local ret=`sed "${lineNum__input}q;d" ${targetFpath__input}`
+    local ret=`sed "${lineNum__input}q;d" ${targetfpath__input}`
 
     #Output
     echo "${ret}"
@@ -5212,15 +5255,15 @@ function retrieve_line_from_file__func() {
 function retrieve_lineNum_from_file__func() {
     #Input args
     local line__input=${1}
-    local targetFpath__input=${2}
+    local targetfpath__input=${2}
 
     #Define variables
     local ret=0
 
-    #Check if 'targetFpath__input' contains data
-    if [[ -s ${targetFpath__input} ]]; then #contains data
+    #Check if 'targetfpath__input' contains data
+    if [[ -s ${targetfpath__input} ]]; then #contains data
         #Retrieve line-number based on the specified 'line__input'
-        ret=`cat ${targetFpath__input} | grep -n "^${line__input}$" | cut -d":" -f1`
+        ret=`cat ${targetfpath__input} | grep -n "^${line__input}$" | cut -d":" -f1`
 
         #Check if 'ret' is an Empty String
         if [[ -z ${ret} ]]; then    #true
@@ -6281,6 +6324,7 @@ docker__get_source_fullpath__sub() {
 	# docker__localhost_dirlist__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__localhost_dirlist__filename}
 }
 
+
 docker__create_dir__sub() {
     if [[ ! -d ${docker__docker__dir} ]]; then
         mkdir -p ${docker__docker__dir}
@@ -6309,6 +6353,77 @@ docker__create_dir__sub() {
     if [[ ! -d ${docker__tmp__dir} ]]; then
         mkdir -p ${docker__tmp__dir}
     fi
+}
+docker__checkif_paths_are_related() {
+    #Input args
+    local scriptdir__input=${1}
+    local finddir__input=${2}
+    local pattern__input=${3}
+
+    #Define constants
+    local PHASE_PATTERN_CHECK1=1
+    local PHASE_PATTERN_CHECK2=10
+    local PHASE_PATH_COMPARISON=20
+    local PHASE_EXIT=100
+
+    #Define variables
+    local phase="${PHASE_PATTERN_CHECK1}"
+    local isfound1=""
+    local isfound2=""
+    local isfound3=""
+    local ret=false
+
+    while true
+    do
+        case "${phase}" in
+            "${PHASE_PATTERN_CHECK1}")
+                #Check if 'pattern__input' is found in 'scriptdir__input'
+                isfound1=$(echo "${scriptdir__input}" | \
+                        grep -o "${pattern__input}.*" | \
+                        cut -d"/" -f1 | grep -w "^${pattern__input}$")
+                if [[ -z "${isfound1}" ]]; then
+                    ret=false
+
+                    phase="${PHASE_EXIT}"
+                else
+                    phase="${PHASE_PATTERN_CHECK2}"
+                fi                
+                ;;
+            "${PHASE_PATTERN_CHECK2}")
+                #Check if 'pattern__input' is found in 'finddir__input'
+                isfound2=$(echo "${finddir__input}" | \
+                        grep -o "${pattern__input}.*" | \
+                        cut -d"/" -f1 | grep -w "^${pattern__input}$")
+                if [[ -z "${isfound2}" ]]; then
+                    ret=false
+
+                    phase="${PHASE_EXIT}"
+                else
+                    phase="${PHASE_PATH_COMPARISON}"
+                fi                
+                ;;
+            "${PHASE_PATH_COMPARISON}")
+                #Check if 'development_tools' is under the folder 'LTPP3_ROOTFS'
+                isfound3=$(echo "${scriptdir__input}" | \
+                        grep -w "${finddir__input}.*")
+                if [[ -z "${isfound3}" ]]; then
+                    ret=false
+                else
+                    ret=true
+                fi
+
+                phase="${PHASE_EXIT}"
+                ;;
+            "${PHASE_EXIT}")
+                break
+                ;;
+        esac
+    done
+
+    #Output
+    echo "${ret}"
+
+    return 0
 }
 
 docker__create_exported_env_var_file__sub() {

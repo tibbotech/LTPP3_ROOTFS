@@ -97,15 +97,15 @@ docker__init_variables__sub() {
     docker__rootfs_size=${DOCKER__ROOTFS_SIZE_DEFAULT}
     docker__overlayfs_size=$((disksize__input - docker__reservedfs_size - docker__rootfs_size))
 
-    docker__diskpart_arr=()
-    docker__diskpart_arr[0]="${DOCKER__DISKPARTNAME_RESERVED} ${docker__reservedfs_size}"
-    docker__diskpart_arr[1]="${DOCKER__DISKPARTNAME_ROOTFS} ${docker__rootfs_size}"
-    docker__diskpart_arr[2]="${DOCKER__DISKPARTNAME_OVERLAY} ${docker__overlayfs_size}"
+    docker__isp_partition_array=()
+    docker__isp_partition_array[0]="${DOCKER__DISKPARTNAME_RESERVED} ${docker__reservedfs_size}"
+    docker__isp_partition_array[1]="${DOCKER__DISKPARTNAME_ROOTFS} ${docker__rootfs_size}"
+    docker__isp_partition_array[2]="${DOCKER__DISKPARTNAME_OVERLAY} ${docker__overlayfs_size}"
 
-    docker__diskpart_default_arr=()
-    docker__diskpart_default_arr[0]="${DOCKER__DISKPARTNAME_RESERVED} ${docker__reservedfs_size}"
-    docker__diskpart_default_arr[1]="${DOCKER__DISKPARTNAME_ROOTFS} ${docker__rootfs_size}"
-    docker__diskpart_default_arr[2]="${DOCKER__DISKPARTNAME_OVERLAY} ${docker__overlayfs_size}"
+    docker__isp_partition_array_default=()
+    docker__isp_partition_array_default[0]="${DOCKER__DISKPARTNAME_RESERVED} ${docker__reservedfs_size}"
+    docker__isp_partition_array_default[1]="${DOCKER__DISKPARTNAME_ROOTFS} ${docker__rootfs_size}"
+    docker__isp_partition_array_default[2]="${DOCKER__DISKPARTNAME_OVERLAY} ${docker__overlayfs_size}"
 
     docker__diskpartname="${DOCKER__EMPTYSTRING}"
     docker__diskpartsize="${DOCKER__EMPTYSTRING}"
@@ -124,13 +124,13 @@ docker__preprep__sub() {
     #If false, then WRITE default array-data to file
     if [[ -f "${docker__docker_fs_partition_diskpartsize_dat__fpath}" ]]; then
         #Reset array
-        docker__diskpart_arr=()
+        docker__isp_partition_array=()
 
         #Read each line from file
         while read line
         do
             #Add each line to array
-            docker__diskpart_arr[i]="${line}"
+            docker__isp_partition_array[i]="${line}"
 
             #Increment index by 1
             ((i++))
@@ -138,7 +138,7 @@ docker__preprep__sub() {
     else
         #Write default array-data to file 'docker__docker_fs_partition_diskpartsize_dat__fpath'
         write_array_to_file__func "${docker__docker_fs_partition_diskpartsize_dat__fpath}" \
-                "${docker__diskpart_default_arr[@]}"
+                "${docker__isp_partition_array_default[@]}"
     fi
 
 
@@ -194,7 +194,7 @@ docker__preprep__sub() {
 
         #Replace/Append to file
         replace_or_append_string_in_file__func "${filecontent}" \
-                "${DOCKER__OVERLAYPATTERN_DUMMY}" \
+                "${DOCKER__PATTERN_DUMMY}" \
                 "${docker__docker_fs_partition_conf__fpath}"
     fi
 }
@@ -276,13 +276,13 @@ docker__menu__sub() {
                 #Disable Ctrl+C
                 disable_ctrl_c__func
                 
-                docker__partitiondisk__sub "true" "${docker__diskpart_default_arr[@]}"
+                docker__partitiondisk__sub "true" "${docker__isp_partition_array_default[@]}"
                 ;;
             2)
                 #Disable Ctrl+C
                 disable_ctrl_c__func
                 
-                docker__partitiondisk__sub "false" "${docker__diskpart_arr[@]}"
+                docker__partitiondisk__sub "false" "${docker__isp_partition_array[@]}"
                 ;;
             3)
                 docker__overlaymode__sub
@@ -334,7 +334,7 @@ docker__menu_body_print_sub() {
     #       LEFT-STRING (e.g. rootfs, reserved, overlay, etc.)
     #       RIGHT-STRING (e.g. 1536, 128, 256 etc...)
     #Determine the longest string of 'diskpart_arritem_left'
-    diskpart_arritem_left_max=$(printf '%s\n' ${docker__diskpart_arr[@]} | wc -L)
+    diskpart_arritem_left_max=$(printf '%s\n' ${docker__isp_partition_array[@]} | wc -L)
 
     #Increase 'diskpart_arritem_left_max' with '4'
     #Remark:
@@ -342,7 +342,7 @@ docker__menu_body_print_sub() {
     diskpart_arritem_left_max=$((diskpart_arritem_left_max + DOCKER__NUMOFCHARS_8))
 
     #Print 'partition sizes'
-    for diskpart_arritem in "${docker__diskpart_arr[@]}"
+    for diskpart_arritem in "${docker__isp_partition_array[@]}"
     do  
         #Get the left-string 'diskpart_arritem_left'
         diskpart_arritem_left=$(echo "${diskpart_arritem}" | cut -d" " -f1)
@@ -427,7 +427,7 @@ docker__partitiondisk__sub() {
     local PHASE_EXIT=100
 
     #Define variables
-    local diskpart_new_arr=()
+    local isp_partition_array_new=()
     local disksize_remain_bck=0
     local i=0
     local j=0
@@ -479,7 +479,7 @@ docker__partitiondisk__sub() {
                         ;;
                     *)  #all other partitions
                         #Note: variable 'docker__diskpartname' is updated in this subroutine
-                        docker__diskpartname_handler__sub "${docker__diskpartname}" "${diskpart_new_arr[@]}"
+                        docker__diskpartname_handler__sub "${docker__diskpartname}" "${isp_partition_array_new[@]}"
 
                         #Remark:
                         #   If no additional partition-name is provided,
@@ -487,7 +487,7 @@ docker__partitiondisk__sub() {
                         case "${docker__diskpartname}" in
                             "${DOCKER__SEMICOLON_REDO}")
                                 #Reset array
-                                diskpart_new_arr=()
+                                isp_partition_array_new=()
 
                                 #Reset dvariables
                                 docker__disksize_remain=${disksize__input}
@@ -570,8 +570,8 @@ docker__partitiondisk__sub() {
                                     ;;
                                 *)
                                     if [[ "${docker__disksize_remain}" -eq 0 ]]; then
-                                        #Update 'diskpart_new_arr'
-                                        diskpart_new_arr[j]="${docker__diskpartname} ${docker__readdialog_output}"
+                                        #Update 'isp_partition_array_new'
+                                        isp_partition_array_new[j]="${docker__diskpartname} ${docker__readdialog_output}"
 
                                         #Goto next-phase
                                         phase="${PHASE_UPDATE}"
@@ -587,8 +587,8 @@ docker__partitiondisk__sub() {
                                                 echo -e "${readdialog_diskpartsize}${docker__readdialog_output} (${DOCKER__WRNMSG_LESSTHAN_RECOMMEND_VALUE})"
                                             fi
 
-                                            #Update 'diskpart_new_arr'
-                                            diskpart_new_arr[j]="${docker__diskpartname} ${docker__readdialog_output}"
+                                            #Update 'isp_partition_array_new'
+                                            isp_partition_array_new[j]="${docker__diskpartname} ${docker__readdialog_output}"
 
                                             #Backup 'docker__disksize_remain'
                                             disksize_remain_bck=${docker__disksize_remain}
@@ -621,7 +621,7 @@ docker__partitiondisk__sub() {
                                     #   r(edo) is available starting from the 'overlay' input
                                     if [[ ${j} -gt 1 ]]; then
                                         #Reset array
-                                        diskpart_new_arr=()
+                                        isp_partition_array_new=()
 
                                         #Reset dvariables
                                         docker__disksize_remain=${disksize__input}
@@ -670,8 +670,8 @@ docker__partitiondisk__sub() {
                         moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
                     fi
                 else    #j = 0
-                    #Update 'diskpart_new_arr'
-                    diskpart_new_arr[j]="${docker__diskpartname} ${DOCKER__RESERVED_SIZE_DEFAULT}"
+                    #Update 'isp_partition_array_new'
+                    isp_partition_array_new[j]="${docker__diskpartname} ${DOCKER__RESERVED_SIZE_DEFAULT}"
 
                     #Calculate 'docker__disksize_remain'
                     docker__disksize_remain=$(bc_substract_x_from_y "${docker__disksize_remain}" "${DOCKER__RESERVED_SIZE_DEFAULT}")
@@ -693,9 +693,15 @@ docker__partitiondisk__sub() {
                     echo -e "---:${DOCKER__INFO}: ${DOCKER__INFOMSG_UNALLOCATED_DISKSPACE_LEFT} ${DOCKER__FG_ORANGE131}${docker__disksize_remain}${DOCKER__NOCOLOR}"
                 fi
 
-                #Update array 'docker__diskpart_arr' and 
+                #Increment index
+                ((j++))
+
+                #Add 'docker__disksize_remain' to array
+                isp_partition_array_new[j]="${DOCKER__DISKPARTNAME_REMAINING} ${docker__disksize_remain}"
+
+                #Update array 'docker__isp_partition_array' and 
                 #...file 'docker__docker_fs_partition_diskpartsize_dat__fpath' with new data
-                docker__diskpart_arr_update__sub "${diskpart_new_arr[@]}"
+                docker__isp_partition_array_update__sub "${isp_partition_array_new[@]}"
 
                 phase="${PHASE_EXIT}"
                 ;;
@@ -705,7 +711,7 @@ docker__partitiondisk__sub() {
         esac
     done
 }
-docker__diskpart_arr_update__sub() {
+docker__isp_partition_array_update__sub() {
     #Input args
     local dataarr__input=("$@")
 
@@ -713,11 +719,11 @@ docker__diskpart_arr_update__sub() {
     local k=0
 
     #Reset array
-    docker__diskpart_arr=()
+    docker__isp_partition_array=()
 
-    #Update 'docker__diskpart_arr' with new data
+    #Update 'docker__isp_partition_array' with new data
     for k in "${!dataarr__input[@]}"; do 
-        docker__diskpart_arr[k]="${dataarr__input[$k]}"
+        docker__isp_partition_array[k]="${dataarr__input[$k]}"
     done
 
     #Update 'docker__docker_fs_partition_diskpartsize_dat__fpath' with new data

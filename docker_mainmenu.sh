@@ -70,8 +70,6 @@ docker__get_source_fullpath__sub() {
                         result=true
 
                         phase="${PHASE_EXIT}"
-
-                        echo -e "---:\e[30;38;5;215mSTATUS\e[0;0m: retrieve path from cache: \e[1;33mDONE\e[0;0m"
                     fi
                 else
                     phase="${PHASE_FIND_PATH}"
@@ -180,14 +178,6 @@ docker__get_source_fullpath__sub() {
     #   'docker__global__fpath' is a global variable.
     #   This variable will be passed 'globally' to script 'docker_global.sh'.
     docker__global__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${global_filename}
-
-
-
-    #***IMPORTANT: EXPORT PATHS
-    export docker__LTPP3_ROOTFS__dir
-    export parentDir_of_LTPP3_ROOTFS_dir
-    export docker__LTPP3_ROOTFS_development_tools__dir
-    export docker__global__fpath
 }
 docker__checkif_paths_are_related() {
     #Input args
