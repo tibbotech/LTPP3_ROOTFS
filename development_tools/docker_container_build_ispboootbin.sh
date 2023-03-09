@@ -301,13 +301,18 @@ docker__load_constants__sub() {
     DOCKER__SUBJECT_START_PATCH_OVERLAY_TEMPFILES="---:${DOCKER__START}: PATCH OVERLAY TEMPORARY FILES"
     DOCKER__SUBJECT_COMPLETED_PATCH_OVERLAY_TEMPFILES="---:${DOCKER__COMPLETED}: PATCH OVERLAY TEMPORARY FILES"
 
-    DOCKER__INFOMSG_OVERLAYFS_SETTING_IS_DISABLED="-------:${DOCKER__INFO}: overlay is disabled...\n"
-    DOCKER__INFOMSG_OVERLAYFS_SETTING_IS_DISABLED+="-------:${DOCKER__INFO}: ignoring overlay..."
+    DOCKER__INFOMSG_OVERLAYFS_SETTING_IS_DISABLED="-----------:${DOCKER__INFO}: ${DOCKER__FG_LIGHTGREY}overlay${DOCKER__NOCOLOR} setting is disabled...\n"
+    DOCKER__INFOMSG_OVERLAYFS_SETTING_IS_DISABLED+="-----------:${DOCKER__INFO}: ignoring overlay..."
+    DOCKER__INFOMSG_OVERLAYFS_PARTITION_IS_NOT_PRESENT+="-----------:${DOCKER__INFO}: partition ${DOCKER__FG_LIGHTGREY}overlay${DOCKER__NOCOLOR} is not present...\n"
+    DOCKER__INFOMSG_OVERLAYFS_PARTITION_IS_NOT_PRESENT+="-----------:${DOCKER__INFO}: ignoring overlay..."
 
+    DOCKER__ERRMSG_NO_IF_CONDITIONS_FOUND="${DOCKER__ERROR}: no if conditions found!"
     DOCKER__ERRMSG_ONE_OR_MORE_CHECKITEMS_FAILED="${DOCKER__ERROR}: one or more precheck items failed to pass!"
-    DOCKER__ERRMSG_ONE_OR_MORE_ENTRIES_ARE_INVALID="${DOCKER__ERROR}: one or more entries are invalid"
+    DOCKER__ERRMSG_ONE_OR_MORE_ENTRIES_ARE_INVALID="${DOCKER__ERROR}: one or more entries are invalid!"
     DOCKER__ERRMSG_ONE_OR_MORE_FILES_COULD_NOT_BE_COPIED="${DOCKER__ERROR}: one or more files could NOT be copied!"
-    DOCKER__ERRMSG_FILECONTENT_IS_NOT_CONSISTENT_OR_CORRUPT="${DOCKER__ERROR}: file-content is NOT consistent or corrupt"
+    DOCKER__ERRMSG_PATTERN_EMMC_NOT_FOUND="${DOCKER__ERROR}: pattern ${DOCKER__FG_LIGHTGREY}EMMC${DOCKER__NOCOLOR} not found!"
+    DOCKER__ERRMSG_PATTERN_ROOTFS_EX1E0000000_IS_OUT_OF_BOUND="${DOCKER__ERROR}: pattern ${DOCKER__FG_LIGHTGREY}rootfs 0x1e0000000${DOCKER__NOCOLOR} is out of bound!"
+    DOCKER__ERRMSG_FILECONTENT_IS_NOT_CONSISTENT_OR_CORRUPT="${DOCKER__ERROR}: file-content is NOT consistent or corrupt!"
 }
 
 docker__init_variables__sub() {
@@ -315,10 +320,14 @@ docker__init_variables__sub() {
     docker__exitCode=0
     docker__isRunning_inside_container=false
     docker__isp_c_overlaybck_isfound=true
-    docker__myContainerId=${DOCKER__EMPTYSTRING}
+    docker__isp_partition_array=()
+    docker__isp_partition_arrayitem="${DOCKER__EMPTYSTRING}"
+    docker__isp_partition_arraylen=0
+    docker__myContainerId="${DOCKER__EMPTYSTRING}"
     docker__numOf_errors_found=0
+    docker__overlay_isfound=false
     docker__overlaymode_set="${DOCKER__OVERLAYMODE_PERSISTENT}"
-    docker__overlayfs_set="${DOCKER__OVERLAYFS_DISABLED}"
+    docker__overlaysetting_set="${DOCKER__OVERLAYFS_DISABLED}"
     docker__showTable=true
 }
 
@@ -394,11 +403,11 @@ docker__preCheck__sub() {
 
     #Check if running inside docker container
     if [[ ${docker__isRunning_inside_container} == true ]]; then   #running in docker container
-        printmsg="${DOCKER__STATUS}: (${DOCKER__FG_LIGHTGREY}${DOCKER__LOCATION_LLOCAL}${DOCKER__NOCOLOR}) Inside Container: true"
+        printmsg="-------:${DOCKER__STATUS}: (${DOCKER__FG_LIGHTGREY}${DOCKER__LOCATION_LLOCAL}${DOCKER__NOCOLOR}) Inside Container: true"
 
         docker__numOf_errors_found=0
     else    #NOT running in docker container
-        printmsg="---:${DOCKER__STATUS}: (${DOCKER__FG_LIGHTGREY}${DOCKER__LOCATION_LLOCAL}${DOCKER__NOCOLOR}) Inside Container: false"
+        printmsg="-------:${DOCKER__STATUS}: (${DOCKER__FG_LIGHTGREY}${DOCKER__LOCATION_LLOCAL}${DOCKER__NOCOLOR}) Inside Container: false"
 
         #Check if docker.io is installed
         #Output: docker__numOf_errors_found
@@ -437,9 +446,9 @@ docker__preCheck_app_isInstalled__sub() {
     #Check
     local docker_isInstalled=`checkif_software_isinstalled__func "${appName__input}"`
     if [[ ${docker_isInstalled} == true ]]; then
-        printmsg="---:${DOCKER__STATUS}: ${appName__input}: ${DOCKER__STATUS_LINSTALLED}"
+        printmsg="-------:${DOCKER__STATUS}: ${appName__input}: ${DOCKER__STATUS_LINSTALLED}"
     else    #NOT running in docker container
-        printmsg="---:${DOCKER__STATUS}: ${appName__input}: ${DOCKER__STATUS_LNOTINSTALLED}"
+        printmsg="-------:${DOCKER__STATUS}: ${appName__input}: ${DOCKER__STATUS_LNOTINSTALLED}"
 
         ((docker__numOf_errors_found++))
     fi
@@ -460,14 +469,14 @@ docker__preCheck_app_isPresent__sub() {
     #First check if it's a directory
     isFound=`checkIf_dir_exists__func "${containerid__input}" "${path__input}"`
     if [[ ${isFound} == true ]]; then
-        printmsg="---:${DOCKER__STATUS}: ${path__input}: ${DOCKER__STATUS_LPRESENT}"
+        printmsg="-------:${DOCKER__STATUS}: ${path__input}: ${DOCKER__STATUS_LPRESENT}"
     else
         #Second: if not a directory, then check if it's a file
         isFound=`checkIf_file_exists__func "${containerid__input}" "${path__input}"`
         if [[ ${isFound} == true ]]; then
-            printmsg="---:${DOCKER__STATUS}: ${path__input}: ${DOCKER__STATUS_LPRESENT}"
+            printmsg="-------:${DOCKER__STATUS}: ${path__input}: ${DOCKER__STATUS_LPRESENT}"
         else
-            printmsg="---:${DOCKER__STATUS}: ${path__input}: ${DOCKER__STATUS_LNOTPRESENT}"
+            printmsg="-------:${DOCKER__STATUS}: ${path__input}: ${DOCKER__STATUS_LNOTPRESENT}"
 
             ((docker__numOf_errors_found++))
         fi
@@ -480,8 +489,8 @@ docker__preCheck_app_isPresent__sub() {
 docker__overlay__sub() {
     #Define constants
     local PHASE_OVERLAY_FILES_CHECK=1
-    local PHASE_OVERLAY_DOCKER_FS_PARTITION_CONF_CONTENT_CHECK=10
-    local PHASE_OVERLAY_DOCKER_FS_PARTITION_DISKPARTSIZE_DAT_CONTENT_CHECK=20
+    local PHASE_OVERLAY_DOCKER_FS_PARTITION_CONF_CHECK=10
+    local PHASE_OVERLAY_DOCKER_FS_PARTITION_DISKPARTSIZE_CHECK_AND_CONVERT=20
     local PHASE_OVERLAY_COPY_FILES_FROM_SRC_TO_TMP=30
     local PHASE_OVERLAY_TMPFILES_PATCH=40
     local PHASE_OVERLAY_COPY_FILES_FROM_TMP_TO_DST=50
@@ -490,6 +499,7 @@ docker__overlay__sub() {
 
     #Define variables
     local phase="${PHASE_OVERLAY_FILES_CHECK}"
+    local printmsg="${DOCKER__EMPTYSTRING}"
 
     #Go thru phases
     while true
@@ -498,23 +508,29 @@ docker__overlay__sub() {
             "${PHASE_OVERLAY_FILES_CHECK}")
                 docker__overlay_files_check_handler__sub
 
-                phase="${PHASE_OVERLAY_DOCKER_FS_PARTITION_CONF_CONTENT_CHECK}"
+                phase="${PHASE_OVERLAY_DOCKER_FS_PARTITION_CONF_CHECK}"
                 ;;
-            "${PHASE_OVERLAY_DOCKER_FS_PARTITION_CONF_CONTENT_CHECK}")
+            "${PHASE_OVERLAY_DOCKER_FS_PARTITION_CONF_CHECK}")
                 #Remark:
-                #   'docker__overlayfs_set' is retrieved in this subroutine
+                #   'docker__overlaysetting_set' is retrieved in this subroutine
                 docker__overlay_docker_fs_partition_conf_check_handler__sub
 
-                if [[ "${docker__overlayfs_set}" == "${DOCKER__OVERLAYFS_DISABLED}" ]]; then
+                if [[ "${docker__overlaysetting_set}" == "${DOCKER__OVERLAYFS_DISABLED}" ]]; then
                     phase="${PHASE_OVERLAY_EXIT}"
                 else
-                    phase="${PHASE_OVERLAY_DOCKER_FS_PARTITION_DISKPARTSIZE_DAT_CONTENT_CHECK}"
+                    phase="${PHASE_OVERLAY_DOCKER_FS_PARTITION_DISKPARTSIZE_CHECK_AND_CONVERT}"
                 fi
                 ;;
-            "${PHASE_OVERLAY_DOCKER_FS_PARTITION_DISKPARTSIZE_DAT_CONTENT_CHECK}")
-                docker__overlay_docker_fs_partition_diskpartsize_dat_check_handler__sub
+            "${PHASE_OVERLAY_DOCKER_FS_PARTITION_DISKPARTSIZE_CHECK_AND_CONVERT}")
+                #Remark:
+                #   'docker__overlay_isfound' is set in this subroutine
+                docker__overlay_docker_fs_partition_diskpartsize_check_and_convert_handler__sub
 
-                phase="${PHASE_OVERLAY_COPY_FILES_FROM_SRC_TO_TMP}"
+                if [[ ${docker__overlay_isfound} == false ]]; then
+                    phase="${PHASE_OVERLAY_EXIT}"
+                else
+                    phase="${PHASE_OVERLAY_COPY_FILES_FROM_SRC_TO_TMP}"
+                fi
                 ;;
             "${PHASE_OVERLAY_COPY_FILES_FROM_SRC_TO_TMP}")
                 docker__overlay_copy_files_from_src_to_tmp_handler__sub
@@ -533,6 +549,8 @@ docker__overlay__sub() {
                 exit
                 ;;
             "${PHASE_OVERLAY_EXIT}")
+                echo -e "${printmsg}"
+
 echo "EXIT"
                 exit
                 ;;
@@ -596,9 +614,9 @@ docker__overlay_checkif_file_ispresent__sub() {
     #Update 'printmsg'
     local printmsg="${DOCKER__EMPTYSTRING}"
     if [[ -z "${containerid__input}" ]]; then
-        printmsg="---:${DOCKER__STATUS}: (${DOCKER__FG_LIGHTGREY}${DOCKER__LOCATION_LLOCAL}${DOCKER__NOCOLOR})"
+        printmsg="-------:${DOCKER__STATUS}: (${DOCKER__FG_LIGHTGREY}${DOCKER__LOCATION_LLOCAL}${DOCKER__NOCOLOR})"
     else
-        printmsg="---:${DOCKER__STATUS}: (${DOCKER__FG_LIGHTGREY}${containerid__input}${DOCKER__NOCOLOR})"
+        printmsg="-------:${DOCKER__STATUS}: (${DOCKER__FG_LIGHTGREY}${containerid__input}${DOCKER__NOCOLOR})"
     fi
 
     #Check if 'path__input' exists and update 'printmsg'
@@ -656,7 +674,7 @@ docker_overlay_disksizeset_check__sub() {
             "${DOCKER__ONESPACE}")
 
     #Update 'printmsg'
-    printmsg="---:${DOCKER__STATUS}: ${DOCKER__DISKSIZESETTING}: ${DOCKER__FG_LIGHTGREY}${docker__disksize_set}${DOCKER__NOCOLOR} " 
+    printmsg="-------:${DOCKER__STATUS}: ${DOCKER__DISKSIZESETTING}: ${DOCKER__FG_LIGHTGREY}${docker__disksize_set}${DOCKER__NOCOLOR} " 
     if [[ $(isNumeric__func "${docker__disksize_set}") == false ]]; then  #is not numeric
         printmsg+="(${DOCKER__STATUS_LINVALID})"
 
@@ -689,7 +707,7 @@ docker_overlay_overlaymode_check__sub() {
             "${DOCKER__ONESPACE}")
 
     #Update 'printmsg'
-    printmsg="---:${DOCKER__STATUS}: ${DOCKER__OVERLAYMODE}: ${DOCKER__FG_LIGHTGREY}${docker__overlaymode_set}${DOCKER__NOCOLOR} " 
+    printmsg="-------:${DOCKER__STATUS}: ${DOCKER__OVERLAYMODE}: ${DOCKER__FG_LIGHTGREY}${docker__overlaymode_set}${DOCKER__NOCOLOR} " 
     if [[ "${docker__overlaymode_set}" != "${DOCKER__OVERLAYMODE_PERSISTENT}" ]] && \
             [[ "${docker__overlaymode_set}" != "${DOCKER__OVERLAYMODE_NONPERSISTENT}" ]]; then
         printmsg+="(${DOCKER__STATUS_LINVALID})"
@@ -707,19 +725,19 @@ docker_overlay_overlayfs_check__sub() {
     local printmsg="${DOCKER__EMPTYSTRING}"
 
     #Initialize variables
-    docker__overlayfs_set="${DOCKER__OVERLAYMODE_PERSISTENT}"
+    docker__overlaysetting_set="${DOCKER__OVERLAYMODE_PERSISTENT}"
 
     #Get data from file
-    docker__overlayfs_set=$(retrieve_data_from_file_based_on_specified_pattern_colnum_delimiterchar__func \
+    docker__overlaysetting_set=$(retrieve_data_from_file_based_on_specified_pattern_colnum_delimiterchar__func \
             "${docker__docker_fs_partition_conf__fpath}" \
             "${DOCKER__OVERLAYSETTING}" \
             "${DOCKER__COLNUM_2}" \
             "${DOCKER__ONESPACE}")
 
     #Update 'printmsg'
-    printmsg="---:${DOCKER__STATUS}: ${DOCKER__OVERLAYSETTING}: ${DOCKER__FG_LIGHTGREY}${docker__overlayfs_set}${DOCKER__NOCOLOR} " 
-    if [[ "${docker__overlayfs_set}" != "${DOCKER__OVERLAYFS_ENABLED}" ]] && \
-            [[ "${docker__overlayfs_set}" != "${DOCKER__OVERLAYFS_DISABLED}" ]]; then
+    printmsg="-------:${DOCKER__STATUS}: ${DOCKER__OVERLAYSETTING}: ${DOCKER__FG_LIGHTGREY}${docker__overlaysetting_set}${DOCKER__NOCOLOR} " 
+    if [[ "${docker__overlaysetting_set}" != "${DOCKER__OVERLAYFS_ENABLED}" ]] && \
+            [[ "${docker__overlaysetting_set}" != "${DOCKER__OVERLAYFS_DISABLED}" ]]; then
         printmsg+="(${DOCKER__STATUS_LINVALID})"
 
         ((docker__numOf_errors_found++))
@@ -730,13 +748,13 @@ docker_overlay_overlayfs_check__sub() {
     #Print
     show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
 
-    #In case 'docker__overlayfs_set = disabled', show message and exit this subroutine
-    if [[ "${docker__overlayfs_set}" == "${DOCKER__OVERLAYFS_DISABLED}" ]]; then
+    #In case 'docker__overlaysetting_set = disabled', show message and exit this subroutine
+    if [[ "${docker__overlaysetting_set}" == "${DOCKER__OVERLAYFS_DISABLED}" ]]; then
         show_msg_only__func "${DOCKER__INFOMSG_OVERLAYFS_SETTING_IS_DISABLED}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
     fi
 }
 
-docker__overlay_docker_fs_partition_diskpartsize_dat_check_handler__sub() {
+docker__overlay_docker_fs_partition_diskpartsize_check_and_convert_handler__sub() {
     #Reset variables
     docker__numOf_errors_found=0
 
@@ -744,7 +762,7 @@ docker__overlay_docker_fs_partition_diskpartsize_dat_check_handler__sub() {
     show_msg_only__func "${DOCKER__SUBJECT_DOCKER_FS_PARTITION_DISKPARTSIZE_DAT_FILECONTENT}" "${DOCKER__NUMOFLINES_1}" "${DOCKER__NUMOFLINES_0}"
 
     #Validate the content of 'docker_fs_partition_diskpartsize.dat'
-    docker__overlay_docker_fs_partition_diskpartsize_dat_filecontent_check_handler__sub
+    docker__overlay_diskpartsize_check_and_convert__sub
 
     #Show error message and exit (if applicable)
     if [[ ${docker__numOf_errors_found} -gt 0 ]]; then
@@ -753,31 +771,83 @@ docker__overlay_docker_fs_partition_diskpartsize_dat_check_handler__sub() {
                 ${DOCKER__NUMOFLINES_0}
     fi
 }
-docker__overlay_docker_fs_partition_diskpartsize_dat_filecontent_check_handler__sub() {
+docker__overlay_diskpartsize_check_and_convert__sub() {
     #Define variables
     local diskpartname="${DOCKER__EMPTYSTRING}"
-    local diskpartsize=0
+    local diskpartname_last="${DOCKER__EMPTYSTRING}"
+    local diskpartsize_M=0  #Megabyte
+    local diskpartsize_B=0  #Byte
+    local dispartsize_H="${DOCKER__EMPTYSTRING}"    #Hex
     local printmsg="${DOCKER__EMPTYSTRING}"
+    local remaining_diskpartsize_M=0
+    local remaining_isfound=false
+    local tb_reserve_isfound=false
+    local rootfs_isfound=false
+    local i=0
+
+    #Initialize variables
+    docker__overlay_isfound=false
 
     #Iterate thru file-content
     while read -r line
     do
-        #Get 'diskpartname' and 'diskpartsize'
+        #Get 'diskpartname' and 'diskpartsize_M'
         diskpartname=$(echo "${line}" | awk '{print $1}')
-        diskpartsize=$(echo "${line}" | awk '{print $2}')
+        diskpartsize_M=$(echo "${line}" | awk '{print $2}')
 
         #Update 'printmsg'
-        printmsg="---:${DOCKER__STATUS}: ${diskpartname} ${DOCKER__FG_LIGHTGREY}${diskpartsize}${DOCKER__NOCOLOR} " 
-        if [[ $(isNumeric__func "${diskpartsize}") == false ]]; then  #is not numeric
+        printmsg="-------:${DOCKER__STATUS}: ${diskpartname}: ${DOCKER__FG_LIGHTGREY}${diskpartsize_M}${DOCKER__NOCOLOR} " 
+
+        #Check if 'rootfs' is found
+        if [[ "${diskpartname}" == "${DOCKER__DISKPARTNAME_ROOTFS}" ]]; then
+            rootfs_isfound=true 
+        fi
+
+        #Check if 'tb_reserve' is found
+        if [[ "${diskpartname}" == "${DOCKER__DISKPARTNAME_TB_RESERVE}" ]]; then
+            tb_reserve_isfound=true 
+        fi
+
+        #Check if 'overlay' is found
+        if [[ "${diskpartname}" == "${DOCKER__DISKPARTNAME_OVERLAY}" ]]; then
+            docker__overlay_isfound=true
+        fi
+
+        #Check if 'tb_reserve' is found
+        if [[ "${diskpartname}" == "${DOCKER__DISKPARTNAME_REMAINING}" ]]; then
+            remaining_isfound=true 
+        fi
+
+        #Check if 'dispartsize_M' is numeric
+        if [[ $(isNumeric__func "${diskpartsize_M}") == false ]]; then  #is not numeric
             printmsg+="(${DOCKER__STATUS_LINVALID})"
 
             ((docker__numOf_errors_found++))
         else    #is numeric
-            if [[ ${diskpartsize} -le 0 ]]; then  #less or equal to 0
+            if [[ ${diskpartsize_M} -le 0 ]] && [[ "${diskpartname}" != "${DOCKER__DISKPARTNAME_REMAINING}" ]]; then  #less or equal to 0
                 printmsg+="(${DOCKER__STATUS_LINVALID})"
 
                 ((docker__numOf_errors_found++))
             else    #greater than 0
+                if [[ "${diskpartname}" != "${DOCKER__DISKPARTNAME_REMAINING}" ]]; then
+                    #Update index 'i' only if array 'docker__isp_partition_array' contains data
+                    if [[ ${#docker__isp_partition_array[@]} -gt 0 ]]; then
+                        ((i++))
+                    fi
+
+                    #Convert Megabyte to Byte
+                    diskpartsize_B=$((diskpartsize_M * DOCKER__DISKSIZE_1K_IN_BYTES * DOCKER__DISKSIZE_1K_IN_BYTES))
+                    #Convert Byte to Hex
+                    dispartsize_H=$(printf "0x%x" $diskpartsize_B)
+
+                    #Add 'diskpartname' and 'dispartsize_H' to array
+                    docker__isp_partition_array[i]="${diskpartname} ${dispartsize_H}"
+                else    #diskpartname = remaining
+                    #Note: 'diskpartname = remaining' is not added to array 'docker__isp_partition_array'
+                    remaining_diskpartsize_M=${diskpartsize_M}
+                fi
+
+                #Append string to 'printmsg'
                 printmsg+="(${DOCKER__STATUS_LVALID})"
             fi
         fi
@@ -785,6 +855,76 @@ docker__overlay_docker_fs_partition_diskpartsize_dat_filecontent_check_handler__
         #Print
         show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
     done < "${docker__docker_fs_partition_diskpartsize_dat__fpath}"
+
+    #Check if 'remaining_diskpartsize_M = 0'.
+    #If true, then for the LAST 'diskpartname' set 'dispartsize_H = 0x1e0000000'.
+    if [[ ${remaining_diskpartsize_M} -eq 0 ]]; then
+        diskpartname_last=$(echo ${docker__isp_partition_array[i]} | cut -d"${DOCKER__ONESPACE}" -f1)
+
+        docker__isp_partition_array[i]="${diskpartname_last} ${DOCKER__DISKSIZE_0X1E0000000}"
+    fi
+
+
+    #Check if 'overlay' is configured
+    #Remark:
+    #   If 'overlay' partition is NOT present, then exit this subroutine immediately.
+    #   This is equivalent to 'docker__overlaysetting_set = disabled'
+    if [[ ${docker__overlay_isfound} == false ]]; then
+        #Reset array related variables
+        docker__isp_partition_array=()
+        docker__isp_partition_arrayitem="${DOCKER__EMPTYSTRING}"
+        docker__isp_partition_arraylen=0
+
+        #Update 'printmsg'
+        printmsg="-------:${DOCKER__STATUS}: ${DOCKER__DISKPARTNAME_OVERLAY}: ${DOCKER__FG_LIGHTGREY}${DOCKER__DASH}${DOCKER__NOCOLOR} "
+        printmsg+="(${DOCKER__STATUS_LINVALID})"
+        #Print
+        show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+
+        #Print
+        show_msg_only__func "${DOCKER__INFOMSG_OVERLAYFS_PARTITION_IS_NOT_PRESENT}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+
+        return 0;
+    fi
+
+    #Check if 'rootfs' partition is configured
+    if [[ ${rootfs_isfound} == false ]]; then
+        printmsg="-------:${DOCKER__STATUS}: (${DOCKER__FG_LIGHTGREY}${DOCKER__LOCATION_LLOCAL}${DOCKER__NOCOLOR}) " 
+        printmsg+="${DOCKER__FG_LIGHTGREY}...${DOCKER__NOCOLOR}/${docker__docker_fs_partition_conf__filename} "
+        printmsg+="(${DOCKER__FG_YELLOW}${DOCKER__DISKPARTNAME_ROOTFS}${DOCKER__NOCOLOR} "
+        printmsg+="${DOCKER__FG_LIGHTRED}not${DOCKER__NOCOLOR} present)"
+
+        #Print
+        show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+
+        ((docker__numOf_errors_found++))
+    fi
+
+    #Check if 'tb_reserve' partition is configured
+    if [[ ${tb_reserve_isfound} == false ]]; then
+        printmsg="-------:${DOCKER__STATUS}: (${DOCKER__FG_LIGHTGREY}${DOCKER__LOCATION_LLOCAL}${DOCKER__NOCOLOR}) " 
+        printmsg+="${DOCKER__FG_LIGHTGREY}...${DOCKER__NOCOLOR}/${docker__docker_fs_partition_conf__filename} "
+        printmsg+="(${DOCKER__FG_YELLOW}${DOCKER__DISKPARTNAME_TB_RESERVE}${DOCKER__NOCOLOR} "
+        printmsg+="${DOCKER__FG_LIGHTRED}not${DOCKER__NOCOLOR} present)"
+
+        #Print
+        show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+
+        ((docker__numOf_errors_found++))
+    fi
+
+    #Check if 'tb_reserve' partition is configured
+    if [[ ${remaining_isfound} == false ]]; then
+        printmsg="-------:${DOCKER__STATUS}: (${DOCKER__FG_LIGHTGREY}${DOCKER__LOCATION_LLOCAL}${DOCKER__NOCOLOR}) " 
+        printmsg+="${DOCKER__FG_LIGHTGREY}...${DOCKER__NOCOLOR}/${docker__docker_fs_partition_conf__filename} "
+        printmsg+="(${DOCKER__FG_YELLOW}${DOCKER__DISKPARTNAME_REMAINING}${DOCKER__NOCOLOR} "
+        printmsg+="${DOCKER__FG_LIGHTRED}not${DOCKER__NOCOLOR} present)"
+
+        #Print
+        show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+
+        ((docker__numOf_errors_found++))
+    fi
 }
 
 docker__overlay_copy_files_from_src_to_tmp_handler__sub() {
@@ -904,7 +1044,7 @@ docker__overlay_tempfiles_patch_handler__sub() {
 
     #Prepare the temporary files
     docker__overlay_tempfile_isp_sh_patch__sub
-
+    docker__overlay_tempfile_isp_c_patch__sub
 
 
     #Show error message and exit (if applicable)
@@ -928,7 +1068,11 @@ docker__overlay_tempfile_isp_sh_patch__sub() {
     local if_linenum_arrlen=0
     local line_containing_rootfs_0x1e0000000="${DOCKER__EMPTYSTRING}"
     local linenum_containing_rootfs_0x1e0000000="${DOCKER__EMPTYSTRING}"
+    local partitions_for_isp="${DOCKER__EMPTYSTRING}"
     local printmsg="${DOCKER__EMPTYSTRING}"
+
+    local i=0
+
 
     #Start generating 'printmsg'
     printmsg="-------:${DOCKER__STATUS}: patch ${DOCKER__FG_LIGHTGREY}${docker__docker_overlayfs_isp_sh__fpath}: " 
@@ -945,15 +1089,20 @@ docker__overlay_tempfile_isp_sh_patch__sub() {
 
     #Calculate array-length
     if_linenum_arrlen=${#if_linenum_arr[@]}
+    #Check if 'if_linenum_arrlen = 0'
     if [[ ${if_linenum_arrlen} -eq 0 ]]; then
         #Increment index
         ((docker__numOf_errors_found++))
 
         #Update 'printmsg'
-        printmsg+="${DOCKER__STATUS_FAILED}"
+        printmsg+="${DOCKER__STATUS_FAILED}\n"
+        printmsg+="\n${DOCKER__ERRMSG_NO_IF_CONDITIONS_FOUND}"
         
         #Print
         show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+
+        #Move-up 1 line to compensate for when 'show_errMsg_wo_menuTitle_and_exit_func' is executed
+        moveUp__func "${DOCKER__NUMOFLINES_1}"
 
         return 0;
     fi
@@ -961,11 +1110,27 @@ docker__overlay_tempfile_isp_sh_patch__sub() {
 
     #Find the pattern 'EMMC'
     emmc_linenum=$(grep -nF "${DOCKER__PATTERN_EMMC}" "${docker__docker_overlayfs_isp_sh__fpath}" | cut -d"${DOCKER__COLON}" -f1)
+    #Check if 'emmc_linenum = 0'
+    if [[ ${emmc_linenum} -eq 0 ]]; then
+        #Increment index
+        ((docker__numOf_errors_found++))
 
-    #Get 'emmc_linenumstart'
+        #Update 'printmsg'
+        printmsg+="${DOCKER__STATUS_FAILED}\n"
+        printmsg+="\n${DOCKER__ERRMSG_PATTERN_EMMC_NOT_FOUND}"
+        
+        #Print
+        show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+
+        #Move-up 1 line to compensate for when 'show_errMsg_wo_menuTitle_and_exit_func' is executed
+        moveUp__func "${DOCKER__NUMOFLINES_1}"
+
+        return 0;
+    fi
+
+    #Update 'emmc_linenumstart'
     emmc_linenumstart="${emmc_linenum}"
-
-    #Get 'emmc_linenumend'
+    #Determine 'emmc_linenumend'
     for (( i=0; i<${if_linenum_arrlen}; i++))
     do
         if_linenum_arritem="${if_linenum_arr[i]}"
@@ -991,30 +1156,81 @@ docker__overlay_tempfile_isp_sh_patch__sub() {
 
     #Find and get line containing pattern 'rootfs 0x1e0000000'
     linenum_containing_rootfs_0x1e0000000=$(grep -nF "${DOCKER__PATTERN_ROOTFS_0X1E0000000}"  "${docker__docker_overlayfs_isp_sh__fpath}" | cut -d"${DOCKER__COLON}" -f1)
+    #Check if 'linenum_containing_rootfs_0x1e0000000 is within the boundary'
     if [[ ${linenum_containing_rootfs_0x1e0000000} -lt ${emmc_linenumstart} ]] || \
             [[ ${linenum_containing_rootfs_0x1e0000000} -gt ${emmc_linenumend} ]]; then
         #Increment index
         ((docker__numOf_errors_found++))
 
         #Update 'printmsg'
-        printmsg+="${DOCKER__STATUS_FAILED}"
+        printmsg+="${DOCKER__STATUS_FAILED}\n"
+        printmsg+="\n${DOCKER__ERRMSG_PATTERN_ROOTFS_EX1E0000000_IS_OUT_OF_BOUND}"
         
         #Print
         show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
 
+        #Move-up 1 line to compensate for when 'show_errMsg_wo_menuTitle_and_exit_func' is executed
+        moveUp__func "${DOCKER__NUMOFLINES_1}"
+
         return 0;
     fi
 
-    #Prepare 'isp_partition_array' (See tb_overlay.sh)
+
+    #Get array-length
+    docker__isp_partition_arraylen=${#docker__isp_partition_array[@]}
+
+    #Convert 'array' to 'string'
+    #Start by adding the 'rootfs' partition and suze
     #Remark:
-    #   When converting to 'hex-value', pay attention to 'remaining'.
-    #   If 'remaining = 0', then replace the 'diskpartsize'
-    #   ...of the LAST 'diskpartname' with '0x1e0000000'  
+    #   Notice the index=1
+    #   Make sure to indent with double TABs.
+    partitions_for_isp="\t\t${docker__isp_partition_array[1]} \\\\\n"
+    #Then add the 'tb_reserve' partition and size
+    #Remark:
+    #   Notice the index=0
+    #   Make sure to indent with double TABs.
+    partitions_for_isp+="\t\t${docker__isp_partition_array[0]} \\\\\n"
 
+    #Lastly, add the rest of the partitions and sizes
+    #Remark:
+    #   Only execute this part if the 'array-length > 2'
+    if [[ ${docker__isp_partition_arraylen} -gt 2 ]]; then
+        for (( i=2; i<${docker__isp_partition_arraylen}; i++ ));
+        do
+            #Add the additional partition and size
+            partitions_for_isp+="\t\t${docker__isp_partition_array[i]} "
 
+            #Remark
+            #   Only add a backslash (\\\\) and new-line (\n),
+            #   ...the current array-element is NOT the LAST element.
+            if [[ ${i} -lt $((docker__isp_partition_arraylen-1)) ]]; then
+                partitions_for_isp+="\\\\\n"
+            fi
+        done
+    fi
+
+    #Patch the temporary file '.../docker/overlayfs/isp.sh'
+    replace_or_append_string_in_file__func "${partitions_for_isp}" \
+            "${DOCKER__PATTERN_ROOTFS_0X1E0000000}" \
+            "${docker__docker_overlayfs_isp_sh__fpath}"
+    if [[ "$?" -ne 0 ]]; then
+        #Increment index
+        ((docker__numOf_errors_found++))
+
+        #Update 'printmsg'
+        printmsg+="${DOCKER__STATUS_FAILED}"
+    else
+        printmsg+="${DOCKER__STATUS_SUCCESSFUL}"
+    fi
+    
     #Print
     show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
 }
+
+docker__overlay_tempfile_isp_c_patch__sub() {
+    echo "docker__overlay_tempfile_isp_c_patch__sub: in progress"
+}
+
 
 docker__run_script__sub() {
     #Define variables
@@ -1033,7 +1249,7 @@ docker__run_script__sub() {
     #Check if there are any errors
     docker__exitCode=$?
     if [[ ${docker__exitCode} -ne 0 ]]; then #no errors found
-        printmsg="---:${DOCKER__STATUS}: build ${DOCKER__FG_LIGHTGREY}ISPBOOOT.BIN${DOCKER__NOCOLOR}: ${DOCKER__STATUS_FAILED}"
+        printmsg="-------:${DOCKER__STATUS}: build ${DOCKER__FG_LIGHTGREY}ISPBOOOT.BIN${DOCKER__NOCOLOR}: ${DOCKER__STATUS_FAILED}"
         show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_1}" "${DOCKER__NUMOFLINES_0}"
 
         exit__func "${docker__exitCode}" "${DOCKER__NUMOFLINES_1}"

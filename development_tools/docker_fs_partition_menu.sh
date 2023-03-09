@@ -271,7 +271,7 @@ docker__init_variables__sub() {
     docker__regex12bq="[1-2bq]"
 
     docker__overlaymode_set="${DOCKER__OVERLAYMODE_PERSISTENT}"
-    docker__overlayfs_set="${DOCKER__OVERLAYFS_DISABLED}"
+    docker__overlaysetting_set="${DOCKER__OVERLAYFS_DISABLED}"
 }
 
 docker__get_git_info__sub() {
@@ -426,14 +426,14 @@ docker__menu_update_regex_and_diskpartstatus_print_values__sub () {
     else
         docker__regEx="${docker__regex1bq}"
 
-        docker__diskpartstatus_header_print="${DOCKER__FG_LIGHTGREY}${DOCKER__FOURSPACES}2. ${DOCKER__MENU} ${DOCKER__NOCOLOR}Configure "
+        docker__diskpartstatus_header_print="${DOCKER__FG_LIGHTGREY}${DOCKER__FOURSPACES}2.${DOCKER__NOCOLOR} ${DOCKER__MENU} Configure "
     fi
     docker__diskpartstatus_header_print+="${DOCKER__FG_RED9}disk${DOCKER__NOCOLOR}-${DOCKER__FG_RED9}partition${DOCKER__NOCOLOR}"
 
 
     #Initialize variables
     docker__overlaymode_set=${DOCKER__EMPTYSTRING}
-    docker__overlayfs_set=${DOCKER__EMPTYSTRING}
+    docker__overlaysetting_set=${DOCKER__EMPTYSTRING}
 
     #Get 'docker__overlaymode_set' from file
     if [[ -f "${docker__docker_fs_partition_conf__fpath}" ]]; then
@@ -441,7 +441,7 @@ docker__menu_update_regex_and_diskpartstatus_print_values__sub () {
                 "${DOCKER__COLNUM_2}" \
                 "${docker__docker_fs_partition_conf__fpath}")
 
-        docker__overlayfs_set=$(retrieve__data_specified_by_col_within_file__func "${DOCKER__OVERLAYSETTING}" \
+        docker__overlaysetting_set=$(retrieve__data_specified_by_col_within_file__func "${DOCKER__OVERLAYSETTING}" \
                 "${DOCKER__COLNUM_2}" \
                 "${docker__docker_fs_partition_conf__fpath}")
     fi
@@ -459,11 +459,11 @@ docker__menu_update_regex_and_diskpartstatus_print_values__sub () {
 
     docker__diskpartstatus_print+="/"
 
-    if [[ -n "${docker__overlayfs_set}" ]]; then
-        if [[ "${docker__overlayfs_set}" == "${DOCKER__OVERLAYFS_ENABLED}" ]]; then
-            docker__diskpartstatus_print+="${DOCKER__FG_GREEN158}${docker__overlayfs_set}${DOCKER__NOCOLOR}"
+    if [[ -n "${docker__overlaysetting_set}" ]]; then
+        if [[ "${docker__overlaysetting_set}" == "${DOCKER__OVERLAYFS_ENABLED}" ]]; then
+            docker__diskpartstatus_print+="${DOCKER__FG_GREEN158}${docker__overlaysetting_set}${DOCKER__NOCOLOR}"
         else
-            docker__diskpartstatus_print+="${DOCKER__FG_RED187}${docker__overlayfs_set}${DOCKER__NOCOLOR}"
+            docker__diskpartstatus_print+="${DOCKER__FG_RED187}${docker__overlaysetting_set}${DOCKER__NOCOLOR}"
         fi
     else
         docker__diskpartstatus_print+="${DOCKER__FG_LIGHTGREY}${DOCKER__DASH}${DOCKER__NOCOLOR}"

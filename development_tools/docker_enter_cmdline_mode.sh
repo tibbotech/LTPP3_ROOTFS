@@ -679,7 +679,7 @@ docker__write_cmdinput_to_cache_file_and_update_array__sub() {
         fi
 
         #Add 'cmd__input' to cache-file 'docker__enter_cmdline_mode_cache__fpath'
-        insert_string_into_file_at_specified_lineNum__func "${cmd__input}" \
+        insert_string_at_specified_lineNum_in_file__func "${cmd__input}" \
                         "${DOCKER__LINENUM_1}" \
                         "${docker__enter_cmdline_mode_cache__fpath}" \
                         "${DOCKER__TRUE}"

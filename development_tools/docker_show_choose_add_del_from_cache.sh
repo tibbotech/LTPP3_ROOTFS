@@ -476,7 +476,7 @@ docker__init_move_link_checkout_or_profile_to_top__sub() {
         delete_lineNum_from_file__func "${docker__lineNum_abs}" "${DOCKER__EMPTYSTRING}" "${target_cacheFpath}"
 
         #Insert 'line' at the top of the file.
-        insert_string_into_file_at_specified_lineNum__func "${docker__env_var_sel}" "${DOCKER__LINENUM_1}" "${target_cacheFpath}" "${DOCKER__TRUE}"
+        insert_string_at_specified_lineNum_in_file__func "${docker__env_var_sel}" "${DOCKER__LINENUM_1}" "${target_cacheFpath}" "${DOCKER__TRUE}"
     fi
 
     #IMPORTANT: double-check if 'docker__env_var_link', 'docker__env_var_checkoutare present...
@@ -492,13 +492,13 @@ docker__init_move_link_checkout_or_profile_to_top__sub() {
         #link
         local link_lineNum_found=`retrieve_lineNum_from_file__func "${docker__env_var_link}" "${docker__linkCacheFpath}"`
         if [[ ${link_lineNum_found} -eq ${DOCKER__NUMOFMATCH_0} ]]; then
-            insert_string_into_file_at_specified_lineNum__func "${docker__env_var_link}" "${DOCKER__LINENUM_1}" "${docker__linkCacheFpath}" "${DOCKER__TRUE}"
+            insert_string_at_specified_lineNum_in_file__func "${docker__env_var_link}" "${DOCKER__LINENUM_1}" "${docker__linkCacheFpath}" "${DOCKER__TRUE}"
         fi
 
         #Checkout
         local checkout_lineNum_found=`retrieve_lineNum_from_file__func "${docker__env_var_checkout}" "${docker__checkoutCacheFpath}"`
         if [[ ${checkout_lineNum_found} -eq ${DOCKER__NUMOFMATCH_0} ]]; then
-            insert_string_into_file_at_specified_lineNum__func "${docker__env_var_checkout}" "${DOCKER__LINENUM_1}" "${docker__checkoutCacheFpath}" "${DOCKER__TRUE}"
+            insert_string_at_specified_lineNum_in_file__func "${docker__env_var_checkout}" "${DOCKER__LINENUM_1}" "${docker__checkoutCacheFpath}" "${DOCKER__TRUE}"
         fi
     fi
 
@@ -1232,7 +1232,7 @@ docker__update_cache_files__sub() {
 
             #Insert/append 'docker_arg1'
             if [[ -f ${target_cacheFpath} ]]; then
-                insert_string_into_file_at_specified_lineNum__func "${docker_arg1}" \
+                insert_string_at_specified_lineNum_in_file__func "${docker_arg1}" \
                         "${lineNum_insert}" \
                         "${target_cacheFpath}" \
                         "${DOCKER__TRUE}"
@@ -1247,7 +1247,7 @@ docker__update_cache_files__sub() {
                 if [[ ! -z ${docker_arg2} ]]; then
                     docker_arg1_colon_arg2="${docker_arg1}${DOCKER__COLON}${docker_arg2}"
 
-                    insert_string_into_file_at_specified_lineNum__func "${docker_arg1_colon_arg2}" \
+                    insert_string_at_specified_lineNum_in_file__func "${docker_arg1_colon_arg2}" \
                             "${lineNum_insert}" \
                             "${docker__linkCheckoutProfileCacheFpath}" \
                             "${DOCKER__TRUE}"
@@ -1266,7 +1266,7 @@ docker__update_cache_files__sub() {
 
             #Insert/append 'docker_arg1'
             if [[ -f ${target_cacheFpath} ]]; then 
-                insert_string_into_file_at_specified_lineNum__func "${docker_arg2}" \
+                insert_string_at_specified_lineNum_in_file__func "${docker_arg2}" \
                         "${lineNum_insert}" \
                         "${target_cacheFpath}" \
                         "${DOCKER__TRUE}"
@@ -1281,7 +1281,7 @@ docker__update_cache_files__sub() {
                 if [[ ! -z ${docker_arg1} ]]; then
                     docker_arg1_colon_arg2="${docker_arg1}${DOCKER__COLON}${docker_arg2}"
                 
-                    insert_string_into_file_at_specified_lineNum__func "${docker_arg1_colon_arg2}" \
+                    insert_string_at_specified_lineNum_in_file__func "${docker_arg1_colon_arg2}" \
                             "${lineNum_insert}" \
                             "${docker__linkCheckoutProfileCacheFpath}" \
                             "${DOCKER__TRUE}"
@@ -1294,7 +1294,7 @@ docker__update_cache_files__sub() {
 
             #Insert/append 'docker_arg1_colon_arg2'
             if [[ -f ${docker__linkCheckoutProfileCacheFpath} ]]; then
-                insert_string_into_file_at_specified_lineNum__func "${docker_arg1_colon_arg2}" \
+                insert_string_at_specified_lineNum_in_file__func "${docker_arg1_colon_arg2}" \
                         "${lineNum_insert}" \
                         "${target_cacheFpath}" \
                         "${DOCKER__TRUE}"
@@ -1339,7 +1339,7 @@ docker__update_other_cache_files_due_to_chosen_object() {
             if [[ ! -z ${docker_arg2} ]]; then
                 docker_arg1_colon_arg2="${docker_arg1}${DOCKER__COLON}${docker_arg2}"
 
-                insert_string_into_file_at_specified_lineNum__func "${docker_arg1_colon_arg2}" \
+                insert_string_at_specified_lineNum_in_file__func "${docker_arg1_colon_arg2}" \
                         "${DOCKER__LINENUM_1}" \
                         "${docker__linkCheckoutProfileCacheFpath}" \
                         "${DOCKER__TRUE}"
@@ -1359,7 +1359,7 @@ docker__update_other_cache_files_due_to_chosen_object() {
             if [[ ! -z ${docker_arg1} ]]; then
                 docker_arg1_colon_arg2="${docker_arg1}${DOCKER__COLON}${docker_arg2}"
 
-                insert_string_into_file_at_specified_lineNum__func "${docker_arg1_colon_arg2}" \
+                insert_string_at_specified_lineNum_in_file__func "${docker_arg1_colon_arg2}" \
                         "${DOCKER__LINENUM_1}" \
                         "${docker__linkCheckoutProfileCacheFpath}" \
                         "${DOCKER__TRUE}"
@@ -1370,7 +1370,7 @@ docker__update_other_cache_files_due_to_chosen_object() {
             docker_arg1=`echo "${data__input}" | rev | cut -d"${DOCKER__COLON}" -f2- | rev`
 
             #Insert at the 1st line
-            insert_string_into_file_at_specified_lineNum__func "${docker_arg1}" \
+            insert_string_at_specified_lineNum_in_file__func "${docker_arg1}" \
                         "${DOCKER__LINENUM_1}" \
                         "${docker__linkCacheFpath}" \
                         "${DOCKER__TRUE}"
@@ -1379,7 +1379,7 @@ docker__update_other_cache_files_due_to_chosen_object() {
             docker_arg2=`echo "${data__input}" | rev | cut -d"${DOCKER__COLON}" -f1 | rev`
 
             #Insert at the 1st line
-            insert_string_into_file_at_specified_lineNum__func "${docker_arg2}" \
+            insert_string_at_specified_lineNum_in_file__func "${docker_arg2}" \
                         "${DOCKER__LINENUM_1}" \
                         "${docker__checkoutCacheFpath}" \
                         "${DOCKER__TRUE}"
@@ -1978,7 +1978,7 @@ docker__move_selected_item_to_top_of_cache_file__sub() {
     delete_lineNum_from_file__func "${lineNum_abs}" "${DOCKER__EMPTYSTRING}" "${target_cacheFpath}"
 
     #Insert 'line' at the top of the file.
-    insert_string_into_file_at_specified_lineNum__func "${docker__line}" "${DOCKER__LINENUM_1}" "${target_cacheFpath}" "${DOCKER__TRUE}"
+    insert_string_at_specified_lineNum_in_file__func "${docker__line}" "${DOCKER__LINENUM_1}" "${target_cacheFpath}" "${DOCKER__TRUE}"
 }
 
 docker__any_add_handler__sub() {

@@ -89,7 +89,7 @@ docker__init_variables__sub() {
     docker__disksize_remain=${disksize__input}
     
     docker__overlaymode_set="${DOCKER__OVERLAYMODE_PERSISTENT}"
-    docker__overlayfs_set="${DOCKER__OVERLAYFS_DISABLED}"
+    docker__overlaysetting_set="${DOCKER__OVERLAYFS_DISABLED}"
 
     docker__readdialog_output="${DOCKER__EMPTYSTRING}"
 
@@ -98,12 +98,12 @@ docker__init_variables__sub() {
     docker__overlayfs_size=$((disksize__input - docker__reservedfs_size - docker__rootfs_size))
 
     docker__isp_partition_array=()
-    docker__isp_partition_array[0]="${DOCKER__DISKPARTNAME_RESERVED} ${docker__reservedfs_size}"
+    docker__isp_partition_array[0]="${DOCKER__DISKPARTNAME_TB_RESERVE} ${docker__reservedfs_size}"
     docker__isp_partition_array[1]="${DOCKER__DISKPARTNAME_ROOTFS} ${docker__rootfs_size}"
     docker__isp_partition_array[2]="${DOCKER__DISKPARTNAME_OVERLAY} ${docker__overlayfs_size}"
 
     docker__isp_partition_array_default=()
-    docker__isp_partition_array_default[0]="${DOCKER__DISKPARTNAME_RESERVED} ${docker__reservedfs_size}"
+    docker__isp_partition_array_default[0]="${DOCKER__DISKPARTNAME_TB_RESERVE} ${docker__reservedfs_size}"
     docker__isp_partition_array_default[1]="${DOCKER__DISKPARTNAME_ROOTFS} ${docker__rootfs_size}"
     docker__isp_partition_array_default[2]="${DOCKER__DISKPARTNAME_OVERLAY} ${docker__overlayfs_size}"
 
@@ -112,7 +112,9 @@ docker__init_variables__sub() {
 
     docker__exitcode=0
 
-    regex="[1-4q]"
+    docker__regex12q="[12q]"
+    docker__regex1234q="[1-4q]"
+    docker__regex="${docker__regex1234q}"
 }
 
 docker__preprep__sub() {
@@ -168,16 +170,16 @@ docker__preprep__sub() {
                     "${docker__docker_fs_partition_conf__fpath}"
         fi
 
-        docker__overlayfs_set=$(retrieve__data_specified_by_col_within_file__func "${DOCKER__OVERLAYSETTING}" \
+        docker__overlaysetting_set=$(retrieve__data_specified_by_col_within_file__func "${DOCKER__OVERLAYSETTING}" \
                 "${DOCKER__COLNUM_2}" \
                 "${docker__docker_fs_partition_conf__fpath}")
         #Remark:
-        #   It can happen that 'docker__overlayfs_set' is an 'Empty String'
+        #   It can happen that 'docker__overlaysetting_set' is an 'Empty String'
         #   ...in case file 'docker__docker_fs_partition_conf__fpath' has
         #   ...no 'DOCKER__OVERLAYSETTING' input.
-        #   In that case, automatically set 'docker__overlayfs_set = DOCKER__OVERLAYFS_DISABLED'.
-        if [[ -z "${docker__overlayfs_set}" ]]; then
-            docker__overlayfs_set="${DOCKER__OVERLAYFS_DISABLED}"
+        #   In that case, automatically set 'docker__overlaysetting_set = DOCKER__OVERLAYFS_DISABLED'.
+        if [[ -z "${docker__overlaysetting_set}" ]]; then
+            docker__overlaysetting_set="${DOCKER__OVERLAYFS_DISABLED}"
 
             #Generate 'filecontent'
             filecontent="${DOCKER__OVERLAYSETTING} ${DOCKER__OVERLAYFS_DISABLED}"
@@ -202,9 +204,9 @@ docker__preprep__sub() {
 docker__menu__sub() {
     #Define variables
     local diskpart_arritem="${DOCKER__EMPTYSTRING}"
-
-    local mychoice="${DOCKER__EMPTYSTRING}"
     local exitcode=0
+    local grep_output="${DOCKER__EMPTYSTRING}"
+    local mychoice="${DOCKER__EMPTYSTRING}"
     local ret=0
 
     #Show menu
@@ -214,6 +216,7 @@ docker__menu__sub() {
         enable_ctrl_c__func
 
         #IMPORTANT: reset variables
+        docker__regex="${docker__regex1234q}"
         exitcode=0
 
         #Get Git-information
@@ -248,6 +251,14 @@ docker__menu__sub() {
         #Print horizontal line
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
 
+        #Check if 'overlay' partition is present in 'docker__isp_partition_array'
+        #Remark:
+        #   If 'overlay' partition is NOT present, then DISABLE option '3' and '4'
+        grep_output=$(echo ${docker__isp_partition_array[@]} | grep -w "${DOCKER__DISKPARTNAME_OVERLAY}")
+        if [[ -z "${grep_output}" ]]; then  #pattern 'overlay' is found
+            docker__regex="${docker__regex12q}"
+        fi
+
         while true
         do
             #Select an option
@@ -256,7 +267,7 @@ docker__menu__sub() {
 
             #Only continue if a valid option is selected
             if [[ ! -z ${mychoice} ]]; then
-                if [[ ${mychoice} =~ ${regex} ]]; then
+                if [[ ${mychoice} =~ ${docker__regex} ]]; then
                     break
                 else
                     if [[ ${mychoice} == ${DOCKER__ENTER} ]]; then
@@ -285,10 +296,10 @@ docker__menu__sub() {
                 docker__partitiondisk__sub "false" "${docker__isp_partition_array[@]}"
                 ;;
             3)
-                docker__overlaymode__sub
+                docker__overlaysetting__sub
                 ;;
             4)
-                docker__overlayfs__sub
+                docker__overlaymode__sub
                 ;;
             q)
                 exit__func "${DOCKER__EXITCODE_99}" "${DOCKER__NUMOFLINES_1}"
@@ -328,10 +339,10 @@ docker__menu_body_print_sub() {
     local diskpart_arritem_print="${DOCKER__EMPTYSTRING}"
     local diskpart_arritem_left_len=0
     local diskpart_arritem_left_max=0
-    local disksize_remain=${disksize__input}
+    # local disksize_remain=${disksize__input}
 
     #---THIS PART IS DEDICATED TO THE PRINTING OF THE:
-    #       LEFT-STRING (e.g. rootfs, reserved, overlay, etc.)
+    #       LEFT-STRING (e.g. rootfs, tb_reserve, overlay, etc.)
     #       RIGHT-STRING (e.g. 1536, 128, 256 etc...)
     #Determine the longest string of 'diskpart_arritem_left'
     diskpart_arritem_left_max=$(printf '%s\n' ${docker__isp_partition_array[@]} | wc -L)
@@ -362,53 +373,52 @@ docker__menu_body_print_sub() {
         #Print
         echo -e "${diskpart_arritem_print}"
 
-        #Calculate the 'disksize_remain'
-        disksize_remain=$(bc_substract_x_from_y "${disksize_remain}" "${diskpart_arritem_right}")
+        # #Calculate the 'disksize_remain'
+        # disksize_remain=$(bc_substract_x_from_y "${disksize_remain}" "${diskpart_arritem_right}")
     done
-
-    #Print 'remaining'
-    #Append 'Empty Spaces' to 'diskpart_arritem_left'
-    diskpart_arritem_left=$(append_a_specified_numofchars_to_string "${DOCKER__DISKPARTNAME_REMAINING}" \
-            "${DOCKER__ONESPACE}" \
-            "${diskpart_arritem_left_max}")
-
-    #Get the right-string 'diskpart_arritem_right'
-    diskpart_arritem_right="${disksize_remain}"
-
-    #Update variable
-    diskpart_arritem_print="${DOCKER__FOURSPACES}${DOCKER__FG_ORANGE130}${diskpart_arritem_left}${DOCKER__NOCOLOR}"
-    diskpart_arritem_print+="${DOCKER__FG_ORANGE131}${diskpart_arritem_right}${DOCKER__NOCOLOR}"
-
-    #Print
-    echo -e "${diskpart_arritem_print}"
 }
 docker__menu_options_print_sub() {
     #Define variables
     local overlaymode_print="${DOCKER__EMPTYSTRING}"
-    local overlayfs_print="${DOCKER__EMPTYSTRING}"
+    local overlaysetting_print="${DOCKER__EMPTYSTRING}"
+    local grep_output="${DOCKER__EMPTYSTRING}"
 
     #Print options
     echo -e "${DOCKER__FOURSPACES}1. Configure ${DOCKER__BLINKING}new${DOCKER__NOCOLOR} partition"
     echo -e "${DOCKER__FOURSPACES}2. Configure ${DOCKER__DIM}existing${DOCKER__NOCOLOR} partition"
 
+    #Check if 'overlay' partition is present in 'docker__isp_partition_array'
+    grep_output=$(echo ${docker__isp_partition_array[@]} | grep -w "${DOCKER__DISKPARTNAME_OVERLAY}")
+    if [[ -n "${grep_output}" ]]; then  #pattern 'overlay' is found
+        overlaysetting_print="${DOCKER__FOURSPACES}3. ${DOCKER__OVERLAYSETTING} "
+    else    #pattern 'overlay' is NOT found
+        overlaysetting_print="${DOCKER__FG_LIGHTGREY}${DOCKER__FOURSPACES}3.${DOCKER__NOCOLOR} ${DOCKER__OVERLAYSETTING} "
+    fi
+
+    if [[ "${docker__overlaysetting_set}" == "${DOCKER__OVERLAYFS_ENABLED}" ]]; then
+        overlaysetting_print+="(${DOCKER__FG_GREEN158}${docker__overlaysetting_set}${DOCKER__NOCOLOR})"
+    else
+        overlaysetting_print+="(${DOCKER__FG_RED187}${docker__overlaysetting_set}${DOCKER__NOCOLOR})"
+    fi
+    echo -e "${overlaysetting_print}"
+
     #overlay-mode:
     #   default (do NOT change the pentagram_common.h)
-    #   rw (insert string 'tb_overlay' in pentagram_common.h)
-    #   ro (insert string 'tb_rootfs_ro' in pentagram_common.h)
+    #   persistent ('overlay' partition is RW; do NOT remove 'overlay' partition after reboot)
+    #   non-persistent ('overlay' partition is RO; remove 'overlay' partition after reboot)
+    if [[ -n "${grep_output}" ]]; then  #pattern 'overlay' is found
+        overlaymode_print="${DOCKER__FOURSPACES}4. ${DOCKER__OVERLAYMODE} "
+    else    #pattern 'overlay' is NOT found
+        overlaymode_print="${DOCKER__FG_LIGHTGREY}${DOCKER__FOURSPACES}4.${DOCKER__NOCOLOR} ${DOCKER__OVERLAYMODE} "
+    fi
+
     if [[ "${docker__overlaymode_set}" == "${DOCKER__OVERLAYMODE_PERSISTENT}" ]]; then
-        overlaymode_print="${DOCKER__FG_GREEN158}${docker__overlaymode_set}${DOCKER__NOCOLOR}"
+        overlaymode_print+="(${DOCKER__FG_GREEN158}${docker__overlaymode_set}${DOCKER__NOCOLOR})"
     else
-        overlaymode_print="${DOCKER__FG_RED187}${docker__overlaymode_set}${DOCKER__NOCOLOR}"
+        overlaymode_print+="(${DOCKER__FG_RED187}${docker__overlaymode_set}${DOCKER__NOCOLOR})"
     fi
-    echo -e "${DOCKER__FOURSPACES}3. ${DOCKER__OVERLAYMODE} (${DOCKER__FG_LIGHTGREY}${overlaymode_print}${DOCKER__NOCOLOR})"
+    echo -e "${overlaymode_print}"
 
-    if [[ "${docker__overlayfs_set}" == "${DOCKER__OVERLAYFS_ENABLED}" ]]; then
-        overlayfs_print="${DOCKER__FG_GREEN158}${docker__overlayfs_set}${DOCKER__NOCOLOR}"
-    else
-        overlayfs_print="${DOCKER__FG_RED187}${docker__overlayfs_set}${DOCKER__NOCOLOR}"
-    fi
-
-    echo -e "${DOCKER__FOURSPACES}4. ${DOCKER__OVERLAYSETTING} (${DOCKER__FG_LIGHTGREY}${overlayfs_print}${DOCKER__NOCOLOR})"
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
     echo -e "${DOCKER__FOURSPACES}q. $DOCKER__QUIT_CTRL_C"
 }
@@ -452,6 +462,11 @@ docker__partitiondisk__sub() {
                 docker__diskpartname=$(echo "${dataarr__input[j]}" | cut -d" " -f1)
                 docker__diskpartsize=$(echo "${dataarr__input[j]}" | cut -d" " -f2)
 
+                #If 'docker__diskpartname = remaining', then reset variable
+                if [[ "${docker__diskpartname}" ==  "${DOCKER__DISKPARTNAME_REMAINING}" ]]; then
+                    docker__diskpartname="${DOCKER__EMPTYSTRING}"
+                fi
+
                 #Goto next-phase
                 phase="${PHASE_PARTITIONNAME_INPUT}"
                 ;;
@@ -461,7 +476,7 @@ docker__partitiondisk__sub() {
                 #   Provide the partition-name of the 'additonal' fs
                 #   ...and write to variable 'docker__diskpartname'
                 case "${j}" in
-                    "0")    #reserved
+                    "0")    #tb_reserve
                         #Goto next-phase
                         phase="${PHASE_PARTITIONSIZE_INPUT}"
                         ;;
@@ -516,7 +531,7 @@ docker__partitiondisk__sub() {
                 ;;
             "${PHASE_PARTITIONSIZE_INPUT}")
                 #Partition-SIZE read-dialog handler
-                if [[ "${j}" -gt 0 ]]; then   #j > 0: do NOT show the read-dialog for the 'reserved-fs'
+                if [[ "${j}" -gt 0 ]]; then   #j > 0: do NOT show the read-dialog for the 'tb_reserve-fs'
                     #Update 'readdialog_diskpartsize'
                     readdialog_diskpartsize="${DOCKER__READDIALOG_HEADER}: ${docker__diskpartname} "
                     
@@ -524,16 +539,16 @@ docker__partitiondisk__sub() {
                         readdialog_diskpartsize+="(${DOCKER__SEMICOLON_CLEAR_ABORT_COLORED}) "           
                     elif [[ ${j} -eq 2 ]]; then #overlay
                         readdialog_diskpartsize+="(${DOCKER__SEMICOLON_CLEAR_REDO_ABORT_COLORED}) "
-                    elif [[ ${j} -gt 2 ]]; then #anything else except for 'reserved'
+                    elif [[ ${j} -gt 2 ]]; then #anything else except for 'tb_reserve'
                         readdialog_diskpartsize+="(${DOCKER__SEMICOLON_CLEAR_REDO_FINISH_ABORT_COLORED}) "
                     fi
                     readdialog_diskpartsize+="(${DOCKER__FG_ORANGE215}${docker__disksize_remain}${DOCKER__NOCOLOR}): "
 
                     #Show read-dialog
-                    if [[ -n "${docker__diskpartsize}" ]]; then
+                    if [[ -n "${docker__diskpartsize}" ]] && [[ ${docker__diskpartsize} -ne 0 ]]; then
                         readdialog_diskpartsize_default="${docker__diskpartsize}"
                         
-                        #Only apply this condition for partitions other than 'reserved' and 'rootfs'
+                        #Only apply this condition for partitions other than 'tb_reserve' and 'rootfs'
                         #Only apply this condition if 'isnewdiskpartconfig__input = true'
                         if [[ "${j}" -gt 1 ]] && [[ "${isnewdiskpartconfig__input}" == "true" ]]; then
                             readdialog_diskpartsize_default="${docker__disksize_remain}"
@@ -788,19 +803,19 @@ docker__overlaymode__sub() {
             "${docker__docker_fs_partition_conf__fpath}"
 }
 
-docker__overlayfs__sub() {
+docker__overlaysetting__sub() {
     #Define variables
     local filecontent="${DOCKER__EMPTYSTRING}"
 
-    #Flip 'docker__overlayfs_set' value
-    if [[ "${docker__overlayfs_set}" == "${DOCKER__OVERLAYFS_DISABLED}" ]]; then
-        docker__overlayfs_set="${DOCKER__OVERLAYFS_ENABLED}"
+    #Flip 'docker__overlaysetting_set' value
+    if [[ "${docker__overlaysetting_set}" == "${DOCKER__OVERLAYFS_DISABLED}" ]]; then
+        docker__overlaysetting_set="${DOCKER__OVERLAYFS_ENABLED}"
     else
-        docker__overlayfs_set="${DOCKER__OVERLAYFS_DISABLED}"
+        docker__overlaysetting_set="${DOCKER__OVERLAYFS_DISABLED}"
     fi
 
     #Update variable
-    filecontent="${DOCKER__OVERLAYSETTING} ${docker__overlayfs_set}"
+    filecontent="${DOCKER__OVERLAYSETTING} ${docker__overlaysetting_set}"
 
     #Replace/Append to file
     replace_or_append_string_in_file__func "${filecontent}" \
