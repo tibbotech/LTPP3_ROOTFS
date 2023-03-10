@@ -215,7 +215,7 @@ DOCKER__EXITCODE_130=130    #job was terminted by the owner (not an error)
 
 
 
-#---FILE-RELATED CONSTANTS
+#---FILE RELATED CONSTANTS
 DOCKER__CHECKOUT="checkout"
 DOCKER__CACHE="cache"
 DOCKER__DOCKERFILE="dockerfile"
@@ -383,7 +383,11 @@ DOCKER__ROOTFS_SIZE_DEFAULT=1536    #in MB
 DOCKER__PATTERN_EMMC="EMMC"
 DOCKER__PATTERN_ROOTFS_0X1E0000000="rootfs 0x1e0000000"
 DOCKER__PATTERN_DUMMY="Dummy"
-DOCKER__PATTERN_ISP_INFO__XXX__FILE_NAME_COMMA="isp_info.file_header.partition_info[i].file_name,"
+DOCKER__PATTERN_ISP_C_1="fprintf(fd, \"uuid=\${uuid_gpt_%s},\", basename(isp_info.file_header.partition_info[i].file_name));"
+DOCKER__PATTERN_ISP_C_2="isp_info.file_header.partition_info[i].file_name,\"rootfs\""
+DOCKER__PATTERN_ISP_C_3="// The emmc rootfs partition is set to EXT2 fs, and the partition size is all remaining space."
+DOCKER__PATTERN_PENTAGRAM_COMMON_H="\"b_c=console=tty1 console=ttyS0,115200 earlyprintk\0\""
+
 
 DOCKER__OVERLAYMODE="Overlay-mode"
 DOCKER__OVERLAYMODE_NONPERSISTENT="non-persistent"
@@ -391,6 +395,14 @@ DOCKER__OVERLAYMODE_PERSISTENT="persistent"
 DOCKER__OVERLAYSETTING="Overlay-setting"
 DOCKER__OVERLAYFS_ENABLED="enabled"
 DOCKER__OVERLAYFS_DISABLED="disabled"
+
+DOCKER__TB_OVERLAY="tb_overlay"
+DOCKER__TB_ROOTFS_RO="tb_rootfs_ro"
+
+DOCKER__SED_PATTERN_ISP_C_2_WO_ROOTFS="isp_info.file_header.partition_info\[i\].file_name"
+DOCKER__SED_PATTERN_ISP_C_2_W_ROOTFS="isp_info.file_header.partition_info\[i\].file_name,\\\"rootfs\\\""
+DOCKER__SED__PATTERN_PENTAGRAM_COMMON_H_WO_BACKSLASH0="\\\"b_c=console=tty1 console=ttyS0,115200 earlyprintk"
+DOCKER__SED__PATTERN_PENTAGRAM_COMMON_H_W_BACKSLASH0="\\\"b_c=console=tty1 console=ttyS0,115200 earlyprintk\\\0\\\""
 
 
 #---PATH CONSTANTS
@@ -408,6 +420,12 @@ DOCKER__COLOR_SLASH_DOTDOT_SLASH_DOTDOT="${DOCKER__COLOR_SLASH}${DOCKER__COLOR_D
 DOCKER__PATTERN_DOCKER_IO="docker.io"
 DOCKER__PATTERN_IF="if"
 DOCKER__PATTERN_TOP="top"
+
+
+
+#---PERMISSION CONSTANTS
+DOCKER__CHMOD_755="755"
+
 
 
 #---PHASE CONSTANTS
@@ -442,6 +460,8 @@ DOCKER__UPDATE="${DOCKER__FG_ORANGE}UPDATE${DOCKER__NOCOLOR}"
 DOCKER__LOCATION_LLOCAL="local"
 
 DOCKER__STATUS_FAILED="${DOCKER__FG_LIGHTRED}FAILED${DOCKER__NOCOLOR}"
+DOCKER__STATUS_MISSING="${DOCKER__FG_LIGHTRED}MISSING${DOCKER__NOCOLOR}"
+DOCKER__STATUS_OUTOFBOUND="${DOCKER__FG_LIGHTRED}OUT-OF-BOUND${DOCKER__NOCOLOR}"
 DOCKER__STATUS_SUCCESSFUL="${DOCKER__FG_GREEN}SUCCESSFUL${DOCKER__NOCOLOR}"
 
 DOCKER__STATUS_LDISABLED="${DOCKER__FG_LIGHTGREY}disabled${DOCKER__NOCOLOR}"
@@ -1563,6 +1583,16 @@ function append_caretReturn_ifNotPresent_within_file__func() {
 
     enable_expansion__func
 }
+
+function append_string_to_file__func() {
+    #Input args
+    string__input=${1}
+    targetfpath__input=${2}
+
+    #Write
+    echo "${string__input}" | tee -a ${targetfpath__input} >/dev/null
+}
+
 function checkIf_dir_exists__func() {
     #Input args
     local containerID__input="${1}"
@@ -1992,7 +2022,7 @@ function retrieve_files_from_specified_dir_basedOn_matching_patterns__func() {
     echo "${ret}"
 }
 
-function retrieve_data_from_file_based_on_specified_pattern_colnum_delimiterchar__func() {
+function retrieve_string_based_on_specified_pattern_colnum_delimiterchar_from_file__func() {
     #Input args
     local targetfpath__input=${1}
     local pattern__input=${2}
@@ -2001,6 +2031,22 @@ function retrieve_data_from_file_based_on_specified_pattern_colnum_delimiterchar
 
     #Find result based on provded 'pattern__input'
     local ret=$(grep -F "${pattern__input}" "${targetfpath__input}" | cut -d"${delimiterchar__input}" -f"${colnum__input}")
+
+    #Output
+    echo "${ret}"
+
+    return 0;
+}
+
+function retrieve_linenum_based_on_specified_pattern_colnum_delimiterchar_from_file__func() {
+    #Input args
+    local targetfpath__input=${1}
+    local pattern__input=${2}
+    local colnum__input=${3}
+    local delimiterchar__input=${4}
+
+    #Find result based on provded 'pattern__input'
+    local ret=$(grep -nF "${pattern__input}" "${targetfpath__input}" | cut -d"${delimiterchar__input}" -f"${colnum__input}")
 
     #Output
     echo "${ret}"
@@ -2070,15 +2116,6 @@ function write_data_to_file__func() {
 
     #Write
     echo "${string__input}" | tee ${targetfpath__input} >/dev/null
-}
-
-function Append_data_to_file__func() {
-    #Input args
-    string__input=${1}
-    targetfpath__input=${2}
-
-    #Write
-    echo "${string__input}" | tee -a ${targetfpath__input} >/dev/null
 }
 
 
@@ -5152,7 +5189,7 @@ function remove_whiteSpaces__func() {
     echo -e "${ret}"
 }
 
-function replace_or_append_string_in_file__func() {
+function replace_or_append_string_based_on_pattern_in_file__func() {
     #Input args
     local string__input=${1}
     local pattern__input=${2}
@@ -5175,6 +5212,21 @@ function replace_or_append_string_in_file__func() {
     else
         echo -e "${string__input}" | tee -a ${targetfpath__input} >/dev/null
     fi
+}
+
+function replace_string_with_another_string_in_file__func() {
+    #Input args
+    local sed_oldstring__input=${1}
+    local sed_newstring__input=${2}
+    local targetfpath__input=${3}
+
+    #Check if file exists
+    if [[ ! -f "${targetfpath__input}" ]]; then #file does NOT exist
+        return 0;
+    fi
+
+    #Replace 
+    sed -i "s/${sed_oldstring__input}/${sed_newstring__input}/g" ${targetfpath__input}
 }
 
 function retrieve_data_specified_by_col_within_2Darray__func() {
@@ -5722,8 +5774,8 @@ function update_exported_env_var__func() {
     local exported_env_var_fpath__input=${4}
 
     #Define Message Constants
-    local ERRMSG_DOCKERFILE_NOT_FOUND="${DOCKER__ERROR}: Dockerfile '${dockerFile__input}' not Found"
-    local ERRMSG_EXPORTEDFILE_NOT_FOUND="${DOCKER__ERROR}: Environment variable file '${exported_env_var_fpath__input}' not Found"
+    local ERRMSG_DOCKERFILE_NOT_FOUND="${DOCKER__ERROR}: Dockerfile '${dockerFile__input}' not found"
+    local ERRMSG_EXPORTEDFILE_NOT_FOUND="${DOCKER__ERROR}: Environment variable file '${exported_env_var_fpath__input}' not found"
 
     #Get repository:tag from file
     local dockerfile_fpath_repositoryTag="${DOCKER__EMPTYSTRING}"

@@ -165,7 +165,7 @@ docker__preprep__sub() {
             filecontent="${DOCKER__OVERLAYMODE} ${DOCKER__OVERLAYMODE_PERSISTENT}"
 
             #Replace/Append to file
-            replace_or_append_string_in_file__func "${filecontent}" \
+            replace_or_append_string_based_on_pattern_in_file__func "${filecontent}" \
                     "${DOCKER__OVERLAYMODE}" \
                     "${docker__docker_fs_partition_conf__fpath}"
         fi
@@ -185,7 +185,7 @@ docker__preprep__sub() {
             filecontent="${DOCKER__OVERLAYSETTING} ${DOCKER__OVERLAYFS_DISABLED}"
 
             #Replace/Append to file
-            replace_or_append_string_in_file__func "${filecontent}" \
+            replace_or_append_string_based_on_pattern_in_file__func "${filecontent}" \
                     "${DOCKER__OVERLAYSETTING}" \
                     "${docker__docker_fs_partition_conf__fpath}"
         fi
@@ -195,7 +195,7 @@ docker__preprep__sub() {
         filecontent+="${DOCKER__OVERLAYSETTING} ${DOCKER__OVERLAYFS_DISABLED}"
 
         #Replace/Append to file
-        replace_or_append_string_in_file__func "${filecontent}" \
+        replace_or_append_string_based_on_pattern_in_file__func "${filecontent}" \
                 "${DOCKER__PATTERN_DUMMY}" \
                 "${docker__docker_fs_partition_conf__fpath}"
     fi
@@ -383,10 +383,12 @@ docker__menu_options_print_sub() {
     local overlaysetting_print="${DOCKER__EMPTYSTRING}"
     local grep_output="${DOCKER__EMPTYSTRING}"
 
+    ###Configure new/existing partition
     #Print options
     echo -e "${DOCKER__FOURSPACES}1. Configure ${DOCKER__BLINKING}new${DOCKER__NOCOLOR} partition"
     echo -e "${DOCKER__FOURSPACES}2. Configure ${DOCKER__DIM}existing${DOCKER__NOCOLOR} partition"
 
+    ###Overlay-setting
     #Check if 'overlay' partition is present in 'docker__isp_partition_array'
     grep_output=$(echo ${docker__isp_partition_array[@]} | grep -w "${DOCKER__DISKPARTNAME_OVERLAY}")
     if [[ -n "${grep_output}" ]]; then  #pattern 'overlay' is found
@@ -402,13 +404,14 @@ docker__menu_options_print_sub() {
     fi
     echo -e "${overlaysetting_print}"
 
-    #overlay-mode:
-    #   default (do NOT change the pentagram_common.h)
+    ###Overlay-mode
+    #   dash (-) (do NOT change the pentagram_common.h)
     #   persistent ('overlay' partition is RW; do NOT remove 'overlay' partition after reboot)
     #   non-persistent ('overlay' partition is RO; remove 'overlay' partition after reboot)
-    if [[ -n "${grep_output}" ]]; then  #pattern 'overlay' is found
+    if [[ -n "${grep_output}" ]] && \
+            [[ "${docker__overlaysetting_set}" == "${DOCKER__OVERLAYFS_ENABLED}" ]]; then  #'overlay' is found and enabled
         overlaymode_print="${DOCKER__FOURSPACES}4. ${DOCKER__OVERLAYMODE} "
-    else    #pattern 'overlay' is NOT found
+    else    #'overlay' is found and enabled
         overlaymode_print="${DOCKER__FG_LIGHTGREY}${DOCKER__FOURSPACES}4.${DOCKER__NOCOLOR} ${DOCKER__OVERLAYMODE} "
     fi
 
@@ -798,7 +801,7 @@ docker__overlaymode__sub() {
     filecontent="${DOCKER__OVERLAYMODE} ${docker__overlaymode_set}"
 
     #Replace/Append to file
-    replace_or_append_string_in_file__func "${filecontent}" \
+    replace_or_append_string_based_on_pattern_in_file__func "${filecontent}" \
             "${DOCKER__OVERLAYMODE}" \
             "${docker__docker_fs_partition_conf__fpath}"
 }
@@ -818,7 +821,7 @@ docker__overlaysetting__sub() {
     filecontent="${DOCKER__OVERLAYSETTING} ${docker__overlaysetting_set}"
 
     #Replace/Append to file
-    replace_or_append_string_in_file__func "${filecontent}" \
+    replace_or_append_string_based_on_pattern_in_file__func "${filecontent}" \
             "${DOCKER__OVERLAYSETTING}" \
             "${docker__docker_fs_partition_conf__fpath}"
 }

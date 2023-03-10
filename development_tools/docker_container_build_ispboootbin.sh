@@ -287,8 +287,6 @@ docker__environmental_variables__sub() {
     docker__bash_fpath=${docker__usr_bin_dir}/bash
 }
 
-
-
 docker__load_constants__sub() {
     DOCKER__MENUTITLE="Build ${DOCKER__FG_LIGHTGREY}ISPBOOOT.BIN${DOCKER__NOCOLOR}"
 
@@ -296,34 +294,46 @@ docker__load_constants__sub() {
     DOCKER__SUBJECT_OVERLAY_RELATED_FILES="---:${DOCKER__PRECHECK}: OVERLAY RELATED FILES"
     DOCKER__SUBJECT_DOCKER_FS_PARTITION_CONF_FILECONTENT="---:${DOCKER__PRECHECK}: DOCKER_FS_PARTITION.CONF FILE-CONTENT"
     DOCKER__SUBJECT_DOCKER_FS_PARTITION_DISKPARTSIZE_DAT_FILECONTENT="---:${DOCKER__PRECHECK}: DOCKER_FS_PARTITION_DISKPARTSIZE.DAT FILE-CONTENT"
-    DOCKER__SUBJECT_START_COPY_FILES="---:${DOCKER__START}: COPY FILES"
+    DOCKER__SUBJECT_START_COPY_FILES_FROM_SRC_TO_TMP_LOCATION="---:${DOCKER__START}: COPY FILES FROM SOURCE TO TEMP LOCATION"
     DOCKER__SUBJECT_COMPLETED_COPY_FILES="---:${DOCKER__COMPLETED}: COPY FILES"
     DOCKER__SUBJECT_START_PATCH_OVERLAY_TEMPFILES="---:${DOCKER__START}: PATCH OVERLAY TEMPORARY FILES"
     DOCKER__SUBJECT_COMPLETED_PATCH_OVERLAY_TEMPFILES="---:${DOCKER__COMPLETED}: PATCH OVERLAY TEMPORARY FILES"
+    DOCKER__SUBJECT_START_COPY_FILES_FROM_TMP_TO_DST_LOCATION="---:${DOCKER__START}: COPY FILES FROM TEMP TO DESTINATION LOCATION"
+    DOCKER__SUBJECT_START_DST_EXECFILES_CHANGE_PERMISSION_TO_RWXRXRX="---:${DOCKER__START}: DESTINATION EXEC-FILES > CHANGE PERMISSION TO RWXR-XR-X"
+    DOCKER__SUBJECT_COMPLETED_DST_EXECFILES_CHANGE_PERMISSION_TO_RWXRXRX="---:${DOCKER__COMPLETED}: DESTINATION EXEC-FILES > CHANGE PERMISSION TO RWXR-XR-X"
 
     DOCKER__INFOMSG_OVERLAYFS_SETTING_IS_DISABLED="-----------:${DOCKER__INFO}: ${DOCKER__FG_LIGHTGREY}overlay${DOCKER__NOCOLOR} setting is disabled...\n"
     DOCKER__INFOMSG_OVERLAYFS_SETTING_IS_DISABLED+="-----------:${DOCKER__INFO}: ignoring overlay..."
-    DOCKER__INFOMSG_OVERLAYFS_PARTITION_IS_NOT_PRESENT+="-----------:${DOCKER__INFO}: partition ${DOCKER__FG_LIGHTGREY}overlay${DOCKER__NOCOLOR} is not present...\n"
+    DOCKER__INFOMSG_OVERLAYFS_PARTITION_IS_NOT_PRESENT="-----------:${DOCKER__INFO}: partition ${DOCKER__FG_LIGHTGREY}overlay${DOCKER__NOCOLOR} is not present...\n"
     DOCKER__INFOMSG_OVERLAYFS_PARTITION_IS_NOT_PRESENT+="-----------:${DOCKER__INFO}: ignoring overlay..."
+    DOCKER__INFOMSG_PATTERN_ISP_C_1_MISSING="-----------:${DOCKER__INFO}: pattern ${DOCKER__FG_LIGHTGREY}${DOCKER__PATTERN_ISP_C_1}${DOCKER__NOCOLOR}: ${DOCKER__STATUS_MISSING}"
+    DOCKER__INFOMSG_PATTERN_ISP_C_2_MISSING="-----------:${DOCKER__INFO}: pattern ${DOCKER__FG_LIGHTGREY}${DOCKER__PATTERN_ISP_C_2}${DOCKER__NOCOLOR}: ${DOCKER__STATUS_MISSING}"
+    DOCKER__INFOMSG_PATTERN_ISP_C_3_MISSING="-----------:${DOCKER__INFO}: pattern ${DOCKER__FG_LIGHTGREY}${DOCKER__PATTERN_ISP_C_3}${DOCKER__NOCOLOR}: ${DOCKER__STATUS_MISSING}"
+    DOCKER__INFOMSG_PATTERN_ISP_C_2_OUTOFBOUND="-----------:${DOCKER__INFO}: pattern ${DOCKER__FG_LIGHTGREY}${DOCKER__PATTERN_ISP_C_2}${DOCKER__NOCOLOR}: ${DOCKER__STATUS_OUTOFBOUND}"
+    DOCKER__INFOMSG_PATTERN_PENTAGRAM_COMMON_H_MISSING="-----------:${DOCKER__INFO}: pattern ${DOCKER__FG_LIGHTGREY}${DOCKER__PATTERN_PENTAGRAM_COMMON_H}${DOCKER__NOCOLOR}: ${DOCKER__STATUS_MISSING}"
 
     DOCKER__ERRMSG_NO_IF_CONDITIONS_FOUND="${DOCKER__ERROR}: no if conditions found!"
     DOCKER__ERRMSG_ONE_OR_MORE_CHECKITEMS_FAILED="${DOCKER__ERROR}: one or more precheck items failed to pass!"
     DOCKER__ERRMSG_ONE_OR_MORE_ENTRIES_ARE_INVALID="${DOCKER__ERROR}: one or more entries are invalid!"
     DOCKER__ERRMSG_ONE_OR_MORE_FILES_COULD_NOT_BE_COPIED="${DOCKER__ERROR}: one or more files could NOT be copied!"
     DOCKER__ERRMSG_PATTERN_EMMC_NOT_FOUND="${DOCKER__ERROR}: pattern ${DOCKER__FG_LIGHTGREY}EMMC${DOCKER__NOCOLOR} not found!"
+    DOCKER__ERRMSG_LINENUMEND_OF_EMMC_IS_ZERO="${DOCKER__ERROR}: ${DOCKER__FG_LIGHTGREY}linenumend${DOCKER__NOCOLOR} of ${DOCKER__FG_LIGHTGREY}EMMC${DOCKER__NOCOLOR} is zero (0)!"
     DOCKER__ERRMSG_PATTERN_ROOTFS_EX1E0000000_IS_OUT_OF_BOUND="${DOCKER__ERROR}: pattern ${DOCKER__FG_LIGHTGREY}rootfs 0x1e0000000${DOCKER__NOCOLOR} is out of bound!"
     DOCKER__ERRMSG_FILECONTENT_IS_NOT_CONSISTENT_OR_CORRUPT="${DOCKER__ERROR}: file-content is NOT consistent or corrupt!"
+    DOCKER__ERRMSG_COULD_NOT_CHANGE_FILE_PERMISSION_TO_RWXRXRX="${DOCKER__ERROR}: could NOT change file permission to rwxr-xr-x!"
+
+    DOCKER__EXEC_IT="docker exec -it"
 }
 
 docker__init_variables__sub() {
     docker__disksize_set=0
-    docker__exitCode=0
+    docker__exitcode=0
     docker__isRunning_inside_container=false
     docker__isp_c_overlaybck_isfound=true
     docker__isp_partition_array=()
-    docker__isp_partition_arrayitem="${DOCKER__EMPTYSTRING}"
     docker__isp_partition_arraylen=0
-    docker__myContainerId="${DOCKER__EMPTYSTRING}"
+    docker__isp_partition_name_last="${DOCKER__EMPTYSTRING}"
+    docker__mycontainerid="${DOCKER__EMPTYSTRING}"
     docker__numOf_errors_found=0
     docker__overlay_isfound=false
     docker__overlaymode_set="${DOCKER__OVERLAYMODE_PERSISTENT}"
@@ -379,12 +389,12 @@ docker__choose_containerID__sub() {
     #   2. An error occured in script 'docker__readInput_w_autocomplete__fpath',...
     #      ...and exit-code = 99 came from function...
     #      ...'show_msg_w_menuTitle_w_pressAnyKey_w_ctrlC_func' (in script: docker__global.sh).
-    docker__exitCode=$?
-    if [[ ${docker__exitCode} -eq ${DOCKER__EXITCODE_99} ]]; then
-        docker__myContainerId=${DOCKER__EMPTYSTRING}
+    docker__exitcode=$?
+    if [[ ${docker__exitcode} -eq ${DOCKER__EXITCODE_99} ]]; then
+        docker__mycontainerid=${DOCKER__EMPTYSTRING}
     else
         #Get the result
-        docker__myContainerId=`get_output_from_file__func "${docker__readInput_w_autocomplete_out__fpath}" "1"`
+        docker__mycontainerid=`get_output_from_file__func "${docker__readInput_w_autocomplete_out__fpath}" "1"`
     fi
 }
 
@@ -415,15 +425,15 @@ docker__preCheck__sub() {
 
         #Check if '/usr/bin/bash' is present
         #Output: docker__numOf_errors_found
-        docker__preCheck_app_isPresent__sub "${docker__myContainerId}" "${docker__bash_fpath}"
+        docker__preCheck_app_isPresent__sub "${docker__mycontainerid}" "${docker__bash_fpath}"
 
         #Check if '~/SP7021/linux/rootfs/initramfs/disk' is present
         #Output: docker__numOf_errors_found
-        docker__preCheck_app_isPresent__sub "${docker__myContainerId}" "${docker__sp7021_dir}"
+        docker__preCheck_app_isPresent__sub "${docker__mycontainerid}" "${docker__sp7021_dir}"
 
         #Check if '~/LTPP3_ROOTFS/development_tools/docker_build_ispboootbin.sh' is present
         #Output: docker__numOf_errors_found
-        docker__preCheck_app_isPresent__sub "${docker__myContainerId}" "${docker__docker__build_ispboootbin_fpath}"
+        docker__preCheck_app_isPresent__sub "${docker__mycontainerid}" "${docker__docker__build_ispboootbin_fpath}"
     fi
 
     #Print
@@ -494,7 +504,7 @@ docker__overlay__sub() {
     local PHASE_OVERLAY_COPY_FILES_FROM_SRC_TO_TMP=30
     local PHASE_OVERLAY_TMPFILES_PATCH=40
     local PHASE_OVERLAY_COPY_FILES_FROM_TMP_TO_DST=50
-    local PHASE_OVERLAY_DST_FILES_CHANGE_MOD=60
+    local PHASE_OVERLAY_DST_EXEC_FILES_CHANGE_PERMISSION=60
     local PHASE_OVERLAY_EXIT=100
 
     #Define variables
@@ -516,7 +526,7 @@ docker__overlay__sub() {
                 docker__overlay_docker_fs_partition_conf_check_handler__sub
 
                 if [[ "${docker__overlaysetting_set}" == "${DOCKER__OVERLAYFS_DISABLED}" ]]; then
-                    phase="${PHASE_OVERLAY_EXIT}"
+                    phase="${PHASE_OVERLAY_COPY_FILES_FROM_SRC_TO_TMP}"
                 else
                     phase="${PHASE_OVERLAY_DOCKER_FS_PARTITION_DISKPARTSIZE_CHECK_AND_CONVERT}"
                 fi
@@ -526,16 +536,16 @@ docker__overlay__sub() {
                 #   'docker__overlay_isfound' is set in this subroutine
                 docker__overlay_docker_fs_partition_diskpartsize_check_and_convert_handler__sub
 
-                if [[ ${docker__overlay_isfound} == false ]]; then
-                    phase="${PHASE_OVERLAY_EXIT}"
-                else
-                    phase="${PHASE_OVERLAY_COPY_FILES_FROM_SRC_TO_TMP}"
-                fi
+                phase="${PHASE_OVERLAY_COPY_FILES_FROM_SRC_TO_TMP}"
                 ;;
             "${PHASE_OVERLAY_COPY_FILES_FROM_SRC_TO_TMP}")
                 docker__overlay_copy_files_from_src_to_tmp_handler__sub
 
-                phase="${PHASE_OVERLAY_TMPFILES_PATCH}"
+                if [[ "${docker__overlaysetting_set}" == "${DOCKER__OVERLAYFS_DISABLED}" ]]; then
+                    phase="${PHASE_OVERLAY_COPY_FILES_FROM_TMP_TO_DST}"
+                else
+                    phase="${PHASE_OVERLAY_TMPFILES_PATCH}"
+                fi
                 ;;
             "${PHASE_OVERLAY_TMPFILES_PATCH}")
                 docker__overlay_tempfiles_patch_handler__sub
@@ -543,16 +553,18 @@ docker__overlay__sub() {
                 phase="${PHASE_OVERLAY_COPY_FILES_FROM_TMP_TO_DST}"
                 ;;
             "${PHASE_OVERLAY_COPY_FILES_FROM_TMP_TO_DST}")
-                exit
+                docker__overlay_copy_files_from_tmp_to_dst_handler__sub
+
+                phase="${PHASE_OVERLAY_DST_EXEC_FILES_CHANGE_PERMISSION}"
                 ;;
-            "${PHASE_OVERLAY_DST_FILES_CHANGE_MOD}")
-                exit
+            "${PHASE_OVERLAY_DST_EXEC_FILES_CHANGE_PERMISSION}")
+                docker__overlay_dst_exec_files_change_permission_handler__sub
+
+                phase="${PHASE_OVERLAY_EXIT}"
                 ;;
             "${PHASE_OVERLAY_EXIT}")
-                echo -e "${printmsg}"
+                break
 
-echo "EXIT"
-                exit
                 ;;
         esac
     done
@@ -580,18 +592,18 @@ docker__overlay_files_check_handler__sub() {
             "${docker__LTPP3_ROOTFS_boot_configs_pentagram_common_h__fpath}" "false"
     docker__overlay_checkif_file_ispresent__sub "${DOCKER__EMPTYSTRING}" \
             "${docker__LTPP3_ROOTFS_linux_scripts_tb_init_sh__fpath}" "false"
-    docker__overlay_checkif_file_ispresent__sub "${docker__myContainerId}" \
+    docker__overlay_checkif_file_ispresent__sub "${docker__mycontainerid}" \
             "${docker__SP7021_build_tools_isp_isp_c_overlaybck_fpath}" "true"
 
     #Incase file '~/SP7021/build/tools/isp/isp.c.overlaybck' was NOT found in the container
     if [[ ${docker__isp_c_overlaybck_isfound} == false ]]; then
         #Make a copy of file '~/SP7021/build/tools/isp/isp.c' and copy it as '~/SP7021/build/tools/isp/isp.c.overlaybck' (same location in the container)
-        docker__overlay_renew_files__sub "${docker__myContainerId}" \
+        docker__overlay_renew_files__sub "${docker__mycontainerid}" \
                 "${docker__SP7021_build_tools_isp_isp_c__fpath}" \
-                "${docker__myContainerId}" \
+                "${docker__mycontainerid}" \
                 "${docker__SP7021_build_tools_isp_isp_c_overlaybck_fpath}"
                 
-        docker__overlay_checkif_file_ispresent__sub "${docker__myContainerId}" \
+        docker__overlay_checkif_file_ispresent__sub "${docker__mycontainerid}" \
                 "${docker__SP7021_build_tools_isp_isp_c_overlaybck_fpath}" "false"
     fi
 
@@ -648,9 +660,9 @@ docker__overlay_docker_fs_partition_conf_check_handler__sub() {
     show_msg_only__func "${DOCKER__SUBJECT_DOCKER_FS_PARTITION_CONF_FILECONTENT}" "${DOCKER__NUMOFLINES_1}" "${DOCKER__NUMOFLINES_0}"
 
     #Validate the content of 'docker_fs_partition.conf'
-    docker_overlay_disksizeset_check__sub
-    docker_overlay_overlaymode_check__sub
-    docker_overlay_overlayfs_check__sub
+    docker__overlay_disksizeset_check__sub
+    docker__overlay_overlaymode_check__sub
+    docker__overlay_overlayfs_check__sub
 
     #Show error message and exit (if applicable)
     if [[ ${docker__numOf_errors_found} -gt 0 ]]; then
@@ -659,7 +671,7 @@ docker__overlay_docker_fs_partition_conf_check_handler__sub() {
                 ${DOCKER__NUMOFLINES_0}
     fi
 }
-docker_overlay_disksizeset_check__sub() {
+docker__overlay_disksizeset_check__sub() {
     #Define variables
     local printmsg="${DOCKER__EMPTYSTRING}"
 
@@ -667,7 +679,7 @@ docker_overlay_disksizeset_check__sub() {
     docker__disksize_set=0
 
     #Get data from file
-    docker__disksize_set=$(retrieve_data_from_file_based_on_specified_pattern_colnum_delimiterchar__func \
+    docker__disksize_set=$(retrieve_string_based_on_specified_pattern_colnum_delimiterchar_from_file__func \
             "${docker__docker_fs_partition_conf__fpath}" \
             "${DOCKER__DISKSIZESETTING}" \
             "${DOCKER__COLNUM_2}" \
@@ -692,7 +704,7 @@ docker_overlay_disksizeset_check__sub() {
     #Print
     show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
 }
-docker_overlay_overlaymode_check__sub() {
+docker__overlay_overlaymode_check__sub() {
     #Define variables
     local printmsg="${DOCKER__EMPTYSTRING}"
 
@@ -700,7 +712,7 @@ docker_overlay_overlaymode_check__sub() {
     docker__overlaymode_set="${DOCKER__OVERLAYMODE_PERSISTENT}"
 
     #Get data from file
-    docker__overlaymode_set=$(retrieve_data_from_file_based_on_specified_pattern_colnum_delimiterchar__func \
+    docker__overlaymode_set=$(retrieve_string_based_on_specified_pattern_colnum_delimiterchar_from_file__func \
             "${docker__docker_fs_partition_conf__fpath}" \
             "${DOCKER__OVERLAYMODE}" \
             "${DOCKER__COLNUM_2}" \
@@ -720,7 +732,7 @@ docker_overlay_overlaymode_check__sub() {
     #Print
     show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
 }
-docker_overlay_overlayfs_check__sub() {
+docker__overlay_overlayfs_check__sub() {
     #Define variables
     local printmsg="${DOCKER__EMPTYSTRING}"
 
@@ -728,7 +740,7 @@ docker_overlay_overlayfs_check__sub() {
     docker__overlaysetting_set="${DOCKER__OVERLAYMODE_PERSISTENT}"
 
     #Get data from file
-    docker__overlaysetting_set=$(retrieve_data_from_file_based_on_specified_pattern_colnum_delimiterchar__func \
+    docker__overlaysetting_set=$(retrieve_string_based_on_specified_pattern_colnum_delimiterchar_from_file__func \
             "${docker__docker_fs_partition_conf__fpath}" \
             "${DOCKER__OVERLAYSETTING}" \
             "${DOCKER__COLNUM_2}" \
@@ -774,7 +786,6 @@ docker__overlay_docker_fs_partition_diskpartsize_check_and_convert_handler__sub(
 docker__overlay_diskpartsize_check_and_convert__sub() {
     #Define variables
     local diskpartname="${DOCKER__EMPTYSTRING}"
-    local diskpartname_last="${DOCKER__EMPTYSTRING}"
     local diskpartsize_M=0  #Megabyte
     local diskpartsize_B=0  #Byte
     local dispartsize_H="${DOCKER__EMPTYSTRING}"    #Hex
@@ -856,12 +867,13 @@ docker__overlay_diskpartsize_check_and_convert__sub() {
         show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
     done < "${docker__docker_fs_partition_diskpartsize_dat__fpath}"
 
+    #Get the last partition name
+    docker__isp_partition_name_last=$(echo ${docker__isp_partition_array[i]} | cut -d"${DOCKER__ONESPACE}" -f1)
+
     #Check if 'remaining_diskpartsize_M = 0'.
     #If true, then for the LAST 'diskpartname' set 'dispartsize_H = 0x1e0000000'.
     if [[ ${remaining_diskpartsize_M} -eq 0 ]]; then
-        diskpartname_last=$(echo ${docker__isp_partition_array[i]} | cut -d"${DOCKER__ONESPACE}" -f1)
-
-        docker__isp_partition_array[i]="${diskpartname_last} ${DOCKER__DISKSIZE_0X1E0000000}"
+        docker__isp_partition_array[i]="${docker__isp_partition_name_last} ${DOCKER__DISKSIZE_0X1E0000000}"
     fi
 
 
@@ -872,7 +884,6 @@ docker__overlay_diskpartsize_check_and_convert__sub() {
     if [[ ${docker__overlay_isfound} == false ]]; then
         #Reset array related variables
         docker__isp_partition_array=()
-        docker__isp_partition_arrayitem="${DOCKER__EMPTYSTRING}"
         docker__isp_partition_arraylen=0
 
         #Update 'printmsg'
@@ -932,7 +943,7 @@ docker__overlay_copy_files_from_src_to_tmp_handler__sub() {
     docker__numOf_errors_found=0
 
     #Print
-    show_msg_only__func "${DOCKER__SUBJECT_START_COPY_FILES}" "${DOCKER__NUMOFLINES_1}" "${DOCKER__NUMOFLINES_0}"
+    show_msg_only__func "${DOCKER__SUBJECT_START_COPY_FILES_FROM_SRC_TO_TMP_LOCATION}" "${DOCKER__NUMOFLINES_1}" "${DOCKER__NUMOFLINES_0}"
 
     #Copy files
     docker__overlay_renew_files__sub "${DOCKER__EMPTYSTRING}" \
@@ -950,7 +961,7 @@ docker__overlay_copy_files_from_src_to_tmp_handler__sub() {
             "${DOCKER__EMPTYSTRING}" \
             "${docker__docker_overlayfs_tb_init_sh__fpath}"
 
-    docker__overlay_renew_files__sub "${docker__myContainerId}" \
+    docker__overlay_renew_files__sub "${docker__mycontainerid}" \
             "${docker__SP7021_build_tools_isp_isp_c_overlaybck_fpath}" \
             "${DOCKER__EMPTYSTRING}" \
             "${docker__docker_overlayfs_isp_c__fpath}"
@@ -1045,6 +1056,7 @@ docker__overlay_tempfiles_patch_handler__sub() {
     #Prepare the temporary files
     docker__overlay_tempfile_isp_sh_patch__sub
     docker__overlay_tempfile_isp_c_patch__sub
+    docker__overlay_tempfile_pentagram_common_h_patch__sub
 
 
     #Show error message and exit (if applicable)
@@ -1085,7 +1097,8 @@ docker__overlay_tempfile_isp_sh_patch__sub() {
     #   elif [[ ... ]]; then    <--+    linenum_3
     #   ..
     #   etc.
-    readarray -t if_linenum_arr < <(grep -nF "${DOCKER__PATTERN_IF}" "${docker__docker_overlayfs_isp_sh__fpath}" | cut -d"${DOCKER__COLON}" -f1)
+    readarray -t if_linenum_arr < <(retrieve_linenum_based_on_specified_pattern_colnum_delimiterchar_from_file__func "${docker__docker_overlayfs_isp_sh__fpath}" \
+            "${DOCKER__PATTERN_IF}" "${DOCKER__COLNUM_1}" "${DOCKER__COLON}")
 
     #Calculate array-length
     if_linenum_arrlen=${#if_linenum_arr[@]}
@@ -1109,7 +1122,9 @@ docker__overlay_tempfile_isp_sh_patch__sub() {
 
 
     #Find the pattern 'EMMC'
-    emmc_linenum=$(grep -nF "${DOCKER__PATTERN_EMMC}" "${docker__docker_overlayfs_isp_sh__fpath}" | cut -d"${DOCKER__COLON}" -f1)
+    emmc_linenum=$(retrieve_linenum_based_on_specified_pattern_colnum_delimiterchar_from_file__func "${docker__docker_overlayfs_isp_sh__fpath}" \
+            "${DOCKER__PATTERN_EMMC}" "${DOCKER__COLNUM_1}" "${DOCKER__COLON}")
+
     #Check if 'emmc_linenum = 0'
     if [[ ${emmc_linenum} -eq 0 ]]; then
         #Increment index
@@ -1146,16 +1161,22 @@ docker__overlay_tempfile_isp_sh_patch__sub() {
         ((docker__numOf_errors_found++))
 
         #Update 'printmsg'
-        printmsg+="${DOCKER__STATUS_FAILED}"
+        printmsg+="${DOCKER__STATUS_FAILED}\n"
+        printmsg+="\n${DOCKER__ERRMSG_LINENUMEND_OF_EMMC_IS_ZERO}"
         
         #Print
         show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+
+        #Move-up 1 line to compensate for when 'show_errMsg_wo_menuTitle_and_exit_func' is executed
+        moveUp__func "${DOCKER__NUMOFLINES_1}"
 
         return 0;
     fi
 
     #Find and get line containing pattern 'rootfs 0x1e0000000'
-    linenum_containing_rootfs_0x1e0000000=$(grep -nF "${DOCKER__PATTERN_ROOTFS_0X1E0000000}"  "${docker__docker_overlayfs_isp_sh__fpath}" | cut -d"${DOCKER__COLON}" -f1)
+    linenum_containing_rootfs_0x1e0000000=$(retrieve_linenum_based_on_specified_pattern_colnum_delimiterchar_from_file__func "${docker__docker_overlayfs_isp_sh__fpath}" \
+            "${DOCKER__PATTERN_ROOTFS_0X1E0000000}" "${DOCKER__COLNUM_1}" "${DOCKER__COLON}")
+
     #Check if 'linenum_containing_rootfs_0x1e0000000 is within the boundary'
     if [[ ${linenum_containing_rootfs_0x1e0000000} -lt ${emmc_linenumstart} ]] || \
             [[ ${linenum_containing_rootfs_0x1e0000000} -gt ${emmc_linenumend} ]]; then
@@ -1210,9 +1231,119 @@ docker__overlay_tempfile_isp_sh_patch__sub() {
     fi
 
     #Patch the temporary file '.../docker/overlayfs/isp.sh'
-    replace_or_append_string_in_file__func "${partitions_for_isp}" \
+    replace_or_append_string_based_on_pattern_in_file__func "${partitions_for_isp}" \
             "${DOCKER__PATTERN_ROOTFS_0X1E0000000}" \
             "${docker__docker_overlayfs_isp_sh__fpath}"
+    
+    #Check exit-code
+    docker__exitcode=$?
+    if [[ ${docker__exitcode} -ne 0 ]]; then #error found
+        #Increment index
+        ((docker__numOf_errors_found++))
+
+        #Update 'printmsg'
+        printmsg+="${DOCKER__STATUS_FAILED}"
+    else
+        printmsg+="${DOCKER__STATUS_SUCCESSFUL}"
+    fi
+    
+    #Print
+    show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+}
+docker__overlay_tempfile_isp_c_patch__sub() {
+    #Define variables
+    local linenum_pattern1=0
+    local linenum_pattern2=0
+    local linenum_pattern3=0
+    local sed_oldstring="${DOCKER__EMPTYSTRING}"
+    local sed_newstring="${DOCKER__EMPTYSTRING}"
+
+    #Start generating 'printmsg'
+    printmsg="-------:${DOCKER__STATUS}: patch ${DOCKER__FG_LIGHTGREY}${docker__docker_overlayfs_isp_c__fpath}: " 
+
+    #Find and get linenum of pattern-parameter 'DOCKER__PATTERN_ISP_C_1'
+    linenum_pattern1=$(retrieve_linenum_based_on_specified_pattern_colnum_delimiterchar_from_file__func \
+            "${docker__docker_overlayfs_isp_c__fpath}" \
+            "${DOCKER__PATTERN_ISP_C_1}" \
+            "${DOCKER__COLNUM_1}" \
+            "${DOCKER__COLON}")
+    if [[ ${linenum_pattern1} -eq 0 ]]; then
+        #Increment index
+        ((docker__numOf_errors_found++))
+
+        #Update 'printmsg'
+        printmsg+="${DOCKER__STATUS_FAILED}\n"
+        printmsg+="${DOCKER__INFOMSG_PATTERN_ISP_C_1_MISSING}"
+
+        #Print
+        show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+
+        return 0;
+    fi
+
+    #Find and get linenum of pattern-parameter 'DOCKER__PATTERN_ISP_C_2'
+    linenum_pattern2=$(retrieve_linenum_based_on_specified_pattern_colnum_delimiterchar_from_file__func "${docker__docker_overlayfs_isp_c__fpath}" \
+            "${DOCKER__PATTERN_ISP_C_2}" "${DOCKER__COLNUM_1}" "${DOCKER__COLON}")
+    if [[ ${linenum_pattern2} -eq 0 ]]; then
+        #Increment index
+        ((docker__numOf_errors_found++))
+
+        #Update 'printmsg'
+        printmsg+="${DOCKER__STATUS_FAILED}\n"
+        printmsg+="${DOCKER__INFOMSG_PATTERN_ISP_C_2_MISSING}"
+
+        #Print
+        show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+
+        return 0;
+    fi
+
+    #Find and get linenum of pattern-parameter 'DOCKER__PATTERN_ISP_C_3'
+    linenum_pattern3=$(retrieve_linenum_based_on_specified_pattern_colnum_delimiterchar_from_file__func \
+            "${docker__docker_overlayfs_isp_c__fpath}" \
+            "${DOCKER__PATTERN_ISP_C_3}" "${DOCKER__COLNUM_1}" "${DOCKER__COLON}")
+    if [[ ${linenum_pattern3} -eq 0 ]]; then
+        #Increment index
+        ((docker__numOf_errors_found++))
+
+        #Update 'printmsg'
+        printmsg+="${DOCKER__STATUS_FAILED}\n"
+        printmsg+="${DOCKER__INFOMSG_PATTERN_ISP_C_3_MISSING}"
+
+        #Print
+        show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+
+        return 0;
+    fi
+
+    #CHeck if 'linenum_pattern2 < linenum_pattern1 OR  linenum_pattern2 > linenum_pattern3
+    if [[ ${linenum_pattern2} -lt ${linenum_pattern1} ]] || \
+            [[ ${linenum_pattern2} -gt ${linenum_pattern3} ]]; then
+        #Increment index
+        ((docker__numOf_errors_found++))
+
+        #Update 'printmsg'
+        printmsg+="${DOCKER__STATUS_FAILED}\n"
+        printmsg+="${DOCKER__INFOMSG_PATTERN_ISP_C_2_OUTOFBOUND}"
+
+        #Print
+        show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+
+        return 0;
+    fi
+
+    #Update 'sed_oldstring'
+    sed_oldstring="${DOCKER__SED_PATTERN_ISP_C_2_W_ROOTFS}"
+
+    #Update 'sed_newstring'
+    sed_newstring="${DOCKER__SED_PATTERN_ISP_C_2_WO_ROOTFS},\\\"${docker__isp_partition_name_last}\\\""
+
+    #Patch 'docker__docker_overlayfs_isp_c__fpath'
+    replace_string_with_another_string_in_file__func "${sed_oldstring}" \
+            "${sed_newstring}" \
+            "${docker__docker_overlayfs_isp_c__fpath}"
+
+    #Check exit-code ($?)
     if [[ "$?" -ne 0 ]]; then
         #Increment index
         ((docker__numOf_errors_found++))
@@ -1226,17 +1357,172 @@ docker__overlay_tempfile_isp_sh_patch__sub() {
     #Print
     show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
 }
+docker__overlay_tempfile_pentagram_common_h_patch__sub() {
+    #Define variables
+    local linenum_pattern=0
+    local sed_oldstring="${DOCKER__EMPTYSTRING}"
+    local sed_newstring="${DOCKER__EMPTYSTRING}"
 
-docker__overlay_tempfile_isp_c_patch__sub() {
-    echo "docker__overlay_tempfile_isp_c_patch__sub: in progress"
+    #Start generating 'printmsg'
+    printmsg="-------:${DOCKER__STATUS}: patch ${DOCKER__FG_LIGHTGREY}${docker__docker_overlayfs_pentagram_common_h__fpath}: " 
+
+    #Find and get linenum of pattern-parameter 'DOCKER__PATTERN_ISP_C_3'
+    linenum_pattern=$(retrieve_linenum_based_on_specified_pattern_colnum_delimiterchar_from_file__func \
+            "${docker__docker_overlayfs_pentagram_common_h__fpath}" \
+            "${DOCKER__PATTERN_PENTAGRAM_COMMON_H}" "${DOCKER__COLNUM_1}" "${DOCKER__COLON}")
+
+    if [[ ${linenum_pattern} -eq 0 ]]; then
+        #Increment index
+        ((docker__numOf_errors_found++))
+
+        #Update 'printmsg'
+        printmsg+="${DOCKER__STATUS_FAILED}\n"
+        printmsg+="${DOCKER__INFOMSG_PATTERN_PENTAGRAM_COMMON_H_MISSING}"
+
+        #Print
+        show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+
+        return 0;
+    fi
+
+    #Update 'sed_oldstring'
+    sed_oldstring="${DOCKER__SED__PATTERN_PENTAGRAM_COMMON_H_W_BACKSLASH0}"
+
+    #Update 'sed_newstring' by appending 'tb_overlay' (this is a MUST!!!)
+    sed_newstring="${DOCKER__SED__PATTERN_PENTAGRAM_COMMON_H_WO_BACKSLASH0} ${DOCKER__TB_OVERLAY}"
+
+    #Update 'sed_newstring' by appending 'tb_rootfs_ro' (only if 'docker__overlaymode_set = non-persistent')
+    if [[ "${docker__overlaymode_set}" == "${DOCKER__OVERLAYMODE_NONPERSISTENT}" ]]; then
+        sed_newstring+=" ${DOCKER__TB_ROOTFS_RO}"
+    fi
+    sed_newstring+="\\\0\\\""
+
+    #Patch 'docker__docker_overlayfs_pentagram_common_h__fpath'
+    replace_string_with_another_string_in_file__func "${sed_oldstring}" \
+            "${sed_newstring}" \
+            "${docker__docker_overlayfs_pentagram_common_h__fpath}"
+
+    #Check exit-code
+    docker__exitcode=$?
+    if [[ ${docker__exitcode} -ne 0 ]]; then #error found
+        #Increment index
+        ((docker__numOf_errors_found++))
+
+        #Update 'printmsg'
+        printmsg+="${DOCKER__STATUS_FAILED}"
+    else
+        printmsg+="${DOCKER__STATUS_SUCCESSFUL}"
+    fi
+    
+    #Print
+    show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
 }
 
+docker__overlay_copy_files_from_tmp_to_dst_handler__sub() {
+    #Reset variables
+    docker__numOf_errors_found=0
+
+    #Print
+    show_msg_only__func "${DOCKER__SUBJECT_START_COPY_FILES_FROM_TMP_TO_DST_LOCATION}" "${DOCKER__NUMOFLINES_1}" "${DOCKER__NUMOFLINES_0}"
+
+    #Copy files
+    docker__overlay_renew_files__sub "${DOCKER__EMPTYSTRING}" \
+            "${docker__docker_overlayfs_isp_sh__fpath}" \
+            "${docker__mycontainerid}" \
+            "${docker__SP7021_build_isp_sh__fpath}"
+
+    docker__overlay_renew_files__sub "${DOCKER__EMPTYSTRING}" \
+            "${docker__docker_overlayfs_pentagram_common_h__fpath}" \
+            "${docker__mycontainerid}" \
+            "${docker__SP7021_boot_uboot_include_configs_pentagram_common_h__fpath}"
+
+    docker__overlay_renew_files__sub "${DOCKER__EMPTYSTRING}" \
+            "${docker__docker_overlayfs_tb_init_sh__fpath}" \
+            "${docker__mycontainerid}" \
+            "${docker__SP7021_linux_rootfs_initramfs_disk_sbin_tb_init_sh__fpath}"
+
+    docker__overlay_renew_files__sub "${DOCKER__EMPTYSTRING}" \
+            "${docker__docker_overlayfs_isp_c__fpath}" \
+            "${docker__mycontainerid}" \
+            "${docker__SP7021_build_tools_isp_isp_c__fpath}"
+
+    #Show error message and exit (if applicable)
+    if [[ ${docker__numOf_errors_found} -gt 0 ]]; then
+        show_errMsg_wo_menuTitle_and_exit_func "${DOCKER__ERRMSG_ONE_OR_MORE_CHECKITEMS_FAILED}" \
+                ${DOCKER__NUMOFLINES_1} \
+                ${DOCKER__NUMOFLINES_0}
+    fi
+
+    #Print
+    show_msg_only__func "${DOCKER__SUBJECT_COMPLETED_COPY_FILES}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+}
+
+docker__overlay_dst_exec_files_change_permission_handler__sub() {
+    #Reset variables
+    docker__numOf_errors_found=0
+
+    #Print
+    show_msg_only__func "${DOCKER__SUBJECT_START_DST_EXECFILES_CHANGE_PERMISSION_TO_RWXRXRX}" "${DOCKER__NUMOFLINES_1}" "${DOCKER__NUMOFLINES_0}"
+
+    #Change permission
+    docker__overlay_dst_exec_file_change_permission__sub "${docker__SP7021_build_isp_sh__fpath}"
+    docker__overlay_dst_exec_file_change_permission__sub "${docker__SP7021_linux_rootfs_initramfs_disk_sbin_tb_init_sh__fpath}"
+
+    #Show error message and exit (if applicable)
+    if [[ ${docker__numOf_errors_found} -gt 0 ]]; then
+        show_errMsg_wo_menuTitle_and_exit_func "${DOCKER__ERRMSG_COULD_NOT_CHANGE_FILE_PERMISSION_TO_RWXRXRX}" \
+                ${DOCKER__NUMOFLINES_1} \
+                ${DOCKER__NUMOFLINES_0}
+    fi
+
+    #Print
+    show_msg_only__func "${DOCKER__SUBJECT_COMPLETED_DST_EXECFILES_CHANGE_PERMISSION_TO_RWXRXRX}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+}
+docker__overlay_dst_exec_file_change_permission__sub() {
+    #Input args
+    local targetfpath__input=${1}
+
+    #Define variables
+    local docker_exec_cmd="${DOCKER__EMPTYSTRING}"
+    local cmd_to_change_permission="${DOCKER__EMPTYSTRING}"
+    local printmsg="${DOCKER__EMPTYSTRING}"
+
+    #Start generating 'printmsg'
+    printmsg="-------:${DOCKER__STATUS}: chmod ${DOCKER__CHMOD_755}${DOCKER__FG_LIGHTGREY}${targetfpath__input}: " 
+
+    #Update variables
+    docker_exec_cmd="${DOCKER__EXEC_IT} ${docker__mycontainerid} ${docker__bash_fpath} -c"
+    cmd_to_change_permission="chmod 755 ${targetfpath__input}"
+
+    #Execute command
+    if [[ ${docker__isRunning_inside_container} == true ]]; then   #currently in a container
+        ${cmd_to_change_permission}
+    else    #currently outside of a container
+        ${docker_exec_cmd} "${cmd_to_change_permission}"
+    fi
+
+    #Check exit-code
+    docker__exitcode=$?
+    if [[ ${docker__exitcode} -ne 0 ]]; then #error found
+        #Increment index
+        ((docker__numOf_errors_found++))
+
+        #Update 'printmsg'
+        printmsg+="${DOCKER__STATUS_FAILED}"
+    else
+        printmsg+="${DOCKER__STATUS_SUCCESSFUL}"
+    fi
+
+    #Print
+    show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+}
 
 docker__run_script__sub() {
     #Define variables
-    local docker_exec_cmd="docker exec -it ${docker__myContainerId} ${docker__bash_fpath} -c"
+    local docker_exec_cmd="${DOCKER__EXEC_IT} ${docker__mycontainerid} ${docker__bash_fpath} -c"
     local cmd_outside_container="eval \"${docker__docker__build_ispboootbin_fpath}\""
-    local cmd_inside_container="eval \"${docker__docker__build_ispboootbin_fpath}\""
+    # local cmd_inside_container="eval \"${docker__docker__build_ispboootbin_fpath}\""
+    local cmd_inside_container="${cmd_outside_container}"
     local printmsg="${DOCKER__EMPTYSTRING}"
 
     #Execute script 'docker__build_ispboootbin_fpath'
@@ -1247,12 +1533,12 @@ docker__run_script__sub() {
     fi
 
     #Check if there are any errors
-    docker__exitCode=$?
-    if [[ ${docker__exitCode} -ne 0 ]]; then #no errors found
+    docker__exitcode=$?
+    if [[ ${docker__exitcode} -ne 0 ]]; then #error found
         printmsg="-------:${DOCKER__STATUS}: build ${DOCKER__FG_LIGHTGREY}ISPBOOOT.BIN${DOCKER__NOCOLOR}: ${DOCKER__STATUS_FAILED}"
         show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_1}" "${DOCKER__NUMOFLINES_0}"
 
-        exit__func "${docker__exitCode}" "${DOCKER__NUMOFLINES_1}"
+        exit__func "${docker__exitcode}" "${DOCKER__NUMOFLINES_1}"
     else
         moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
     fi

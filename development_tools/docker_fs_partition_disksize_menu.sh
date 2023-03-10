@@ -164,7 +164,7 @@ docker__menu__sub() {
     filecontent="${DOCKER__DISKSIZESETTING} ${ret}"
 
     #Replace/Append to file
-    replace_or_append_string_in_file__func "${filecontent}" \
+    replace_or_append_string_based_on_pattern_in_file__func "${filecontent}" \
             "${DOCKER__DISKSIZESETTING}" \
             "${docker__docker_fs_partition_conf__fpath}"
 }
