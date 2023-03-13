@@ -205,7 +205,7 @@ docker__menu__sub() {
     #Define variables
     local diskpart_arritem="${DOCKER__EMPTYSTRING}"
     local exitcode=0
-    local grep_output="${DOCKER__EMPTYSTRING}"
+    local grep_overlay="${DOCKER__EMPTYSTRING}"
     local mychoice="${DOCKER__EMPTYSTRING}"
     local ret=0
 
@@ -254,8 +254,8 @@ docker__menu__sub() {
         #Check if 'overlay' partition is present in 'docker__isp_partition_array'
         #Remark:
         #   If 'overlay' partition is NOT present, then DISABLE option '3' and '4'
-        grep_output=$(echo ${docker__isp_partition_array[@]} | grep -w "${DOCKER__DISKPARTNAME_OVERLAY}")
-        if [[ -z "${grep_output}" ]]; then  #pattern 'overlay' is found
+        grep_overlay=$(echo ${docker__isp_partition_array[@]} | grep -w "${DOCKER__DISKPARTNAME_OVERLAY}")
+        if [[ -z "${grep_overlay}" ]]; then  #pattern 'overlay' is found
             docker__regex="${docker__regex12q}"
         fi
 
@@ -381,7 +381,7 @@ docker__menu_options_print_sub() {
     #Define variables
     local overlaymode_print="${DOCKER__EMPTYSTRING}"
     local overlaysetting_print="${DOCKER__EMPTYSTRING}"
-    local grep_output="${DOCKER__EMPTYSTRING}"
+    local grep_overlay="${DOCKER__EMPTYSTRING}"
 
     ###Configure new/existing partition
     #Print options
@@ -390,25 +390,31 @@ docker__menu_options_print_sub() {
 
     ###Overlay-setting
     #Check if 'overlay' partition is present in 'docker__isp_partition_array'
-    grep_output=$(echo ${docker__isp_partition_array[@]} | grep -w "${DOCKER__DISKPARTNAME_OVERLAY}")
-    if [[ -n "${grep_output}" ]]; then  #pattern 'overlay' is found
+    grep_overlay=$(echo ${docker__isp_partition_array[@]} | grep -w "${DOCKER__DISKPARTNAME_OVERLAY}")
+    if [[ -n "${grep_overlay}" ]]; then  #pattern 'overlay' is found
         overlaysetting_print="${DOCKER__FOURSPACES}3. ${DOCKER__OVERLAYSETTING} "
+
+        if [[ "${docker__overlaysetting_set}" == "${DOCKER__OVERLAYFS_ENABLED}" ]]; then
+            overlaysetting_print+="(${DOCKER__FG_GREEN158}${docker__overlaysetting_set}${DOCKER__NOCOLOR})"
+        else
+            overlaysetting_print+="(${DOCKER__FG_RED187}${docker__overlaysetting_set}${DOCKER__NOCOLOR})"
+        fi
     else    #pattern 'overlay' is NOT found
         overlaysetting_print="${DOCKER__FG_LIGHTGREY}${DOCKER__FOURSPACES}3.${DOCKER__NOCOLOR} ${DOCKER__OVERLAYSETTING} "
+
+        #IMPORTANT TO KNOW:
+        #   The menu shows 'Overlay-setting (disableD)', but
+        #   ...the ACTUAL value which is stored in file 'docker_fs_partition.conf' stays untouched.
+        overlaysetting_print+="(${DOCKER__FG_RED187}${DOCKER__OVERLAYFS_DISABLED}${DOCKER__NOCOLOR})"
     fi
 
-    if [[ "${docker__overlaysetting_set}" == "${DOCKER__OVERLAYFS_ENABLED}" ]]; then
-        overlaysetting_print+="(${DOCKER__FG_GREEN158}${docker__overlaysetting_set}${DOCKER__NOCOLOR})"
-    else
-        overlaysetting_print+="(${DOCKER__FG_RED187}${docker__overlaysetting_set}${DOCKER__NOCOLOR})"
-    fi
     echo -e "${overlaysetting_print}"
 
     ###Overlay-mode
     #   dash (-) (do NOT change the pentagram_common.h)
     #   persistent ('overlay' partition is RW; do NOT remove 'overlay' partition after reboot)
     #   non-persistent ('overlay' partition is RO; remove 'overlay' partition after reboot)
-    if [[ -n "${grep_output}" ]] && \
+    if [[ -n "${grep_overlay}" ]] && \
             [[ "${docker__overlaysetting_set}" == "${DOCKER__OVERLAYFS_ENABLED}" ]]; then  #'overlay' is found and enabled
         overlaymode_print="${DOCKER__FOURSPACES}4. ${DOCKER__OVERLAYMODE} "
     else    #'overlay' is found and enabled

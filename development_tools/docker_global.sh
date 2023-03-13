@@ -439,6 +439,10 @@ PHASE_SHOW_KEYINPUT_HANDLER=2
 DOCKER__PREV="prev"
 DOCKER__NEXT="next"
 
+DOCKER__AS="${DOCKER__FG_YELLOW}AS${DOCKER__NOCOLOR}"
+DOCKER__FROM="${DOCKER__FG_YELLOW}FROM${DOCKER__NOCOLOR}"
+DOCKER__TO="${DOCKER__FG_YELLOW}TO${DOCKER__NOCOLOR}"
+
 DOCKER__CHECK="${DOCKER__FG_ORANGE}CHECK${DOCKER__NOCOLOR}"
 DOCKER__CHECK_LOCAL="${DOCKER__FG_ORANGE}CHECK (LOCAL)${DOCKER__NOCOLOR}"
 DOCKER__CHECK_REMOTE="${DOCKER__FG_ORANGE}CHECK (REMOTE)${DOCKER__NOCOLOR}"
@@ -1346,10 +1350,10 @@ function bc_is_x_greaterthan_zero() {
 #---DOCKER RELATED FUNCTIONS
 function check_containerID_state__func() {
     #Input args
-    local containerID__input=${1}
+    local containerid__input=${1}
 
     #Check if 'containterID__input' is running
-    local stdOutput=`${docker__ps_a_cmd} --format "table {{.ID}}|{{.Status}}" | grep -w "${containerID__input}"`
+    local stdOutput=`${docker__ps_a_cmd} --format "table {{.ID}}|{{.Status}}" | grep -w "${containerid__input}"`
     if [[ -z ${stdOutput} ]]; then  #contains NO data
         echo "${DOCKER__STATE_NOTFOUND}"
     else    #contains data
@@ -1491,8 +1495,6 @@ function generate_cache_filenames_basedOn_specified_repositoryTag__func() {
     echo "${ret}"
 }
 
-
-
 #---ESCAPE-KEY RELATED FUNCTIONS
 function functionKey_detection__func() {
     #Define variables
@@ -1595,7 +1597,7 @@ function append_string_to_file__func() {
 
 function checkIf_dir_exists__func() {
     #Input args
-    local containerID__input="${1}"
+    local containerid__input="${1}"
     local dir__input="${2}"
 
     #Check if dir exists
@@ -1604,10 +1606,10 @@ function checkIf_dir_exists__func() {
         if [[ ${dir__input} == ${DOCKER__SLASH} ]]; then
             ret=true
         else
-            if [[ -z ${containerID__input} ]]; then #no container-ID provided
+            if [[ -z ${containerid__input} ]]; then #no container-ID provided
                 ret=`lh_checkIf_dir_exists__func "${dir__input}"`
             else    #container-ID provided
-                ret=`container_checkIf_dir_exists__func "${containerID__input}" "${dir__input}"`
+                ret=`container_checkIf_dir_exists__func "${containerid__input}" "${dir__input}"`
             fi
         fi
     else
@@ -1619,12 +1621,12 @@ function checkIf_dir_exists__func() {
 }
 function container_checkIf_dir_exists__func() {
 	#Input args
-    local containerID__input="${1}"
+    local containerid__input="${1}"
 	local dir__input="${2}"
 
 	#Define docker command
     local docker__bin_bash__dir=/bin/bash
-    local docker_exec_cmd="docker exec -t ${containerID__input} ${docker__bin_bash__dir} -c"
+    local docker_exec_cmd="docker exec -t ${containerid__input} ${docker__bin_bash__dir} -c"
 
     # #Prepend backslash in front of special chars (e.g., backslash, space, asterisk, etc.)
     # local dir_prepended_backslash=`prepend_backSlash_inFrontOf_specialChars__func \
@@ -1684,17 +1686,17 @@ function checkIf_file_contains_only_dots_and_Slashes__func() {
 
 function checkIf_file_exists__func() {
     #Input args
-    local containerID__input=${1}
+    local containerid__input=${1}
     local fpath__input=${2}
 
     #Check if dir exists
     local ret=false
     if [[ ! -z ${fpath__input} ]]; then #contains data
         if [[ ${fpath__input} != ${DOCKER__SLASH} ]]; then  #input is not a slash
-            if [[ -z ${containerID__input} ]]; then #no container-ID provided
+            if [[ -z ${containerid__input} ]]; then #no container-ID provided
                 ret=`lh_checkIf_file_exists__func "${fpath__input}"`
             else    #container-ID provided
-                ret=`container_checkIf_file_exists__func "${containerID__input}" "${fpath__input}"`
+                ret=`container_checkIf_file_exists__func "${containerid__input}" "${fpath__input}"`
             fi
         fi
     fi
@@ -1704,12 +1706,12 @@ function checkIf_file_exists__func() {
 }
 function container_checkIf_file_exists__func() {
 	#Input args
-    local containerID__input=${1}
+    local containerid__input=${1}
 	local fpath__input=${2}
 
 	#Define variables
     local docker__bin_bash__dir=/bin/bash
-    local docker_exec_cmd="docker exec -t ${containerID__input} ${docker__bin_bash__dir} -c"
+    local docker_exec_cmd="docker exec -t ${containerid__input} ${docker__bin_bash__dir} -c"
 
     #Check if directory exists
     local ret_raw=`${docker_exec_cmd} "[ -f "${fpath__input}" ] && echo true || echo false"`
@@ -1937,12 +1939,26 @@ function remove_all_lines_from_file_after_a_specified_lineNum__func() {
 
 function remove_file__func() {
     #Input args
+    local containerid__input=${1}
+    local targetfpath__input=${2}
+    local prependstring__input=${3}
+
+    #Remove file
+    if [[ -z ${containerid__input} ]]; then #no container-ID provided
+        lh_remove_file__func "${targetfpath__input}" "${prependstring__input}"
+    else    #container-ID provided
+        container_remove_file__func "${containerid__input}" "${targetfpath__input}" "${prependstring__input}"
+    fi
+}
+
+function lh_remove_file__func() {
+    #Input args
     targetfpath__input=${1}
     prependstring__input=${2}
 
     #Start with generating 'printmsg'
     local printmsg="---:"
-    
+
     #Override the default 'printmsg' (as defined above)
     if [[ -n "${prependstring__input}" ]]; then
         printmsg="${prependstring__input}"
@@ -1954,6 +1970,40 @@ function remove_file__func() {
     #Remove file and update 'printmsg' based on the exitcode
     if [[ -f "${targetfpath__input}" ]]; then
         rm "${targetfpath__input}"; exitcode=$?
+
+        if [[ ${exitcode} -eq 0 ]]; then
+            printmsg+="${DOCKER__STATUS_SUCCESSFUL}"
+        else
+            printmsg+="${DOCKER__STATUS_FAILED}"
+        fi
+
+        #Print
+        show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+    fi
+}
+function container_remove_file__func() {
+    #Input args
+    local containerid__input=${1}
+    local targetfpath__input=${2}
+    local prependstring__input=${3}
+
+    #Define variables
+    local cmd="rm ${targetfpath__input}"
+    local docker__bin_bash__dir=/bin/bash
+    local docker_exec_cmd="docker exec -t ${containerid__input} ${docker__bin_bash__dir} -c"
+    local printmsg="---:"
+
+    #Override the default 'printmsg' (as defined above)
+    if [[ -n "${prependstring__input}" ]]; then
+        printmsg="${prependstring__input}"
+    fi
+
+    #Continue with updating 'printmsg'
+    printmsg+="${DOCKER__STATUS}: remove ${DOCKER__FG_LIGHTGREY}${targetfpath__input}${DOCKER__NOCOLOR}: "
+
+    #Remove file and update 'printmsg' based on the exitcode
+    if [[ $(checkIf_file_exists__func "${containerid__input}" "${targetfpath__input}") == true ]]; then
+        ${docker_exec_cmd} "${cmd}"
 
         if [[ ${exitcode} -eq 0 ]]; then
             printmsg+="${DOCKER__STATUS_SUCCESSFUL}"
@@ -6058,7 +6108,9 @@ docker__get_source_fullpath__sub() {
     docker__isp_c__filename="isp.c"
     docker__isp_c_overlaybck__filename="isp.c.overlaybck"
     docker__isp_sh__filename="isp.sh"
+    docker__isp_sh_overlaybck__filename="isp.sh.overlaybck"
     docker__pentagram_common_h__filename="pentagram_common.h"
+    docker__pentagram_common_h_overlaybck__filename="pentagram_common.h.overlaybck"
     docker__tb_init_sh__filename="tb_init.sh"
 
 
@@ -6272,13 +6324,15 @@ docker__get_source_fullpath__sub() {
     docker__SP7021_boot_uboot_tools__dir=${docker__SP7021__dir}/boot/uboot/tools
     docker__SP7021_build__dir=${docker__SP7021__dir}/build
     docker__SP7021_build_tools_isp__dir=${docker__SP7021__dir}/build/tools/isp
-    docker__SP7021_linux_rootfs_initramfs_disk_sbin__dir=${docker__SP7021__dir}/linux/rootfs/initramfs/disk/sbin
+    docker__SP7021_linux_rootfs_initramfs_disk_usr_sbin__dir=${docker__SP7021__dir}/linux/rootfs/initramfs/disk/usr/sbin
 
     docker__SP7021_build_tools_isp_isp_c__fpath=${docker__SP7021_build_tools_isp__dir}/${docker__isp_c__filename}
-    docker__SP7021_build_tools_isp_isp_c_overlaybck_fpath=${docker__SP7021_build_tools_isp__dir}/${docker__isp_c_overlaybck__filename}
+    docker__SP7021_build_tools_isp_isp_c_overlaybck__fpath=${docker__SP7021_build_tools_isp__dir}/${docker__isp_c_overlaybck__filename}
     docker__SP7021_build_isp_sh__fpath=${docker__SP7021_build__dir}/${docker__isp_sh__filename}
+    docker__SP7021_build_isp_sh_overlaybck__fpath=${docker__SP7021_build__dir}/${docker__isp_sh_overlaybck__filename}
     docker__SP7021_boot_uboot_include_configs_pentagram_common_h__fpath=${docker__SP7021_boot_uboot_include_configs__dir}/${docker__pentagram_common_h__filename}
-    docker__SP7021_linux_rootfs_initramfs_disk_sbin_tb_init_sh__fpath=${docker__SP7021_linux_rootfs_initramfs_disk_sbin__dir}/${docker__tb_init_sh__filename}
+    docker__SP7021_boot_uboot_include_configs_pentagram_common_h_overlaybck__fpath=${docker__SP7021_boot_uboot_include_configs__dir}/${docker__pentagram_common_h_overlaybck__filename}
+    docker__SP7021_linux_rootfs_initramfs_disk_usr_sbin_tb_init_sh__fpath=${docker__SP7021_linux_rootfs_initramfs_disk_usr_sbin__dir}/${docker__tb_init_sh__filename}
 
 
 #---docker__tmp__dir - contents
