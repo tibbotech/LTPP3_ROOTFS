@@ -301,6 +301,8 @@ docker__load_constants__sub() {
     DOCKER__SUBJECT_START_COPY_FILES_FROM_TMP_TO_DST_LOCATION="---:${DOCKER__START}: COPY FILES FROM TEMP TO DESTINATION LOCATION"
     DOCKER__SUBJECT_START_DST_EXECFILES_CHANGE_PERMISSION_TO_RWXRXRX="---:${DOCKER__START}: DESTINATION EXEC-FILES > CHANGE PERMISSION TO RWXR-XR-X"
     DOCKER__SUBJECT_COMPLETED_DST_EXECFILES_CHANGE_PERMISSION_TO_RWXRXRX="---:${DOCKER__COMPLETED}: DESTINATION EXEC-FILES > CHANGE PERMISSION TO RWXR-XR-X"
+    DOCKER__SUBJECT_START_TB_INIT_SH_CREATE_SOFTLINK="---:${DOCKER__START}: TB_INIT.SH > CREATE SOFT-LINK"
+    DOCKER__SUBJECT_COMPLETED_TB_INIT_SH_CREATE_SOFTLINK="---:${DOCKER__COMPLETED}: TB_INIT.SH > CREATE SOFT-LINK"
 
     DOCKER__INFOMSG_OVERLAYFS_SETTING_IS_DISABLED="-----------:${DOCKER__INFO}: ${DOCKER__FG_LIGHTGREY}overlay${DOCKER__NOCOLOR} setting is disabled...\n"
     DOCKER__INFOMSG_OVERLAYFS_SETTING_IS_DISABLED+="-----------:${DOCKER__INFO}: ignoring overlay..."
@@ -321,6 +323,9 @@ docker__load_constants__sub() {
     DOCKER__ERRMSG_PATTERN_ROOTFS_EX1E0000000_IS_OUT_OF_BOUND="${DOCKER__ERROR}: pattern ${DOCKER__FG_LIGHTGREY}rootfs 0x1e0000000${DOCKER__NOCOLOR} is out of bound!"
     DOCKER__ERRMSG_FILECONTENT_IS_NOT_CONSISTENT_OR_CORRUPT="${DOCKER__ERROR}: file-content is NOT consistent or corrupt!"
     DOCKER__ERRMSG_COULD_NOT_CHANGE_FILE_PERMISSION_TO_RWXRXRX="${DOCKER__ERROR}: could NOT change file permission to rwxr-xr-x!"
+    DOCKER__ERRMSG_COULD_NOT_CREATE_SOFTLINK="${DOCKER__ERROR}: could NOT create soft-link"
+
+    DOCKER__SEVENDASHES_COLON="-------:"
 
     DOCKER__EXEC_IT="docker exec -it"
 }
@@ -335,7 +340,7 @@ docker__init_variables__sub() {
     docker__isp_partition_array=()
     docker__isp_partition_arraylen=0
     docker__isp_partition_name_last="${DOCKER__EMPTYSTRING}"
-    docker__mycontainerid="${DOCKER__EMPTYSTRING}"
+    docker__containerid="${DOCKER__EMPTYSTRING}"
     docker__numOf_errors_found=0
     docker__overlay_isfound=false
     docker__overlaymode_set="${DOCKER__OVERLAYMODE_PERSISTENT}"
@@ -393,10 +398,10 @@ docker__choose_containerID__sub() {
     #      ...'show_msg_w_menuTitle_w_pressAnyKey_w_ctrlC_func' (in script: docker__global.sh).
     docker__exitcode=$?
     if [[ ${docker__exitcode} -eq ${DOCKER__EXITCODE_99} ]]; then
-        docker__mycontainerid=${DOCKER__EMPTYSTRING}
+        docker__containerid=${DOCKER__EMPTYSTRING}
     else
         #Get the result
-        docker__mycontainerid=`get_output_from_file__func "${docker__readInput_w_autocomplete_out__fpath}" "1"`
+        docker__containerid=`get_output_from_file__func "${docker__readInput_w_autocomplete_out__fpath}" "1"`
     fi
 }
 
@@ -427,15 +432,15 @@ docker__preCheck__sub() {
 
         #Check if '/usr/bin/bash' is present
         #Output: docker__numOf_errors_found
-        docker__preCheck_app_isPresent__sub "${docker__mycontainerid}" "${docker__bash_fpath}"
+        docker__preCheck_app_isPresent__sub "${docker__containerid}" "${docker__bash_fpath}"
 
         #Check if '~/SP7021/linux/rootfs/initramfs/disk' is present
         #Output: docker__numOf_errors_found
-        docker__preCheck_app_isPresent__sub "${docker__mycontainerid}" "${docker__sp7021_dir}"
+        docker__preCheck_app_isPresent__sub "${docker__containerid}" "${docker__sp7021_dir}"
 
         #Check if '~/LTPP3_ROOTFS/development_tools/docker_build_ispboootbin.sh' is present
         #Output: docker__numOf_errors_found
-        docker__preCheck_app_isPresent__sub "${docker__mycontainerid}" "${docker__docker__build_ispboootbin_fpath}"
+        docker__preCheck_app_isPresent__sub "${docker__containerid}" "${docker__docker__build_ispboootbin_fpath}"
     fi
 
     #Print
@@ -507,7 +512,8 @@ docker__overlay__sub() {
     local PHASE_OVERLAY_TMPFILES_PATCH=40
     local PHASE_OVERLAY_COPY_FILES_FROM_TMP_TO_DST=50
     local PHASE_OVERLAY_DST_EXEC_FILES_CHANGE_PERMISSION=60
-    local PHASE_OVERLAY_RESTORE_ORG_FILES=70
+    local PHASE_OVERLAY_TB_INIT_SOFTLINK_CREATE=70
+    local PHASE_OVERLAY_RESTORE_ORG_FILES=80
     local PHASE_OVERLAY_EXIT=100
 
     #Define variables
@@ -559,6 +565,11 @@ docker__overlay__sub() {
             "${PHASE_OVERLAY_DST_EXEC_FILES_CHANGE_PERMISSION}")
                 docker__overlay_dst_exec_files_change_permission_handler__sub
 
+                phase="${PHASE_OVERLAY_TB_INIT_SOFTLINK_CREATE}"
+                ;;
+            "${PHASE_OVERLAY_TB_INIT_SOFTLINK_CREATE}")
+                docker__overlay_tb_init_softlink_handler__sub
+
                 phase="${PHASE_OVERLAY_EXIT}"
                 ;;
             "${PHASE_OVERLAY_RESTORE_ORG_FILES}")
@@ -597,46 +608,46 @@ docker__overlay_files_check_handler__sub() {
             "${docker__LTPP3_ROOTFS_boot_configs_pentagram_common_h__fpath}" "false"
     docker__overlay_checkif_file_ispresent__sub "${DOCKER__EMPTYSTRING}" \
             "${docker__LTPP3_ROOTFS_linux_scripts_tb_init_sh__fpath}" "false"
-    docker__overlay_checkif_file_ispresent__sub "${docker__mycontainerid}" \
+    docker__overlay_checkif_file_ispresent__sub "${docker__containerid}" \
             "${docker__SP7021_build_tools_isp_isp_c_overlaybck__fpath}" "true"
-    docker__overlay_checkif_file_ispresent__sub "${docker__mycontainerid}" \
+    docker__overlay_checkif_file_ispresent__sub "${docker__containerid}" \
             "${docker__SP7021_build_isp_sh_overlaybck__fpath}" "true"
-    docker__overlay_checkif_file_ispresent__sub "${docker__mycontainerid}" \
+    docker__overlay_checkif_file_ispresent__sub "${docker__containerid}" \
             "${docker__SP7021_boot_uboot_include_configs_pentagram_common_h_overlaybck__fpath}" "true"
 
     #Incase file '~/SP7021/build/tools/isp/isp.c.overlaybck' was NOT found in the container
     if [[ ${docker__isp_c_overlaybck_isfound} == false ]]; then
         #Make a copy of file '~/SP7021/build/tools/isp/isp.c' and copy it as '~/SP7021/build/tools/isp/isp.c.overlaybck' (same location in the container)
-        docker__overlay_copy_file__sub "${docker__mycontainerid}" \
+        docker__overlay_copy_file__sub "${docker__containerid}" \
                 "${docker__SP7021_build_tools_isp_isp_c__fpath}" \
-                "${docker__mycontainerid}" \
+                "${docker__containerid}" \
                 "${docker__SP7021_build_tools_isp_isp_c_overlaybck__fpath}"
                 
-        docker__overlay_checkif_file_ispresent__sub "${docker__mycontainerid}" \
+        docker__overlay_checkif_file_ispresent__sub "${docker__containerid}" \
                 "${docker__SP7021_build_tools_isp_isp_c_overlaybck__fpath}" "false"
     fi
 
     #Incase file '~/SP7021/build/tools/isp/isp.c.overlaybck' was NOT found in the container
     if [[ ${docker__isp_sh_overlaybck_isfound} == false ]]; then
         #Make a copy of file '~/SP7021/build/tools/isp/isp.c' and copy it as '~/SP7021/build/tools/isp/isp.c.overlaybck' (same location in the container)
-        docker__overlay_copy_file__sub "${docker__mycontainerid}" \
+        docker__overlay_copy_file__sub "${docker__containerid}" \
                 "${docker__SP7021_build_isp_sh__fpath}" \
-                "${docker__mycontainerid}" \
+                "${docker__containerid}" \
                 "${docker__SP7021_build_isp_sh_overlaybck__fpath}"
                 
-        docker__overlay_checkif_file_ispresent__sub "${docker__mycontainerid}" \
+        docker__overlay_checkif_file_ispresent__sub "${docker__containerid}" \
                 "${docker__SP7021_build_isp_sh_overlaybck__fpath}" "false"
     fi
 
     #Incase file '~/SP7021/build/tools/isp/isp.c.overlaybck' was NOT found in the container
     if [[ ${docker__pentagram_common_h_overlaybck_isfound} == false ]]; then
         #Make a copy of file '~/SP7021/build/tools/isp/isp.c' and copy it as '~/SP7021/build/tools/isp/isp.c.overlaybck' (same location in the container)
-        docker__overlay_copy_file__sub "${docker__mycontainerid}" \
+        docker__overlay_copy_file__sub "${docker__containerid}" \
                 "${docker__SP7021_boot_uboot_include_configs_pentagram_common_h__fpath}" \
-                "${docker__mycontainerid}" \
+                "${docker__containerid}" \
                 "${docker__SP7021_boot_uboot_include_configs_pentagram_common_h_overlaybck__fpath}"
                 
-        docker__overlay_checkif_file_ispresent__sub "${docker__mycontainerid}" \
+        docker__overlay_checkif_file_ispresent__sub "${docker__containerid}" \
                 "${docker__SP7021_build_tools_isp_isp_c_overlaybck__fpath}" "false"
     fi
 
@@ -1007,7 +1018,7 @@ docker__overlay_copy_files_from_src_to_tmp_handler__sub() {
             "${DOCKER__EMPTYSTRING}" \
             "${docker__docker_overlayfs_tb_init_sh__fpath}"
 
-    docker__overlay_copy_file__sub "${docker__mycontainerid}" \
+    docker__overlay_copy_file__sub "${docker__containerid}" \
             "${docker__SP7021_build_tools_isp_isp_c_overlaybck__fpath}" \
             "${DOCKER__EMPTYSTRING}" \
             "${docker__docker_overlayfs_isp_c__fpath}"
@@ -1042,7 +1053,7 @@ docker__overlay_copy_file__sub() {
     local printmsg="${DOCKER__EMPTYSTRING}"
 
     #Remove destination file
-    remove_file__func "${dst_cid__input}" "${dstfpath__input}" "-------:"
+    remove_file__func "${dst_cid__input}" "${dstfpath__input}" "${DOCKER__SEVENDASHES_COLON}"
 
     #Copy file
     if [[ -z "${src_cid__input}" ]] && [[ -z ${dst_cid__input} ]]; then
@@ -1108,6 +1119,7 @@ docker__overlay_tempfiles_patch_handler__sub() {
     docker__overlay_tempfile_isp_sh_patch__sub
     docker__overlay_tempfile_isp_c_patch__sub
     docker__overlay_tempfile_pentagram_common_h_patch__sub
+    # docker__overlay_tempfile_tb_init_sh_patch__sub
 
 
     #Show error message and exit (if applicable)
@@ -1342,7 +1354,8 @@ docker__overlay_tempfile_isp_c_patch__sub() {
     fi
 
     #Find and get linenum of pattern-parameter 'DOCKER__PATTERN_ISP_C_2'
-    linenum_pattern2=$(retrieve_linenum_based_on_specified_pattern_colnum_delimiterchar_from_file__func "${docker__docker_overlayfs_isp_c__fpath}" \
+    linenum_pattern2=$(retrieve_linenum_based_on_specified_pattern_colnum_delimiterchar_from_file__func \
+            "${docker__docker_overlayfs_isp_c__fpath}" \
             "${DOCKER__PATTERN_ISP_C_2}" "${DOCKER__COLNUM_1}" "${DOCKER__COLON}")
     if [[ ${linenum_pattern2} -eq 0 ]]; then
         #Increment index
@@ -1449,11 +1462,11 @@ docker__overlay_tempfile_pentagram_common_h_patch__sub() {
     sed_oldstring="${DOCKER__SED__PATTERN_PENTAGRAM_COMMON_H_W_BACKSLASH0}"
 
     #Update 'sed_newstring' by appending 'tb_overlay' (this is a MUST!!!)
-    sed_newstring="${DOCKER__SED__PATTERN_PENTAGRAM_COMMON_H_WO_BACKSLASH0} ${DOCKER__TB_OVERLAY}"
+    sed_newstring="${DOCKER__SED__PATTERN_PENTAGRAM_COMMON_H_WO_BACKSLASH0} ${DOCKER__TB_OVERLAY_DEV_MMCBLK0P9}"
 
     #Update 'sed_newstring' by appending 'tb_rootfs_ro' (only if 'docker__overlaymode_set = non-persistent')
     if [[ "${docker__overlaymode_set}" == "${DOCKER__OVERLAYMODE_NONPERSISTENT}" ]]; then
-        sed_newstring+=" ${DOCKER__TB_ROOTFS_RO}"
+        sed_newstring+=" ${DOCKER__TB_ROOTFS_RO_TRUE}"
     fi
     sed_newstring+="\\\0\\\""
 
@@ -1477,6 +1490,41 @@ docker__overlay_tempfile_pentagram_common_h_patch__sub() {
     #Print
     show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
 }
+docker__overlay_tempfile_tb_init_sh_patch__sub() {
+    echo "docker__overlay_tempfile_tb_init_sh_patch__sub: in progress"
+
+    #Define variables
+    local filecontent="${DOCKER__EMPTYSTRING}"
+    local isp_partition_arrayitem="${DOCKER__EMPTYSTRING}"
+
+    #Remark:
+    #   Should there be any ADDITIONAL partitions (excluding 'overlay')
+    #   ...then this subroutine will add extra command lines to 'tb_init.sh'
+    #   ...which will make sure that those additional partitions will be
+    #   ...mounted automatically at boot.
+    #   
+    #   'docker__isp_partition_arraylen' is calculated in 'docker__overlay_tempfile_isp_sh_patch__sub'
+    if [[ ${docker__isp_partition_arraylen} -gt 2 ]]; then
+        for (( i=2; i<${docker__isp_partition_arraylen}; i++ ));
+        do
+            #Get array-item
+            isp_partition_arrayitem="${docker__isp_partition_array[i]}"
+
+            #Add the additional partition and size
+            filecontent+="#create /${isp_partition_arrayitem} if it doesn't exist.\n"
+            filecontent+="if [[ ! -d \"/${isp_partition_arrayitem}\" ]]; then\n"
+            filecontent+="	mount -o remount,rw /\n"
+            filecontent+="	mkdir \"/${isp_partition_arrayitem}\"\n"
+            filecontent+="\n"
+            filecontent+="	#this is also the first boot.\n"
+            filecontent+="	/usr/sbin/mkfs.ext4 \"<SOMETHING lIKE /dev/mmcblk0p(9 + 1)>\"\n"
+            filecontent+="fi\n"
+            filecontent+="\n"
+            filecontent+="	#check if tb_overlay is an ext4 partition\n"
+            filecontent+="	mount <SOMETHING lIKE /dev/mmcblk0p(9 + 1)> /\"${isp_partition_arrayitem}\" \n"
+        done
+    fi
+}
 
 docker__overlay_copy_files_from_tmp_to_dst_handler__sub() {
     #Reset variables
@@ -1488,22 +1536,22 @@ docker__overlay_copy_files_from_tmp_to_dst_handler__sub() {
     #Copy files
     docker__overlay_copy_file__sub "${DOCKER__EMPTYSTRING}" \
             "${docker__docker_overlayfs_isp_sh__fpath}" \
-            "${docker__mycontainerid}" \
+            "${docker__containerid}" \
             "${docker__SP7021_build_isp_sh__fpath}"
 
     docker__overlay_copy_file__sub "${DOCKER__EMPTYSTRING}" \
             "${docker__docker_overlayfs_pentagram_common_h__fpath}" \
-            "${docker__mycontainerid}" \
+            "${docker__containerid}" \
             "${docker__SP7021_boot_uboot_include_configs_pentagram_common_h__fpath}"
 
     docker__overlay_copy_file__sub "${DOCKER__EMPTYSTRING}" \
             "${docker__docker_overlayfs_tb_init_sh__fpath}" \
-            "${docker__mycontainerid}" \
-            "${docker__SP7021_linux_rootfs_initramfs_disk_usr_sbin_tb_init_sh__fpath}"
+            "${docker__containerid}" \
+            "${docker__SP7021_linux_rootfs_initramfs_disk_sbin_tb_init_sh__fpath}"
 
     docker__overlay_copy_file__sub "${DOCKER__EMPTYSTRING}" \
             "${docker__docker_overlayfs_isp_c__fpath}" \
-            "${docker__mycontainerid}" \
+            "${docker__containerid}" \
             "${docker__SP7021_build_tools_isp_isp_c__fpath}"
 
     #Show error message and exit (if applicable)
@@ -1526,7 +1574,7 @@ docker__overlay_dst_exec_files_change_permission_handler__sub() {
 
     #Change permission
     docker__overlay_dst_exec_file_change_permission__sub "${docker__SP7021_build_isp_sh__fpath}"
-    docker__overlay_dst_exec_file_change_permission__sub "${docker__SP7021_linux_rootfs_initramfs_disk_usr_sbin_tb_init_sh__fpath}"
+    docker__overlay_dst_exec_file_change_permission__sub "${docker__SP7021_linux_rootfs_initramfs_disk_sbin_tb_init_sh__fpath}"
 
     #Show error message and exit (if applicable)
     if [[ ${docker__numOf_errors_found} -gt 0 ]]; then
@@ -1551,7 +1599,7 @@ docker__overlay_dst_exec_file_change_permission__sub() {
     printmsg="-------:${DOCKER__STATUS}: chmod ${DOCKER__CHMOD_755}${DOCKER__FG_LIGHTGREY}${targetfpath__input}: " 
 
     #Update variables
-    docker_exec_cmd="${DOCKER__EXEC_IT} ${docker__mycontainerid} ${docker__bash_fpath} -c"
+    docker_exec_cmd="${DOCKER__EXEC_IT} ${docker__containerid} ${docker__bash_fpath} -c"
     cmd_to_change_permission="chmod 755 ${targetfpath__input}"
 
     #Execute command
@@ -1577,32 +1625,97 @@ docker__overlay_dst_exec_file_change_permission__sub() {
     show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
 }
 
+docker__overlay_tb_init_softlink_handler__sub() {
+    #Reset variables
+    docker__numOf_errors_found=0
+
+    #Print
+    show_msg_only__func "${DOCKER__SUBJECT_START_TB_INIT_SH_CREATE_SOFTLINK}" "${DOCKER__NUMOFLINES_1}" "${DOCKER__NUMOFLINES_0}"
+
+    #Change permission
+    docker__overlay_tb_init_softlink_create__sub
+
+    #Show error message and exit (if applicable)
+    if [[ ${docker__numOf_errors_found} -gt 0 ]]; then
+        show_errMsg_wo_menuTitle_and_exit_func "${DOCKER__ERRMSG_COULD_NOT_CREATE_SOFTLINK}" \
+                ${DOCKER__NUMOFLINES_1} \
+                ${DOCKER__NUMOFLINES_0}
+    fi
+
+    #Print
+    show_msg_only__func "${DOCKER__SUBJECT_COMPLETED_TB_INIT_SH_CREATE_SOFTLINK}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+}
+docker__overlay_tb_init_softlink_create__sub() {
+    #Define variables
+    local current_dir="${DOCKER__EMPTYSTRING}"
+    local docker_exec_cmd="${DOCKER__EMPTYSTRING}"
+    local cmd_tocreate_softlink="${DOCKER__EMPTYSTRING}"
+    local printmsg="${DOCKER__EMPTYSTRING}"
+
+    #Start generating 'printmsg'
+    printmsg="-------:${DOCKER__STATUS}: crete soft-link of ${DOCKER__FG_LIGHTGREY}${docker__tb_init_sh__filename}${DOCKER__NOCOLOR}: "
+
+    #Update variables
+    docker_exec_cmd="${DOCKER__EXEC_IT} ${docker__containerid} ${docker__bash_fpath} -c"
+    #IMPORTANT: make sure to use the REAL PATH '/sbin/tb_init.sh' and 
+    #   not '/root/SP7021/linux/rootfs/initramfs/disk/usr/sbin/tb_init.sh'
+    cmd_tocreate_softlink="ln -sfn \"${docker__sbin_tb_init_sh__fpath}\" \
+            \"${docker__SP7021_linux_rootfs_initramfs_disk_sbin_init__fpath}\""
+
+    #Remove soft-link 'init'
+    remove_file__func "${docker__containerid}" \
+            "${docker__SP7021_linux_rootfs_initramfs_disk_sbin_init__fpath}" \
+            "${DOCKER__SEVENDASHES_COLON}"
+
+    #Execute command
+    if [[ ${docker__isRunning_inside_container} == true ]]; then   #currently in a container
+        ${cmd_tocreate_softlink}
+    else    #currently outside of a container
+        ${docker_exec_cmd} "${cmd_tocreate_softlink}"
+    fi
+
+    #Check exit-code
+    docker__exitcode=$?
+    if [[ ${docker__exitcode} -ne 0 ]]; then #error found
+        #Increment index
+        ((docker__numOf_errors_found++))
+
+        #Update 'printmsg'
+        printmsg+="${DOCKER__STATUS_FAILED}"
+    else
+        printmsg+="${DOCKER__STATUS_SUCCESSFUL}"
+    fi
+
+    #Print
+    show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+}
+
 docker__overlay_restore_original_state__sub() {
     #Restore the original files
-    docker__overlay_copy_file__sub "${docker__mycontainerid}" \
+    docker__overlay_copy_file__sub "${docker__containerid}" \
             "${docker__SP7021_build_tools_isp_isp_c_overlaybck__fpath}" \
-            "${docker__mycontainerid}" \
+            "${docker__containerid}" \
             "${docker__SP7021_build_tools_isp_isp_c__fpath}"
 
-    docker__overlay_copy_file__sub "${docker__mycontainerid}" \
+    docker__overlay_copy_file__sub "${docker__containerid}" \
             "${docker__SP7021_build_isp_sh_overlaybck__fpath}" \
-            "${docker__mycontainerid}" \
+            "${docker__containerid}" \
             "${docker__SP7021_build_isp_sh__fpath}"
 
-    docker__overlay_copy_file__sub "${docker__mycontainerid}" \
+    docker__overlay_copy_file__sub "${docker__containerid}" \
             "${docker__SP7021_boot_uboot_include_configs_pentagram_common_h_overlaybck__fpath}" \
-            "${docker__mycontainerid}" \
+            "${docker__containerid}" \
             "${docker__SP7021_boot_uboot_include_configs_pentagram_common_h__fpath}"
 
-    remove_file__func "${docker__mycontainerid}" \
-            "${docker__SP7021_linux_rootfs_initramfs_disk_usr_sbin_tb_init_sh__fpath}" \
-            "-------:"
+    remove_file__func "${docker__containerid}" \
+            "${docker__SP7021_linux_rootfs_initramfs_disk_sbin_tb_init_sh__fpath}" \
+            "${DOCKER__SEVENDASHES_COLON}"
 }
 
 
 docker__run_script__sub() {
     #Define variables
-    local docker_exec_cmd="${DOCKER__EXEC_IT} ${docker__mycontainerid} ${docker__bash_fpath} -c"
+    local docker_exec_cmd="${DOCKER__EXEC_IT} ${docker__containerid} ${docker__bash_fpath} -c"
     local cmd_outside_container="eval \"${docker__docker__build_ispboootbin_fpath}\""
     # local cmd_inside_container="eval \"${docker__docker__build_ispboootbin_fpath}\""
     local cmd_inside_container="${cmd_outside_container}"

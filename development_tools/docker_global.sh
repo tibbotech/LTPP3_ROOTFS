@@ -396,8 +396,8 @@ DOCKER__OVERLAYSETTING="Overlay-setting"
 DOCKER__OVERLAYFS_ENABLED="enabled"
 DOCKER__OVERLAYFS_DISABLED="disabled"
 
-DOCKER__TB_OVERLAY="tb_overlay"
-DOCKER__TB_ROOTFS_RO="tb_rootfs_ro"
+DOCKER__TB_OVERLAY_DEV_MMCBLK0P9="tb_overlay=\\/dev\\/mmcblk0p9"
+DOCKER__TB_ROOTFS_RO_TRUE="tb_rootfs_ro=true"
 
 DOCKER__SED_PATTERN_ISP_C_2_WO_ROOTFS="isp_info.file_header.partition_info\[i\].file_name"
 DOCKER__SED_PATTERN_ISP_C_2_W_ROOTFS="isp_info.file_header.partition_info\[i\].file_name,\\\"rootfs\\\""
@@ -6105,6 +6105,7 @@ docker__get_source_fullpath__sub() {
 #---filenames used at multiple places
     docker__docker_fs_partition_diskpartsize_dat__filename="docker_fs_partition_diskpartsize.dat"
     docker__docker_fs_partition_conf__filename="docker_fs_partition.conf"
+    docker__init__filename="init"
     docker__isp_c__filename="isp.c"
     docker__isp_c_overlaybck__filename="isp.c.overlaybck"
     docker__isp_sh__filename="isp.sh"
@@ -6324,7 +6325,7 @@ docker__get_source_fullpath__sub() {
     docker__SP7021_boot_uboot_tools__dir=${docker__SP7021__dir}/boot/uboot/tools
     docker__SP7021_build__dir=${docker__SP7021__dir}/build
     docker__SP7021_build_tools_isp__dir=${docker__SP7021__dir}/build/tools/isp
-    docker__SP7021_linux_rootfs_initramfs_disk_usr_sbin__dir=${docker__SP7021__dir}/linux/rootfs/initramfs/disk/usr/sbin
+    docker__SP7021_linux_rootfs_initramfs_disk_sbin__dir=${docker__SP7021__dir}/linux/rootfs/initramfs/disk/sbin
 
     docker__SP7021_build_tools_isp_isp_c__fpath=${docker__SP7021_build_tools_isp__dir}/${docker__isp_c__filename}
     docker__SP7021_build_tools_isp_isp_c_overlaybck__fpath=${docker__SP7021_build_tools_isp__dir}/${docker__isp_c_overlaybck__filename}
@@ -6332,7 +6333,8 @@ docker__get_source_fullpath__sub() {
     docker__SP7021_build_isp_sh_overlaybck__fpath=${docker__SP7021_build__dir}/${docker__isp_sh_overlaybck__filename}
     docker__SP7021_boot_uboot_include_configs_pentagram_common_h__fpath=${docker__SP7021_boot_uboot_include_configs__dir}/${docker__pentagram_common_h__filename}
     docker__SP7021_boot_uboot_include_configs_pentagram_common_h_overlaybck__fpath=${docker__SP7021_boot_uboot_include_configs__dir}/${docker__pentagram_common_h_overlaybck__filename}
-    docker__SP7021_linux_rootfs_initramfs_disk_usr_sbin_tb_init_sh__fpath=${docker__SP7021_linux_rootfs_initramfs_disk_usr_sbin__dir}/${docker__tb_init_sh__filename}
+    docker__SP7021_linux_rootfs_initramfs_disk_sbin_init__fpath=${docker__SP7021_linux_rootfs_initramfs_disk_sbin__dir}/${docker__init__filename}
+    docker__SP7021_linux_rootfs_initramfs_disk_sbin_tb_init_sh__fpath=${docker__SP7021_linux_rootfs_initramfs_disk_sbin__dir}/${docker__tb_init_sh__filename}
 
 
 #---docker__tmp__dir - contents
@@ -6424,6 +6426,11 @@ docker__get_source_fullpath__sub() {
 
     git__git_undo_last_unpushed_commit_out__filename="git_undo_last_unpushed_commit.out"
     git__git_undo_last_unpushed_commit_out__fpath=${docker__tmp__dir}/${git__git_undo_last_unpushed_commit_out__filename}
+
+
+#---REAL PATH (ON THE LTPP3G2)
+    docker__sbin__dir=/sbin
+    docker__sbin_tb_init_sh__fpath=${docker__sbin__dir}/${docker__tb_init_sh__filename}
 
 
     #OLD VERSION (is temporarily present for backwards compaitibility)

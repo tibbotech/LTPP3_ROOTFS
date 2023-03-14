@@ -17,6 +17,23 @@ echo "Entering tb_overlay.sh"
 
 mount -t proc none /proc
 
+tb_reserve_partname="tb_reserve"
+tb_reserve_devmmcblk0p10=/dev/mmcblk0p10
+echo "Mounting ${tb_reserve_partname}"
+#create /overlay if it doesn't exist
+if [[ ! -d "/${tb_reserve_partname}" ]]; then
+  mount -o remount,rw / #remounting root in emmc as writeable
+  mkdir "/${tb_reserve_partname}"        
+  #this is also the first boot.
+  #Create an 'ext4' partition '/dev/mmcblk0p9'
+  /usr/sbin/mkfs.ext4 ${tb_reserve_devmmcblk0p10}
+fi
+
+#check if tb_overlay is an ext4 partition
+mount $tb_overlay /overlay
+
+
+
 echo "Processing kernel bootargs"
 cmdline=$(cat /proc/cmdline)
 
@@ -89,26 +106,35 @@ if [ ! -z $tb_noboot ]; then
 fi
 
 #if tb_overlay is set, then mount it
+#Remarks:
+# if overlay does NOT exist or 'size=0', then
+# ...DO NOT add 'tb_overlay' in file 'penagram_common.h', line '"b_c=console=tty1 console=ttyS0,115200 earlyprintk\0" \
+# However, if overlay exist and 'size>0', then
+# ...ADD 'tb_overlay' in file 'penagram_common.h', line '"b_c=console=tty1 console=ttyS0,115200 earlyprintk tb_overlay\0" \
 if [ -n "$tb_overlay" ]; then
   echo "tb_overlay is set, mounting $tb_overlay"
   #create /overlay if it doesn't exist
   if [ ! -d /overlay ]; then
     mount -o remount,rw / #remounting root in emmc as writeable
     mkdir /overlay        
-    #this is also the first boot. 
+    #this is also the first boot.
+    #Create an 'ext4' partition '/dev/mmcblk0p9'
     /usr/sbin/mkfs.ext4 $tb_overlay
   fi
 
   #check if tb_overlay is an ext4 partition
-
-
   mount $tb_overlay /overlay
 
   #if tb_rootfs_ro is equal to true then delete the contents of /overlay
-  if [ "$tb_rootfs_ro" = "true" ]; then
+  #Remarks:
+  # non-persistent -> remove overlay partition. 
+  # ...This means add 'tb_rootfs_ro' in file 'penagram_common.h', line "b_c=console=tty1 console=ttyS0,115200 earlyprintk tb_overlay tb_rootfs_ro\0"
+  # persistent -> do not remove overlay partition. 
+  # ...This means do NOT add 'tb_rootfs_ro' in file 'penagram_common.h', line "b_c=console=tty1 console=ttyS0,115200 earlyprintk tb_overlay\0"
+  if [ "$tb_rootfs_ro" = "true" ]; then #non-persistent
       echo "tb_rootfs_ro is set, deleting contents of /overlay"
       rm -rf /overlay/*
-  else 
+  else  #persistent
       echo "tb_rootfs_ro is not set, not deleting contents of /overlay"
   fi
 
