@@ -132,7 +132,7 @@ docker__get_source_fullpath__sub() {
                         esac
                     else    #contains data
                         #Print
-                        echo -e "---:\e[30;38;5;215mCOMPLETED\e[0;0m: find path of folder \e[30;38;5;246m'${development_tools_foldername}\e[0;0m"
+                        echo -e "---:\e[30;38;5;215mCOMPLETED\e[0;0m: find path of folder \e[30;38;5;246m${development_tools_foldername}\e[0;0m"
 
 
                         #Write to file
