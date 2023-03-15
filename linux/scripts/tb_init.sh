@@ -204,13 +204,13 @@ if [ -n "${tb_overlay}" ]; then
   cd "${overlay_dir}/root"
 
   #if oldroot does not exits then create it
-  if [ ! -d "${${oldroot_foldername}}" ]; then
-    echo -e "${STATUS_COLOR}: creating ${${oldroot_foldername}}"
+  if [ ! -d "${oldroot_foldername}" ]; then
+    echo -e "${STATUS_COLOR}: creating ${oldroot_foldername}"
 
-    mkdir "${${oldroot_foldername}}"
+    mkdir "${oldroot_foldername}"
   fi
 
-  pivot_root . "${${oldroot_foldername}}"
+  pivot_root . "${oldroot_foldername}"
 fi
 
 
