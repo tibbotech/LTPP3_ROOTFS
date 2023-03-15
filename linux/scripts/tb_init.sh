@@ -55,8 +55,8 @@ echo -e "${STATUS_COLOR}: Processing ${FG_LIGHTGREY}kernel bootargs${RESET_COLOR
 cmdline=$(cat "${cmdline_fpath}")
 
 #if cmdline contains the string "tb_overlay"
-if [[ $cmdline == *"tb_overlay"* ]]; then
-  tb_overlay=$(echo $cmdline | grep -oP 'tb_overlay=\K[^ ]*')
+if [[ "${cmdline}" == *"tb_overlay"* ]]; then
+  tb_overlay=$(echo "${cmdline}" | grep -oP 'tb_overlay=\K[^ ]*')
 
   echo -e "${STATUS_COLOR}: tb_overlay=${FG_LIGHTGREY}${tb_overlay}${RESET_COLOR}"
 else
@@ -64,8 +64,8 @@ else
 fi
 
 #if cmdline contains the string "tb_rootfs_ro"
-if [[ $cmdline == *"tb_rootfs_ro"* ]]; then
-  tb_rootfs_ro=$(echo $cmdline | grep -oP 'tb_rootfs_ro=\K[^ ]*')
+if [[ "${cmdline}" == *"tb_rootfs_ro"* ]]; then
+  tb_rootfs_ro=$(echo "${cmdline}" | grep -oP 'tb_rootfs_ro=\K[^ ]*')
 
   echo -e "${STATUS_COLOR}: tb_rootfs_ro=${FG_LIGHTGREY}${tb_rootfs_ro}${RESET_COLOR}"
 else
@@ -73,8 +73,8 @@ else
 fi
 
 #if cmdline contains the string "tb_backup"
-if [[ $cmdline == *"tb_backup"* ]]; then
-  tb_backup=$(echo $cmdline | grep -oP 'tb_backup=\K[^ ]*')
+if [[ "${cmdline}" == *"tb_backup"* ]]; then
+  tb_backup=$(echo "${cmdline}" | grep -oP 'tb_backup=\K[^ ]*')
 
   echo -e "${STATUS_COLOR}: tb_backup=${FG_LIGHTGREY}${tb_backup}${RESET_COLOR}"
 else
@@ -82,8 +82,8 @@ else
 fi
 
 #if cmdline contains the string "tb_restore"
-if [[ $cmdline == *"tb_restore"* ]]; then
-  tb_restore=$(echo $cmdline | grep -oP 'tb_restore=\K[^ ]*')
+if [[ "${cmdline}" == *"tb_restore"* ]]; then
+  tb_restore=$(echo "${cmdline}" | grep -oP 'tb_restore=\K[^ ]*')
 
   echo -e "${STATUS_COLOR}: tb_restore=${FG_LIGHTGREY}${tb_restore}${RESET_COLOR}"
 else
@@ -91,8 +91,8 @@ else
 fi
 
 #if cmdline contains the string "tb_noboot"
-if [[ $cmdline == *"tb_noboot"* ]]; then
-  tb_restore=$(echo $cmdline | grep -oP 'tb_noboot=\K[^ ]*')
+if [[ "${cmdline}" == *"tb_noboot"* ]]; then
+  tb_restore=$(echo "${cmdline}" | grep -oP 'tb_noboot=\K[^ ]*')
 
   echo -e "${STATUS_COLOR}: tb_noboot=${FG_LIGHTGREY}${tb_noboot}${RESET_COLOR}"
 else
@@ -100,10 +100,10 @@ else
 fi
 
 #if tb_backup is set, then do a backup of the rootfs
-if [ ! -z $tb_backup ]; then
+if [ ! -z "${tb_backup}" ]; then
   echo -e "${STATUS_COLOR}: Backing up ${FG_LIGHTGREY}emmc${RESET_COLOR}"
 
-  dd if="${dev_mmcblk0_dir}" of=$tb_backup oflag=direct status=progress
+  dd if="${dev_mmcblk0_dir}" of="${tb_backup}" oflag=direct status=progress
   sync
 fi
 
@@ -111,13 +111,13 @@ sysrq_fpath="/proc/sys/kernel/sysrq"
 sysrq_trigger_fpath="/proc/sysrq-trigger"
 
 #if tb_restore is set, then restore the rootfs from the backup
-if [ ! -z $tb_restore ]; then
+if [ ! -z "${tb_restore}" ]; then
   #Disable ERR trap
   trap - ERR
 
   echo -e "${STATUS_COLOR}: Restoring ${FG_LIGHTGREY}emmc${RESET_COLOR}"
 
-  dd if=$tb_restore of="${dev_mmcblk0_dir}" oflag=direct status=progress
+  dd if="${tb_restore}" of="${dev_mmcblk0_dir}" oflag=direct status=progress
   sync
 
   #reboot to make sure the new rootfs is loaded
@@ -126,7 +126,7 @@ if [ ! -z $tb_restore ]; then
 fi
 
 #if tb_noboot is set, then boot to minimal system
-if [ ! -z $tb_noboot ]; then
+if [ ! -z "${tb_noboot}" ]; then
   # wile 1
   while [ 1 ]; do
     echo -e "${STATUS_COLOR}: To reboot in this environment enter the following command: "
