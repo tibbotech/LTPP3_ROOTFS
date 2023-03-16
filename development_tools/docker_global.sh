@@ -387,7 +387,8 @@ DOCKER__PATTERN_ISP_C_1="fprintf(fd, \"uuid=\${uuid_gpt_%s},\", basename(isp_inf
 DOCKER__PATTERN_ISP_C_2="isp_info.file_header.partition_info[i].file_name,\"rootfs\""
 DOCKER__PATTERN_ISP_C_3="// The emmc rootfs partition is set to EXT2 fs, and the partition size is all remaining space."
 DOCKER__PATTERN_PENTAGRAM_COMMON_H="\"b_c=console=tty1 console=ttyS0,115200 earlyprintk\0\""
-
+DOCKER__PATTERN_TB_INIT_ADDITIONAL_PARTITIONS="#---ADDITIONAL PARTITIONS"
+DOCKER__PATTERN_TB_INIT_MOUNT_ADDITIONAL_PARTITIONS="#---MOUNT ADDITIONAL PARTITIONS"
 
 DOCKER__OVERLAYMODE="Overlay-mode"
 DOCKER__OVERLAYMODE_NONPERSISTENT="non-persistent"
@@ -396,14 +397,16 @@ DOCKER__OVERLAYSETTING="Overlay-setting"
 DOCKER__OVERLAYFS_ENABLED="enabled"
 DOCKER__OVERLAYFS_DISABLED="disabled"
 
-DOCKER__TB_OVERLAY_DEV_MMCBLK0P9="tb_overlay=\\/dev\\/mmcblk0p9"
-DOCKER__TB_ROOTFS_RO_TRUE="tb_rootfs_ro=true"
+DOCKER__PENTAGRAM_TB_OVERLAY_DEV_MMCBLK0P10="tb_overlay=\\/dev\\/mmcblk0p10"
+DOCKER__PENTAGRAM_TB_ROOTFS_RO_TRUE="tb_rootfs_ro=true"
 
 DOCKER__SED_PATTERN_ISP_C_2_WO_ROOTFS="isp_info.file_header.partition_info\[i\].file_name"
 DOCKER__SED_PATTERN_ISP_C_2_W_ROOTFS="isp_info.file_header.partition_info\[i\].file_name,\\\"rootfs\\\""
 DOCKER__SED__PATTERN_PENTAGRAM_COMMON_H_WO_BACKSLASH0="\\\"b_c=console=tty1 console=ttyS0,115200 earlyprintk"
 DOCKER__SED__PATTERN_PENTAGRAM_COMMON_H_W_BACKSLASH0="\\\"b_c=console=tty1 console=ttyS0,115200 earlyprintk\\\0\\\""
 
+DOCKER__TB_INIT_MAIN_DIR="\\/"
+DOCKER__TB_INIT_DEV_MMCBLK0P="\\/dev\\/mmcblk0p"
 
 #---PATH CONSTANTS
 DOCKER__DOTDOT="${DOCKER__DOT}${DOCKER__DOT}"
@@ -1891,7 +1894,7 @@ function get_output_from_file__func() {
     echo -e "${ret}"
 }
 
-function read_1stline_from_file() {
+function read_1stline_from_file__func() {
     #Input args
     local targetfpath__input=${1}
  
@@ -5246,6 +5249,7 @@ function replace_or_append_string_based_on_pattern_in_file__func() {
     local targetfpath__input=${3}
 
     #Check if file exists
+    #Note: if false, then add string to file.
     if [[ ! -f "${targetfpath__input}" ]]; then #file does NOT exist
         #Write to file
         echo -e "${string__input}" | tee ${targetfpath__input} >/dev/null

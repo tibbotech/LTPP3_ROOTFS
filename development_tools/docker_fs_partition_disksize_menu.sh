@@ -141,7 +141,7 @@ docker__menu__sub() {
         
                 #Read from file
                 if [[ ${exitcode} -eq 0 ]]; then
-                    ret=$(read_1stline_from_file "${docker__fs_partition_disksize_userdefined_output__fpath}")
+                    ret=$(read_1stline_from_file__func "${docker__fs_partition_disksize_userdefined_output__fpath}")
                 fi
 
                 remove_file__func "${docker__fs_partition_disksize_userdefined_output__fpath}"

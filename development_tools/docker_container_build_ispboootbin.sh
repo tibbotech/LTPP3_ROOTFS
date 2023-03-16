@@ -1119,8 +1119,7 @@ docker__overlay_tempfiles_patch_handler__sub() {
     docker__overlay_tempfile_isp_sh_patch__sub
     docker__overlay_tempfile_isp_c_patch__sub
     docker__overlay_tempfile_pentagram_common_h_patch__sub
-    # docker__overlay_tempfile_tb_init_sh_patch__sub
-
+    docker__overlay_tempfile_tb_init_sh_patch__sub
 
     #Show error message and exit (if applicable)
     if [[ ${docker__numOf_errors_found} -gt 0 ]]; then
@@ -1462,11 +1461,11 @@ docker__overlay_tempfile_pentagram_common_h_patch__sub() {
     sed_oldstring="${DOCKER__SED__PATTERN_PENTAGRAM_COMMON_H_W_BACKSLASH0}"
 
     #Update 'sed_newstring' by appending 'tb_overlay' (this is a MUST!!!)
-    sed_newstring="${DOCKER__SED__PATTERN_PENTAGRAM_COMMON_H_WO_BACKSLASH0} ${DOCKER__TB_OVERLAY_DEV_MMCBLK0P9}"
+    sed_newstring="${DOCKER__SED__PATTERN_PENTAGRAM_COMMON_H_WO_BACKSLASH0} ${DOCKER__PENTAGRAM_TB_OVERLAY_DEV_MMCBLK0P10}"
 
     #Update 'sed_newstring' by appending 'tb_rootfs_ro' (only if 'docker__overlaymode_set = non-persistent')
     if [[ "${docker__overlaymode_set}" == "${DOCKER__OVERLAYMODE_NONPERSISTENT}" ]]; then
-        sed_newstring+=" ${DOCKER__TB_ROOTFS_RO_TRUE}"
+        sed_newstring+=" ${DOCKER__PENTAGRAM_TB_ROOTFS_RO_TRUE}"
     fi
     sed_newstring+="\\\0\\\""
 
@@ -1491,11 +1490,25 @@ docker__overlay_tempfile_pentagram_common_h_patch__sub() {
     show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
 }
 docker__overlay_tempfile_tb_init_sh_patch__sub() {
-    echo "docker__overlay_tempfile_tb_init_sh_patch__sub: in progress"
+    #Define constants
+    local OVERLAY_PARTITION_NUMBER=10
 
     #Define variables
-    local filecontent="${DOCKER__EMPTYSTRING}"
+    local dev_mmcblk0pp="${DOCKER__EMPTYSTRING}"
+    local filecontent1="${DOCKER__EMPTYSTRING}"
+    local filecontent2="${DOCKER__EMPTYSTRING}"
     local isp_partition_arrayitem="${DOCKER__EMPTYSTRING}"
+    local isp_partition_name="${DOCKER__EMPTYSTRING}"
+    local isp_partition_dir="${DOCKER__EMPTYSTRING}"
+
+    local linenum1=0
+    local lineinsert1=0
+    local linenum2=0
+    local lineinsert2=0
+
+    local i=0
+    local i_last=0
+    local p=0
 
     #Remark:
     #   Should there be any ADDITIONAL partitions (excluding 'overlay')
@@ -1505,24 +1518,102 @@ docker__overlay_tempfile_tb_init_sh_patch__sub() {
     #   
     #   'docker__isp_partition_arraylen' is calculated in 'docker__overlay_tempfile_isp_sh_patch__sub'
     if [[ ${docker__isp_partition_arraylen} -gt 2 ]]; then
-        for (( i=2; i<${docker__isp_partition_arraylen}; i++ ));
+        #Generate 'filecontent1' and 'filecontent2' to be added to 'tb_init.sh'
+        i_last=$((docker__isp_partition_arraylen - 1))
+        p=11
+
+        for (( i=3; i<${docker__isp_partition_arraylen}; i++ ));
         do
             #Get array-item
             isp_partition_arrayitem="${docker__isp_partition_array[i]}"
+            
+            #Retrieve partition name
+            isp_partition_name=$(echo "${isp_partition_arrayitem}" | cut -d" " -f1)
 
-            #Add the additional partition and size
-            filecontent+="#create /${isp_partition_arrayitem} if it doesn't exist.\n"
-            filecontent+="if [[ ! -d \"/${isp_partition_arrayitem}\" ]]; then\n"
-            filecontent+="	mount -o remount,rw /\n"
-            filecontent+="	mkdir \"/${isp_partition_arrayitem}\"\n"
-            filecontent+="\n"
-            filecontent+="	#this is also the first boot.\n"
-            filecontent+="	/usr/sbin/mkfs.ext4 \"<SOMETHING lIKE /dev/mmcblk0p(9 + 1)>\"\n"
-            filecontent+="fi\n"
-            filecontent+="\n"
-            filecontent+="	#check if tb_overlay is an ext4 partition\n"
-            filecontent+="	mount <SOMETHING lIKE /dev/mmcblk0p(9 + 1)> /\"${isp_partition_arrayitem}\" \n"
+            #Update 'isp_partition_dir'
+            isp_partition_dir="\\/${isp_partition_name}"
+
+            #Calculate the partition-number for the current additional partition
+            dev_mmcblk0pp="${DOCKER__TB_INIT_DEV_MMCBLK0P}${p}"
+
+            #Generate 'filecontent1' for additional partition(s)
+            filecontent1+="if [[ ! -d ${isp_partition_dir} ]]; then\n"
+            filecontent1+="  if [[ \${flag_root_is_remounted} == false ]]; then\n"
+            filecontent1+="    echo \"---:STATUS: remounting /\"\n"
+            filecontent1+="    mount -o remount,rw ${DOCKER__TB_INIT_MAIN_DIR} #remounting root in emmc as writeable\n"
+            filecontent1+="  fi\n"
+            filecontent1+="\n"
+            filecontent1+="  echo \"---:STATUS: create directory ${isp_partition_dir}\"\n"
+            filecontent1+="  mkdir ${isp_partition_dir}\n"
+            filecontent1+="\n"
+            filecontent1+="  echo \"---:STATUS: creating ${dev_mmcblk0pp}\"\n"
+            filecontent1+="  \${usr_sbin_mkfsext4} ${dev_mmcblk0pp}\n"
+            filecontent1+="fi\n"
+
+            #Only append empty line if current array-index (i) is not the last array-index (i_last)
+            if [[ ${i} -lt ${i_last} ]]; then
+                filecontent1+="\n"
+            fi
+
+            filecontent2+="echo \"---:STATUS: mounting ${isp_partition_dir}\"\n"
+            filecontent2+="mount ${dev_mmcblk0pp} ${isp_partition_dir}\n"
+
+            #Only append empty line if current array-index (i) is not the last array-index (i_last)
+            if [[ ${i} -lt ${i_last} ]]; then
+                filecontent2+="\n"
+            fi
+
+            #Increment index
+            ((p++))
         done
+
+        #Insert 'filecontent1' into 'tb_init.sh' after line '#---ADDITIONAL PARTITIONS'
+        #Find the linenum which matches pattern 'DOCKER__PATTERN_TB_INIT_ADDITIONAL_PARTITIONS'
+        linenum1=$(grep -nF "${DOCKER__PATTERN_TB_INIT_ADDITIONAL_PARTITIONS}" \
+                "${docker__docker_overlayfs_tb_init_sh__fpath}" | cut -d":" -f1)
+        
+        #Calculate the linenum which will be used to insert 'filecontent1'
+        lineinsert1=$((linenum1 + 1))
+
+        #Insert 'filecontent1' in tb_init.sh at linenum 'lineinsert1'
+        sed -i "${lineinsert1}i${filecontent1}" "${docker__docker_overlayfs_tb_init_sh__fpath}"
+
+        #Insert 'filecontent2' into 'tb_init.sh' after line '#---MOUNT ADDITIONAL PARTITIONS'
+        #Find the linenum which matches pattern 'DOCKER__PATTERN_TB_INIT_ADDITIONAL_PARTITIONS'
+        linenum2=$(grep -nF "${DOCKER__PATTERN_TB_INIT_MOUNT_ADDITIONAL_PARTITIONS}" \
+                "${docker__docker_overlayfs_tb_init_sh__fpath}" | cut -d":" -f1)
+        
+        #Calculate the linenum which will be used to insert 'filecontent1'
+        lineinsert2=$((linenum2 + 1))
+
+        #Insert 'filecontent1' in tb_init.sh at linenum 'lineinsert1'
+        sed -i "${lineinsert2}i${filecontent2}" "${docker__docker_overlayfs_tb_init_sh__fpath}"
+    fi
+}
+
+function insert_string_based_on_pattern_in_file__func() {
+    #Input args
+    local string__input=${1}
+    local pattern__input=${2}
+    local targetfpath__input=${3}
+
+    #Check if file exists
+    #Note: if false, then add string to file.
+    if [[ ! -f "${targetfpath__input}" ]]; then #file does NOT exist
+        #Write to file
+        echo -e "${string__input}" | tee ${targetfpath__input} >/dev/null
+
+        #Exit
+        return 0;
+    fi
+
+    #Check if 'pattern__input' is found in file 'targetfpath__input'
+    #...and get the 'line' containing this 'pattern__input'.
+    local line=$(grep -nF "${pattern__input}" "${targetfpath__input}" | cut -d":" -f1)
+    if [[ -n "${line}" ]]; then
+        sed -i "s/${line}/${string__input}/g" ${targetfpath__input}
+    else
+        echo -e "${string__input}" | tee -a ${targetfpath__input} >/dev/null
     fi
 }
 
