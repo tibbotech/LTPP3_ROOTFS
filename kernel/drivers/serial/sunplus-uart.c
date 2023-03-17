@@ -50,15 +50,20 @@
 #include <linux/delay.h>
 #include <linux/hrtimer.h>
 
-#if defined(CONFIG_SOC_Q645) || defined(CONFIG_SOC_SP7350)
+#if defined(CONFIG_SOC_Q645)
 #define NUM_UART	9	/* serial0,  ... */
+#elif defined(CONFIG_SOC_SP7350)
+#define NUM_UART	8	/* serial0,  ... */
 #else
 #define NUM_UART	6	/* serial0,  ... */
 #endif
 
-#if defined(CONFIG_SOC_Q645) || defined(CONFIG_SOC_SP7350)
+#if defined(CONFIG_SOC_Q645)
 #define NUM_UARTDMARX	4	/* serial10, ... */
 #define NUM_UARTDMATX	4	/* serial20, ... */
+#elif defined(CONFIG_SOC_SP7350)
+#define NUM_UARTDMARX	8	/* serial10, ... */
+#define NUM_UARTDMATX	8	/* serial20, ... */
 #else
 #define NUM_UARTDMARX	2	/* serial10, ... */
 #define NUM_UARTDMATX	2	/* serial20, ... */
@@ -98,15 +103,14 @@
 #define UATXDMA_BUF_SZ			PAGE_SIZE
 /* ------------------------------------------------------------------------- */
 /* Refer zebu: testbench/uart.cc */
-#ifdef CONFIG_SOC_I143
-#define CLK_HIGH_UART			202500000
-#define UART_RATIO			29
-#elif defined(CONFIG_SOC_Q645) || defined(CONFIG_SOC_SP7350)
+#if defined(CONFIG_SOC_SP7350)
 #define CLK_HIGH_UART			32000000
 #define UART_RATIO			17
+#elif defined(CONFIG_SOC_Q645)
+#define CLK_HIGH_UART			200000000
+#define CLK_XTAL_UART			25000000
 #else
 #define CLK_HIGH_UART			202500000
-#define UART_RATIO			232
 #endif
 /* ------------------------------------------------------------------------- */
 #if defined(CONFIG_SP_MON)
@@ -793,6 +797,8 @@ static irqreturn_t sunplus_uart_irq(int irq, void *args)
 	return IRQ_HANDLED;
 }
 
+#if defined(CONFIG_SOC_SP7350)
+#else
 /* called by ISR */
 static void receive_chars_rxdma(struct uart_port *port)
 {
@@ -892,6 +898,7 @@ static irqreturn_t sunplus_uart_rxdma_irq(int irq, void *args)
 
 	return IRQ_HANDLED;
 }
+#endif
 
 /*
  * Documentation/serial/driver:
@@ -908,7 +915,14 @@ static irqreturn_t sunplus_uart_rxdma_irq(int irq, void *args)
 static int sunplus_uart_ops_startup(struct uart_port *port)
 {
 	int ret;
-	u32 timeout, interrupt_en;
+	#if defined(CONFIG_SOC_SP7350)
+	struct sunplus_uart_port *sp_port =
+	(struct sunplus_uart_port *)(port->private_data);
+	struct sunplus_uartdma_info *uartdma_rx, *uartdma_tx;
+	struct regs_uatxdma *txdma_reg;
+	struct regs_uatxgdma *gdma_reg;
+	u32 interrupt_en;
+	#else
 	struct sunplus_uart_port *sp_port =
 		(struct sunplus_uart_port *)(port->private_data);
 	struct sunplus_uartdma_info *uartdma_rx, *uartdma_tx;
@@ -916,6 +930,8 @@ static int sunplus_uart_ops_startup(struct uart_port *port)
 	struct regs_uatxdma *txdma_reg;
 	struct regs_uatxgdma *gdma_reg;
 	unsigned int ch;
+	u32 timeout, interrupt_en;
+	#endif
 
 	if (sp_port->uport.rs485.flags & SER_RS485_ENABLED) {
 		hrtimer_cancel(&sp_port->DelayRtsAfterSend);
@@ -933,6 +949,8 @@ static int sunplus_uart_ops_startup(struct uart_port *port)
 	if (ret)
 		return ret;
 
+	#if defined(CONFIG_SOC_SP7350)
+	#else
 	uartdma_rx = sp_port->uartdma_rx;
 	if (uartdma_rx) {
 		rxdma_reg = (struct regs_uarxdma *)(uartdma_rx->membase);
@@ -989,6 +1007,7 @@ static int sunplus_uart_ops_startup(struct uart_port *port)
 			goto error_00;
 		}
 	}
+	#endif
 
 	uartdma_tx = sp_port->uartdma_tx;
 	if (uartdma_tx) {
@@ -1034,7 +1053,7 @@ static int sunplus_uart_ops_startup(struct uart_port *port)
 	/* SP_UART_ISC_TXM is enabled in .start_tx() */
 	interrupt_en = 0;
 	if (uartdma_rx == NULL)
-		interrupt_en |= SP_UART_ISC_RXM;
+		interrupt_en |= SP_UART_ISC_RXM | SP_UART_ISC_LSM;
 
 	sp_uart_set_int_en(port->membase, interrupt_en);
 
@@ -1059,11 +1078,18 @@ error_01:
 	if (uartdma_rx) {
 		dma_free_coherent(port->dev, UARXDMA_BUF_SZ,
 			uartdma_rx->buf_va, uartdma_rx->dma_handle);
+		#if defined(CONFIG_SOC_SP7350)
+		#else
 		free_irq(uartdma_rx->irq, port);
+		#endif
 	}
+#if defined(CONFIG_SOC_SP7350)
+#else
 error_00:
+#endif
 	free_irq(port->irq, port);
 	return ret;
+
 }
 
 /*
@@ -1172,12 +1198,14 @@ static void sunplus_uart_ops_set_termios(struct uart_port *port,
 	u32 clk, ext, div, div_l, div_h, baud;
 	u32 lcr;
 	unsigned long flags;
-	//struct sunplus_uart_port *sp_port =
-	//	(struct sunplus_uart_port *)(port->private_data);
+#if defined(CONFIG_SOC_Q645)
+	struct sunplus_uart_port *sp_port =
+		(struct sunplus_uart_port *)(port->private_data);
+#endif
 
 	baud = uart_get_baud_rate(port, termios, oldtermios, 0, (CLK_HIGH_UART >> 4));
 
-#if defined(CONFIG_SOC_Q645) || defined(CONFIG_SOC_SP7350)
+#if defined(CONFIG_SOC_SP7350)
 	/*
 	 * For zebu, the baudrate is 921600, Clock should be switched to CLK_HIGH_UART
 	 * For real chip, the baudrate is 115200.
@@ -1193,6 +1221,14 @@ static void sunplus_uart_ops_set_termios(struct uart_port *port,
 		clk = port->uartclk;
 	}
 #else
+#if defined(CONFIG_SOC_Q645)
+	if (baud > 115200) {
+		clk_set_rate(sp_port->clk, CLK_HIGH_UART);
+	} else {
+		clk_set_rate(sp_port->clk, CLK_XTAL_UART);
+	}
+	port->uartclk = clk_get_rate(sp_port->clk);
+#endif
 	clk = port->uartclk;
 #endif
 
@@ -1442,14 +1478,12 @@ static void sunplus_uart_ops_poll_put_char(struct uart_port *port,
 static int sunplus_uart_ops_poll_get_char(struct uart_port *port)
 {
 	unsigned int status;
-	unsigned char data;
 
-	do {
 		status = sp_uart_get_line_status(port->membase);
-	} while (!(status & SP_UART_LSR_RX));
-
-	data = sp_uart_get_char(port->membase);
-	return (int)data;
+	if (status & SP_UART_LSR_RX)
+		return sp_uart_get_char(port->membase);
+	else
+		return NO_POLL_CHAR;
 }
 
 #endif /* CONFIG_CONSOLE_POLL */
@@ -1583,8 +1617,8 @@ static int sunplus_uart_config_rs485(struct uart_port *_up,
 		(struct sunplus_uart_port *)_up->private_data;
 	int val;
 
-	// no enable/disable is possible if there no rts_gpio
-	if (IS_ERR(_sup->rts_gpio)) {
+	// No enabling is possible if there no rts_gpio
+	if ((_rs485->flags & SER_RS485_ENABLED) && IS_ERR(_sup->rts_gpio)) {
 		DBG_ERR("%s %s No valid rts_gpio - skipping rs485\n",
 			_up->name, __func__);
 		_up->rs485.flags &= ~SER_RS485_ENABLED;
@@ -1816,6 +1850,11 @@ static int sunplus_uart_platform_driver_probe_of(struct platform_device *pdev)
 		DBG_INFO("Setup DMA Tx %d\n", (pdev->id - ID_BASE_DMATX));
 	}
 	if (idx_offset >= 0) {
+#if defined(CONFIG_SOC_SP7350)
+		/* in case of UART DMA clock not enabled as default,
+		   remove this define for SP7350 GDMA clock enabled by DTS.
+		*/
+#else
 		DBG_INFO("Enable DMA clock(s)\n");
 		clk = devm_clk_get(&pdev->dev, NULL);
 		if (IS_ERR(clk)) {
@@ -1828,7 +1867,7 @@ static int sunplus_uart_platform_driver_probe_of(struct platform_device *pdev)
 			DBG_ERR("Clock can't be enabled correctly\n");
 			return ret;
 		}
-
+#endif
 		if (idx_offset == 0)
 			idx = idx_offset + pdev->id - ID_BASE_DMARX;
 		else
@@ -1979,8 +2018,10 @@ static int sunplus_uart_platform_driver_probe_of(struct platform_device *pdev)
 	port->line = pdev->id;
 
 #ifdef CONFIG_SERIAL_SUNPLUS_CONSOLE
-	if (pdev->id == 0)
+	if (pdev->id == 0) {
+		port->has_sysrq = 1;
 		port->cons = &sunplus_console;
+	}
 #endif
 #ifdef TTYS_GPIO
 	if (pdev->id == 1) {
@@ -2000,20 +2041,20 @@ static int sunplus_uart_platform_driver_probe_of(struct platform_device *pdev)
 		sunplus_uartdma_rx_binding(pdev->id);
 
 	if (sunplus_uart_ports[pdev->id].uartdma_rx)
-		DBG_ERR("%s's Rx is in DMA mode.\n",
+		dev_info(&pdev->dev, "%s's Rx is in DMA mode.\n",
 			sunplus_uart_ports[pdev->id].name);
 	else
-		DBG_ERR("%s's Rx is in PIO mode.\n",
+		dev_info(&pdev->dev, "%s's Rx is in PIO mode.\n",
 			sunplus_uart_ports[pdev->id].name);
 
 	sunplus_uart_ports[pdev->id].uartdma_tx =
 		sunplus_uartdma_tx_binding(pdev->id);
 
 	if (sunplus_uart_ports[pdev->id].uartdma_tx)
-		DBG_ERR("%s's Tx is in DMA mode.\n",
+		dev_info(&pdev->dev, "%s's Tx is in DMA mode.\n",
 			sunplus_uart_ports[pdev->id].name);
 	else
-		DBG_ERR("%s's Tx is in PIO mode.\n",
+		dev_info(&pdev->dev, "%s's Tx is in PIO mode.\n",
 			sunplus_uart_ports[pdev->id].name);
 
 	ret = uart_add_one_port(&sunplus_uart_driver, port);

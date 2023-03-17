@@ -67,6 +67,7 @@ static struct sp_intctl {
 #define HW_IRQ_GPIO_INT7                127
 #define SP_IRQ_TYPE_EDGE_ACTIVE         0x80
 static char edge_trigger[SP_INTC_HWIRQ_MAX-SP_INTC_HWIRQ_MIN];
+static char edge_trigger_both[SP_INTC_HWIRQ_MAX-SP_INTC_HWIRQ_MIN];
 #endif
 
 static void sp_intc_ack_irq(struct irq_data *data);
@@ -98,17 +99,24 @@ static void sp_intc_ack_irq(struct irq_data *data)
 #ifdef WORKAROUND_FOR_EDGE_TRIGGER_BUG
 	if (edge_trigger[data->hwirq] & IRQ_TYPE_EDGE_BOTH) {
 		u32 trig_lvl = readl_relaxed(&sp_intc.g0->intr_polarity[idx]);
-// FIX FOR THE INTERRUPT ISSUE
-		if (edge_trigger[data->hwirq] == IRQ_TYPE_EDGE_RISING) {
-			trig_lvl |= mask;
-			edge_trigger[data->hwirq] = IRQ_TYPE_EDGE_FALLING;
-		}
-		else {
-			trig_lvl &= ~mask;
-			edge_trigger[data->hwirq] = IRQ_TYPE_EDGE_RISING;
-		}
-		writel_relaxed(trig_lvl, &sp_intc.g0->intr_polarity[idx]);
-		
+		if(edge_trigger_both[data->hwirq] == IRQ_TYPE_EDGE_BOTH){
+			if (edge_trigger[data->hwirq] == IRQ_TYPE_EDGE_RISING) {
+				trig_lvl |= mask;
+				edge_trigger[data->hwirq] = IRQ_TYPE_EDGE_FALLING;
+			} else {
+				trig_lvl &= ~mask;
+				edge_trigger[data->hwirq] = IRQ_TYPE_EDGE_RISING;
+			}
+			writel_relaxed(trig_lvl, &sp_intc.g0->intr_polarity[idx]);
+			edge_trigger[data->hwirq] &= ~(SP_IRQ_TYPE_EDGE_ACTIVE);
+		} else {
+			if (edge_trigger[data->hwirq] == IRQ_TYPE_EDGE_RISING)
+				trig_lvl |= mask;
+			else
+				trig_lvl &= ~mask;
+			writel_relaxed(trig_lvl, &sp_intc.g0->intr_polarity[idx]);
+			edge_trigger[data->hwirq] |= SP_IRQ_TYPE_EDGE_ACTIVE;
+		}		
 	}
 #endif
 	writel_relaxed(mask, &sp_intc.g1->intr_clr[idx]);
@@ -183,6 +191,7 @@ static int sp_intc_set_type(struct irq_data *data, unsigned int flow_type)
 #ifdef WORKAROUND_FOR_EDGE_TRIGGER_BUG
 		if ((data->hwirq >= HW_IRQ_GPIO_INT0) && (data->hwirq <= HW_IRQ_GPIO_INT7)) {
 			edge_trigger[data->hwirq] = IRQ_TYPE_EDGE_RISING;
+			edge_trigger_both[data->hwirq] = IRQ_TYPE_EDGE_RISING;
 			writel_relaxed((edge_type & ~mask), &sp_intc.g0->intr_type[idx]);
 		} else {
 			writel_relaxed((edge_type | mask), &sp_intc.g0->intr_type[idx]);
@@ -196,6 +205,7 @@ static int sp_intc_set_type(struct irq_data *data, unsigned int flow_type)
 #ifdef WORKAROUND_FOR_EDGE_TRIGGER_BUG
 		if ((data->hwirq >= HW_IRQ_GPIO_INT0) && (data->hwirq <= HW_IRQ_GPIO_INT7)) {
 			edge_trigger[data->hwirq] = IRQ_TYPE_EDGE_FALLING;
+			edge_trigger_both[data->hwirq] = IRQ_TYPE_EDGE_FALLING;
 			writel_relaxed((edge_type & ~mask), &sp_intc.g0->intr_type[idx]);
 		} else {
 			writel_relaxed((edge_type | mask), &sp_intc.g0->intr_type[idx]);
@@ -209,6 +219,7 @@ static int sp_intc_set_type(struct irq_data *data, unsigned int flow_type)
 #ifdef WORKAROUND_FOR_EDGE_TRIGGER_BUG
 		if ((data->hwirq >= HW_IRQ_GPIO_INT0) && (data->hwirq <= HW_IRQ_GPIO_INT7)) {
 			edge_trigger[data->hwirq] = IRQ_TYPE_EDGE_FALLING;
+			edge_trigger_both[data->hwirq] = IRQ_TYPE_EDGE_BOTH;
 			writel_relaxed((edge_type & ~mask), &sp_intc.g0->intr_type[idx]);
 		} else {
 			writel_relaxed((edge_type | mask), &sp_intc.g0->intr_type[idx]);

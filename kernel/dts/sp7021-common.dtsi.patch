@@ -1,6 +1,6 @@
---- /root/SP7021/linux/kernel/arch/arm/boot/dts/sp7021-common.dtsi	2023-02-17 08:04:07.000000000 +0000
-+++ /root/LTPP3_ROOTFS/kernel/dts/sp7021-common.dtsi	2023-02-17 07:49:25.000000000 +0000
-@@ -1,1144 +1,1153 @@
+--- /root/SP7021/linux/kernel/arch/arm/boot/dts/sp7021-common.dtsi	2023-02-18 09:56:22.000000000 +0000
++++ /root/LTPP3_ROOTFS/kernel/dts/sp7021-common.dtsi	2023-03-14 01:36:22.000000000 +0000
+@@ -1,1144 +1,1144 @@
 -// SPDX-License-Identifier: GPL-2.0
 -/*
 - * Device Tree Source (include) for Sunplus SP7021 SoC
@@ -2202,15 +2202,6 @@
 +			clocks = <&clkc GPIO>;
 +			resets = <&rstc RST_GPIO>;
 +
-+		interrupt-parent = <&intc>;
-+			interrupts = <120 IRQ_TYPE_LEVEL_LOW>,
-+						 <121 IRQ_TYPE_LEVEL_LOW>,
-+						 <122 IRQ_TYPE_LEVEL_LOW>,
-+						 <123 IRQ_TYPE_LEVEL_LOW>,
-+						 <124 IRQ_TYPE_LEVEL_LOW>,
-+						 <125 IRQ_TYPE_LEVEL_LOW>,
-+						 <126 IRQ_TYPE_LEVEL_LOW>,
-+						 <127 IRQ_TYPE_LEVEL_LOW>;
 +			pins_uart0: pinmux_uart0-pins {
 +				function = "UA0";
 +				groups = "UA0";

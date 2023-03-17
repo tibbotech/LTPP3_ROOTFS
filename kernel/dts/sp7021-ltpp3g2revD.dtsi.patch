@@ -1,6 +1,6 @@
---- /root/SP7021/linux/kernel/arch/arm/boot/dts/sp7021-ltpp3g2revD.dtsi	2023-02-17 08:04:07.000000000 +0000
-+++ /root/LTPP3_ROOTFS/kernel/dts/sp7021-ltpp3g2revD.dtsi	2023-02-17 07:49:25.000000000 +0000
-@@ -1,373 +1,449 @@
+--- /root/SP7021/linux/kernel/arch/arm/boot/dts/sp7021-ltpp3g2revD.dtsi	2023-02-18 09:56:22.000000000 +0000
++++ /root/LTPP3_ROOTFS/kernel/dts/sp7021-ltpp3g2revD.dtsi	2023-03-14 01:36:38.000000000 +0000
+@@ -1,373 +1,453 @@
 -// SPDX-License-Identifier: GPL-2.0
 -/*
 - * Device Tree Source (include) for Sunplus SP7021 SoC
@@ -611,6 +611,8 @@
 +     MUXF_L2SW_P0_MAC_RMII_RXER
 +     MUXF_L2SW_P1_MAC_RMII_RXER
 +     GROP_SPI_FLASH
++	 MUXF_UA1_TX
++	 MUXF_UA1_RX
 +   >;
 + };
 +
@@ -621,10 +623,7 @@
 + };
 + pins_gpio_nobinded: pinmux_gpio_nobinded-pins {
 +    sunplus,pins = <
-+      /*SPPCTL_IOPAD(42,SPPCTL_PCTL_G_GPIO,0,0)*/   /* was L2SW_LED_FLASH0 */
-+      /*SPPCTL_IOPAD(51,SPPCTL_PCTL_G_GPIO,0,0)*/   /* was L2SW_LED_ON0 */
-+      SPPCTL_IOPAD(30,SPPCTL_PCTL_G_GPIO,0,0)   /* was L2SW_LED_FLASH1 */
-+      SPPCTL_IOPAD(39,SPPCTL_PCTL_G_GPIO,0,0)   /* was L2SW_LED_ON1  */
++      
 +    >;
 + };
 +
@@ -802,7 +801,12 @@
 +		    nvmem-cell-names = "mac_addr0";
 +		    nvmem-cells = <&mac_addr0>;
 +		};
-+		
++		buzzer0 {
++		    compatible = "pwm-beeper";
++		    pinctrl-names = "default";
++		    pinctrl-0 = <&buzzer0_pins>;
++		    pwms = <&pwm 0 1000000 0>;
++		};		
 +		i2c_tps: i2c-tps { /* eeprom */
 +		    compatible = "i2c-gpio";
 +		    i2c-gpio,scl-open-drain;
@@ -813,8 +817,8 @@
 +		    pinctrl-names = "default";
 +		    pinctrl-0 = <&pins_i2ctps>;
 +		    gpios = <&pctl 2 GPIO_ACTIVE_HIGH     /* SDA */
-+			     &pctl 1 GPIO_ACTIVE_HIGH     /* SCL */
-+                    >;
++			     	 &pctl 1 GPIO_ACTIVE_HIGH     /* SCL */
++					>;
 +		    eeprom: eeprom@50 {
 +			compatible = "at,24c16";
 +			reg = <0x50>;
@@ -823,4 +827,3 @@
 +		};
 +	};
 +};
-\ No newline at end of file

@@ -1,0 +1,9 @@
+--- /root/SP7021/linux/kernel/drivers/pinctrl/sunplus/sppctl_gpio_ops.h	2023-02-18 09:56:26.000000000 +0000
++++ /root/LTPP3_ROOTFS/kernel/drivers/pinctrl/sunplus/sppctl_gpio_ops.h	2023-03-14 01:38:00.000000000 +0000
+@@ -84,4 +84,6 @@
+ 
+ void sppctlgpio_unmux_irq( struct gpio_chip *_c, unsigned _pin);
+ 
++void sppctlgpio_f_free(struct gpio_chip *_c, unsigned int _n);
++
+ #endif // SPPCTL_GPIO_OPS_H
