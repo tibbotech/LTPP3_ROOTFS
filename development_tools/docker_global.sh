@@ -377,6 +377,11 @@ DOCKER__DISKSIZE_8G_IN_BYTES=$((DOCKER__DISKSIZE_4G_IN_BYTES*2))    #it is assum
 DOCKER__DISKSIZE_8G_IN_MBYTES=$((DOCKER__DISKSIZE_8G_IN_BYTES/DOCKER__DISKSIZE_1K_IN_BYTES/DOCKER__DISKSIZE_1K_IN_BYTES))
 DOCKER__DISKSIZE_0X1E0000000="0x1e0000000"
 
+DOCKER__FSTAB_DEV_MMCBLK0P="/dev/mmcblk0p"
+DOCKER__FSTAB_DEV_MMCBLK09="/dev/mmcblk0p9"
+DOCKER__FSTAB_EXT4="ext4"
+DOCKER__FSTAB_TB_RESERVE_DIR="/${DOCKER__DISKPARTNAME_TB_RESERVE}"
+
 DOCKER__RESERVED_SIZE_DEFAULT=128   #in MB
 DOCKER__ROOTFS_SIZE_DEFAULT=1536    #in MB
 
@@ -397,16 +402,16 @@ DOCKER__OVERLAYSETTING="Overlay-setting"
 DOCKER__OVERLAYFS_ENABLED="enabled"
 DOCKER__OVERLAYFS_DISABLED="disabled"
 
-DOCKER__PENTAGRAM_TB_OVERLAY_DEV_MMCBLK0P10="tb_overlay=\\/dev\\/mmcblk0p10"
 DOCKER__PENTAGRAM_TB_ROOTFS_RO_TRUE="tb_rootfs_ro=true"
 
 DOCKER__SED_PATTERN_ISP_C_2_WO_ROOTFS="isp_info.file_header.partition_info\[i\].file_name"
 DOCKER__SED_PATTERN_ISP_C_2_W_ROOTFS="isp_info.file_header.partition_info\[i\].file_name,\\\"rootfs\\\""
-DOCKER__SED__PATTERN_PENTAGRAM_COMMON_H_WO_BACKSLASH0="\\\"b_c=console=tty1 console=ttyS0,115200 earlyprintk"
-DOCKER__SED__PATTERN_PENTAGRAM_COMMON_H_W_BACKSLASH0="\\\"b_c=console=tty1 console=ttyS0,115200 earlyprintk\\\0\\\""
+DOCKER__SED_PATTERN_PENTAGRAM_COMMON_H_WO_BACKSLASH0="\\\"b_c=console=tty1 console=ttyS0,115200 earlyprintk"
+DOCKER__SED_PATTERN_PENTAGRAM_COMMON_H_W_BACKSLASH0="\\\"b_c=console=tty1 console=ttyS0,115200 earlyprintk\\\0\\\""
+DOCKER__SED_TB_INIT_MAIN_DIR="\\/"
+DOCKER__SED_TB_INIT_DEV_MMCBLK0P="\\/dev\\/mmcblk0p"
+DOCKER__SED_TB_OVERLAY_DEV_MMCBLK0P10="tb_overlay=\\/dev\\/mmcblk0p10"
 
-DOCKER__TB_INIT_MAIN_DIR="\\/"
-DOCKER__TB_INIT_DEV_MMCBLK0P="\\/dev\\/mmcblk0p"
 
 #---PATH CONSTANTS
 DOCKER__DOTDOT="${DOCKER__DOT}${DOCKER__DOT}"
@@ -6109,6 +6114,8 @@ docker__get_source_fullpath__sub() {
 #---filenames used at multiple places
     docker__docker_fs_partition_diskpartsize_dat__filename="docker_fs_partition_diskpartsize.dat"
     docker__docker_fs_partition_conf__filename="docker_fs_partition.conf"
+    docker__fstab__filename="fstab"
+    docker__fstab_overlaybck__filename="fstab.overlaybck"
     docker__init__filename="init"
     docker__isp_c__filename="isp.c"
     docker__isp_c_overlaybck__filename="isp.c.overlaybck"
@@ -6127,6 +6134,7 @@ docker__get_source_fullpath__sub() {
     docker__docker_images__dir=${docker__docker__dir}/images
     docker__docker_overlayfs__dir=${docker__docker__dir}/overlayfs
 
+    docker__docker_overlayfs_fstab__fpath=${docker__docker_overlayfs__dir}/${docker__fstab__filename}
     docker__docker_fs_partition_diskpartsize_dat__fpath=${docker__docker_overlayfs__dir}/${docker__docker_fs_partition_diskpartsize_dat__filename}
     docker__docker_fs_partition_conf__fpath=${docker__docker_overlayfs__dir}/${docker__docker_fs_partition_conf__filename}
     docker__docker_overlayfs_isp_c__fpath=${docker__docker_overlayfs__dir}/${docker__isp_c__filename}
@@ -6329,7 +6337,9 @@ docker__get_source_fullpath__sub() {
     docker__SP7021_boot_uboot_tools__dir=${docker__SP7021__dir}/boot/uboot/tools
     docker__SP7021_build__dir=${docker__SP7021__dir}/build
     docker__SP7021_build_tools_isp__dir=${docker__SP7021__dir}/build/tools/isp
-    docker__SP7021_linux_rootfs_initramfs_disk_sbin__dir=${docker__SP7021__dir}/linux/rootfs/initramfs/disk/sbin
+    docker__SP7021_linux_rootfs_initramfs_disk_dir=${docker__SP7021__dir}/linux/rootfs/initramfs/disk
+    docker__SP7021_linux_rootfs_initramfs_disk_sbin__dir=${docker__SP7021_linux_rootfs_initramfs_disk_dir}/sbin
+    docker__SP7021_linux_rootfs_initramfs_disk_etc__dir=${docker__SP7021_linux_rootfs_initramfs_disk_dir}/etc
 
     docker__SP7021_build_tools_isp_isp_c__fpath=${docker__SP7021_build_tools_isp__dir}/${docker__isp_c__filename}
     docker__SP7021_build_tools_isp_isp_c_overlaybck__fpath=${docker__SP7021_build_tools_isp__dir}/${docker__isp_c_overlaybck__filename}
@@ -6337,6 +6347,8 @@ docker__get_source_fullpath__sub() {
     docker__SP7021_build_isp_sh_overlaybck__fpath=${docker__SP7021_build__dir}/${docker__isp_sh_overlaybck__filename}
     docker__SP7021_boot_uboot_include_configs_pentagram_common_h__fpath=${docker__SP7021_boot_uboot_include_configs__dir}/${docker__pentagram_common_h__filename}
     docker__SP7021_boot_uboot_include_configs_pentagram_common_h_overlaybck__fpath=${docker__SP7021_boot_uboot_include_configs__dir}/${docker__pentagram_common_h_overlaybck__filename}
+    docker__SP7021_linux_rootfs_initramfs_disk_etc_fstab__fpath=${docker__SP7021_linux_rootfs_initramfs_disk_etc__dir}/${docker__fstab__filename}
+    docker__SP7021_linux_rootfs_initramfs_disk_etc_fstab_overlaybck__fpath=${docker__SP7021_linux_rootfs_initramfs_disk_etc__dir}/${docker__fstab_overlaybck__filename}
     docker__SP7021_linux_rootfs_initramfs_disk_sbin_init__fpath=${docker__SP7021_linux_rootfs_initramfs_disk_sbin__dir}/${docker__init__filename}
     docker__SP7021_linux_rootfs_initramfs_disk_sbin_tb_init_sh__fpath=${docker__SP7021_linux_rootfs_initramfs_disk_sbin__dir}/${docker__tb_init_sh__filename}
 

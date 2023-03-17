@@ -593,6 +593,7 @@ docker__overlay_files_check_handler__sub() {
 
     #Initialize variables
     docker__numOf_errors_found=0
+    docker__fstab_isfound=true
     docker__isp_c_overlaybck_isfound=true
     docker__isp_sh_overlaybck_isfound=true
     docker__pentagram_common_h_overlaybck_isfound=true
@@ -608,12 +609,27 @@ docker__overlay_files_check_handler__sub() {
             "${docker__LTPP3_ROOTFS_boot_configs_pentagram_common_h__fpath}" "false"
     docker__overlay_checkif_file_ispresent__sub "${DOCKER__EMPTYSTRING}" \
             "${docker__LTPP3_ROOTFS_linux_scripts_tb_init_sh__fpath}" "false"
+
+    docker__overlay_checkif_file_ispresent__sub "${docker__containerid}" \
+            "${docker__SP7021_linux_rootfs_initramfs_disk_etc_fstab_overlaybck__fpath}" "true"
     docker__overlay_checkif_file_ispresent__sub "${docker__containerid}" \
             "${docker__SP7021_build_tools_isp_isp_c_overlaybck__fpath}" "true"
     docker__overlay_checkif_file_ispresent__sub "${docker__containerid}" \
             "${docker__SP7021_build_isp_sh_overlaybck__fpath}" "true"
     docker__overlay_checkif_file_ispresent__sub "${docker__containerid}" \
             "${docker__SP7021_boot_uboot_include_configs_pentagram_common_h_overlaybck__fpath}" "true"
+
+    #Incase file '~/SP7021/linux/rootfs/initramfs/disk/etc/fstab.overlaybck' was NOT found in the container
+    if [[ ${docker__fstab_isfound} == false ]]; then
+        #Make a copy of file '~/SP7021/linux/rootfs/initramfs/disk/etc/fstab' and copy it as '~/SP7021/linux/rootfs/initramfs/disk/etc/fstab.overlaybck.overlaybck' (same location in the container)
+        docker__overlay_copy_file__sub "${docker__containerid}" \
+                "${docker__SP7021_linux_rootfs_initramfs_disk_etc_fstab__fpath}" \
+                "${docker__containerid}" \
+                "${docker__SP7021_linux_rootfs_initramfs_disk_etc_fstab_overlaybck__fpath}"
+                
+        docker__overlay_checkif_file_ispresent__sub "${docker__containerid}" \
+                "${docker__SP7021_linux_rootfs_initramfs_disk_etc_fstab_overlaybck__fpath}" "false"
+    fi
 
     #Incase file '~/SP7021/build/tools/isp/isp.c.overlaybck' was NOT found in the container
     if [[ ${docker__isp_c_overlaybck_isfound} == false ]]; then
@@ -682,6 +698,11 @@ docker__overlay_checkif_file_ispresent__sub() {
     else    #file does not exist
         #Check if 'path__input = '~/SP7021/build/tools/isp/isp.c.overlaybck'
         case "${path__input}" in
+            "${docker__SP7021_linux_rootfs_initramfs_disk_etc_fstab_overlaybck__fpath}")
+                docker__fstab_isfound=false
+
+                printmsg+=" ${path__input}: ${DOCKER__STATUS_LNOTPRESENT_IGNORE}"
+                ;;
             "${docker__SP7021_build_tools_isp_isp_c_overlaybck__fpath}")
                 docker__isp_c_overlaybck_isfound=false
 
@@ -1003,6 +1024,16 @@ docker__overlay_copy_files_from_src_to_tmp_handler__sub() {
     show_msg_only__func "${DOCKER__SUBJECT_START_COPY_FILES_FROM_SRC_TO_TMP_LOCATION}" "${DOCKER__NUMOFLINES_1}" "${DOCKER__NUMOFLINES_0}"
 
     #Copy files
+    docker__overlay_copy_file__sub "${docker__containerid}" \
+            "${docker__SP7021_linux_rootfs_initramfs_disk_etc_fstab_overlaybck__fpath}" \
+            "${DOCKER__EMPTYSTRING}" \
+            "${docker__docker_overlayfs_fstab__fpath}"
+
+    docker__overlay_copy_file__sub "${docker__containerid}" \
+            "${docker__SP7021_build_tools_isp_isp_c_overlaybck__fpath}" \
+            "${DOCKER__EMPTYSTRING}" \
+            "${docker__docker_overlayfs_isp_c__fpath}"
+
     docker__overlay_copy_file__sub "${DOCKER__EMPTYSTRING}" \
             "${docker__LTPP3_ROOTFS_build_scripts_isp_sh__fpath}" \
             "${DOCKER__EMPTYSTRING}" \
@@ -1017,11 +1048,6 @@ docker__overlay_copy_files_from_src_to_tmp_handler__sub() {
             "${docker__LTPP3_ROOTFS_linux_scripts_tb_init_sh__fpath}" \
             "${DOCKER__EMPTYSTRING}" \
             "${docker__docker_overlayfs_tb_init_sh__fpath}"
-
-    docker__overlay_copy_file__sub "${docker__containerid}" \
-            "${docker__SP7021_build_tools_isp_isp_c_overlaybck__fpath}" \
-            "${DOCKER__EMPTYSTRING}" \
-            "${docker__docker_overlayfs_isp_c__fpath}"
 
     #Show error message and exit (if applicable)
     if [[ ${docker__numOf_errors_found} -gt 0 ]]; then
@@ -1119,7 +1145,7 @@ docker__overlay_tempfiles_patch_handler__sub() {
     docker__overlay_tempfile_isp_sh_patch__sub
     docker__overlay_tempfile_isp_c_patch__sub
     docker__overlay_tempfile_pentagram_common_h_patch__sub
-    docker__overlay_tempfile_tb_init_sh_patch__sub
+    docker__overlay_tempfile_tb_init_sh_and_fstab_patch__sub
 
     #Show error message and exit (if applicable)
     if [[ ${docker__numOf_errors_found} -gt 0 ]]; then
@@ -1432,6 +1458,7 @@ docker__overlay_tempfile_isp_c_patch__sub() {
 docker__overlay_tempfile_pentagram_common_h_patch__sub() {
     #Define variables
     local linenum_pattern=0
+    local printmsg="${DOCKER__EMPTYSTRING}"
     local sed_oldstring="${DOCKER__EMPTYSTRING}"
     local sed_newstring="${DOCKER__EMPTYSTRING}"
 
@@ -1458,10 +1485,10 @@ docker__overlay_tempfile_pentagram_common_h_patch__sub() {
     fi
 
     #Update 'sed_oldstring'
-    sed_oldstring="${DOCKER__SED__PATTERN_PENTAGRAM_COMMON_H_W_BACKSLASH0}"
+    sed_oldstring="${DOCKER__SED_PATTERN_PENTAGRAM_COMMON_H_W_BACKSLASH0}"
 
     #Update 'sed_newstring' by appending 'tb_overlay' (this is a MUST!!!)
-    sed_newstring="${DOCKER__SED__PATTERN_PENTAGRAM_COMMON_H_WO_BACKSLASH0} ${DOCKER__PENTAGRAM_TB_OVERLAY_DEV_MMCBLK0P10}"
+    sed_newstring="${DOCKER__SED_PATTERN_PENTAGRAM_COMMON_H_WO_BACKSLASH0} ${DOCKER__SED_TB_OVERLAY_DEV_MMCBLK0P10}"
 
     #Update 'sed_newstring' by appending 'tb_rootfs_ro' (only if 'docker__overlaymode_set = non-persistent')
     if [[ "${docker__overlaymode_set}" == "${DOCKER__OVERLAYMODE_NONPERSISTENT}" ]]; then
@@ -1489,22 +1516,24 @@ docker__overlay_tempfile_pentagram_common_h_patch__sub() {
     #Print
     show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
 }
-docker__overlay_tempfile_tb_init_sh_patch__sub() {
+docker__overlay_tempfile_tb_init_sh_and_fstab_patch__sub() {
     #Define constants
     local OVERLAY_PARTITION_NUMBER=10
 
     #Define variables
     local dev_mmcblk0pp="${DOCKER__EMPTYSTRING}"
-    local filecontent1="${DOCKER__EMPTYSTRING}"
-    local filecontent2="${DOCKER__EMPTYSTRING}"
+    local fstab_filecontent="${DOCKER__EMPTYSTRING}"
     local isp_partition_arrayitem="${DOCKER__EMPTYSTRING}"
     local isp_partition_name="${DOCKER__EMPTYSTRING}"
     local isp_partition_dir="${DOCKER__EMPTYSTRING}"
+    local printmsg="${DOCKER__EMPTYSTRING}"
+    local sed_isp_partition_dir="${DOCKER__EMPTYSTRING}"
+    local sed_dev_mmcblk0pp="${DOCKER__EMPTYSTRING}"
+    local tb_init_filecontent="${DOCKER__EMPTYSTRING}"
 
-    local linenum1=0
-    local lineinsert1=0
-    local linenum2=0
-    local lineinsert2=0
+    local fstab_linenum_insert=0
+    local tb_init_linenum_match=0
+    local tb_init_linenum_insert=0
 
     local i=0
     local i_last=0
@@ -1518,7 +1547,9 @@ docker__overlay_tempfile_tb_init_sh_patch__sub() {
     #   
     #   'docker__isp_partition_arraylen' is calculated in 'docker__overlay_tempfile_isp_sh_patch__sub'
     if [[ ${docker__isp_partition_arraylen} -gt 2 ]]; then
-        #Generate 'filecontent1' and 'filecontent2' to be added to 'tb_init.sh'
+        #Generate 'tb_init_filecontent' and 'fstab_filecontent'
+        fstab_filecontent="${DOCKER__FSTAB_DEV_MMCBLK09} ${DOCKER__FSTAB_TB_RESERVE_DIR} ${DOCKER__FSTAB_EXT4}\n"
+        fstab_linenum_insert=2
         i_last=$((docker__isp_partition_arraylen - 1))
         p=11
 
@@ -1530,90 +1561,95 @@ docker__overlay_tempfile_tb_init_sh_patch__sub() {
             #Retrieve partition name
             isp_partition_name=$(echo "${isp_partition_arrayitem}" | cut -d" " -f1)
 
-            #Update 'isp_partition_dir'
-            isp_partition_dir="\\/${isp_partition_name}"
+            #Update 'sed_isp_partition_dir'
+            sed_isp_partition_dir="\\/${isp_partition_name}"
+
+            #Update 'sed_isp_partition_dir'
+            isp_partition_dir=/${isp_partition_name}
 
             #Calculate the partition-number for the current additional partition
-            dev_mmcblk0pp="${DOCKER__TB_INIT_DEV_MMCBLK0P}${p}"
+            sed_dev_mmcblk0pp="${DOCKER__SED_TB_INIT_DEV_MMCBLK0P}${p}"
+            dev_mmcblk0pp="${DOCKER__FSTAB_DEV_MMCBLK0P}${p}"
 
-            #Generate 'filecontent1' for additional partition(s)
-            filecontent1+="if [[ ! -d ${isp_partition_dir} ]]; then\n"
-            filecontent1+="  if [[ \${flag_root_is_remounted} == false ]]; then\n"
-            filecontent1+="    echo \"---:STATUS: remounting /\"\n"
-            filecontent1+="    mount -o remount,rw ${DOCKER__TB_INIT_MAIN_DIR} #remounting root in emmc as writeable\n"
-            filecontent1+="  fi\n"
-            filecontent1+="\n"
-            filecontent1+="  echo \"---:STATUS: create directory ${isp_partition_dir}\"\n"
-            filecontent1+="  mkdir ${isp_partition_dir}\n"
-            filecontent1+="\n"
-            filecontent1+="  echo \"---:STATUS: creating ${dev_mmcblk0pp}\"\n"
-            filecontent1+="  \${usr_sbin_mkfsext4} ${dev_mmcblk0pp}\n"
-            filecontent1+="fi\n"
+            #Update 'tb_init_filecontent' with new values
+            tb_init_filecontent+="if [[ ! -d ${sed_isp_partition_dir} ]]; then\n"
+            tb_init_filecontent+="  if [[ \${flag_root_is_remounted} == false ]]; then\n"
+            tb_init_filecontent+="    echo \"---:STATUS: remounting /\"\n"
+            tb_init_filecontent+="    mount -o remount,rw ${DOCKER__SED_TB_INIT_MAIN_DIR} #remounting root in emmc as writeable\n"
+            tb_init_filecontent+="  fi\n"
+            tb_init_filecontent+="\n"
+            tb_init_filecontent+="  echo \"---:STATUS: create directory ${sed_isp_partition_dir}\"\n"
+            tb_init_filecontent+="  mkdir ${sed_isp_partition_dir}\n"
+            tb_init_filecontent+="\n"
+            tb_init_filecontent+="  echo \"---:STATUS: creating ${sed_dev_mmcblk0pp}\"\n"
+            tb_init_filecontent+="  \${usr_sbin_mkfsext4} ${sed_dev_mmcblk0pp}\n"
+            tb_init_filecontent+="fi\n"
 
             #Only append empty line if current array-index (i) is not the last array-index (i_last)
             if [[ ${i} -lt ${i_last} ]]; then
-                filecontent1+="\n"
+                tb_init_filecontent+="\n"
             fi
 
-            filecontent2+="echo \"---:STATUS: mounting ${isp_partition_dir}\"\n"
-            filecontent2+="mount ${dev_mmcblk0pp} ${isp_partition_dir}\n"
+
+            #Update 'fstab_filecontent' with new values
+            fstab_filecontent+="${dev_mmcblk0pp} ${isp_partition_dir} ${DOCKER__FSTAB_EXT4}"
 
             #Only append empty line if current array-index (i) is not the last array-index (i_last)
             if [[ ${i} -lt ${i_last} ]]; then
-                filecontent2+="\n"
+                fstab_filecontent+="\n"
             fi
 
             #Increment index
             ((p++))
         done
 
-        #Insert 'filecontent1' into 'tb_init.sh' after line '#---ADDITIONAL PARTITIONS'
-        #Find the linenum which matches pattern 'DOCKER__PATTERN_TB_INIT_ADDITIONAL_PARTITIONS'
-        linenum1=$(grep -nF "${DOCKER__PATTERN_TB_INIT_ADDITIONAL_PARTITIONS}" \
+
+        #Start generating 'printmsg'
+        printmsg="-------:${DOCKER__STATUS}: patch ${DOCKER__FG_LIGHTGREY}${docker__docker_overlayfs_tb_init_sh__fpath}: " 
+
+        #Insert 'tb_init_filecontent' into 'tb_init.sh' after line '#---ADDITIONAL PARTITIONS'
+        tb_init_linenum_match=$(grep -nF "${DOCKER__PATTERN_TB_INIT_ADDITIONAL_PARTITIONS}" \
                 "${docker__docker_overlayfs_tb_init_sh__fpath}" | cut -d":" -f1)
         
-        #Calculate the linenum which will be used to insert 'filecontent1'
-        lineinsert1=$((linenum1 + 1))
+        #Calculate the linenum which will be used to insert 'tb_init_filecontent'
+        tb_init_linenum_insert=$((tb_init_linenum_match + 1))
 
-        #Insert 'filecontent1' in tb_init.sh at linenum 'lineinsert1'
-        sed -i "${lineinsert1}i${filecontent1}" "${docker__docker_overlayfs_tb_init_sh__fpath}"
+        #Insert 'tb_init_filecontent' in tb_init.sh at linenum 'tb_init_linenum_insert'
+        sed -i "${tb_init_linenum_insert}i${tb_init_filecontent}" "${docker__docker_overlayfs_tb_init_sh__fpath}"
 
-        #Insert 'filecontent2' into 'tb_init.sh' after line '#---MOUNT ADDITIONAL PARTITIONS'
-        #Find the linenum which matches pattern 'DOCKER__PATTERN_TB_INIT_ADDITIONAL_PARTITIONS'
-        linenum2=$(grep -nF "${DOCKER__PATTERN_TB_INIT_MOUNT_ADDITIONAL_PARTITIONS}" \
-                "${docker__docker_overlayfs_tb_init_sh__fpath}" | cut -d":" -f1)
+        #Check exit-code
+        docker__exitcode=$?
+        if [[ ${docker__exitcode} -ne 0 ]]; then #error found
+            #Increment index
+            ((docker__numOf_errors_found++))
+
+            #Update 'printmsg'
+            printmsg+="${DOCKER__STATUS_FAILED}\n"
+        else
+            printmsg+="${DOCKER__STATUS_SUCCESSFUL}\n"
+        fi
         
-        #Calculate the linenum which will be used to insert 'filecontent1'
-        lineinsert2=$((linenum2 + 1))
 
-        #Insert 'filecontent1' in tb_init.sh at linenum 'lineinsert1'
-        sed -i "${lineinsert2}i${filecontent2}" "${docker__docker_overlayfs_tb_init_sh__fpath}"
-    fi
-}
+        #Start generating 'printmsg'
+        printmsg+="-------:${DOCKER__STATUS}: patch ${DOCKER__FG_LIGHTGREY}${docker__docker_overlayfs_fstab__fpath}: " 
 
-function insert_string_based_on_pattern_in_file__func() {
-    #Input args
-    local string__input=${1}
-    local pattern__input=${2}
-    local targetfpath__input=${3}
+        #Insert 'fstab_filecontent' into 'fstab' after at 'fstab_linenum_insert=2'
+        echo -e "${fstab_filecontent}" | tee -a ${docker__docker_overlayfs_fstab__fpath} >/dev/null
 
-    #Check if file exists
-    #Note: if false, then add string to file.
-    if [[ ! -f "${targetfpath__input}" ]]; then #file does NOT exist
-        #Write to file
-        echo -e "${string__input}" | tee ${targetfpath__input} >/dev/null
+        #Check exit-code
+        docker__exitcode=$?
+        if [[ ${docker__exitcode} -ne 0 ]]; then #error found
+            #Increment index
+            ((docker__numOf_errors_found++))
 
-        #Exit
-        return 0;
-    fi
+            #Update 'printmsg'
+            printmsg+="${DOCKER__STATUS_FAILED}"
+        else
+            printmsg+="${DOCKER__STATUS_SUCCESSFUL}"
+        fi
 
-    #Check if 'pattern__input' is found in file 'targetfpath__input'
-    #...and get the 'line' containing this 'pattern__input'.
-    local line=$(grep -nF "${pattern__input}" "${targetfpath__input}" | cut -d":" -f1)
-    if [[ -n "${line}" ]]; then
-        sed -i "s/${line}/${string__input}/g" ${targetfpath__input}
-    else
-        echo -e "${string__input}" | tee -a ${targetfpath__input} >/dev/null
+        #Print
+        show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
     fi
 }
 
@@ -1625,6 +1661,16 @@ docker__overlay_copy_files_from_tmp_to_dst_handler__sub() {
     show_msg_only__func "${DOCKER__SUBJECT_START_COPY_FILES_FROM_TMP_TO_DST_LOCATION}" "${DOCKER__NUMOFLINES_1}" "${DOCKER__NUMOFLINES_0}"
 
     #Copy files
+    docker__overlay_copy_file__sub "${DOCKER__EMPTYSTRING}" \
+            "${docker__docker_overlayfs_fstab__fpath}" \
+            "${docker__containerid}" \
+            "${docker__SP7021_linux_rootfs_initramfs_disk_etc_fstab__fpath}"
+
+    docker__overlay_copy_file__sub "${DOCKER__EMPTYSTRING}" \
+            "${docker__docker_overlayfs_isp_c__fpath}" \
+            "${docker__containerid}" \
+            "${docker__SP7021_build_tools_isp_isp_c__fpath}"
+
     docker__overlay_copy_file__sub "${DOCKER__EMPTYSTRING}" \
             "${docker__docker_overlayfs_isp_sh__fpath}" \
             "${docker__containerid}" \
@@ -1639,11 +1685,6 @@ docker__overlay_copy_files_from_tmp_to_dst_handler__sub() {
             "${docker__docker_overlayfs_tb_init_sh__fpath}" \
             "${docker__containerid}" \
             "${docker__SP7021_linux_rootfs_initramfs_disk_sbin_tb_init_sh__fpath}"
-
-    docker__overlay_copy_file__sub "${DOCKER__EMPTYSTRING}" \
-            "${docker__docker_overlayfs_isp_c__fpath}" \
-            "${docker__containerid}" \
-            "${docker__SP7021_build_tools_isp_isp_c__fpath}"
 
     #Show error message and exit (if applicable)
     if [[ ${docker__numOf_errors_found} -gt 0 ]]; then
@@ -1802,7 +1843,6 @@ docker__overlay_restore_original_state__sub() {
             "${docker__SP7021_linux_rootfs_initramfs_disk_sbin_tb_init_sh__fpath}" \
             "${DOCKER__SEVENDASHES_COLON}"
 }
-
 
 docker__run_script__sub() {
     #Define variables

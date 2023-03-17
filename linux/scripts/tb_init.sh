@@ -71,15 +71,6 @@ fi
 #---ADDITIONAL PARTITIONS
 
 
-#---MOUNT TB_RESERVE
-echo "---:STATUS: mounting ${tb_reserve_dir}"
-mount ${dev_mmcblk0p9} ${tb_reserve_dir}
-
-
-
-#---MOUNT ADDITIONAL PARTITIONS
-
-
 #---OVERLAY SECTION
 echo "---:STATUS: retrieving kernel bootargs"
 cmdline_output=$(cat ${proc_cmdline_fpath})
@@ -248,14 +239,9 @@ if [ -n "${tb_overlay}" ]; then
 fi
 
 
-#REMARK: DOES NOT WORK TO PLACE TB_RESERVCE HERE!
-
 
 #Attempt to start systemd 
 exec ${lib_systemd_systemd_exec}
-
-
-#REMARK: DOES NOT WORK TO PLACE TB_RESERVCE HERE!
 
 
 

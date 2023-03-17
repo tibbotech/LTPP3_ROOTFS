@@ -115,6 +115,14 @@ sp7021_ltpp3g2revD_dtsi_filename="sp7021-ltpp3g2revD.dtsi"
 sp7021_ltpp3g2revD_dtsi_patch_filename="sp7021-ltpp3g2revD.dtsi.patch"
 sp7021_common_dtsi_filename="sp7021-common.dtsi"
 sp7021_common_dtsi_patch_filename="sp7021-common.dtsi.patch"
+sppctl_gpio_c_filename="sppctl_gpio.c"
+sppctl_gpio_c_patch_filename="sppctl_gpio.c.patch"
+sppctl_gpio_ops_c_filename="sppctl_gpio_ops.c"
+sppctl_gpio_ops_c_patch_filename="sppctl_gpio_ops.c.patch"
+sppctl_gpio_ops_h_filename="sppctl_gpio_ops.h"
+sppctl_gpio_ops_h_patch_filename="sppctl_gpio_ops.h.patch"
+sunplus_icm_c_filename="sunplus_icm.c"
+sunplus_icm_c_patch_filename="sunplus_icm.c.patch"
 sunplus_uart_c_filename="sunplus-uart.c"
 sunplus_uart_c_patch_filename="sunplus-uart.c.patch"
 usb_mount_rules_filename="usb-mount.rules"
@@ -148,7 +156,9 @@ home_lttp3rootfs_kernel_dir=${home_lttp3rootfs_dir}/kernel
 home_lttp3rootfs_kernel_makeconfig_dir=${home_lttp3rootfs_kernel_dir}/makeconfig
 # home_lttp3rootfs_kernel_drivers_clk_dir=${home_lttp3rootfs_kernel_dir}/drivers/clk
 home_lttp3rootfs_kernel_drivers_irqchip_dir=${home_lttp3rootfs_kernel_dir}/drivers/irqchip
+home_lttp3rootfs_kernel_drivers_misc_dir=${home_lttp3rootfs_kernel_dir}/drivers/misc
 home_lttp3rootfs_kernel_drivers_nvnmem_dir=${home_lttp3rootfs_kernel_dir}/drivers/nvmem
+home_lttp3rootfs_kernel_drivers_pinctrl_sunplus_dir=${home_lttp3rootfs_kernel_dir}/drivers/pinctrl/sunplus
 home_lttp3rootfs_kernel_drivers_serial_dir=${home_lttp3rootfs_kernel_dir}/drivers/serial
 home_lttp3rootfs_kernel_dts_dir=${home_lttp3rootfs_kernel_dir}/dts
 home_lttp3rootfs_usr_bin_dir=${home_lttp3rootfs_dir}/usr/bin
@@ -158,7 +168,9 @@ SP7xxx_build_tools_isp_dir=${SP7xxx_dir}/build/tools/isp
 SP7xxx_linux_kernel_dir=${SP7xxx_dir}/linux/kernel
 # SP7xxx_linux_kernel_drivers_clk_dir=${SP7xxx_linux_kernel_dir}/drivers/clk
 SP7xxx_linux_kernel_drivers_irqchip_dir=${SP7xxx_linux_kernel_dir}/drivers/irqchip
+SP7xxx_linux_kernel_drivers_misc_dir=${SP7xxx_linux_kernel_dir}/drivers/misc
 SP7xxx_linux_kernel_drivers_nvmem_dir=${SP7xxx_linux_kernel_dir}/drivers/nvmem
+SP7xxx_linux_kernel_drivers_pinctrl_sunplus_dir=${SP7xxx_linux_kernel_dir}/drivers/pinctrl/sunplus
 SP7xxx_linux_kernel_drivers_tty_serial_dir=${SP7xxx_linux_kernel_dir}/drivers/tty/serial
 SP7xxx_linux_kernel_arch_arm_boot_dts_dir=${SP7xxx_linux_kernel_dir}/arch/arm/boot/dts
 SP7xxx_linux_rootfs_initramfs_dir=${SP7xxx_dir}/linux/rootfs/initramfs
@@ -288,6 +300,22 @@ irq_sp7021_intc_c_patch_fpath=${home_lttp3rootfs_kernel_drivers_irqchip_dir}/${i
 old_sp_ocotp_c_fpath=${SP7xxx_linux_kernel_drivers_nvmem_dir}/${sp_ocotp_c_filename}
 new_sp_ocotp_c_fpath=${home_lttp3rootfs_kernel_drivers_nvnmem_dir}/${sp_ocotp_c_filename}
 sp_ocotp_c_patch_fpath=${home_lttp3rootfs_kernel_drivers_nvnmem_dir}/${sp_ocotp_c_patch_filename}
+
+old_sppctl_gpio_c_fpath=${SP7xxx_linux_kernel_drivers_pinctrl_sunplus_dir}/${sppctl_gpio_c_filename}
+new_sppctl_gpio_c_fpath=${home_lttp3rootfs_kernel_drivers_pinctrl_sunplus_dir}/${sppctl_gpio_c_filename}
+sppctl_gpio_c_patch_fpath=${home_lttp3rootfs_kernel_drivers_pinctrl_sunplus_dir}/${sppctl_gpio_c_patch_filename}
+
+old_sppctl_gpio_ops_c_fpath=${SP7xxx_linux_kernel_drivers_pinctrl_sunplus_dir}/${sppctl_gpio_ops_c_filename}
+new_sppctl_gpio_ops_c_fpath=${home_lttp3rootfs_kernel_drivers_pinctrl_sunplus_dir}/${sppctl_gpio_ops_c_filename}
+sppctl_gpio_ops_c_patch_fpath=${home_lttp3rootfs_kernel_drivers_pinctrl_sunplus_dir}/${sppctl_gpio_ops_c_patch_filename}
+
+old_sppctl_gpio_ops_h_fpath=${SP7xxx_linux_kernel_drivers_pinctrl_sunplus_dir}/${sppctl_gpio_ops_h_filename}
+new_sppctl_gpio_ops_h_fpath=${home_lttp3rootfs_kernel_drivers_pinctrl_sunplus_dir}/${sppctl_gpio_ops_h_filename}
+sppctl_gpio_ops_h_patch_fpath=${home_lttp3rootfs_kernel_drivers_pinctrl_sunplus_dir}/${sppctl_gpio_ops_h_patch_filename}
+
+old_sunplus_icm_c_fpath=${SP7xxx_linux_kernel_drivers_misc_dir}/${sunplus_icm_c_filename}
+new_sunplus_icm_c_fpath=${home_lttp3rootfs_kernel_drivers_misc_dir}/${sunplus_icm_c_filename}
+new_sunplus_icm_c_patch_fpath=${home_lttp3rootfs_kernel_drivers_misc_dir}/${sunplus_icm_c_patch_filename}
 
 old_sunplus_uart_c_fpath=${SP7xxx_linux_kernel_drivers_tty_serial_dir}/${sunplus_uart_c_filename}
 new_sunplus_uart_c_fpath=${home_lttp3rootfs_kernel_drivers_serial_dir}/${sunplus_uart_c_filename}
