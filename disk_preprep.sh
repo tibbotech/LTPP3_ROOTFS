@@ -1144,6 +1144,18 @@ chmod +x ${build_disk_fpath}
 
 ###APPLYIBG PATCHES###
 press_any_key__func
+irq_sp7021_intc_c_diff=$(diff ${old_irq_sp7021_intc_c_fpath} ${new_irq_sp7021_intc_c_fpath})
+if [[ -n "${irq_sp7021_intc_c_diff}" ]]; then
+	echo -e "\r"
+	echo -e ">Patching file"
+	echo -e ">source: ${old_irq_sp7021_intc_c_fpath}"
+	echo -e ">with: ${irq_sp7021_intc_c_patch_fpath}"
+	patch "${old_irq_sp7021_intc_c_fpath}" < "${irq_sp7021_intc_c_patch_fpath}"
+else
+	echo -e "\r"
+	echo -e ">Patch already applied to: ${old_irq_sp7021_intc_c_fpath}"
+fi
+
 isp_c_diff=$(diff ${old_isp_c_fpath} ${new_isp_c_fpath})
 if [[ -n "${isp_c_diff}" ]]; then
 	echo -e "\r"
@@ -1168,18 +1180,6 @@ else
 	echo -e ">Patch already applied to: ${old_sp_go_c_fpath}"
 fi
 
-irq_sp7021_intc_c_diff=$(diff ${old_irq_sp7021_intc_c_fpath} ${new_irq_sp7021_intc_c_fpath})
-if [[ -n "${irq_sp7021_intc_c_diff}" ]]; then
-	echo -e "\r"
-	echo -e ">Patching file"
-	echo -e ">source: ${old_irq_sp7021_intc_c_fpath}"
-	echo -e ">with: ${irq_sp7021_intc_c_patch_fpath}"
-	patch "${old_irq_sp7021_intc_c_fpath}" < "${irq_sp7021_intc_c_patch_fpath}"
-else
-	echo -e "\r"
-	echo -e ">Patch already applied to: ${old_irq_sp7021_intc_c_fpath}"
-fi
-
 sp_ocotp_c_diff=$(diff ${old_sp_ocotp_c_fpath} ${new_sp_ocotp_c_fpath})
 if [[ -n "${sp_ocotp_c_diff}" ]]; then
 	echo -e "\r"
@@ -1190,18 +1190,6 @@ if [[ -n "${sp_ocotp_c_diff}" ]]; then
 else
 	echo -e "\r"
 	echo -e ">Patch already applied to: ${old_sp_ocotp_c_fpath}"
-fi
-
-sunplus_uart_c_diff=$(diff ${old_sunplus_uart_c_fpath} ${new_sunplus_uart_c_fpath})
-if [[ -n "${sunplus_uart_c_diff}" ]]; then
-	echo -e "\r"
-	echo -e ">Patching file"
-	echo -e ">source: ${old_sunplus_uart_c_fpath}"
-	echo -e ">with: ${sunplus_uart_c_patch_fpath}"
-	patch "${old_sunplus_uart_c_fpath}" < "${sunplus_uart_c_patch_fpath}"
-else
-	echo -e "\r"
-	echo -e ">Patch already applied to: ${old_sunplus_uart_c_fpath}"
 fi
 
 sp7021_common_dtsi_diff=$(diff ${old_sp7021_common_dtsi_fpath} ${new_sp7021_common_dtsi_fpath})
@@ -1226,4 +1214,64 @@ if [[ -n "${sp7021_ltpp3g2revD_dtsi_diff}" ]]; then
 else
 	echo -e "\r"
 	echo -e ">Patch already applied to: ${old_sp7021_ltpp3g2revD_dtsi_fpath}"
+fi
+
+sppctl_gpio_c_diff=$(diff ${old_sppctl_gpio_c_fpath} ${new_sppctl_gpio_c_fpath})
+if [[ -n "${sppctl_gpio_c_diff}" ]]; then
+	echo -e "\r"
+	echo -e ">Patching file"
+	echo -e ">source: ${old_sppctl_gpio_c_fpath}"
+	echo -e ">with: ${sppctl_gpio_c_patch_fpath}"
+	patch "${old_sppctl_gpio_c_fpath}" < "${sppctl_gpio_c_patch_fpath}"
+else
+	echo -e "\r"
+	echo -e ">Patch already applied to: ${old_sppctl_gpio_c_fpath}"
+fi
+
+sppctl_gpio_ops_c_diff=$(diff ${old_sppctl_gpio_ops_c_fpath} ${new_sppctl_gpio_ops_c_fpath})
+if [[ -n "${sppctl_gpio_ops_c_diff}" ]]; then
+	echo -e "\r"
+	echo -e ">Patching file"
+	echo -e ">source: ${old_sppctl_gpio_ops_c_fpath}"
+	echo -e ">with: ${sppctl_gpio_ops_c_patch_fpath}"
+	patch "${old_sppctl_gpio_ops_c_fpath}" < "${sppctl_gpio_ops_c_patch_fpath}"
+else
+	echo -e "\r"
+	echo -e ">Patch already applied to: ${old_sppctl_gpio_ops_c_fpath}"
+fi
+
+sppctl_gpio_ops_h_diff=$(diff ${old_sppctl_gpio_ops_h_fpath} ${new_sppctl_gpio_ops_h_fpath})
+if [[ -n "${sppctl_gpio_ops_h_diff}" ]]; then
+	echo -e "\r"
+	echo -e ">Patching file"
+	echo -e ">source: ${old_sppctl_gpio_ops_h_fpath}"
+	echo -e ">with: ${sppctl_gpio_ops_h_patch_fpath}"
+	patch "${old_sppctl_gpio_ops_h_fpath}" < "${sppctl_gpio_ops_h_patch_fpath}"
+else
+	echo -e "\r"
+	echo -e ">Patch already applied to: ${old_sppctl_gpio_ops_h_fpath}"
+fi
+
+sunplus_icm_c_diff=$(diff ${old_sunplus_icm_c_fpath} ${new_sunplus_icm_c_fpath})
+if [[ -n "${sunplus_icm_c_diff}" ]]; then
+	echo -e "\r"
+	echo -e ">Patching file"
+	echo -e ">source: ${old_sunplus_icm_c_fpath}"
+	echo -e ">with: ${new_sunplus_icm_c_patch_fpath}"
+	patch "${old_sunplus_icm_c_fpath}" < "${new_sunplus_icm_c_patch_fpath}"
+else
+	echo -e "\r"
+	echo -e ">Patch already applied to: ${old_sunplus_icm_c_fpath}"
+fi
+
+sunplus_uart_c_diff=$(diff ${old_sunplus_uart_c_fpath} ${new_sunplus_uart_c_fpath})
+if [[ -n "${sunplus_uart_c_diff}" ]]; then
+	echo -e "\r"
+	echo -e ">Patching file"
+	echo -e ">source: ${old_sunplus_uart_c_fpath}"
+	echo -e ">with: ${sunplus_uart_c_patch_fpath}"
+	patch "${old_sunplus_uart_c_fpath}" < "${sunplus_uart_c_patch_fpath}"
+else
+	echo -e "\r"
+	echo -e ">Patch already applied to: ${old_sunplus_uart_c_fpath}"
 fi
