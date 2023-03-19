@@ -1825,6 +1825,11 @@ docker__overlay_tb_init_softlink_create__sub() {
 docker__overlay_restore_original_state__sub() {
     #Restore the original files
     docker__overlay_copy_file__sub "${docker__containerid}" \
+            "${docker__SP7021_linux_rootfs_initramfs_disk_etc_fstab_overlaybck__fpath}" \
+            "${docker__containerid}" \
+            "${docker__SP7021_linux_rootfs_initramfs_disk_etc_fstab__fpath}"
+
+    docker__overlay_copy_file__sub "${docker__containerid}" \
             "${docker__SP7021_build_tools_isp_isp_c_overlaybck__fpath}" \
             "${docker__containerid}" \
             "${docker__SP7021_build_tools_isp_isp_c__fpath}"
