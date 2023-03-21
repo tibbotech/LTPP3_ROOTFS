@@ -545,7 +545,11 @@ docker__overlay__sub() {
                 #   'docker__overlay_isfound' is set in this subroutine
                 docker__overlay_docker_fs_partition_diskpartsize_check_and_convert_handler__sub
 
-                phase="${PHASE_OVERLAY_COPY_FILES_FROM_SRC_TO_TMP}"
+                if [[ ${docker__overlay_isfound} == false ]]; then
+                    phase="${PHASE_OVERLAY_RESTORE_ORG_FILES}"
+                else
+                    phase="${PHASE_OVERLAY_COPY_FILES_FROM_SRC_TO_TMP}"
+                fi
                 ;;
             "${PHASE_OVERLAY_COPY_FILES_FROM_SRC_TO_TMP}")
                 docker__overlay_copy_files_from_src_to_tmp_handler__sub
@@ -1553,11 +1557,12 @@ docker__overlay_tempfile_tb_init_sh_and_fstab_patch__sub() {
         i_last=$((docker__isp_partition_arraylen - 1))
         p=11
 
-        for (( i=3; i<${docker__isp_partition_arraylen}; i++ ));
+        #Note: 'i' is array-index, which starts with '0'
+        for (( i=2; i<${docker__isp_partition_arraylen}; i++ ));
         do
             #Get array-item
             isp_partition_arrayitem="${docker__isp_partition_array[i]}"
-            
+  
             #Retrieve partition name
             isp_partition_name=$(echo "${isp_partition_arrayitem}" | cut -d" " -f1)
 

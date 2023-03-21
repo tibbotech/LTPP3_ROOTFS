@@ -101,11 +101,13 @@ docker__init_variables__sub() {
     docker__isp_partition_array[0]="${DOCKER__DISKPARTNAME_TB_RESERVE} ${docker__reservedfs_size}"
     docker__isp_partition_array[1]="${DOCKER__DISKPARTNAME_ROOTFS} ${docker__rootfs_size}"
     docker__isp_partition_array[2]="${DOCKER__DISKPARTNAME_OVERLAY} ${docker__overlayfs_size}"
+    docker__isp_partition_array[3]="${DOCKER__DISKPARTNAME_REMAINING} 0"
 
     docker__isp_partition_array_default=()
     docker__isp_partition_array_default[0]="${DOCKER__DISKPARTNAME_TB_RESERVE} ${docker__reservedfs_size}"
     docker__isp_partition_array_default[1]="${DOCKER__DISKPARTNAME_ROOTFS} ${docker__rootfs_size}"
     docker__isp_partition_array_default[2]="${DOCKER__DISKPARTNAME_OVERLAY} ${docker__overlayfs_size}"
+    docker__isp_partition_array_default[3]="${DOCKER__DISKPARTNAME_REMAINING} 0"
 
     docker__diskpartname="${DOCKER__EMPTYSTRING}"
     docker__diskpartsize="${DOCKER__EMPTYSTRING}"
