@@ -1535,13 +1535,16 @@ docker__overlay_tempfile_tb_init_sh_and_fstab_patch__sub() {
     local sed_dev_mmcblk0pp="${DOCKER__EMPTYSTRING}"
     local tb_init_filecontent="${DOCKER__EMPTYSTRING}"
 
-    local fstab_linenum_insert=0
     local tb_init_linenum_match=0
     local tb_init_linenum_insert=0
 
     local i=0
     local i_last=0
     local p=0
+
+
+    #MANDATORY: generate 'tb_init_filecontent' and 'fstab_filecontent'
+    fstab_filecontent="${DOCKER__FSTAB_DEV_MMCBLK09} ${DOCKER__FSTAB_TB_RESERVE_DIR} ${DOCKER__FSTAB_EXT4}\n"
 
     #Remark:
     #   Should there be any ADDITIONAL partitions (excluding 'overlay')
@@ -1550,15 +1553,12 @@ docker__overlay_tempfile_tb_init_sh_and_fstab_patch__sub() {
     #   ...mounted automatically at boot.
     #   
     #   'docker__isp_partition_arraylen' is calculated in 'docker__overlay_tempfile_isp_sh_patch__sub'
-    if [[ ${docker__isp_partition_arraylen} -gt 2 ]]; then
-        #Generate 'tb_init_filecontent' and 'fstab_filecontent'
-        fstab_filecontent="${DOCKER__FSTAB_DEV_MMCBLK09} ${DOCKER__FSTAB_TB_RESERVE_DIR} ${DOCKER__FSTAB_EXT4}\n"
-        fstab_linenum_insert=2
+    if [[ ${docker__isp_partition_arraylen} -gt 3 ]]; then
         i_last=$((docker__isp_partition_arraylen - 1))
         p=11
 
         #Note: 'i' is array-index, which starts with '0'
-        for (( i=2; i<${docker__isp_partition_arraylen}; i++ ));
+        for (( i=3; i<${docker__isp_partition_arraylen}; i++ ));
         do
             #Get array-item
             isp_partition_arrayitem="${docker__isp_partition_array[i]}"
@@ -1633,13 +1633,6 @@ docker__overlay_tempfile_tb_init_sh_and_fstab_patch__sub() {
         else
             printmsg+="${DOCKER__STATUS_SUCCESSFUL}\n"
         fi
-        
-
-        #Start generating 'printmsg'
-        printmsg+="-------:${DOCKER__STATUS}: patch ${DOCKER__FG_LIGHTGREY}${docker__docker_overlayfs_fstab__fpath}: " 
-
-        #Insert 'fstab_filecontent' into 'fstab' after at 'fstab_linenum_insert=2'
-        echo -e "${fstab_filecontent}" | tee -a ${docker__docker_overlayfs_fstab__fpath} >/dev/null
 
         #Check exit-code
         docker__exitcode=$?
@@ -1656,6 +1649,13 @@ docker__overlay_tempfile_tb_init_sh_and_fstab_patch__sub() {
         #Print
         show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
     fi
+
+
+    #Start generating 'printmsg'
+    printmsg+="-------:${DOCKER__STATUS}: patch ${DOCKER__FG_LIGHTGREY}${docker__docker_overlayfs_fstab__fpath}: " 
+
+    #Add 'fstab_filecontent' to file 'docker__docker_overlayfs_fstab__fpath'
+    echo -e "${fstab_filecontent}" | tee -a ${docker__docker_overlayfs_fstab__fpath} >/dev/null
 }
 
 docker__overlay_copy_files_from_tmp_to_dst_handler__sub() {

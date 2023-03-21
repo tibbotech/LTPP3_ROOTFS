@@ -32,6 +32,10 @@ tb_backup=""                    # {true|""}
 tb_restore=""                   # {true|""}
 tb_safemode=""                  # {true|""}
 cmdline_output_isskipped=false  # {true|""}
+
+#READ values from 'tb_init_customboot.txt'
+
+
 #Set 'cmdline_output_isskipped' to 'true' if one of the above parameters contains a value
 if [[ -n "${tb_overlay}" ]] || [[ -n "${tb_rootfs_ro}" ]] || \
     [[ -n "${tb_backup}" ]] || [[ -n "${tb_restore}" ]] || \
