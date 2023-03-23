@@ -21,30 +21,6 @@ usr_sbin_mkfsext4=/usr/sbin/mkfs.ext4
 
 
 
-#---VARIABLE WHICH CAN BE MANIPULATED FROM OUTSIDE OF THIS SCRIPT 
-#Remark:
-# This method is used for backward compatibility, which is
-# ...in case (tb_overlay, tb_rootfs_ro, tb_backup, tb_restore, tb_safemode)
-# ...is writtin to file '/proc/cmdline' via the file 'pentagram_common.h'
-tb_overlay=""                   # {/dev/mmcblk0p10|""}
-tb_rootfs_ro=""                 # {true|""}
-tb_backup=""                    # {true|""}
-tb_restore=""                   # {true|""}
-tb_safemode=""                  # {true|""}
-cmdline_output_isskipped=false  # {true|""}
-
-#READ values from 'tb_init_customboot.txt'
-
-
-#Set 'cmdline_output_isskipped' to 'true' if one of the above parameters contains a value
-if [[ -n "${tb_overlay}" ]] || [[ -n "${tb_rootfs_ro}" ]] || \
-    [[ -n "${tb_backup}" ]] || [[ -n "${tb_restore}" ]] || \
-    [[ -n "${tb_safemode}" ]]; then
-  cmdline_output_isskipped=true
-fi
-
-
-
 #---FUNCTIONS
 #trap all errors into a function called error_trap
 function error_trap() {
@@ -97,11 +73,7 @@ fi
 
 #---OVERLAY SECTION
 echo "---:STATUS: retrieving kernel bootargs"
-if [[ ${cmdline_output_isskipped} == false ]]; then
-  cmdline_output=$(cat ${proc_cmdline_fpath})
-else
-  cmdline_output=""
-fi
+cmdline_output=$(cat ${proc_cmdline_fpath})
 
 #if cmdline_output contains the string "tb_overlay"
 if [[ ${cmdline_output} == *"tb_overlay"* ]]; then
@@ -139,28 +111,28 @@ else
   tb_restore=""
 fi
 
-#if cmdline_output contains the string "tb_safemode"
-if [[ ${cmdline_output} == *"tb_safemode"* ]]; then
-  tb_restore=$(echo ${cmdline_output} | grep -oP 'tb_safemode=\K[^ ]*')
+#if cmdline_output contains the string "tb_noboot"
+if [[ ${cmdline_output} == *"tb_noboot"* ]]; then
+  tb_restore=$(echo ${cmdline_output} | grep -oP 'tb_noboot=\K[^ ]*')
 
-  echo "---RESULT: tb_safemode=${tb_restore}"
+  echo "---RESULT: tb_noboot=${tb_restore}"
 else
-  tb_safemode=""
+  tb_noboot=""
 fi
 
 #if tb_backup is set, then do a backup of the rootfs
-if [ -n ${tb_backup} ]; then
-  echo "---:STATUS: Backing up of emmc (${dev_mmcblk0})"
+if [ ! -z ${tb_backup} ]; then
+  echo "---:STATUS: Backing up of emmc"
 
   dd if=${dev_mmcblk0} of=${tb_backup} oflag=direct status=progress
   sync
 fi
 
 #if tb_restore is set, then restore the rootfs from the backup
-if [ -n ${tb_restore} ]; then
+if [ ! -z ${tb_restore} ]; then
   trap - ERR #disable error trap
 
-  echo "---:STATUS: Restoring emmc (${dev_mmcblk0})"
+  echo "---:STATUS: Restoring emmc"
 
   dd if=${tb_restore} of=${dev_mmcblk0} oflag=direct status=progress
   sync
@@ -169,10 +141,15 @@ if [ -n ${tb_restore} ]; then
   echo b >${proc_sysrqtrigger_fpath}
 fi
 
-#if tb_safemode is set, then boot to minimal system
-if [ -n ${tb_safemode} ]; then
-  echo 1 | tee ${proc_sys_kernel_sysrq}
-  echo b | tee ${proc_sysrqtrigger_fpath}
+#if tb_noboot is set, then boot to minimal system
+if [ ! -z ${tb_noboot} ]; then
+  # wile 1
+  while [ 1 ]; do
+    echo "---:STATUS: To reboot in this environment enter the following command: "
+    echo "---:STATUS: echo 1 >${proc_sys_kernel_sysrq} && echo b >${proc_sysrqtrigger_fpath}"
+    
+    ${bin_bash_exec}
+  done
 fi
 
 #if tb_overlay is set, then mount it
@@ -217,21 +194,21 @@ if [ -n "${tb_overlay}" ]; then
   fi
 
   if [ ! -d ${overlay_dir}/root ]; then
-    echo "-------:STATUS: creating ${overlay_dir}/root"
+    echo "-------:STATUS: Creating ${overlay_dir}/root"
 
     mkdir ${overlay_dir}/root
   fi
 
   #if  /overlay/root_upper does not exist then create it
   if [ ! -d ${overlay_dir}/root_upper ]; then
-    echo "-------:STATUS: creating ${overlay_dir}/root_upper"
+    echo "-------:STATUS: Creating ${overlay_dir}/root_upper"
 
     mkdir ${overlay_dir}/root_upper
   fi
 
   #if  /overlay/root_work does not exist then create it
   if [ ! -d ${overlay_dir}/root_work ]; then
-    echo "-------:STATUS: creating ${overlay_dir}/root_work"
+    echo "-------:STATUS: Creating ${overlay_dir}/root_work"
 
     mkdir ${overlay_dir}/root_work
   fi
@@ -247,7 +224,7 @@ if [ -n "${tb_overlay}" ]; then
 
   #if oldroot does not exits then create it
   if [ ! -d oldroot ]; then
-    echo "-------:STATUS: creating oldroot"
+    echo "-------:STATUS: Creating oldroot"
 
     mkdir oldroot
   fi
