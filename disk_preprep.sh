@@ -315,7 +315,7 @@ sppctl_gpio_ops_h_patch_fpath=${home_lttp3rootfs_kernel_drivers_pinctrl_sunplus_
 
 old_sunplus_icm_c_fpath=${SP7xxx_linux_kernel_drivers_misc_dir}/${sunplus_icm_c_filename}
 new_sunplus_icm_c_fpath=${home_lttp3rootfs_kernel_drivers_misc_dir}/${sunplus_icm_c_filename}
-new_sunplus_icm_c_patch_fpath=${home_lttp3rootfs_kernel_drivers_misc_dir}/${sunplus_icm_c_patch_filename}
+sunplus_icm_c_patch_fpath=${home_lttp3rootfs_kernel_drivers_misc_dir}/${sunplus_icm_c_patch_filename}
 
 old_sunplus_uart_c_fpath=${SP7xxx_linux_kernel_drivers_tty_serial_dir}/${sunplus_uart_c_filename}
 new_sunplus_uart_c_fpath=${home_lttp3rootfs_kernel_drivers_serial_dir}/${sunplus_uart_c_filename}
@@ -1257,8 +1257,8 @@ if [[ -n "${sunplus_icm_c_diff}" ]]; then
 	echo -e "\r"
 	echo -e ">Patching file"
 	echo -e ">source: ${old_sunplus_icm_c_fpath}"
-	echo -e ">with: ${new_sunplus_icm_c_patch_fpath}"
-	patch "${old_sunplus_icm_c_fpath}" < "${new_sunplus_icm_c_patch_fpath}"
+	echo -e ">with: ${sunplus_icm_c_patch_fpath}"
+	patch "${old_sunplus_icm_c_fpath}" < "${sunplus_icm_c_patch_fpath}"
 else
 	echo -e "\r"
 	echo -e ">Patch already applied to: ${old_sunplus_icm_c_fpath}"
