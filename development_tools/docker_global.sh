@@ -1,4 +1,6 @@
 #!/bin/bash
+#---INPUT ARGS
+pathlookup_isdisabled=${1}
 
 
 
@@ -78,7 +80,9 @@ DOCKER__CTRL_H=\^H
 
 #---COLOR CONSTANTS
 DOCKER__NOCOLOR=$'\e[0;0m'
-
+DOCKER__BLINKING=$'\e[5m'
+DOCKER__DIM=$'\e[2m'
+DOCKER__ITALIC=$'\e[3m'
 DOCKER__FG_BORDEAUX=$'\e[30;38;5;198m'
 DOCKER__FG_BRIGHTPRUPLE=$'\e[30;38;5;141m'
 DOCKER__FG_BRIGHTLIGHTPURPLE=$'\e[30;38;5;147m'
@@ -86,8 +90,15 @@ DOCKER__FG_BROWN94=$'\e[30;38;5;94m'
 DOCKER__FG_BROWN137=$'\e[30;38;5;137m'
 DOCKER__FG_DARKBLUE=$'\e[30;38;5;33m'
 DOCKER__FG_RED1=$'\e[30;38;5;1m'
-DOCKER__FG_DEEPORANGE=$'\e[30;38;5;208m'
-DOCKER__FG_REDORANGE=$'\e[30;38;5;203m'
+DOCKER__FG_RED9=$'\e[30;38;5;9m'
+DOCKER__FG_RED125=$'\e[30;38;5;125m'
+DOCKER__FG_ORANGE130=$'\e[30;38;5;130m'
+DOCKER__FG_ORANGE131=$'\e[30;38;5;131m'
+DOCKER__FG_ORANGE172=$'\e[30;38;5;172m'
+DOCKER__FG_ORANGE203=$'\e[30;38;5;203m'
+DOCKER__FG_ORANGE208=$'\e[30;38;5;208m'
+DOCKER__FG_ORANGE215=$'\e[30;38;5;215m'
+DOCKER__FG_ORANGE223=$'\e[30;38;5;223m'
 DOCKER__FG_GREEN=$'\e[30;38;5;82m'
 DOCKER__FG_GREEN41=$'\e[30;38;5;41m'
 DOCKER__FG_GREEN48=$'\e[30;38;5;48m'
@@ -95,6 +106,7 @@ DOCKER__FG_GREEN71=$'\e[30;38;5;71m'
 DOCKER__FG_GREEN85=$'\e[30;38;5;85m'
 DOCKER__FG_GREEN119=$'\e[30;38;5;119m'
 DOCKER__FG_GREEN155=$'\e[30;38;5;155m'
+DOCKER__FG_GREEN158=$'\e[30;38;5;158m'
 DOCKER__FG_LIGHTBLUE=$'\e[30;38;5;45m'
 DOCKER__FG_LIGHTGREEN=$'\e[1;32m'
 DOCKER__FG_LIGHTGREY=$'\e[30;38;5;246m'
@@ -105,9 +117,9 @@ DOCKER__FG_ORANGE=$'\e[30;38;5;215m'
 DOCKER__FG_PINK=$'\e[30;38;5;213m'
 DOCKER__FG_PURPLE=$'\e[30;38;5;93m'
 DOCKER__FG_PURPLERED=$'\e[30;38;5;198m'
+DOCKER__FG_RED187=$'\e[30;38;5;187m'
 DOCKER__FG_SOFTDARKBLUE=$'\e[30;38;5;38m'
 DOCKER__FG_SOFTLIGHTRED=$'\e[30;38;5;131m'
-DOCKER__FG_VERYLIGHTORANGE=$'\e[30;38;5;223m'
 DOCKER__FG_WHITE=$'\e[30;38;5;231m'
 DOCKER__FG_YELLOW=$'\e[1;33m'
 
@@ -118,6 +130,7 @@ DOCKER__BG_ORANGE=$'\e[30;48;5;215m'
 DOCKER__BG_LIGHTBLUE=$'\e[30;48;5;45m'
 DOCKER__BG_LIGHTGREY=$'\e[30;48;5;246m'
 DOCKER__BG_LIGHTSOFTYELLOW=$'\e[30;48;5;229m'
+DOCKER__BG_SOFTDARKBLUE=$'\e[30;48;5;38m'
 DOCKER__BG_WHITE=$'\e[30;48;5;15m'
 
 DOCKER__BLINK=$'\e[5m'
@@ -163,7 +176,7 @@ DOCKER__READINPUTDIALOG_CHOOSE_IMAGEID_FROM_LIST="Choose an ${DOCKER__FG_BORDEAU
 DOCKER__READDIALOG_DO_YOU_WISH_TO_CONTINUE_YNR="Do you wish to continue (y/n/r)? "
 DOCKER__READDIALOG_DO_YOU_WISH_TO_CONTINUE_YN="Do you wish to continue (y/n)? "
 
-DOCKER__ECHOMSG_NORESULTS_FOUND="${FOUR_SPACES}-:${FG_YELLOW}No results found${NOCOLOR}:-"
+DOCKER__ECHOMSG_NORESULTS_FOUND="${FOUR_SPACES}-:${FG_YELLOW}No results found${DOCKER__NOCOLOR}:-"
 
 DOCKER__ERROR="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}"
 
@@ -198,10 +211,11 @@ DOCKER__EXCL_CMD_ARR+=("${DOCKER__EXIT}")
 #---EXIT CONSTANTS
 DOCKER__EXITCODE_0=0    #no error
 DOCKER__EXITCODE_99=99  #an error which tells the device to exit
+DOCKER__EXITCODE_130=130    #job was terminted by the owner (not an error)
 
 
 
-#---FILE-RELATED CONSTANTS
+#---FILE RELATED CONSTANTS
 DOCKER__CHECKOUT="checkout"
 DOCKER__CACHE="cache"
 DOCKER__DOCKERFILE="dockerfile"
@@ -277,7 +291,8 @@ GIT__CMD_GIT_TAG="git tag"
 GIT__LOCATION_LOCAL="local"
 GIT__LOCATION_REMOTE="remote"
 
-GIT__REMOTES_ORIGIN_MAIN="remotes/origin/main"
+GIT__REMOTES_ORIGIN="remotes/origin"
+GIT__REMOTES_ORIGIN_MAIN="${GIT__REMOTES_ORIGIN}/main"
 
 GIT__ERROR_MALFORMED_OBJECT_NAME_TAGS="error: malformed object name tags/"
 
@@ -289,6 +304,7 @@ DOCKER__MENU="(${DOCKER__FG_LIGHTGREY}Menu${DOCKER__NOCOLOR})"
 
 
 #---NUMERIC CONSTANTS
+DOCKER__COLNUM_1=1
 DOCKER__COLNUM_2=2
 DOCKER__COLNUM_3=3
 
@@ -300,6 +316,13 @@ DOCKER__MINUS_ONE=-1
 
 DOCKER__NUMOFCHARS_1=1
 DOCKER__NUMOFCHARS_2=2
+DOCKER__NUMOFCHARS_3=3
+DOCKER__NUMOFCHARS_4=4
+DOCKER__NUMOFCHARS_5=5
+DOCKER__NUMOFCHARS_6=6
+DOCKER__NUMOFCHARS_7=7
+DOCKER__NUMOFCHARS_8=8
+DOCKER__NUMOFCHARS_9=9
 DOCKER__NUMOFCHARS_10=10
 
 DOCKER__NUMOFLINES_0=0
@@ -320,6 +343,11 @@ DOCKER__NUMOFMATCH_1=1
 DOCKER__NUMOFMATCH_2=2
 DOCKER__NUMOFMATCH_3=3
 DOCKER__NUMOFMATCH_4=4
+DOCKER__NUMOFMATCH_5=5
+DOCKER__NUMOFMATCH_6=6
+DOCKER__NUMOFMATCH_7=7
+DOCKER__NUMOFMATCH_8=8
+DOCKER__NUMOFMATCH_9=9
 DOCKER__NUMOFMATCH_10=10
 DOCKER__NUMOFMATCH_20=20
 
@@ -332,6 +360,57 @@ DOCKER__TIMEOUT_30=30
 
 DOCKER__TRAP_NUM_2=2
 
+
+
+#---OVERLAY CONSTANTS
+DOCKER__DISKPARTNAME_OVERLAY="overlay"
+DOCKER__DISKPARTNAME_TB_RESERVE="tb_reserve"
+DOCKER__DISKPARTNAME_ROOTFS="rootfs"
+DOCKER__DISKPARTNAME_REMAINING="remaining"
+
+DOCKER__DISKSIZESETTING="Disksize-setting"
+DOCKER__DISKSIZE_0K_IN_BYTES=0
+DOCKER__DISKSIZE_1K_IN_BYTES=1024
+DOCKER__DISKSIZE_4G_IN_BYTES=3909091328 #found this value via fdisk -l
+DOCKER__DISKSIZE_4G_IN_MBYTES=$((DOCKER__DISKSIZE_4G_IN_BYTES/DOCKER__DISKSIZE_1K_IN_BYTES/DOCKER__DISKSIZE_1K_IN_BYTES))
+DOCKER__DISKSIZE_8G_IN_BYTES=$((DOCKER__DISKSIZE_4G_IN_BYTES*2))    #it is assumed that the disksize of ltpp3g2-03 is 2 x DOCKER__DISKSIZE_4G_IN_BYTES
+DOCKER__DISKSIZE_8G_IN_MBYTES=$((DOCKER__DISKSIZE_8G_IN_BYTES/DOCKER__DISKSIZE_1K_IN_BYTES/DOCKER__DISKSIZE_1K_IN_BYTES))
+DOCKER__DISKSIZE_0X1E0000000="0x1e0000000"
+
+DOCKER__FSTAB_DEV_MMCBLK0P="/dev/mmcblk0p"
+DOCKER__FSTAB_DEV_MMCBLK09="/dev/mmcblk0p9"
+DOCKER__FSTAB_EXT4="ext4"
+DOCKER__FSTAB_TB_RESERVE_DIR="/${DOCKER__DISKPARTNAME_TB_RESERVE}"
+
+DOCKER__RESERVED_SIZE_DEFAULT=128   #in MB
+DOCKER__ROOTFS_SIZE_DEFAULT=1536    #in MB
+
+DOCKER__PATTERN_EMMC="EMMC"
+DOCKER__PATTERN_ROOTFS_0X1E0000000="rootfs 0x1e0000000"
+DOCKER__PATTERN_DUMMY="Dummy"
+DOCKER__PATTERN_ISP_C_1="fprintf(fd, \"uuid=\${uuid_gpt_%s},\", basename(isp_info.file_header.partition_info[i].file_name));"
+DOCKER__PATTERN_ISP_C_2="isp_info.file_header.partition_info[i].file_name,\"rootfs\""
+DOCKER__PATTERN_ISP_C_3="// The emmc rootfs partition is set to EXT2 fs, and the partition size is all remaining space."
+DOCKER__PATTERN_PENTAGRAM_COMMON_H="\"b_c=console=tty1 console=ttyS0,115200 earlyprintk\0\""
+DOCKER__PATTERN_TB_INIT_ADDITIONAL_PARTITIONS="#---ADDITIONAL PARTITIONS"
+DOCKER__PATTERN_TB_INIT_MOUNT_ADDITIONAL_PARTITIONS="#---MOUNT ADDITIONAL PARTITIONS"
+
+DOCKER__OVERLAYMODE="Overlay-mode"
+DOCKER__OVERLAYMODE_NONPERSISTENT="non-persistent"
+DOCKER__OVERLAYMODE_PERSISTENT="persistent"
+DOCKER__OVERLAYSETTING="Overlay-setting"
+DOCKER__OVERLAYFS_ENABLED="enabled"
+DOCKER__OVERLAYFS_DISABLED="disabled"
+
+DOCKER__PENTAGRAM_TB_ROOTFS_RO_TRUE="tb_rootfs_ro=true"
+
+DOCKER__SED_PATTERN_ISP_C_2_WO_ROOTFS="isp_info.file_header.partition_info\[i\].file_name"
+DOCKER__SED_PATTERN_ISP_C_2_W_ROOTFS="isp_info.file_header.partition_info\[i\].file_name,\\\"rootfs\\\""
+DOCKER__SED_PATTERN_PENTAGRAM_COMMON_H_WO_BACKSLASH0="\\\"b_c=console=tty1 console=ttyS0,115200 earlyprintk"
+DOCKER__SED_PATTERN_PENTAGRAM_COMMON_H_W_BACKSLASH0="\\\"b_c=console=tty1 console=ttyS0,115200 earlyprintk\\\0\\\""
+DOCKER__SED_TB_INIT_MAIN_DIR="\\/"
+DOCKER__SED_TB_INIT_DEV_MMCBLK0P="\\/dev\\/mmcblk0p"
+DOCKER__SED_TB_OVERLAY_DEV_MMCBLK0P10="tb_overlay=\\/dev\\/mmcblk0p10"
 
 
 #---PATH CONSTANTS
@@ -347,6 +426,14 @@ DOCKER__COLOR_SLASH_DOTDOT_SLASH_DOTDOT="${DOCKER__COLOR_SLASH}${DOCKER__COLOR_D
 
 #---PATTERN CONSTANTS
 DOCKER__PATTERN_DOCKER_IO="docker.io"
+DOCKER__PATTERN_IF="if"
+DOCKER__PATTERN_TOP="top"
+
+
+
+#---PERMISSION CONSTANTS
+DOCKER__CHMOD_755="755"
+
 
 
 #---PHASE CONSTANTS
@@ -360,6 +447,10 @@ PHASE_SHOW_KEYINPUT_HANDLER=2
 DOCKER__PREV="prev"
 DOCKER__NEXT="next"
 
+DOCKER__AS="${DOCKER__FG_YELLOW}AS${DOCKER__NOCOLOR}"
+DOCKER__FROM="${DOCKER__FG_YELLOW}FROM${DOCKER__NOCOLOR}"
+DOCKER__TO="${DOCKER__FG_YELLOW}TO${DOCKER__NOCOLOR}"
+
 DOCKER__CHECK="${DOCKER__FG_ORANGE}CHECK${DOCKER__NOCOLOR}"
 DOCKER__CHECK_LOCAL="${DOCKER__FG_ORANGE}CHECK (LOCAL)${DOCKER__NOCOLOR}"
 DOCKER__CHECK_REMOTE="${DOCKER__FG_ORANGE}CHECK (REMOTE)${DOCKER__NOCOLOR}"
@@ -367,6 +458,8 @@ DOCKER__COMPLETED="${DOCKER__FG_ORANGE}COMPLETED${DOCKER__NOCOLOR}"
 DOCKER__EXECUTED="${DOCKER__FG_ORANGE}EXECUTED${DOCKER__NOCOLOR}"
 DOCKER__INFO="${DOCKER__FG_ORANGE}INFO${DOCKER__NOCOLOR}"
 DOCKER__INPUT="${DOCKER__FG_YELLOW}INPUT${DOCKER__NOCOLOR}"
+DOCKER__PRECHECK="${DOCKER__FG_PURPLERED}PRE${NOCOLOR}${FG_ORANGE}-CHECK:${DOCKER__NOCOLOR}"
+DOCKER__LOCATION="${DOCKER__FG_YELLOW}LOCATION${DOCKER__NOCOLOR}"
 DOCKER__QUESTION="${DOCKER__FG_YELLOW}QUESTION${DOCKER__NOCOLOR}"
 DOCKER__REQUEST="${DOCKER__FG_ORANGE}REQUEST${DOCKER__NOCOLOR}"
 DOCKER__RESULT="${DOCKER__FG_ORANGE}RESULT${DOCKER__NOCOLOR}"
@@ -374,22 +467,42 @@ DOCKER__START="${DOCKER__FG_ORANGE}START${DOCKER__NOCOLOR}"
 DOCKER__STATUS="${DOCKER__FG_ORANGE}STATUS${DOCKER__NOCOLOR}"
 DOCKER__STOPPED="${DOCKER__FG_ORANGE}STOPPED${DOCKER__NOCOLOR}"
 DOCKER__SUGGESTION="${DOCKER__FG_ORANGE}SUGGESTION${DOCKER__NOCOLOR}"
+DOCKER__UPDATE="${DOCKER__FG_ORANGE}UPDATE${DOCKER__NOCOLOR}"
 
-DOCKER__STATUS_DONE="${DOCKER__FG_GREEN}done${DOCKER__NOCOLOR}"
-DOCKER__STATUS_FAILED="${DOCKER__FG_LIGHTRED}failed${DOCKER__NOCOLOR}"
+DOCKER__LOCATION_LLOCAL="local"
+
+DOCKER__STATUS_FAILED="${DOCKER__FG_LIGHTRED}FAILED${DOCKER__NOCOLOR}"
+DOCKER__STATUS_MISSING="${DOCKER__FG_LIGHTRED}MISSING${DOCKER__NOCOLOR}"
+DOCKER__STATUS_OUTOFBOUND="${DOCKER__FG_LIGHTRED}OUT-OF-BOUND${DOCKER__NOCOLOR}"
+DOCKER__STATUS_SUCCESSFUL="${DOCKER__FG_GREEN}SUCCESSFUL${DOCKER__NOCOLOR}"
+
+DOCKER__STATUS_LDISABLED="${DOCKER__FG_LIGHTGREY}disabled${DOCKER__NOCOLOR}"
+DOCKER__STATUS_LDISABLED_IGNORE="${DOCKER__FG_LIGHTRED}disabled${DOCKER__NOCOLOR} (ignore)"
+DOCKER__STATUS_LDONE="${DOCKER__FG_GREEN}done${DOCKER__NOCOLOR}"
+DOCKER__STATUS_LFAILED="${DOCKER__FG_LIGHTRED}failed${DOCKER__NOCOLOR}"
+DOCKER__STATUS_LINSTALLED="${DOCKER__FG_GREEN}installed${DOCKER__NOCOLOR}"
+DOCKER__STATUS_LNOTINSTALLED="${DOCKER__FG_LIGHTRED}not-installed${DOCKER__NOCOLOR}"
+DOCKER__STATUS_LPRESENT="${DOCKER__FG_GREEN}present${DOCKER__NOCOLOR}"
+DOCKER__STATUS_LNOTPRESENT="${DOCKER__FG_LIGHTRED}not-present${DOCKER__NOCOLOR}"
+DOCKER__STATUS_LNOTPRESENT_IGNORE="${DOCKER__FG_LIGHTRED}not-present${DOCKER__NOCOLOR} (ignore)"
+DOCKER__STATUS_LVALID="${DOCKER__FG_GREEN}valid${DOCKER__NOCOLOR}"
+DOCKER__STATUS_LINVALID="${DOCKER__FG_LIGHTRED}invalid${DOCKER__NOCOLOR}"
 
 DOCKER__NO_ACTION_REQUIRED="No action required"
 
 
 
 #---READ-INPUT CONSTANTS
+DOCKER__ABORT="a"
 DOCKER__BACK="b"
 DOCKER__CLEAR="c"
+DOCKER__FINISH="f"
 DOCKER__HOME="h"
 DOCKER__NO="n"
 DOCKER__OVERWRITE="o"
 DOCKER__QUIT="q"
 DOCKER__REDO="r"
+DOCKER__SKIP="s"
 DOCKER__YES="y"
 
 DOCKER__Y_SLASH_N="${DOCKER__Y}/${DOCKER__N}"
@@ -411,18 +524,28 @@ DOCKER__Y_SLASH_N_SLASH_O_SLASH_B_SLASH_H="${DOCKER__Y_SLASH_N_SLASH_O}/"
 DOCKER__Y_SLASH_N_SLASH_O_SLASH_B_SLASH_H+="${DOCKER__BACK}${DOCKER__FG_LIGHTGREY}ack${DOCKER__NOCOLOR}/"
 DOCKER__Y_SLASH_N_SLASH_O_SLASH_B_SLASH_H+="${DOCKER__HOME}${DOCKER__FG_LIGHTGREY}ome${DOCKER__NOCOLOR}"
 
+DOCKER__SEMICOLON_ABORT=";a"
 DOCKER__SEMICOLON_BACK=";b"
 DOCKER__SEMICOLON_CLEAR=";c"
 DOCKER__SEMICOLON_DELETE=";d"
+DOCKER__SEMICOLON_FINISH=";f"
 DOCKER__SEMICOLON_HOME=";h"
+DOCKER__SEMICOLON_REDO=";r"
+DOCKER__SEMICOLON_SKIP=";s"
 
-DOCKER__SEMICOLON_BACK_COLORED="${DOCKER__FG_YELLOW}${DOCKER__SEMICOLON_BACK}${DOCKER__NOCOLOR}ack"
-DOCKER__SEMICOLON_CLEAR_COLORED="${DOCKER__FG_YELLOW}${DOCKER__SEMICOLON_CLEAR}${DOCKER__NOCOLOR}lear"
+DOCKER__SEMICOLON_ABORT_COLORED="${DOCKER__FG_YELLOW}${DOCKER__SEMICOLON_ABORT}${DOCKER__NOCOLOR}${DOCKER__FG_LIGHTGREY}bort${DOCKER__NOCOLOR}"
+DOCKER__SEMICOLON_BACK_COLORED="${DOCKER__FG_YELLOW}${DOCKER__SEMICOLON_BACK}${DOCKER__NOCOLOR}${DOCKER__FG_LIGHTGREY}ack${DOCKER__NOCOLOR}"
+DOCKER__SEMICOLON_CLEAR_COLORED="${DOCKER__FG_YELLOW}${DOCKER__SEMICOLON_CLEAR}${DOCKER__NOCOLOR}${DOCKER__FG_LIGHTGREY}lear${DOCKER__NOCOLOR}"
+DOCKER__SEMICOLON_FINISH_COLORED="${DOCKER__FG_YELLOW}${DOCKER__SEMICOLON_FINISH}${DOCKER__NOCOLOR}${DOCKER__FG_LIGHTGREY}inish${DOCKER__NOCOLOR}"
+DOCKER__SEMICOLON_REDO_COLORED="${DOCKER__FG_YELLOW}${DOCKER__SEMICOLON_REDO}${DOCKER__NOCOLOR}${DOCKER__FG_LIGHTGREY}edo${DOCKER__NOCOLOR}"
+DOCKER__SEMICOLON_SKIP_COLORED="${DOCKER__FG_YELLOW}${DOCKER__SEMICOLON_SKIP}${DOCKER__NOCOLOR}${DOCKER__FG_LIGHTGREY}kip${DOCKER__NOCOLOR}"
 
 DOCKER__COMMA_COLORED="${DOCKER__FG_LIGHTGREY},${DOCKER__NOCOLOR}"
-DOCKER__SEMICOLON_BACK_SEMICOLON_CLEAR_COLORED="${DOCKER__SEMICOLON_BACK_COLORED}${DOCKER__COMMA_COLORED}${DOCKER__SEMICOLON_CLEAR_COLORED}"
-
-
+DOCKER__SEMICOLON_BACK_CLEAR_COLORED="${DOCKER__SEMICOLON_BACK_COLORED}${DOCKER__SEMICOLON_CLEAR_COLORED}"
+DOCKER__SEMICOLON_CLEAR_ABORT_COLORED="${DOCKER__SEMICOLON_CLEAR_COLORED}${DOCKER__SEMICOLON_ABORT_COLORED}"
+DOCKER__SEMICOLON_CLEAR_REDO_ABORT_COLORED="${DOCKER__SEMICOLON_CLEAR_COLORED}${DOCKER__SEMICOLON_REDO_COLORED}${DOCKER__SEMICOLON_ABORT_COLORED}"
+DOCKER__SEMICOLON_CLEAR_REDO_FINISH_ABORT_COLORED="${DOCKER__SEMICOLON_CLEAR_COLORED}${DOCKER__SEMICOLON_REDO_COLORED}${DOCKER__SEMICOLON_FINISH_COLORED}${DOCKER__SEMICOLON_ABORT_COLORED}"
+DOCKER__SEMICOLON_CLEAR_FINISH_ABORT_COLORED="${DOCKER__SEMICOLON_CLEAR_COLORED}${DOCKER__SEMICOLON_FINISH_COLORED}${DOCKER__SEMICOLON_ABORT_COLORED}"
 
 #---REGEX CONSTANTS
 DOCKER__REGEX_YN="[yn]"
@@ -470,6 +593,9 @@ SED__BACKSLASH_DOT="${SED__BACKSLASH}${SED__DOT}"
 SED__HTTP="http"
 SED__HXXP="hxxp"
 
+SED_LBRACKET_63_SEMICOLON_1H="\\[63;1H"
+SED_LEFBRACKET_0_SEMICOLON_0M="\\[0;0m"
+
 
 
 #---SET CONSTANTS
@@ -485,6 +611,7 @@ DOCKER__THREESPACES=${DOCKER__TWOSPACES}${DOCKER__ONESPACE}
 DOCKER__FOURSPACES=${DOCKER__TWOSPACES}${DOCKER__TWOSPACES}
 DOCKER__FIVESPACES=${DOCKER__FOURSPACES}${DOCKER__ONESPACE}
 DOCKER__SEVENSPACES=${DOCKER__FOURSPACES}${DOCKER__THREESPACES}
+DOCKER__EIGHTSPACES=${DOCKER__FOURSPACES}${DOCKER__FOURSPACES}
 DOCKER__TENSPACES=${DOCKER__FIVESPACES}${DOCKER__FIVESPACES}
 
 
@@ -547,8 +674,8 @@ docker__ps_a_containerIdColno=1
 #   Extern variables can be called from anywhere. 
 #   Therefore, use it with caution.
 #---------------------------------------------------------------------
-extern__req=${DOCKER__EMPTYSTRING}
-extern__ret=${DOCKER__EMPTYSTRING}
+extern__req="${DOCKER__EMPTYSTRING}"
+extern__ret="${DOCKER__EMPTYSTRING}"
 
 
 
@@ -580,6 +707,8 @@ function disable_keyboard_input__func() {
 
 function enable_ctrl_c__func() {
     trap ${DOCKER__TRAP_NUM_2}
+
+    trap docker__ctrl_c__sub SIGINT
 }
 
 function disable_ctrl_c__func() {
@@ -725,7 +854,7 @@ function confirmation_w_timer__func() {
     local regEx="${confirmation_regEx__input}"
 
     #Initialization
-	local ret=${DOCKER__EMPTYSTRING}
+	local ret="${DOCKER__EMPTYSTRING}"
 	local tCounter=0
 
     local timeout=${timeout__input}
@@ -872,8 +1001,8 @@ function checkFor_leading_partialMatch_of_pattern_within_array__func() {
     local arr__input=("$@")
 
     #Define variables
-    local arrItem=${DOCKER__EMPTYSTRING}
-    local isFound=${DOCKER__EMPTYSTRING}
+    local arrItem="${DOCKER__EMPTYSTRING}"
+    local isFound="${DOCKER__EMPTYSTRING}"
     local ret="false"
 
     #Loop thru array
@@ -987,18 +1116,49 @@ function array_subst_string__func() {
     echo "${ret[@]}"
 }
 
-function checkForMatch_of_pattern_within_array__func() {
+function checkForMatch_of_pattern_within_1darray__func() {
     #Input args
     local pattern__input=${1}
     shift
     local dataArr__input=("$@")
 
     #Loop thru array-elements and find a match
-    local dataArrItem=${DOCKER__EMPTYSTRING}
+    local dataArrItem="${DOCKER__EMPTYSTRING}"
     local ret=false
     for dataArrItem in "${dataArr__input[@]}"
     do
         if [[ "${pattern__input}" == "${dataArrItem}" ]]; then
+            ret=true
+
+            break
+        fi
+    done
+
+    #Output
+    echo "${ret}"
+}
+
+function checkForExactMatch_of_pattern_within_2darray__func() {
+    #Input args
+    local pattern__input=${1}
+    local colNum__input=${2}
+    local delimiterchar__input=${3}
+    shift
+    shift
+    shift
+    local dataArr__input=("$@")
+    
+    #Define variables
+    local dataArrItem="${DOCKER__EMPTYSTRING}"
+    local colValue="${DOCKER__EMPTYSTRING}"
+    local ret=false
+
+    #Loop thru array-elements and find a match
+    for dataArrItem in "${dataArr__input[@]}"
+    do
+        #Get value of the 1st column
+        colValue=$(echo "${dataArrItem}" | cut -d"${delimiterchar__input}" -f"${colNum__input}")
+        if [[ "${pattern__input}" == "${colValue}" ]]; then
             ret=true
 
             break
@@ -1161,15 +1321,47 @@ function show_array_w_menuTitle_w_confirmation__func() {
                         "${confirmation_append_numOfLines__input}"
 }
 
+#---BC RELATED FUNCTIONS
+function bc_substract_x_from_y() {
+    #Input args
+    local x=${1}
+    local y=${2}
+
+    #Substract x from y
+    local ret=$(echo ${x} - ${y} | bc)
+
+    #Output
+    echo "${ret}"
+
+    return 0;
+}
+
+function bc_is_x_greaterthan_zero() {
+    #Input args
+    local x=${1}
+
+    #Define variables
+    local ret=false
+
+    #Check if value 'x > 0'
+    if [[ $(bc <<< "${x} > 0") -gt 0 ]]; then
+        ret=true
+    fi
+
+    #Output
+    echo "${ret}"
+
+    return 0;
+}
 
 
 #---DOCKER RELATED FUNCTIONS
 function check_containerID_state__func() {
     #Input args
-    local containerID__input=${1}
+    local containerid__input=${1}
 
     #Check if 'containterID__input' is running
-    local stdOutput=`${docker__ps_a_cmd} --format "table {{.ID}}|{{.Status}}" | grep -w "${containerID__input}"`
+    local stdOutput=`${docker__ps_a_cmd} --format "table {{.ID}}|{{.Status}}" | grep -w "${containerid__input}"`
     if [[ -z ${stdOutput} ]]; then  #contains NO data
         echo "${DOCKER__STATE_NOTFOUND}"
     else    #contains data
@@ -1189,9 +1381,9 @@ function checkIf_repoTag_isUniq__func() {
 
     #Define variables
     local dataArr=()
-    local dataArr_item=${DOCKER__EMPTYSTRING}
-    local stdOutput1=${DOCKER__EMPTYSTRING}
-    local stdOutput2=${DOCKER__EMPTYSTRING}
+    local dataArr_item="${DOCKER__EMPTYSTRING}"
+    local stdOutput1="${DOCKER__EMPTYSTRING}"
+    local stdOutput2="${DOCKER__EMPTYSTRING}"
 
     #Write 'docker images' command output to array
     readarray dataArr <<< $(docker images)
@@ -1311,12 +1503,10 @@ function generate_cache_filenames_basedOn_specified_repositoryTag__func() {
     echo "${ret}"
 }
 
-
-
 #---ESCAPE-KEY RELATED FUNCTIONS
 function functionKey_detection__func() {
     #Define variables
-    local ret=${DOCKER__EMPTYSTRING}
+    local ret="${DOCKER__EMPTYSTRING}"
 
     # Flush "^[" within 0.1 sec timeout.
     read -rsn1 -t 0.1 key2
@@ -1387,25 +1577,35 @@ function append_caretReturn_ifNotPresent_within_file__func() {
     disable_expansion__func
 
     #Input args
-    local targetFpath__input=${1}
+    local targetfpath__input=${1}
 
     #Check if file exists
-    if [[ ! -s ${targetFpath__input} ]]; then   #does not exist
+    if [[ ! -s ${targetfpath__input} ]]; then   #does not exist
         return
     fi
 
     #Check if file ends with a 'newline' (aka caret-return)
-    local caretReturn_isFound=`tail -c1 ${targetFpath__input} | wc -l`
+    local caretReturn_isFound=`tail -c1 ${targetfpath__input} | wc -l`
     if [[ ${caretReturn_isFound} -eq ${DOCKER__NUMOFMATCH_0} ]]; then   #no caret-return found
         #Append caret-return
-        echo "" >> ${targetFpath__input}
+        echo "" >> ${targetfpath__input}
     fi
 
     enable_expansion__func
 }
+
+function append_string_to_file__func() {
+    #Input args
+    string__input=${1}
+    targetfpath__input=${2}
+
+    #Write
+    echo "${string__input}" | tee -a ${targetfpath__input} >/dev/null
+}
+
 function checkIf_dir_exists__func() {
     #Input args
-    local containerID__input="${1}"
+    local containerid__input="${1}"
     local dir__input="${2}"
 
     #Check if dir exists
@@ -1414,10 +1614,10 @@ function checkIf_dir_exists__func() {
         if [[ ${dir__input} == ${DOCKER__SLASH} ]]; then
             ret=true
         else
-            if [[ -z ${containerID__input} ]]; then #no container-ID provided
+            if [[ -z ${containerid__input} ]]; then #no container-ID provided
                 ret=`lh_checkIf_dir_exists__func "${dir__input}"`
             else    #container-ID provided
-                ret=`container_checkIf_dir_exists__func "${containerID__input}" "${dir__input}"`
+                ret=`container_checkIf_dir_exists__func "${containerid__input}" "${dir__input}"`
             fi
         fi
     else
@@ -1429,12 +1629,12 @@ function checkIf_dir_exists__func() {
 }
 function container_checkIf_dir_exists__func() {
 	#Input args
-    local containerID__input="${1}"
+    local containerid__input="${1}"
 	local dir__input="${2}"
 
 	#Define docker command
     local docker__bin_bash__dir=/bin/bash
-    local docker_exec_cmd="docker exec -t ${containerID__input} ${docker__bin_bash__dir} -c"
+    local docker_exec_cmd="docker exec -t ${containerid__input} ${docker__bin_bash__dir} -c"
 
     # #Prepend backslash in front of special chars (e.g., backslash, space, asterisk, etc.)
     # local dir_prepended_backslash=`prepend_backSlash_inFrontOf_specialChars__func \
@@ -1469,11 +1669,11 @@ function lh_checkIf_dir_exists__func() {
 
 function checkIf_file_contains_only_dots_and_Slashes__func() {
     #Input args
-    local targetFpath__input=${1}
+    local targetfpath__input=${1}
     local tmpFpath__input=${2}
 
-    #Backup 'targetFpath__input'
-    cp ${targetFpath__input} ${tmpFpath__input}
+    #Backup 'targetfpath__input'
+    cp ${targetfpath__input} ${tmpFpath__input}
 
     #Replace all dots and slashes with an Empty String
     sed -i 's/\(\.*\/*\)//g' ${tmpFpath__input}
@@ -1483,8 +1683,8 @@ function checkIf_file_contains_only_dots_and_Slashes__func() {
 
     #Check file 'tmpFpath__input' contains any data
     #Remarks:
-    #   file is empty -> 'targetFpath__input' contains only dot and/or slash.
-    #   file is not empty -> 'targetFpath__input' contains NOT only dot and/or slash.
+    #   file is empty -> 'targetfpath__input' contains only dot and/or slash.
+    #   file is not empty -> 'targetfpath__input' contains NOT only dot and/or slash.
     if [[ ! -s ${tmpFpath__input} ]]; then  #file is empty
         echo "true"
     else    #file is NOT empty
@@ -1494,17 +1694,17 @@ function checkIf_file_contains_only_dots_and_Slashes__func() {
 
 function checkIf_file_exists__func() {
     #Input args
-    local containerID__input=${1}
+    local containerid__input=${1}
     local fpath__input=${2}
 
     #Check if dir exists
     local ret=false
     if [[ ! -z ${fpath__input} ]]; then #contains data
         if [[ ${fpath__input} != ${DOCKER__SLASH} ]]; then  #input is not a slash
-            if [[ -z ${containerID__input} ]]; then #no container-ID provided
+            if [[ -z ${containerid__input} ]]; then #no container-ID provided
                 ret=`lh_checkIf_file_exists__func "${fpath__input}"`
             else    #container-ID provided
-                ret=`container_checkIf_file_exists__func "${containerID__input}" "${fpath__input}"`
+                ret=`container_checkIf_file_exists__func "${containerid__input}" "${fpath__input}"`
             fi
         fi
     fi
@@ -1514,12 +1714,12 @@ function checkIf_file_exists__func() {
 }
 function container_checkIf_file_exists__func() {
 	#Input args
-    local containerID__input=${1}
+    local containerid__input=${1}
 	local fpath__input=${2}
 
 	#Define variables
     local docker__bin_bash__dir=/bin/bash
-    local docker_exec_cmd="docker exec -t ${containerID__input} ${docker__bin_bash__dir} -c"
+    local docker_exec_cmd="docker exec -t ${containerid__input} ${docker__bin_bash__dir} -c"
 
     #Check if directory exists
     local ret_raw=`${docker_exec_cmd} "[ -f "${fpath__input}" ] && echo true || echo false"`
@@ -1599,8 +1799,8 @@ function checkIf_fpaths_are_the_same__func() {
     #Define and initialize variables
     local fpath1_rev=${fpath1__input}
     local fpath2_rev=${fpath2__input}
-    local fpath1_lastChar=${DOCKER__EMPTYSTRING}
-    local fpath2_lastChar=${DOCKER__EMPTYSTRING}
+    local fpath1_lastChar="${DOCKER__EMPTYSTRING}"
+    local fpath2_lastChar="${DOCKER__EMPTYSTRING}"
 
     local fpath1_len=${#fpath1__input}
     local fpath2_len=${#fpath2__input}
@@ -1654,7 +1854,7 @@ function get_dirname_from_specified_path__func() {
 
     #Get dirname
     local dir=`echo ${fpath__input} | rev | cut -d"${DOCKER__SLASH}" -f2- | rev`
-    if [[ ${dir} == ${DOCKER__EMPTYSTRING} ]]; then
+    if [[ ${dir} == "${DOCKER__EMPTYSTRING}" ]]; then
         ret=${DOCKER__SLASH}
     else
         ret=${dir}${DOCKER__SLASH}
@@ -1666,18 +1866,18 @@ function get_dirname_from_specified_path__func() {
 
 function get_numOfLines_wo_emptyLines_in_file__func() {
     #Input args
-    local targetFpath__input=${1}
+    local targetfpath__input=${1}
 
     #Define variables
     local ret=0
 
     #Check if file exists
-    if [[ ! -f ${targetFpath__input} ]]; then
+    if [[ ! -f ${targetfpath__input} ]]; then
         echo "${ret}"
     fi
 
     #Check number of lines WITHOUT empty lines!!!
-    ret=`<${targetFpath__input} grep -c '[^[:space:]]'`
+    ret=`<${targetfpath__input} grep -c '[^[:space:]]'`
 
     #Output
     echo "${ret}"
@@ -1692,8 +1892,19 @@ function get_output_from_file__func() {
     if [[ -f ${outputFpath__input} ]]; then
         ret=`cat ${outputFpath__input} | head -n${lineNum__input} | tail -n+${lineNum__input}`
     else
-        ret=${DOCKER__EMPTYSTRING}
+        ret="${DOCKER__EMPTYSTRING}"
     fi
+
+    #Output
+    echo -e "${ret}"
+}
+
+function read_1stline_from_file__func() {
+    #Input args
+    local targetfpath__input=${1}
+ 
+    #Read the first line from file
+    local ret=$(awk 'NR == 1' "${targetfpath__input}")
 
     #Output
     echo -e "${ret}"
@@ -1701,25 +1912,25 @@ function get_output_from_file__func() {
 
 function remove_allEmptyLines_within_file__func() {
     #Input args
-    targetFpath__input=${1}
+    targetfpath__input=${1}
 
     #Check if file exists
-    if [[ ! -s ${targetFpath__input} ]]; then   #does not exist
+    if [[ ! -s ${targetfpath__input} ]]; then   #does not exist
         return
     fi
 
     #Remove all empty lines
-    sed -i '/^$/d' ${targetFpath__input}
+    sed -i '/^$/d' ${targetfpath__input}
 }
 
 function remove_all_lines_from_file_after_a_specified_lineNum__func() {
     #Input args
-    local targetFpath__input="${1}"
+    local targetfpath__input="${1}"
     local tmpFpath__input="${2}"
     local lineNumMax__input="${3}"
 
-    #Check if the number of linies of file 'targetFpath__input'
-    local targetFpath_numOfLines=`cat ${targetFpath__input} | wc -l`
+    #Check if the number of linies of file 'targetfpath__input'
+    local targetFpath_numOfLines=`cat ${targetfpath__input} | wc -l`
     #Check if 'targetFpath_numOfLines < lineNumMax__input'
     #If true, then do nothing and exit function
     if [[ ${targetFpath_numOfLines} -le ${lineNumMax__input} ]]; then
@@ -1728,10 +1939,89 @@ function remove_all_lines_from_file_after_a_specified_lineNum__func() {
 
     #Remove all lines which follows AFTER 'lineNumMax__input'...
     #...and write to a temporary file 'tmpFpath__input'
-    head -n${lineNumMax__input} "${targetFpath__input}" > ${tmpFpath__input}
+    head -n${lineNumMax__input} "${targetfpath__input}" > ${tmpFpath__input}
 
-    #Copy 'tmpFpath__input' to 'targetFpath__input'
-    cp ${tmpFpath__input} ${targetFpath__input}
+    #Copy 'tmpFpath__input' to 'targetfpath__input'
+    cp ${tmpFpath__input} ${targetfpath__input}
+}
+
+function remove_file__func() {
+    #Input args
+    local containerid__input=${1}
+    local targetfpath__input=${2}
+    local prependstring__input=${3}
+
+    #Remove file
+    if [[ -z ${containerid__input} ]]; then #no container-ID provided
+        lh_remove_file__func "${targetfpath__input}" "${prependstring__input}"
+    else    #container-ID provided
+        container_remove_file__func "${containerid__input}" "${targetfpath__input}" "${prependstring__input}"
+    fi
+}
+
+function lh_remove_file__func() {
+    #Input args
+    targetfpath__input=${1}
+    prependstring__input=${2}
+
+    #Start with generating 'printmsg'
+    local printmsg="---:"
+
+    #Override the default 'printmsg' (as defined above)
+    if [[ -n "${prependstring__input}" ]]; then
+        printmsg="${prependstring__input}"
+    fi
+
+    #Continue with updating 'printmsg'
+    printmsg+="${DOCKER__STATUS}: remove ${DOCKER__FG_LIGHTGREY}${targetfpath__input}${DOCKER__NOCOLOR}: "
+
+    #Remove file and update 'printmsg' based on the exitcode
+    if [[ -f "${targetfpath__input}" ]]; then
+        rm "${targetfpath__input}"; exitcode=$?
+
+        if [[ ${exitcode} -eq 0 ]]; then
+            printmsg+="${DOCKER__STATUS_SUCCESSFUL}"
+        else
+            printmsg+="${DOCKER__STATUS_FAILED}"
+        fi
+
+        #Print
+        show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+    fi
+}
+function container_remove_file__func() {
+    #Input args
+    local containerid__input=${1}
+    local targetfpath__input=${2}
+    local prependstring__input=${3}
+
+    #Define variables
+    local cmd="rm ${targetfpath__input}"
+    local docker__bin_bash__dir=/bin/bash
+    local docker_exec_cmd="docker exec -t ${containerid__input} ${docker__bin_bash__dir} -c"
+    local printmsg="---:"
+
+    #Override the default 'printmsg' (as defined above)
+    if [[ -n "${prependstring__input}" ]]; then
+        printmsg="${prependstring__input}"
+    fi
+
+    #Continue with updating 'printmsg'
+    printmsg+="${DOCKER__STATUS}: remove ${DOCKER__FG_LIGHTGREY}${targetfpath__input}${DOCKER__NOCOLOR}: "
+
+    #Remove file and update 'printmsg' based on the exitcode
+    if [[ $(checkIf_file_exists__func "${containerid__input}" "${targetfpath__input}") == true ]]; then
+        ${docker_exec_cmd} "${cmd}"
+
+        if [[ ${exitcode} -eq 0 ]]; then
+            printmsg+="${DOCKER__STATUS_SUCCESSFUL}"
+        else
+            printmsg+="${DOCKER__STATUS_FAILED}"
+        fi
+
+        #Print
+        show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+    fi
 }
 
 function retrieve_files_from_specified_dir_basedOn_matching_patterns__func() {
@@ -1744,8 +2034,8 @@ function retrieve_files_from_specified_dir_basedOn_matching_patterns__func() {
     local arrPattern1=()
     local arrPattern2=()
     local arrMatch=()
-    local dir_w_asterisk=${DOCKER__EMPTYSTRING}
-    local ret=${DOCKER__EMPTYSTRING}
+    local dir_w_asterisk="${DOCKER__EMPTYSTRING}"
+    local ret="${DOCKER__EMPTYSTRING}"
 
     #Check if 'dir__input' is a directory
     if [[ ! -d ${dir__input} ]]; then
@@ -1790,11 +2080,43 @@ function retrieve_files_from_specified_dir_basedOn_matching_patterns__func() {
     echo "${ret}"
 }
 
+function retrieve_string_based_on_specified_pattern_colnum_delimiterchar_from_file__func() {
+    #Input args
+    local targetfpath__input=${1}
+    local pattern__input=${2}
+    local colnum__input=${3}
+    local delimiterchar__input=${4}
+
+    #Find result based on provded 'pattern__input'
+    local ret=$(grep -F "${pattern__input}" "${targetfpath__input}" | cut -d"${delimiterchar__input}" -f"${colnum__input}")
+
+    #Output
+    echo "${ret}"
+
+    return 0;
+}
+
+function retrieve_linenum_based_on_specified_pattern_colnum_delimiterchar_from_file__func() {
+    #Input args
+    local targetfpath__input=${1}
+    local pattern__input=${2}
+    local colnum__input=${3}
+    local delimiterchar__input=${4}
+
+    #Find result based on provded 'pattern__input'
+    local ret=$(grep -nF "${pattern__input}" "${targetfpath__input}" | cut -d"${delimiterchar__input}" -f"${colnum__input}")
+
+    #Output
+    echo "${ret}"
+
+    return 0;
+}
+
 function subst_leading_string_with_another_string_within_file__func() {
     #Input args
     local oldSubString__input=${1}
     local newSubString__input=${2}
-    local targetFpath__input=${3}
+    local targetfpath__input=${3}
     local flag_enableExcludes__input=${4}
 
     #IMPORTANT:
@@ -1805,14 +2127,14 @@ function subst_leading_string_with_another_string_within_file__func() {
 
     #Substitute
     #Note: notice the (^), which tells sed to only replace the LEADING substring.
-    sed -i "s/^${oldSubString__input}/${newSubString__input}/g" "${targetFpath__input}"
+    sed -i "s/^${oldSubString__input}/${newSubString__input}/g" "${targetfpath__input}"
 }
 
 function subst_trailing_string_with_another_string_within_file__func() {
     #Input args
     local oldSubString__input=${1}
     local newSubString__input=${2}
-    local targetFpath__input=${3}
+    local targetfpath__input=${3}
     local flag_enableExcludes__input=${4}
 
     #IMPORTANT:
@@ -1823,7 +2145,7 @@ function subst_trailing_string_with_another_string_within_file__func() {
 
     #Substitute
     #Note: notice the (^), which tells sed to only replace the LEADING substring.
-    sed -i "s/${oldSubString__input}$/${newSubString__input}/g" "${targetFpath__input}"
+    sed -i "s/${oldSubString__input}$/${newSubString__input}/g" "${targetfpath__input}"
 }
 
 function write_array_to_file__func() {
@@ -1838,7 +2160,7 @@ function write_array_to_file__func() {
     fi
 
     #Write
-    local dataArrItem=${DOCKER__EMPTYSTRING}
+    local dataArrItem="${DOCKER__EMPTYSTRING}"
     for dataArrItem in "${dataArr__input[@]}"
     do
         echo "${dataArrItem}" >> ${outputFpath__input}
@@ -1848,10 +2170,10 @@ function write_array_to_file__func() {
 function write_data_to_file__func() {
     #Input args
     string__input=${1}
-    targetFpath__input=${2}
+    targetfpath__input=${2}
 
     #Write
-    echo "${string__input}" > ${targetFpath__input}
+    echo "${string__input}" | tee ${targetfpath__input} >/dev/null
 }
 
 
@@ -1962,7 +2284,7 @@ function git__get_full_commitHash_for_specified_tag__func() {
     local location__input=${2}  #GIT__LOCATION_LOCAL or GIT__LOCATION_REMOTE
 
     #Define variables
-    local ret=${DOCKER__EMPTYSTRING}
+    local ret="${DOCKER__EMPTYSTRING}"
 
     #Check if 'tag__input' is an Empty String
     if [[ -z ${tag__input} ]]; then
@@ -2026,8 +2348,8 @@ function git__get_tag_for_specified_branchName__func() {
 
     #Loop thru array and check for each array-element (aka tag) if it contains the 'branchName__input'
     local match_isFound=false
-    local totalTags_sortUniq_arrItem=${DOCKER__EMPTYSTRING}
-    local ret=${DOCKER__EMPTYSTRING}
+    local totalTags_sortUniq_arrItem="${DOCKER__EMPTYSTRING}"
+    local ret="${DOCKER__EMPTYSTRING}"
     for totalTags_sortUniq_arrItem in "${totalTags_sortUniq_arr[@]}"
     do
         match_isFound=`git__checkIf_tag_contains_specified_branchName__func \
@@ -2077,7 +2399,7 @@ function git__get_tags__func() {
     fi
 
     #Get all tags
-    local ret=${DOCKER__EMPTYSTRING}
+    local ret="${DOCKER__EMPTYSTRING}"
     if [[ ${location__input} == ${GIT__LOCATION_LOCAL} ]]; then
         ret=`${GIT__CMD_GIT_SHOW_REF} --tags | rev | cut -d"/" -f1 | rev | sort | uniq | tr -d "[:blank:]"`
     else    #git_location__input = GIT__LOCATION_REMOTE
@@ -2139,7 +2461,7 @@ function git__log_for_unpushed_local_commits__func() {
     local placeHolder__input=${3}
 
     #Define variables
-    local ret=${DOCKER__EMPTYSTRING}
+    local ret="${DOCKER__EMPTYSTRING}"
 
     #Check if 'branchName__input' and 'last_nth_commit__input' are Empty Strings
     if [[ -z ${branchName__input} ]]; then
@@ -2212,7 +2534,7 @@ function git__retrieve_branchName_for_specified_tag__func() {
     local tag__input=${1}
 
     #Get branch-name
-    local ret=${DOCKER__EMPTYSTRING}
+    local ret="${DOCKER__EMPTYSTRING}"
     ret=`${GIT__CMD_GIT_BRANCH} --contains tags/${tag__input} | \
                         sed 's/*//g' | \
                         sed 's/^ *//g' | \
@@ -2226,8 +2548,8 @@ function git__retrieve_tag_for_specified_branchName__func() {
     local branchName__input=${1}
 
     #Get abbreviated commit hash
-    local abbrevCommitHash=`git__log_for_pushed_and_unpushed_commits__func "${DOCKER__EMPTYSTRING}" \
-                        "${DOCKER__EMPTYSTRING}" \
+    local abbrevCommitHash=`git__log_for_pushed_and_unpushed_commits__func ""${DOCKER__EMPTYSTRING}"" \
+                        ""${DOCKER__EMPTYSTRING}"" \
                         "${GIT__PLACEHOLDER_ABBREV_COMMIT_HASH}"`
 
     #Get tag
@@ -2339,6 +2661,24 @@ function moveDown_oneLine_then_moveUp_and_clean__func() {
     moveUp_and_cleanLines__func "${numOfLines__input}"
 }
 
+function moveLeft_and_clean_trailing_chars() {
+    #Input args
+    local numOfChars__input=${1}
+
+    local tCounter=1
+    while [[ ${tCounter} -le ${numOfChars__input} ]]
+    do
+        #Move-left 1 char
+        tput cub1
+
+        #Remove last char
+        tput el
+
+        #Increment tCounter by 1
+        tCounter=$((tCounter+1))
+    done
+}
+
 function moveUp_oneLine_then_moveRight__func() {
     #Input args
     local mainMsg=${1}
@@ -2383,6 +2723,163 @@ function center_string_and_writeTo_file__func() {
 
     #Print text including Leading Empty Spaces
     printf "%s" "${emptySpaces_string}${string__input}" >> ${writeToThisFile__input}
+}
+
+function show_array_elements_w_menuTitle__func() {
+    #Input args
+    local menuTitle__input=${1}
+    local menuOptions__input=${2}
+    local dataArr_pageNum__input=${3}    #page-number
+    local dataArr_pageSize__input=${4}  #number of lines to be shown
+    shift
+    shift
+    shift
+    shift
+    local dataArr__input=("$@")
+
+
+    #Hide cursor
+    cursor_hide__func
+
+    #Disable keyboard-input
+    disable_keyboard_input__func
+
+
+    #Print horizontal line
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    #Print menu-title
+    show_centered_string__func "${menuTitle__input}" "${DOCKER__TABLEWIDTH}"
+    #Print horizontal line
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+
+
+    #Get the array-length
+    local dataArrLen=${#dataArr__input[@]}
+
+
+    #set the default flag value
+    local flag_showAll=false
+
+    #Check if 'dataArr_pageNum__input' and 'dataArr_pageSize__input' are Empty Strings
+    if [[ -z ${dataArr_pageNum__input} ]] || [[ -z ${dataArr_pageSize__input} ]]; then
+        flag_showAll=true
+    fi
+
+    #Check if 'dataArr_pageSize__input => dataArrLen'
+    if [[ ${dataArr_pageSize__input} -ge ${dataArrLen} ]]; then
+        flag_showAll=true
+    fi
+
+
+    #Calculate the 'dataArr_lineNum_start' and 'dataArr_lineNum_end'
+    local dataArr_lineNum_start=$((((dataArr_pageNum__input - 1)*dataArr_pageSize__input) + 1))
+    local dataArr_lineNum_end=$((dataArr_pageNum__input*dataArr_pageSize__input))
+    if [[ ${dataArr_lineNum_end} -gt ${dataArrLen} ]]; then
+        dataArr_lineNum_end=${dataArrLen}
+    fi
+
+
+    #Show array-elements
+    local dataArr_lineNum=${DOCKER__LINENUM_0}
+    local print_lineNum=${DOCKER__LINENUM_0}
+    for dataArrItem in "${dataArr__input[@]}"
+    do
+        #Increment array-linenumber
+        dataArr_lineNum=$((dataArr_lineNum + 1))
+ 
+        #Check if 'dataArr_lineNum > dataArr_lineNum_end'
+        if [[ ${dataArr_lineNum} -gt ${dataArr_lineNum_end} ]] && [[ ${flag_showAll} == false ]]; then
+            break
+        fi
+
+        #Check if 'dataArr_lineNum => dataArr_lineNum_start'
+        if [[ ${dataArr_lineNum} -ge ${dataArr_lineNum_start} ]]; then
+            echo "${DOCKER__FOURSPACES}${dataArrItem}"
+
+            print_lineNum=$((print_lineNum + 1))
+        fi
+    done
+
+
+    #Fill-up table with empty lines
+    while [[ ${print_lineNum} -lt ${dataArr_pageSize__input} ]]
+    do
+        #Print an Empty Line
+        echo ""${DOCKER__EMPTYSTRING}""
+
+        #increment line-number
+        print_lineNum=$((print_lineNum + 1))
+    done
+
+
+    #Move-down cursor
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+
+    #Show 'prev' and 'next'
+    if [[ ${flag_showAll} == false ]]; then
+        local prev_only_print="${DOCKER__ONESPACE_PREV}"
+
+        local oneSpacePrev_len=`get_stringlen_wo_regEx__func "${DOCKER__ONESPACE_PREV}"`
+        local oneSpaceNext_len=`get_stringlen_wo_regEx__func "${DOCKER__ONESPACE_NEXT}"`
+        local space_between_prev_and_next_len=$(( DOCKER__TABLEWIDTH - (oneSpacePrev_len + oneSpaceNext_len) - 1 ))
+        local space_between_prev_and_next=`duplicate_char__func "${DOCKER__ONESPACE}" "${space_between_prev_and_next_len}"`
+        local prev_spaces_next_print="${DOCKER__ONESPACE_PREV}${space_between_prev_and_next}${DOCKER__ONESPACE_NEXT}"
+
+        local docker_space_between_leftBoundary_and_next_len=$(( DOCKER__TABLEWIDTH - oneSpacePrev_len - 1 ))
+        local docker_space_between_leftBoundary_and_next=`duplicate_char__func "${DOCKER__ONESPACE}" "${docker_space_between_leftBoundary_and_next_len}"`
+        local next_only_print="${docker_space_between_leftBoundary_and_next}${DOCKER__ONESPACE_NEXT}"
+
+        if [[ ${dataArr_lineNum_start} -eq ${DOCKER__NUMOFMATCH_1} ]]; then
+            echo "${next_only_print}"
+        else
+            if [[ ${dataArr_lineNum_end} -eq ${dataArrLen} ]]; then 
+                echo "${prev_only_print}"
+            else
+                echo "${prev_spaces_next_print}"
+            fi
+        fi
+
+        #Show line-number range between 'prev' and 'next'
+        lineNum_range_msg="${DOCKER__FG_LIGHTGREY}${dataArr_pageNum__input}${DOCKER__NOCOLOR} "
+        lineNum_range_msg+="to ${DOCKER__FG_LIGHTGREY}${dataArr_pageSize__input}${DOCKER__NOCOLOR} "
+        lineNum_range_msg+="(${DOCKER__FG_SOFTLIGHTRED}${dataArrLen}${DOCKER__NOCOLOR})"
+
+        #Caclulate the length of 'lineNum_range_msg' without regEx
+        lineNum_range_msg_wo_regEx_len=`get_stringlen_wo_regEx__func "${lineNum_range_msg}"`
+
+        #Determine the start-position of where to place 'lineNum_range_msg'
+        lineNum_range_msg_startPos=$(( (DOCKER__TABLEWIDTH/2) - (lineNum_range_msg_wo_regEx_len/2) ))
+
+        #Move-up
+        if [[ ${flag_showAll} == false ]]; then
+            moveUp__func "${DOCKER__LINENUM_1}"
+        fi
+
+        #Move cursor to start-position 'lineNum_range_msg_startPos'
+        tput cuf ${lineNum_range_msg_startPos}
+
+        #Print 'lineNum_range_msg'
+        echo -e "${lineNum_range_msg}"
+    fi
+
+    if [[ ! -z ${menuOptions__input} ]]; then
+        ##Print horizontal line
+        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+
+        #Print menu-options
+        echo -e "${menuOptions__input}"
+    fi
+
+    #Print horizontal line
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+
+
+    #Show cursor
+    cursor_show__func
+
+    #Enable keyboard-input
+    enable_keyboard_input__func
 }
 
 function show_centered_string__func() {
@@ -2508,45 +3005,6 @@ function show_msg_only__func() {
     moveDown_and_cleanLines__func "${append_numOfLines__input}"
 }
 
-function show_msg_w_menuTitle_w_pressAnyKey_w_ctrlC_func() {
-    #Input args
-    local menuTitle__input=${1}
-    local msg__input=${2}
-    local exitCode__input=${3}
-
-    #Horizontal line
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-
-    #Print 'menuTitle__input'
-    show_centered_string__func "${menuTitle__input}" "${DOCKER__TABLEWIDTH}"
-
-    #Horizontal line
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-    
-    #Move-down and clean 1 line
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-
-    #Print message
-    show_centered_string__func "${msg__input}" "${DOCKER__TABLEWIDTH}"
-    
-    #Move-down and clean 1 line
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-
-    #Horizontal line
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-
-    #Move-down and clean 1 line
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-
-    #Show press any key
-    press_any_key__func "${DOCKER__TIMEOUT_10}" \
-                        "${DOCKER__NUMOFLINES_0}" \
-                        "${DOCKER__NUMOFLINES_0}"
-
-    #Exit
-    exit__func "${exitCode__input}" "${DOCKER__NUMOFLINES_2}"
-}
-
 function show_msg_w_menuTitle_only_func() {
     #Input args
     local menuTitle__input=${1}
@@ -2596,7 +3054,7 @@ function show_msg_w_menuTitle_only_func() {
         #Remark:
         #   This means that NO indent should be applied
         if [[ ${msg_indent__input} == ${DOCKER__ZEROSPACE} ]]; then
-            msg_indent__input=${DOCKER__EMPTYSTRING}
+            msg_indent__input="${DOCKER__EMPTYSTRING}"
         fi
         echo -e "${msg_indent__input}${msg__input}"
     fi
@@ -2609,6 +3067,45 @@ function show_msg_w_menuTitle_only_func() {
 
     #Append empty lines
     moveDown_and_cleanLines__func "${append_numOfLines__input}"
+}
+
+function show_msg_w_menuTitle_w_pressAnyKey_w_ctrlC_func() {
+    #Input args
+    local menuTitle__input=${1}
+    local msg__input=${2}
+    local exitCode__input=${3}
+
+    #Horizontal line
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+
+    #Print 'menuTitle__input'
+    show_centered_string__func "${menuTitle__input}" "${DOCKER__TABLEWIDTH}"
+
+    #Horizontal line
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    
+    #Move-down and clean 1 line
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+    #Print message
+    show_centered_string__func "${msg__input}" "${DOCKER__TABLEWIDTH}"
+    
+    #Move-down and clean 1 line
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+    #Horizontal line
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+
+    #Move-down and clean 1 line
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+    #Show press any key
+    press_any_key__func "${DOCKER__TIMEOUT_10}" \
+                        "${DOCKER__NUMOFLINES_0}" \
+                        "${DOCKER__NUMOFLINES_0}"
+
+    #Exit
+    exit__func "${exitCode__input}" "${DOCKER__NUMOFLINES_2}"
 }
 
 function show_msg_wo_menuTitle_w_PressAnyKey__func() {
@@ -2631,161 +3128,85 @@ function show_msg_wo_menuTitle_w_PressAnyKey__func() {
                         "${confirmation_append_numOfLines__input}"
 }
 
-function show_array_elements_w_menuTitle__func() {
+function show_msg_w_menuTitle_w_confirmation__func() {
     #Input args
     local menuTitle__input=${1}
-    local menuOptions__input=${2}
-    local dataArr_pageNum__input=${3}    #page-number
-    local dataArr_pageSize__input=${4}  #number of lines to be shown
-    shift
-    shift
-    shift
-    shift
-    local dataArr__input=("$@")
-
-
-    #Hide cursor
-    cursor_hide__func
-
-    #Disable keyboard-input
-    disable_keyboard_input__func
-
-
-    #Print horizontal line
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-    #Print menu-title
-    show_centered_string__func "${menuTitle__input}" "${DOCKER__TABLEWIDTH}"
-    #Print horizontal line
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-
-
-    #Get the array-length
-    local dataArrLen=${#dataArr__input[@]}
-
-
-    #set the default flag value
-    local flag_showAll=false
-
-    #Check if 'dataArr_pageNum__input' and 'dataArr_pageSize__input' are Empty Strings
-    if [[ -z ${dataArr_pageNum__input} ]] || [[ -z ${dataArr_pageSize__input} ]]; then
-        flag_showAll=true
-    fi
-
-    #Check if 'dataArr_pageSize__input => dataArrLen'
-    if [[ ${dataArr_pageSize__input} -ge ${dataArrLen} ]]; then
-        flag_showAll=true
-    fi
-
-
-    #Calculate the 'dataArr_lineNum_start' and 'dataArr_lineNum_end'
-    local dataArr_lineNum_start=$((((dataArr_pageNum__input - 1)*dataArr_pageSize__input) + 1))
-    local dataArr_lineNum_end=$((dataArr_pageNum__input*dataArr_pageSize__input))
-    if [[ ${dataArr_lineNum_end} -gt ${dataArrLen} ]]; then
-        dataArr_lineNum_end=${dataArrLen}
-    fi
-
-
-    #Show array-elements
-    local dataArr_lineNum=${DOCKER__LINENUM_0}
-    local print_lineNum=${DOCKER__LINENUM_0}
-    for dataArrItem in "${dataArr__input[@]}"
-    do
-        #Increment array-linenumber
-        dataArr_lineNum=$((dataArr_lineNum + 1))
- 
-        #Check if 'dataArr_lineNum > dataArr_lineNum_end'
-        if [[ ${dataArr_lineNum} -gt ${dataArr_lineNum_end} ]] && [[ ${flag_showAll} == false ]]; then
-            break
-        fi
-
-        #Check if 'dataArr_lineNum => dataArr_lineNum_start'
-        if [[ ${dataArr_lineNum} -ge ${dataArr_lineNum_start} ]]; then
-            echo "${DOCKER__FOURSPACES}${dataArrItem}"
-
-            print_lineNum=$((print_lineNum + 1))
-        fi
-    done
-
-
-    #Fill-up table with empty lines
-    while [[ ${print_lineNum} -lt ${dataArr_pageSize__input} ]]
-    do
-        #Print an Empty Line
-        echo "${DOCKER__EMPTYSTRING}"
-
-        #increment line-number
-        print_lineNum=$((print_lineNum + 1))
-    done
-
+    local msg__input=${2}
+    local confirmation_choices__input=${3}
+    local confirmation_regEx__input=${4}
+    local prepend_numOfLines__input=${5}
+    local confirmation_timeout__input=${6}
+    local confirmation_prepend_numOfLines__input=${7}
+    local confirmation_append_numOfLines__input=${8}
 
     #Move-down cursor
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-
-
-    #Show 'prev' and 'next'
-    if [[ ${flag_showAll} == false ]]; then
-        local prev_only_print="${DOCKER__ONESPACE_PREV}"
-
-        local oneSpacePrev_len=`get_stringlen_wo_regEx__func "${DOCKER__ONESPACE_PREV}"`
-        local oneSpaceNext_len=`get_stringlen_wo_regEx__func "${DOCKER__ONESPACE_NEXT}"`
-        local space_between_prev_and_next_len=$(( DOCKER__TABLEWIDTH - (oneSpacePrev_len + oneSpaceNext_len) - 1 ))
-        local space_between_prev_and_next=`duplicate_char__func "${DOCKER__ONESPACE}" "${space_between_prev_and_next_len}"`
-        local prev_spaces_next_print="${DOCKER__ONESPACE_PREV}${space_between_prev_and_next}${DOCKER__ONESPACE_NEXT}"
-
-        local docker_space_between_leftBoundary_and_next_len=$(( DOCKER__TABLEWIDTH - oneSpacePrev_len - 1 ))
-        local docker_space_between_leftBoundary_and_next=`duplicate_char__func "${DOCKER__ONESPACE}" "${docker_space_between_leftBoundary_and_next_len}"`
-        local next_only_print="${docker_space_between_leftBoundary_and_next}${DOCKER__ONESPACE_NEXT}"
-
-        if [[ ${dataArr_lineNum_start} -eq ${DOCKER__NUMOFMATCH_1} ]]; then
-            echo "${next_only_print}"
-        else
-            if [[ ${dataArr_lineNum_end} -eq ${dataArrLen} ]]; then 
-                echo "${prev_only_print}"
-            else
-                echo "${prev_spaces_next_print}"
-            fi
-        fi
-
-        #Show line-number range between 'prev' and 'next'
-        lineNum_range_msg="${DOCKER__FG_LIGHTGREY}${dataArr_pageNum__input}${DOCKER__NOCOLOR} "
-        lineNum_range_msg+="to ${DOCKER__FG_LIGHTGREY}${dataArr_pageSize__input}${DOCKER__NOCOLOR} "
-        lineNum_range_msg+="(${DOCKER__FG_SOFTLIGHTRED}${dataArrLen}${DOCKER__NOCOLOR})"
-
-        #Caclulate the length of 'lineNum_range_msg' without regEx
-        lineNum_range_msg_wo_regEx_len=`get_stringlen_wo_regEx__func "${lineNum_range_msg}"`
-
-        #Determine the start-position of where to place 'lineNum_range_msg'
-        lineNum_range_msg_startPos=$(( (DOCKER__TABLEWIDTH/2) - (lineNum_range_msg_wo_regEx_len/2) ))
-
-        #Move-up
-        if [[ ${flag_showAll} == false ]]; then
-            moveUp__func "${DOCKER__LINENUM_1}"
-        fi
-
-        #Move cursor to start-position 'lineNum_range_msg_startPos'
-        tput cuf ${lineNum_range_msg_startPos}
-
-        #Print 'lineNum_range_msg'
-        echo -e "${lineNum_range_msg}"
-    fi
-
-    if [[ ! -z ${menuOptions__input} ]]; then
-        ##Print horizontal line
-        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-
-        #Print menu-options
-        echo -e "${menuOptions__input}"
-    fi
+    moveDown_and_cleanLines__func "${prepend_numOfLines__input}"
 
     #Print horizontal line
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
 
+    #Print menu-title
+    show_centered_string__func "${menuTitle__input}" "${DOCKER__TABLEWIDTH}"
 
-    #Show cursor
-    cursor_show__func
+    #Print horizontal line
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
 
-    #Enable keyboard-input
-    enable_keyboard_input__func
+    #Print message
+    echo -e "${msg__input}"
+
+    #Move-down and clean 1 line
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+    #Print horizontal line
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+
+    #Show press-any-key dialog
+    confirmation_w_timer__func "${confirmation_choices__input}" \
+                        "${confirmation_regEx__input}" \
+                        "${confirmation_timeout__input}" \
+                        "${confirmation_prepend_numOfLines__input}" \
+                        "${confirmation_append_numOfLines__input}"
+}
+
+function show_msg_wo_menuTitle_w_confirmation__func() {
+    #Input args
+    local msg__input=${1}
+    local confirmation_choices__input=${2}
+    local confirmation_regEx__input=${3}
+    local prepend_numOfLines__input=${4}
+    local confirmation_timeout__input=${5}
+    local confirmation_prepend_numOfLines__input=${6}
+    local confirmation_append_numOfLines__input=${7}
+
+    #Move-down cursor
+    moveDown_and_cleanLines__func "${prepend_numOfLines__input}"
+
+    #Print
+    if [[ ! -z "${msg__input}" ]]; then
+        echo -e "${msg__input}"
+    fi
+
+    #Show press-any-key dialog
+    confirmation_w_timer__func "${confirmation_choices__input}" \
+                        "${confirmation_regEx__input}" \
+                        "${confirmation_timeout__input}" \
+                        "${confirmation_prepend_numOfLines__input}" \
+                        "${confirmation_append_numOfLines__input}"
+}
+
+function show_menuTitle_w_adjustable_indent__func() {
+    #Input args
+    local menuTitle__input=${1}
+    local menuTitle_indent__input=${2}
+
+    #Show list
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+    if [[ -z ${menuTitle_indent__input} ]]; then
+        show_centered_string__func "${menuTitle__input}" "${DOCKER__TABLEWIDTH}"
+    else
+        echo "${menuTitle_indent__input}${menuTitle__input}"
+    fi
+    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
 }
 
 function show_repoList_or_containerList_w_menuTitle__func() {
@@ -2877,88 +3298,6 @@ function show_repoList_or_containerList_w_menuTitle_w_confirmation__func() {
 }
 
 
-function show_msg_w_menuTitle_w_confirmation__func() {
-    #Input args
-    local menuTitle__input=${1}
-    local msg__input=${2}
-    local confirmation_choices__input=${3}
-    local confirmation_regEx__input=${4}
-    local prepend_numOfLines__input=${5}
-    local confirmation_timeout__input=${6}
-    local confirmation_prepend_numOfLines__input=${7}
-    local confirmation_append_numOfLines__input=${8}
-
-    #Move-down cursor
-    moveDown_and_cleanLines__func "${prepend_numOfLines__input}"
-
-    #Print horizontal line
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-
-    #Print menu-title
-    show_centered_string__func "${menuTitle__input}" "${DOCKER__TABLEWIDTH}"
-
-    #Print horizontal line
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-
-    #Print message
-    echo -e "${msg__input}"
-
-    #Move-down and clean 1 line
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-
-    #Print horizontal line
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-
-    #Show press-any-key dialog
-    confirmation_w_timer__func "${confirmation_choices__input}" \
-                        "${confirmation_regEx__input}" \
-                        "${confirmation_timeout__input}" \
-                        "${confirmation_prepend_numOfLines__input}" \
-                        "${confirmation_append_numOfLines__input}"
-}
-
-function show_msg_wo_menuTitle_w_confirmation__func() {
-    #Input args
-    local msg__input=${1}
-    local confirmation_choices__input=${2}
-    local confirmation_regEx__input=${3}
-    local prepend_numOfLines__input=${4}
-    local confirmation_timeout__input=${5}
-    local confirmation_prepend_numOfLines__input=${6}
-    local confirmation_append_numOfLines__input=${7}
-
-    #Move-down cursor
-    moveDown_and_cleanLines__func "${prepend_numOfLines__input}"
-
-    #Print
-    if [[ ! -z "${msg__input}" ]]; then
-        echo -e "${msg__input}"
-    fi
-
-    #Show press-any-key dialog
-    confirmation_w_timer__func "${confirmation_choices__input}" \
-                        "${confirmation_regEx__input}" \
-                        "${confirmation_timeout__input}" \
-                        "${confirmation_prepend_numOfLines__input}" \
-                        "${confirmation_append_numOfLines__input}"
-}
-
-function show_menuTitle_w_adjustable_indent__func() {
-    #Input args
-    local menuTitle__input=${1}
-    local menuTitle_indent__input=${2}
-
-    #Show list
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-    if [[ -z ${menuTitle_indent__input} ]]; then
-        show_centered_string__func "${menuTitle__input}" "${DOCKER__TABLEWIDTH}"
-    else
-        echo "${menuTitle_indent__input}${menuTitle__input}"
-    fi
-    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-}
-
-
 
 #---READ-DiALOG FUNCTIONS
 function readDialog_w_Output__func() {
@@ -2992,7 +3331,7 @@ function readDialog_w_Output__func() {
 
     #Initialization
     local ret=${defaultVal__input}
-    local ret_semiColonVal=${DOCKER__EMPTYSTRING}
+    local ret_semiColonVal="${DOCKER__EMPTYSTRING}"
 
     #Start loop
     while true
@@ -3009,8 +3348,13 @@ function readDialog_w_Output__func() {
             ${DOCKER__ENTER})
                 #Check if there were any ';b', ';c', ';h' issued.
                 #In other words, whether 'ret' contains any of the above semi-colon chars.
-                #If that's the case then function 'get_endResult_ofString_with_semiColonChar__func'
-                #   will handle and return a modified 'ret'.
+                #Remarks:
+                #   1. If that's the case then function 'get_endResult_ofString_with_semiColonChar__func'
+                #   ...will handle and return a modified 'ret'.
+                #   2. If the input arg 'ret_bck' contains a ';c', then function 'get_endResult_ofString_with_semiColonChar__func'
+                #   ...will return remaining substring which is on the RIGHT-side of ';c'.
+                #   In case this substring is an <Empty String>, then 'ret' will be resetted to 'DOCKER__EMPTYSTRING'
+                #   ...and the readdialog will be shown again.
                 ret_bck=${ret}  #set value
                 ret=`get_endResult_ofString_with_semiColonChar__func "${ret_bck}"`
          
@@ -3037,7 +3381,7 @@ function readDialog_w_Output__func() {
                     break
                 else    #'ret' is an Empty String
                     #Reset variable
-                    ret=${DOCKER__EMPTYSTRING}
+                    ret="${DOCKER__EMPTYSTRING}"
 
                     #First Move-down, then Move-up, after that clean line
                     moveToBeginning_and_cleanLine__func
@@ -3147,16 +3491,16 @@ function show_pathContent_w_selection__func() {
     local fpath_arr=()
     local fpath_arrIndex=0
     local fpath_arrLen=0
-    local fpath_arrItem=${DOCKER__EMPTYSTRING}
-    local fpath_arrItem_base=${DOCKER__EMPTYSTRING}
-    local fpath_arrItem_marked=${DOCKER__EMPTYSTRING}
-    local fpath_arrItem_conv=${DOCKER__EMPTYSTRING}
-    local fpath_arrItem_print=${DOCKER__EMPTYSTRING}
-    local fpath_arr_string=${DOCKER__EMPTYSTRING}
+    local fpath_arrItem="${DOCKER__EMPTYSTRING}"
+    local fpath_arrItem_base="${DOCKER__EMPTYSTRING}"
+    local fpath_arrItem_marked="${DOCKER__EMPTYSTRING}"
+    local fpath_arrItem_conv="${DOCKER__EMPTYSTRING}"
+    local fpath_arrItem_print="${DOCKER__EMPTYSTRING}"
+    local fpath_arr_string="${DOCKER__EMPTYSTRING}"
 
     local fpath_arrTmp=()
     local fpath_arrTmpLen=0
-    local fpath_arrTmp_string=${DOCKER__EMPTYSTRING}
+    local fpath_arrTmp_string="${DOCKER__EMPTYSTRING}"
 
     #Relative array, which contains only the number of elements equal to 'table_index_max__input'.
     #This array is renewed with each loop.
@@ -3164,13 +3508,13 @@ function show_pathContent_w_selection__func() {
     local fpath_relArrIndex=0
     local fpath_relArrIndex_sel=0
     local fpath_relArrLen=0
-    local fpath_relArrItem_sel=${DOCKER__EMPTYSTRING}
+    local fpath_relArrItem_sel="${DOCKER__EMPTYSTRING}"
 
-    local keyInput=${DOCKER__EMPTYSTRING}
-    local keyOutput=${DOCKER__EMPTYSTRING}
-    local pattern1_result=${DOCKER__EMPTYSTRING}
-    local pattern2_result=${DOCKER__EMPTYSTRING}
-    local ret=${DOCKER__EMPTYSTRING}
+    local keyInput="${DOCKER__EMPTYSTRING}"
+    local keyOutput="${DOCKER__EMPTYSTRING}"
+    local pattern1_result="${DOCKER__EMPTYSTRING}"
+    local pattern2_result="${DOCKER__EMPTYSTRING}"
+    local ret="${DOCKER__EMPTYSTRING}"
 
     local table_index=0
     local table_index_base=0
@@ -3182,7 +3526,7 @@ function show_pathContent_w_selection__func() {
     local lineNum_range_relMin=0
     local lineNum_range_msg_startPos=0
     local lineNum_range_msg_wo_regEx_len=0
-    local lineNum_range_msg=${DOCKER__EMPTYSTRING}
+    local lineNum_range_msg="${DOCKER__EMPTYSTRING}"
 
     local flag_break_main_whileLoop=false
     local flag_isSet_toBreak_loop=false
@@ -3467,7 +3811,7 @@ function show_pathContent_w_selection__func() {
                 table_index=$((table_index + 1))
 
                 #Print an Empty Line
-                echo "${DOCKER__EMPTYSTRING}"
+                echo ""${DOCKER__EMPTYSTRING}""
             done
         fi
 
@@ -3626,13 +3970,13 @@ function show_pathContent_w_selection__func() {
                         #     # #Exit
                         #     # exit__func "${DOCKER__EXITCODE_0}" "${DOCKER__NUMOFLINES_2}"
                         #     ;;
-                        ${DOCKER__EMPTYSTRING}) #arrow-key was pressed
+                        "${DOCKER__EMPTYSTRING}") #arrow-key was pressed
                             flag_matched_key_isPressed=false
                             ;;
                         *)  #OTHER F-KEYS AS SPECIFIED BY 'matchPattern__input'
                             if [[ ! -z ${matchPattern__input} ]]; then  #not an Empty String             
                                 #Check if the retrieved function-key 'keyOutput' matches the pattern 'matchPattern__input'
-                                flag_matched_key_isPressed=`checkForMatch_of_pattern_within_string__func \
+                                flag_matched_key_isPressed=`checkForMatch_of_a_pattern_within_string__func \
                                         "${keyOutput}" \
                                         "${matchPattern__input}"`
 
@@ -3705,7 +4049,7 @@ function show_pathContent_w_selection__func() {
                         #   This part has been tested, but NOT thoroughly.                
                         if [[ ! -z ${matchPattern__input} ]]; then  #not an Empty String
                             #Check if the retrieved function-key 'keyInput' matches the pattern 'matchPattern__input'
-                            flag_matched_key_isPressed=`checkForMatch_of_pattern_within_string__func \
+                            flag_matched_key_isPressed=`checkForMatch_of_a_pattern_within_string__func \
                                     "${keyInput}" \
                                     "${matchPattern__input}"`
 
@@ -3770,10 +4114,10 @@ function show_fileContent_wo_select__func() {
     local fpath_arr=()
     local fpath_arrIndex=0
     local fpath_arrLen=0
-    local fpath_arrItem=${DOCKER__EMPTYSTRING}
+    local fpath_arrItem="${DOCKER__EMPTYSTRING}"
 
-    local keyInput=${DOCKER__EMPTYSTRING}
-    local keyOutput=${DOCKER__EMPTYSTRING}
+    local keyInput="${DOCKER__EMPTYSTRING}"
+    local keyOutput="${DOCKER__EMPTYSTRING}"
 
     local table_index=0
     local table_index_base=0
@@ -3935,7 +4279,8 @@ function show_fileContent_wo_select__func() {
                     fi
 
                     #Print fpath_arrItem
-                    echo "${DOCKER__FOURSPACES}${fpath_arrItem}"
+                    # echo "${DOCKER__FOURSPACES}${fpath_arrItem}"
+                    echo "${fpath_arrItem}"
                 fi
 
                 #Prevously 'table_index' was set to '0'.
@@ -3967,7 +4312,7 @@ function show_fileContent_wo_select__func() {
                 table_index=$((table_index + 1))
 
                 #Print an Empty Line
-                echo "${DOCKER__EMPTYSTRING}"
+                echo ""${DOCKER__EMPTYSTRING}""
             done
         fi
 
@@ -4218,7 +4563,33 @@ function show_fileContent_wo_select__func() {
 
 
 #---STRING FUNCTIONS
-function checkForMatch_of_pattern_within_string__func() {
+function append_a_specified_numofchars_to_string() {
+    #Input Args
+    local string__input=${1}
+    local char__input=${2}
+    local string_maxlen__input=${3}
+
+    #Define variables
+    local string_len=${#string__input}
+    local ret="${string__input}"
+
+    #Append 
+    while [[ ${string_len} -lt ${string_maxlen__input} ]]
+    do
+        #Append char
+        ret="${ret}${char__input}"
+
+        #Get string length
+        string_len=${#ret}
+    done
+
+    #Output
+    echo "${ret}"
+
+    return 0;
+}
+
+function checkForMatch_of_a_pattern_within_string__func() {
     #Turn-off Expansion
     disable_expansion__func
 
@@ -4238,7 +4609,9 @@ function checkForMatch_of_pattern_within_string__func() {
     enable_expansion__func
 }
 
-function checkFor_exact_match_of_pattern_within_file__func() {
+
+
+function checkForExactMatch_of_a_pattern_within_file__func() {
     #Turn-off Expansion
     disable_expansion__func
 
@@ -4265,7 +4638,22 @@ function checkFor_exact_match_of_pattern_within_file__func() {
     enable_expansion__func
 }
 
-function checkFor_any_match_of_pattern_within_file__func() {
+function checkForMatch_dockerCmd_result__func() {
+    #Input Args
+    local pattern__input=${1}
+    local dockerCmd__input=${2}
+    local dockerTableColno__input=${3}
+
+    #Find any match (not exact)
+    local stdOutput=`${dockerCmd__input} | awk -v COLNUM=${dockerTableColno__input} '{print $COLNUM}' | grep -w ${pattern__input}`
+    if [[ -z ${stdOutput} ]]; then  #no match
+        echo "false"
+    else    #match
+        echo "true"
+    fi
+}
+
+function checkForMatch_of_a_pattern_within_file__func() {
     #Turn-off Expansion
     disable_expansion__func
 
@@ -4329,7 +4717,7 @@ function checkForMatch_of_patterns_within_file__func() {
     enable_expansion__func
 }
 
-function checkForMatch_pattern_of_a_column_within_file__func() {
+function checkForMatch_of_a_pattern_of_a_column_within_file__func() {
     #Turn-off Expansion
     disable_expansion__func
 
@@ -4367,13 +4755,13 @@ function checkForMatch_multi_patterns_under_specified_columns_within_file__func(
     local dataFpath__input=${7}
 
     #FIRST MATCH: check if a match can be found for 'targetString1__input'
-   local  match1_isFound=`checkForMatch_pattern_of_a_column_within_file__func "${targetString1__input}" \
+   local  match1_isFound=`checkForMatch_of_a_pattern_of_a_column_within_file__func "${targetString1__input}" \
         "${pattern1__input}" \
         "${col1__input}" \
         "${dataFpath__input}"`    
 
     #SECOND MATCH: check if a match can be found for 'targetString2__input'
-    local match2_isFound=`checkForMatch_pattern_of_a_column_within_file__func "${targetString2__input}" \
+    local match2_isFound=`checkForMatch_of_a_pattern_of_a_column_within_file__func "${targetString2__input}" \
         "${pattern2__input}" \
         "${col2__input}" \
         "${dataFpath__input}"`    
@@ -4389,19 +4777,31 @@ function checkForMatch_multi_patterns_under_specified_columns_within_file__func(
     enable_expansion__func
 }
 
-function checkForMatch_dockerCmd_result__func() {
+function checkForMatch_of_a_word_within_file__func() {
+    #Turn-off Expansion
+    disable_expansion__func
+
     #Input Args
     local pattern__input=${1}
-    local dockerCmd__input=${2}
-    local dockerTableColno__input=${3}
+    local dataFpath__input=${2}
 
-    #Find any match (not exact)
-    local stdOutput=`${dockerCmd__input} | awk -v COLNUM=${dockerTableColno__input} '{print $COLNUM}' | grep -w ${pattern__input}`
-    if [[ -z ${stdOutput} ]]; then  #no match
+    #Check if file exists
+    if [[ ! -s ${dataFpath__input} ]]; then #does not exist
+        echo "false"
+
+        return
+    fi
+
+    #Find match
+    local isFound=`cat "${dataFpath__input}" | grep -w "${pattern__input}"`
+    if [[ -z ${isFound} ]]; then  #no match
         echo "false"
     else    #match
         echo "true"
     fi
+
+    #Turn-on Expansion
+    enable_expansion__func
 }
 
 function checkIf_string_contains_a_leading_specified_chars__func() {
@@ -4521,24 +4921,24 @@ function delete_lineNum_from_file__func() {
     #Input args
     local lineNum__input=${1}
     local excludeVal__input=${2}
-    local targetFpath__input=${3}
+    local targetfpath__input=${3}
 
     #Check if 'lineNum__input = 0'
     if [[ ${lineNum__input} -eq ${DOCKER__NUMOFMATCH_0} ]]; then
         return
     fi
 
-    #Check if 'targetFpath__input' does NOT exist
-    if [[ ! -f ${targetFpath__input} ]]; then
+    #Check if 'targetfpath__input' does NOT exist
+    if [[ ! -f ${targetfpath__input} ]]; then
         return
     fi
 
     #Get the 'line' for 'lineNum__input'
-    local line=`retrieve_line_from_file__func "${lineNum__input}" "${targetFpath__input}"`
+    local line=`retrieve_line_from_file__func "${lineNum__input}" "${targetfpath__input}"`
 
     #Delete line-number
     if [[ "${line}" != "${excludeVal__input}" ]]; then
-        sed -i "${lineNum__input}d" ${targetFpath__input}
+        sed -i "${lineNum__input}d" ${targetfpath__input}
     fi
 }
 
@@ -4579,20 +4979,68 @@ function get_endResult_ofString_with_semiColonChar__func() {
     local string__input=${1}
 
     #Define variables
-    local adjacentChar=${DOCKER__EMPTYSTRING}
-    local leftPart=${DOCKER__EMPTYSTRING}
-    local rightPart=${DOCKER__EMPTYSTRING}
-    local ret=${DOCKER__EMPTYSTRING}
+    local adjacentChar="${DOCKER__EMPTYSTRING}"
+    local leftPart="${DOCKER__EMPTYSTRING}"
+    local rightPart="${DOCKER__EMPTYSTRING}"
+    local ret="${DOCKER__EMPTYSTRING}"
 
+    local abortIsFound=false
     local backIsFound=false
     local clearIsFound=false
+    local finishIsFound=false
     local homeIsFound=false
+    local redoIsFound=false
+    local skipIsFound=false
 
     local rightPart_len=0
 
+    #Check if ';a' is found.
+    #If TRUE, then return 'DOCKER__SEMICOLON_ABORT'
+    abortIsFound=`checkForMatch_of_a_pattern_within_string__func "${DOCKER__SEMICOLON_ABORT}" "${string__input}"`
+    if [[ ${abortIsFound} == true ]]; then
+        ret="${DOCKER__SEMICOLON_ABORT}"
+
+        echo "${ret}"
+        
+        return
+    fi
+
+    #Check if ';f' is found
+    #If TRUE, then return 'DOCKER__SEMICOLON_FINISH'
+    finishIsFound=`checkForMatch_of_a_pattern_within_string__func "${DOCKER__SEMICOLON_FINISH}" "${string__input}"`
+    if [[ ${finishIsFound} == true ]]; then
+        ret=${DOCKER__SEMICOLON_FINISH}
+
+        echo "${ret}"
+
+        return
+    fi
+
+    #Check if ';f' is found
+    #If TRUE, then return 'DOCKER__SEMICOLON_REDO'
+    redoIsFound=`checkForMatch_of_a_pattern_within_string__func "${DOCKER__SEMICOLON_REDO}" "${string__input}"`
+    if [[ ${redoIsFound} == true ]]; then
+        ret=${DOCKER__SEMICOLON_REDO}
+
+        echo "${ret}"
+
+        return
+    fi
+
+    #Check if ';s' is found
+    #If TRUE, then return 'DOCKER__SEMICOLON_SKIP'
+    skipIsFound=`checkForMatch_of_a_pattern_within_string__func "${DOCKER__SEMICOLON_SKIP}" "${string__input}"`
+    if [[ ${skipIsFound} == true ]]; then
+        ret=${DOCKER__SEMICOLON_SKIP}
+
+        echo "${ret}"
+
+        return
+    fi
+
     #Check if ';h' is found
-    #If TRUE, then return with the original 'DOCKER__SEMICOLON_HOME'
-    homeIsFound=`checkForMatch_of_pattern_within_string__func "${DOCKER__SEMICOLON_HOME}" "${string__input}"`
+    #If TRUE, then return 'DOCKER__SEMICOLON_HOME'
+    homeIsFound=`checkForMatch_of_a_pattern_within_string__func "${DOCKER__SEMICOLON_HOME}" "${string__input}"`
     if [[ ${homeIsFound} == true ]]; then
         ret=${DOCKER__SEMICOLON_HOME}
 
@@ -4602,8 +5050,8 @@ function get_endResult_ofString_with_semiColonChar__func() {
     fi
 
     #Check if ';b' is found
-    #If TRUE, then return with the original 'DOCKER__SEMICOLON_BACK'
-    backIsFound=`checkForMatch_of_pattern_within_string__func "${DOCKER__SEMICOLON_BACK}" "${string__input}"`
+    #If TRUE, then return 'DOCKER__SEMICOLON_BACK'
+    backIsFound=`checkForMatch_of_a_pattern_within_string__func "${DOCKER__SEMICOLON_BACK}" "${string__input}"`
     if [[ ${backIsFound} == true ]]; then
         ret=${DOCKER__SEMICOLON_BACK}
 
@@ -4613,8 +5061,8 @@ function get_endResult_ofString_with_semiColonChar__func() {
     fi
 
     #Check if ';c' is found.
-    #If FALSE, then return with the original 'string__input'.
-    clearIsFound=`checkForMatch_of_pattern_within_string__func "${DOCKER__SEMICOLON_CLEAR}" "${string__input}"`
+    #If FALSE, then return the original 'string__input'.
+    clearIsFound=`checkForMatch_of_a_pattern_within_string__func "${DOCKER__SEMICOLON_CLEAR}" "${string__input}"`
     if [[ ${clearIsFound} == false ]]; then
         ret="${string__input}"
 
@@ -4700,37 +5148,37 @@ function get_last_nChars_ofString__func() {
     echo "${ret}"
 }
 
-function insert_string_into_file_at_specified_lineNum__func() {
+function insert_string_at_specified_lineNum_in_file__func() {
     #Input args
     local string__input=${1}
     local lineNum__input=${2}
-    local targetFpath__input=${3}
+    local targetfpath__input=${3}
     local flag_checkIf_already_inserted__input=${4}
 
-    #Check if 'string__input' is found in file 'targetFpath__input'
+    #Check if 'string__input' is found in file 'targetfpath__input'
     local isFound=false
     if [[ ${flag_checkIf_already_inserted__input} == true ]]; then
-        isFound=`checkFor_exact_match_of_pattern_within_file__func "${string__input}" "${targetFpath__input}"`
+        isFound=`checkForExactMatch_of_a_pattern_within_file__func "${string__input}" "${targetfpath__input}"`
         if [[ ${isFound} == true ]]; then
             return
         fi
     fi
 
-    #Get number of lines of 'targetFpath__input'
-    local targetFpath_numOfLines=`get_numOfLines_for_specified_string_or_file__func "${targetFpath__input}"`
+    #Get number of lines of 'targetfpath__input'
+    local targetFpath_numOfLines=`get_numOfLines_for_specified_string_or_file__func "${targetfpath__input}"`
 
     #Check if file contains data
     #If true, then insert
     #If false, then just write
-    if [[ -s ${targetFpath__input} ]]; then #contains data
-        #Check if 'targetFpath__input' contains at least the number of lines equal or greater than 'lineNum__input'
+    if [[ -s ${targetfpath__input} ]]; then #contains data
+        #Check if 'targetfpath__input' contains at least the number of lines equal or greater than 'lineNum__input'
         if [[ ${targetFpath_numOfLines} -ge ${lineNum__input} ]]; then
-            sed -i "${lineNum__input}i${string__input}" ${targetFpath__input}   #insert at 'lineNum__input'
+            sed -i "${lineNum__input}i${string__input}" ${targetfpath__input}   #insert at 'lineNum__input'
         else
-            echo "${string__input}" >> ${targetFpath__input}    #append
+            echo "${string__input}" >> ${targetfpath__input}    #append
         fi
     else    #contains no data
-        echo "${string__input}" > ${targetFpath__input}
+        echo "${string__input}" > ${targetfpath__input}
     fi
 }
 
@@ -4758,7 +5206,7 @@ function prepend_backSlash_inFrontOf_specialChars__func() {
 	local SED_EXCLUDES="${DOCKER__DOTSLASH}"
 
 	#Prepend a backslash '\' in front of any special chars execpt for chars specified by 'SED_EXCLUDES'
-    local ret=${DOCKER__EMPTYSTRING}
+    local ret="${DOCKER__EMPTYSTRING}"
     if [[ ${flag_enableExcludes__input} == true ]]; then
 	    ret=`echo "${string__input}" | sed "s/[^[:alnum:]${SED_EXCLUDES}]/${SED__BACKSLASH}&/g"`
     else
@@ -4799,6 +5247,47 @@ function remove_whiteSpaces__func() {
     echo -e "${ret}"
 }
 
+function replace_or_append_string_based_on_pattern_in_file__func() {
+    #Input args
+    local string__input=${1}
+    local pattern__input=${2}
+    local targetfpath__input=${3}
+
+    #Check if file exists
+    #Note: if false, then add string to file.
+    if [[ ! -f "${targetfpath__input}" ]]; then #file does NOT exist
+        #Write to file
+        echo -e "${string__input}" | tee ${targetfpath__input} >/dev/null
+
+        #Exit
+        return 0;
+    fi
+
+    #Check if 'pattern__input' is found in file 'targetfpath__input'
+    #...and get the 'line' containing this 'pattern__input'.
+    local line=$(grep -F "${pattern__input}" "${targetfpath__input}")
+    if [[ -n "${line}" ]]; then
+        sed -i "s/${line}/${string__input}/g" ${targetfpath__input}
+    else
+        echo -e "${string__input}" | tee -a ${targetfpath__input} >/dev/null
+    fi
+}
+
+function replace_string_with_another_string_in_file__func() {
+    #Input args
+    local sed_oldstring__input=${1}
+    local sed_newstring__input=${2}
+    local targetfpath__input=${3}
+
+    #Check if file exists
+    if [[ ! -f "${targetfpath__input}" ]]; then #file does NOT exist
+        return 0;
+    fi
+
+    #Replace 
+    sed -i "s/${sed_oldstring__input}/${sed_newstring__input}/g" ${targetfpath__input}
+}
+
 function retrieve_data_specified_by_col_within_2Darray__func() {
 	#Input args
 	local inString__input=${1}
@@ -4808,9 +5297,9 @@ function retrieve_data_specified_by_col_within_2Darray__func() {
     local dataArr__input=("$@")
 
 	#Define variables
-	local dataArrItem=${DOCKER__EMPTYSTRING}
-	local ret=${DOCKER__EMPTYSTRING}
-	local stdOutput=${DOCKER__EMPTYSTRING}
+	local dataArrItem="${DOCKER__EMPTYSTRING}"
+	local ret="${DOCKER__EMPTYSTRING}"
+	local stdOutput="${DOCKER__EMPTYSTRING}"
 
 	for dataArrItem in "${dataArr__input[@]}"
 	do
@@ -4837,13 +5326,14 @@ function retrieve__data_specified_by_col_within_file__func() {
     #Input args
     local inString__input=${1}
     local outString_col__input=${2}
-    local targetFpath__input=${3}
+    local targetfpath__input=${3}
 
     #Find 'pattern__input'
-    local line=`cat ${targetFpath__input} | grep "${inString__input}"`
+    local line=`cat ${targetfpath__input} | grep "${inString__input}"`
 
     #Get data
-    local ret=`echo "${line}" | awk -v COLNUM="${outString_col__input}" '{print $COLNUM}'`
+    # local ret=`echo "${line}" | awk -v COLNUM="${outString_col__input}" '{print $COLNUM}'`
+    local ret=$(grep -F "${inString__input}" ${targetfpath__input} | awk -vCOL="${outString_col__input}" '{print $COL}')
 
     #Output
     echo "${ret}"
@@ -4853,24 +5343,24 @@ function retrieve__data_specified_by_col_within_file__func() {
 function retrieve_line_from_file__func() {
     #Input args
     local lineNum__input=${1}
-    local targetFpath__input=${2}
+    local targetfpath__input=${2}
 
     #Define variable
-    local ret=${DOCKER__EMPTYSTRING}
+    local ret="${DOCKER__EMPTYSTRING}"
 
     #Check if 'lineNum__input = 0'
     if [[ ${lineNum__input} -eq ${DOCKER__NUMOFMATCH_0} ]]; then
         return
     fi
 
-    #Check if 'targetFpath__input' does NOT exist
-    if [[ ! -f ${targetFpath__input} ]]; then
+    #Check if 'targetfpath__input' does NOT exist
+    if [[ ! -f ${targetfpath__input} ]]; then
         return
     fi
 
 
     #Retrieve line based on the specified 'lineNum__input'
-    local ret=`sed "${lineNum__input}q;d" ${targetFpath__input}`
+    local ret=`sed "${lineNum__input}q;d" ${targetfpath__input}`
 
     #Output
     echo "${ret}"
@@ -4879,15 +5369,15 @@ function retrieve_line_from_file__func() {
 function retrieve_lineNum_from_file__func() {
     #Input args
     local line__input=${1}
-    local targetFpath__input=${2}
+    local targetfpath__input=${2}
 
     #Define variables
     local ret=0
 
-    #Check if 'targetFpath__input' contains data
-    if [[ -s ${targetFpath__input} ]]; then #contains data
+    #Check if 'targetfpath__input' contains data
+    if [[ -s ${targetfpath__input} ]]; then #contains data
         #Retrieve line-number based on the specified 'line__input'
-        ret=`cat ${targetFpath__input} | grep -n "^${line__input}$" | cut -d":" -f1`
+        ret=`cat ${targetfpath__input} | grep -n "^${line__input}$" | cut -d":" -f1`
 
         #Check if 'ret' is an Empty String
         if [[ -z ${ret} ]]; then    #true
@@ -4916,7 +5406,7 @@ function retrieve_subStrings_delimited_by_lastChar_within_string__func() {
     local ret=${EMPTYSTRING}
 
     #Check if 'char__input' is found in 'string__input'
-    local char_isFound=`checkForMatch_of_pattern_within_string__func "${char__input}" "${string__input}"`
+    local char_isFound=`checkForMatch_of_a_pattern_within_string__func "${char__input}" "${string__input}"`
 
     #Retrieve the sub-string which is on the left-side of the specified 'char__input'.
     if [[ ${char_isFound} == true ]]; then
@@ -4977,18 +5467,18 @@ function trim_string_toFit_specified_windowSize__func() {
     local flag_enableColor__input=${3}
 
     #Define variables
-    local constStr=${DOCKER__EMPTYSTRING}
+    local constStr="${DOCKER__EMPTYSTRING}"
     local dotdot_print=${DOCKER__DOTDOT}
-    local leadingStr=${DOCKER__EMPTYSTRING}
-    local leadingStr_lastChar=${DOCKER__EMPTYSTRING}
-    local leadingStr_left=${DOCKER__EMPTYSTRING}
-    local leadingStr_right=${DOCKER__EMPTYSTRING}
-    local ret=${DOCKER__EMPTYSTRING}
+    local leadingStr="${DOCKER__EMPTYSTRING}"
+    local leadingStr_lastChar="${DOCKER__EMPTYSTRING}"
+    local leadingStr_left="${DOCKER__EMPTYSTRING}"
+    local leadingStr_right="${DOCKER__EMPTYSTRING}"
+    local ret="${DOCKER__EMPTYSTRING}"
     local slash_print=${DOCKER__SLASH}
     local slas_dotdot_Slash_print=${DOCKER__SLASH_DOTDOT_SLASH}
-    local trailingStr=${DOCKER__EMPTYSTRING}
-    local trailingStr_left=${DOCKER__EMPTYSTRING}
-    local trailingStr_right=${DOCKER__EMPTYSTRING}
+    local trailingStr="${DOCKER__EMPTYSTRING}"
+    local trailingStr_left="${DOCKER__EMPTYSTRING}"
+    local trailingStr_right="${DOCKER__EMPTYSTRING}"
 
     local leadingStr_len=0
     local numOfTrailingChars=0
@@ -5033,7 +5523,7 @@ function trim_string_toFit_specified_windowSize__func() {
     #Select case based on the number of slashes
     case "${numOfSlashes}" in
         ${DOCKER__NUMOFMATCH_0})
-            leadingStr=${DOCKER__EMPTYSTRING}
+            leadingStr="${DOCKER__EMPTYSTRING}"
             ;;
         ${DOCKER__NUMOFMATCH_1})
             leadingStr_left=`echo "${string__input}" | cut -d"${DOCKER__SLASH}" -f1`
@@ -5104,19 +5594,19 @@ function skip_and_correct_unwanted_chars__func() {
     local string__input=${1}
 
     #Define variables
-	local char=${DOCKER__EMPTYSTRING}
+	local char="${DOCKER__EMPTYSTRING}"
 	local dash_isFound=false
 	local index=0
-    local ret=${DOCKER__EMPTYSTRING}
-    local string_noSpaces=${DOCKER__EMPTYSTRING}
-	local string_filtered=${DOCKER__EMPTYSTRING}
-	local string_final=${DOCKER__EMPTYSTRING}
-	local string_leftOfComma=${DOCKER__EMPTYSTRING}
-	local string_remain=${DOCKER__EMPTYSTRING}
-	local string_singleComma=${DOCKER__EMPTYSTRING}
-	local string_singleDash=${DOCKER__EMPTYSTRING}
-	local string_leftOfDash=${DOCKER__EMPTYSTRING}
-	local string_rightOfDash=${DOCKER__EMPTYSTRING}
+    local ret="${DOCKER__EMPTYSTRING}"
+    local string_noSpaces="${DOCKER__EMPTYSTRING}"
+	local string_filtered="${DOCKER__EMPTYSTRING}"
+	local string_final="${DOCKER__EMPTYSTRING}"
+	local string_leftOfComma="${DOCKER__EMPTYSTRING}"
+	local string_remain="${DOCKER__EMPTYSTRING}"
+	local string_singleComma="${DOCKER__EMPTYSTRING}"
+	local string_singleDash="${DOCKER__EMPTYSTRING}"
+	local string_leftOfDash="${DOCKER__EMPTYSTRING}"
+	local string_rightOfDash="${DOCKER__EMPTYSTRING}"
 
     #Step 1.1: remove all spaces
     string_noSpaces=`echo "${string__input}" | sed 's/ //g'`
@@ -5149,7 +5639,7 @@ function skip_and_correct_unwanted_chars__func() {
         string_leftOfComma=`echo "${string_remain}" | cut -d"${DOCKER__COMMA}" -f1`
         if [[ ! -z ${string_leftOfComma} ]]; then  #contains data
             #Check if a dash '-' is found in 'string_leftOfComma'
-            dash_isFound=`checkForMatch_of_pattern_within_string__func "${DOCKER__DASH}" "${string_leftOfComma}"`
+            dash_isFound=`checkForMatch_of_a_pattern_within_string__func "${DOCKER__DASH}" "${string_leftOfComma}"`
             if [[ ${dash_isFound} == false ]]; then #dash not found
 				#Append to 'string_final'
 				string_final="${string_final}${DOCKER__COMMA}${string_leftOfComma}"
@@ -5218,10 +5708,10 @@ function xtract_indexes_from_a_rangeAndOrGroup_in_descendingOrder__func() {
     local index_xtracted_arr=()
     local index_xtracted_arrIndex=0
 
-    local dataArrItem=${DOCKER__EMPTYSTRING}
-    local string_leftOfComma=${DOCKER__EMPTYSTRING}
-    local string_remain=${DOCKER__EMPTYSTRING}
-    local ret=${DOCKER__EMPTYSTRING}
+    local dataArrItem="${DOCKER__EMPTYSTRING}"
+    local string_leftOfComma="${DOCKER__EMPTYSTRING}"
+    local string_remain="${DOCKER__EMPTYSTRING}"
+    local ret="${DOCKER__EMPTYSTRING}"
 
     local counter=0
     local index_range_min=0
@@ -5243,7 +5733,7 @@ function xtract_indexes_from_a_rangeAndOrGroup_in_descendingOrder__func() {
         string_leftOfComma=`echo "${string_remain}" | cut -d"${DOCKER__COMMA}" -f1`
         if [[ ! -z ${string_leftOfComma} ]]; then  #contains data
             #Check if a dash '-' is found in 'string_leftOfComma'
-            dash_isFound=`checkForMatch_of_pattern_within_string__func "${DOCKER__DASH}" "${string_leftOfComma}"`
+            dash_isFound=`checkForMatch_of_a_pattern_within_string__func "${DOCKER__DASH}" "${string_leftOfComma}"`
             if [[ ${dash_isFound} == false ]]; then #dash not found
                 #Add 'string_leftOfComma' to array 'index_xtracted_arr'
                 index_xtracted_arr[${index_xtracted_arrIndex}]=${string_leftOfComma}
@@ -5343,11 +5833,11 @@ function update_exported_env_var__func() {
     local exported_env_var_fpath__input=${4}
 
     #Define Message Constants
-    local ERRMSG_DOCKERFILE_NOT_FOUND="${DOCKER__ERROR}: Dockerfile '${dockerFile__input}' not Found"
-    local ERRMSG_EXPORTEDFILE_NOT_FOUND="${DOCKER__ERROR}: Environment variable file '${exported_env_var_fpath__input}' not Found"
+    local ERRMSG_DOCKERFILE_NOT_FOUND="${DOCKER__ERROR}: Dockerfile '${dockerFile__input}' not found"
+    local ERRMSG_EXPORTEDFILE_NOT_FOUND="${DOCKER__ERROR}: Environment variable file '${exported_env_var_fpath__input}' not found"
 
     #Get repository:tag from file
-    local dockerfile_fpath_repositoryTag=${DOCKER__EMPTYSTRING}
+    local dockerfile_fpath_repositoryTag="${DOCKER__EMPTYSTRING}"
     if [[ -s ${dockerfile_fpath__input} ]]; then
         dockerfile_fpath_repositoryTag=`retrieve_repositoryTag_from_dockerfile__func "${dockerfile_fpath__input}"`
     else
@@ -5376,7 +5866,7 @@ function update_exported_env_var__func() {
             sed -i "${repository_tag_lineNum}d" ${exported_env_var_fpath__input}
         fi
 
-        #Add the new data to file 'docker__exported_env_var_fpath' as follows:
+        #Add the new data to file 'docker__exported_env_var__fpath' as follows:
         #   dockerfile_fpath_repositoryTag<space>docker_arg1__input<space>DOCKER_ARG2__input
         #Remark:
         #   1. This data will be retrieved in 'docker__create_an_image_from_dockerfile.sh' and 'docker_create_images_from_dockerlist.sh'
@@ -5419,6 +5909,7 @@ function checkIf_webLink_isAccessible__func() {
 trap docker__ctrl_c__sub SIGINT
 
 docker__ctrl_c__sub() {
+    
     # #Turn-on Expansion
     # enable_expansion__func
     
@@ -5428,63 +5919,239 @@ docker__ctrl_c__sub() {
     # #Enable keyboard-input
     # enable_keyboard_input__func
 
-    #Exit with exit-code 99
+    #Unset variables
     exit__func "${DOCKER__EXITCODE_99}" "${DOCKER__NUMOFLINES_2}"
 }
 
-docker__environmental_variables__sub() {
-    #Check the number of input args
-    if [[ -z ${docker__LTPP3_ROOTFS__dir} ]]; then   #must be equal to 3 input args
-        #---Defin FOLDER
-        docker__LTPP3_ROOTFS__foldername="LTPP3_ROOTFS"
-        docker__development_tools__foldername="development_tools"
+docker__get_source_fullpath__sub() {
+    #Define constants
+    DOCKER__PHASE_CHECK_CACHE=1
+    DOCKER__PHASE_FIND_PATH=10
+    DOCKER__PHASE_EXIT=100
 
-        #Get all the directories containing the foldername 'LTPP3_ROOTFS'...
-        #... and read to array 'find_result_arr'
-        #Remark:
-        #   By using '2> /dev/null', the errors are not shown.
-        readarray -t find_dir_result_arr < <(find  / -type d -iname "${docker__LTPP3_ROOTFS__foldername}" 2> /dev/null)
+    #Define variables
+    docker__phase=""
 
-        #Define variable
-        local find_path_of_LTPP3_ROOTFS=${DOCKER__EMPTYSTRING}
+    docker__current__dir=""
+    docker__parent__dir=""
+    docker__search__dir=""
+    docker__tmp__dir=""
 
-        #Loop thru array-elements
-        for find_dir_result_arrItem in "${find_dir_result_arr[@]}"
-        do
-            #Update variable 'find_path_of_LTPP3_ROOTFS'
-            find_path_of_LTPP3_ROOTFS="${find_dir_result_arrItem}/${docker__development_tools__foldername}"
-            #Check if 'directory' exist
-            if [[ -d "${find_path_of_LTPP3_ROOTFS}" ]]; then    #directory exists
-                #Update variable
-                docker__LTPP3_ROOTFS_development_tools__dir="${find_path_of_LTPP3_ROOTFS}"
+    docker__development_tools__foldername=""
+    docker__LTPP3_ROOTFS__foldername=""
+    docker__global__filename=""
+    locaocker__parentDir_of_LTPP3_ROOTFS__dir=""
 
+    docker__mainmenu_path_cache__filename=""
+    docker__mainmenu_path_cache__fpath=""
+
+    docker__find_dir_result__arr=()
+    docker__find_dir_result__arritem=""
+
+    docker__path_of_development_tools__found=""
+    docker__parentpath_of_development__tools=""
+
+    docker__isfound=""
+
+    docker__retry_ctr=0
+
+    #Update variables
+    docker__bin_bash__dir=/bin/bash
+    docker__current__dir=$(dirname $(readlink -f $0))
+    docker__parent__dir="$(dirname "${docker__current__dir}")"
+    docker__tmp__dir=/tmp
+
+    docker__development_tools__foldername="development_tools"
+    docker__global__filename="docker_global.sh"
+    docker__LTPP3_ROOTFS__foldername="LTPP3_ROOTFS"
+
+    docker__mainmenu_path_cache__filename="docker__mainmenu_path.cache"
+    docker__mainmenu_path_cache__fpath="${docker__tmp__dir}/${docker__mainmenu_path_cache__filename}"
+
+    #Initialize variables
+    docker__phase="${DOCKER__PHASE_CHECK_CACHE}"
+    docker__result=false
+
+
+    #Start loop
+    while true
+    do
+        case "${docker__phase}" in
+            "${DOCKER__PHASE_CHECK_CACHE}")
+                if [[ -f "${docker__mainmenu_path_cache__fpath}" ]]; then
+                    #Get the directory stored in cache-file
+                    docker__LTPP3_ROOTFS_development_tools__dir=$(awk 'NR==1' "${docker__mainmenu_path_cache__fpath}")
+
+                    #Move one directory up
+                    docker__parentpath_of_development__tools=$(dirname "${docker__LTPP3_ROOTFS_development_tools__dir}")
+
+                    #Check if 'development_tools' is in the 'LTPP3_ROOTFS' folder
+                    docker__isfound=$(docker__checkif_paths_are_related "${docker__current__dir}" \
+                            "${docker__parentpath_of_development__tools}" "${docker__LTPP3_ROOTFS__foldername}")
+                    if [[ ${docker__isfound} == false ]]; then
+                        docker__phase="${DOCKER__PHASE_FIND_PATH}"
+                    else
+                        docker__result=true
+
+                        docker__phase="${DOCKER__PHASE_EXIT}"
+                    fi
+                else
+                    docker__phase="${DOCKER__PHASE_FIND_PATH}"
+                fi
+                ;;
+            "${DOCKER__PHASE_FIND_PATH}")   
+                #Print
+                echo -e "---:\e[30;38;5;215mSTART\e[0;0m: find path of folder \e[30;38;5;246m'${docker__development_tools__foldername}\e[0;0m"
+
+                #Initialize variables
+                docker__LTPP3_ROOTFS_development_tools__dir=""
+                docker__search__dir="${docker__current__dir}"   #start with search in the current dir
+
+                #Start loop
+                while true
+                do
+                    #Get all the directories containing the foldername 'LTPP3_ROOTFS'...
+                    #... and read to array 'find_result_arr'
+                    readarray -t docker__find_dir_result__arr < <(find  "${docker__search__dir}" -type d -iname "${docker__LTPP3_ROOTFS__foldername}" 2> /dev/null)
+
+                    #Iterate thru each array-item
+                    for docker__find_dir_result__arritem in "${docker__find_dir_result__arr[@]}"
+                    do
+                        echo -e "---:\e[30;38;5;215mCHECKING\e[0;0m: ${docker__find_dir_result__arritem}"
+
+                        #Find path
+                        docker__isfound=$(docker__checkif_paths_are_related "${docker__current__dir}" \
+                                "${docker__find_dir_result__arritem}"  "${docker__LTPP3_ROOTFS__foldername}")
+                        if [[ ${docker__isfound} == true ]]; then
+                            #Update variable 'docker__path_of_development_tools__found'
+                            docker__path_of_development_tools__found="${docker__find_dir_result__arritem}/${docker__development_tools__foldername}"
+
+                            #Check if 'directory' exist
+                            if [[ -d "${docker__path_of_development_tools__found}" ]]; then    #directory exists
+                                #Update variable
+                                #Remark:
+                                #   'docker__LTPP3_ROOTFS_development_tools__dir' is a global variable.
+                                #   This variable will be passed 'globally' to script 'docker_global.sh'.
+                                docker__LTPP3_ROOTFS_development_tools__dir="${docker__path_of_development_tools__found}"
+
+                                break
+                            fi
+                        fi
+                    done
+
+                    #Check if 'docker__LTPP3_ROOTFS_development_tools__dir' contains any data
+                    if [[ -z "${docker__LTPP3_ROOTFS_development_tools__dir}" ]]; then  #contains no data
+                        case "${docker__retry_ctr}" in
+                            0)
+                                docker__search__dir="${docker__parent__dir}"    #next search in the 'parent' directory
+                                ;;
+                            1)
+                                docker__search__dir="/" #finally search in the 'main' directory (the search may take longer)
+                                ;;
+                            *)
+                                echo -e "\r"
+                                echo -e "***\e[1;31mERROR\e[0;0m: folder \e[30;38;5;246m${docker__development_tools__foldername}\e[0;0m: \e[30;38;5;131mNot Found\e[0;0m"
+                                echo -e "\r"
+
+                                #Update variable
+                                docker__result=false
+                                ;;
+                        esac
+                    else    #contains data
+                        #Print
+                        echo -e "---:\e[30;38;5;215mCOMPLETED\e[0;0m: find path of folder \e[30;38;5;246m'${docker__development_tools__foldername}\e[0;0m"
+
+
+                        #Write to file
+                        echo "${docker__LTPP3_ROOTFS_development_tools__dir}" | tee "${docker__mainmenu_path_cache__fpath}" >/dev/null
+
+                        #Print
+                        echo -e "---:\e[30;38;5;215mSTATUS\e[0;0m: write path to temporary cache-file: \e[1;33mDONE\e[0;0m"
+
+                        #Update variable
+                        docker__result=true
+                    fi
+
+                    #set phase
+                    docker__phase="${DOCKER__PHASE_EXIT}"
+
+                    #Exit loop
+                    break
+                done
+                ;;    
+            "${DOCKER__PHASE_EXIT}")
                 break
-            fi
-        done
+                ;;
+        esac
+    done
 
-        docker__LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS_development_tools__dir%/*}    #move one directory up: LTPP3_ROOTFS/
-        docker__parentDir_of_LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS__dir%/*}    #move two directories up. This directory is the one-level higher than LTPP3_ROOTFS/
+    #Exit if 'docker__result = false'
+    if [[ ${docker__result} == false ]]; then
+        exit 99
     fi
 
+    #Retrieve directories
+    #Remark:
+    #   'docker__LTPP3_ROOTFS__dir' is a global variable.
+    #   This variable will be passed 'globally' to script 'docker_global.sh'.
+    docker__LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS_development_tools__dir%/*}    #move one directory up: LTPP3_ROOTFS/
+    docker__parentDir_of_LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS__dir%/*}    #move two directories up. This directory is the one-level higher than LTPP3_ROOTFS/
+
+    docker__enter_cmdline_mode__dir=${docker__parentDir_of_LTPP3_ROOTFS__dir}/enter_cmd_mode
+    docker__enter_cmdline_mode_cache__dir=${docker__enter_cmdline_mode__dir}/cache
+
+    docker__LTPP3_ROOTFS_boot__dir=${docker__LTPP3_ROOTFS__dir}/boot
+    docker__LTPP3_ROOTFS_boot_configs__dir=${docker__LTPP3_ROOTFS_boot__dir}/configs
+    docker__LTPP3_ROOTFS_build__dir=${docker__LTPP3_ROOTFS__dir}/build
+    docker__LTPP3_ROOTFS_build_scripts__dir=${docker__LTPP3_ROOTFS_build__dir}/scripts
+    docker__LTPP3_ROOTFS_docker__dir=${docker__LTPP3_ROOTFS__dir}/docker
+    docker__LTPP3_ROOTFS_docker_dockerfiles__dir=${docker__LTPP3_ROOTFS_docker__dir}/dockerfiles
+    docker__LTPP3_ROOTFS_docker_list__dir=${docker__LTPP3_ROOTFS_docker__dir}/list
+    docker__LTPP3_ROOTFS_linux__dir=${docker__LTPP3_ROOTFS__dir}/linux
+    docker__LTPP3_ROOTFS_linux_scripts__dir=${docker__LTPP3_ROOTFS_linux__dir}/scripts
+
+
+#---filenames used at multiple places
+    docker__docker_fs_partition_diskpartsize_dat__filename="docker_fs_partition_diskpartsize.dat"
+    docker__docker_fs_partition_conf__filename="docker_fs_partition.conf"
+    docker__fstab__filename="fstab"
+    docker__fstab_overlaybck__filename="fstab.overlaybck"
+    docker__init__filename="init"
+    docker__isp_c__filename="isp.c"
+    docker__isp_c_overlaybck__filename="isp.c.overlaybck"
+    docker__isp_sh__filename="isp.sh"
+    docker__isp_sh_overlaybck__filename="isp.sh.overlaybck"
+    docker__pentagram_common_h__filename="pentagram_common.h"
+    docker__pentagram_common_h_overlaybck__filename="pentagram_common.h.overlaybck"
+    docker__tb_init_sh__filename="tb_init.sh"
+
+
+#---docker__docker__dir - contents
     docker__docker__dir=${docker__parentDir_of_LTPP3_ROOTFS__dir}/docker
     docker__docker_cache__dir=${docker__docker__dir}/cache
     docker__docker_config__dir=${docker__docker__dir}/config
     docker__docker_dockerfiles__dir=${docker__docker__dir}/dockerfiles
     docker__docker_images__dir=${docker__docker__dir}/images
+    docker__docker_overlayfs__dir=${docker__docker__dir}/overlayfs
 
-    docker__enter_cmdline_mode__dir=${docker__parentDir_of_LTPP3_ROOTFS__dir}/enter_cmd_mode
-    docker__enter_cmdline_mode_cache__dir=${docker__enter_cmdline_mode__dir}/cache
+    docker__docker_overlayfs_fstab__fpath=${docker__docker_overlayfs__dir}/${docker__fstab__filename}
+    docker__docker_fs_partition_diskpartsize_dat__fpath=${docker__docker_overlayfs__dir}/${docker__docker_fs_partition_diskpartsize_dat__filename}
+    docker__docker_fs_partition_conf__fpath=${docker__docker_overlayfs__dir}/${docker__docker_fs_partition_conf__filename}
+    docker__docker_overlayfs_isp_c__fpath=${docker__docker_overlayfs__dir}/${docker__isp_c__filename}
+    docker__docker_overlayfs_isp_sh__fpath=${docker__docker_overlayfs__dir}/${docker__isp_sh__filename}
+    docker__docker_overlayfs_pentagram_common_h__fpath=${docker__docker_overlayfs__dir}/${docker__pentagram_common_h__filename}
+    docker__docker_overlayfs_tb_init_sh__fpath=${docker__docker_overlayfs__dir}/${docker__tb_init_sh__filename}
 
-    docker__LTPP3_ROOTFS_docker__dir=${docker__LTPP3_ROOTFS__dir}/docker
-    docker__LTPP3_ROOTFS_docker_dockerfiles__dir=${docker__LTPP3_ROOTFS_docker__dir}/dockerfiles
-    docker__LTPP3_ROOTFS_docker_list__dir=${docker__LTPP3_ROOTFS_docker__dir}/list
 
-    docker__tmp_dir=/tmp
-    docker__bin_bash__dir=/bin/bash
+#---docker__docker_config__dir - contents
+    docker__export_env_var_menu_cfg__filename="docker_export_env_var_menu.cfg"
+    docker__export_env_var_menu_cfg__fpath=${docker__docker_config__dir}/${docker__export_env_var_menu_cfg__filename}
+
 
 #---docker__enter_cmdline_mode_cache__dir - contents
     docker__enter_cmdline_mode_cache__filename="docker_enter_cmdline_mode.cache"
     docker__enter_cmdline_mode_cache__fpath=${docker__enter_cmdline_mode_cache__dir}/${docker__enter_cmdline_mode_cache__filename}
+
 
 #---docker__LTPP3_ROOTFS_development_tools__dir - contents
     compgen__query_w_autocomplete__filename="compgen_query_w_autocomplete.sh"
@@ -5493,14 +6160,38 @@ docker__environmental_variables__sub() {
     dirlist__readInput_w_autocomplete__filename="dirlist_readInput_w_autocomplete.sh"
     dirlist__readInput_w_autocomplete__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${dirlist__readInput_w_autocomplete__filename}
 
-    docker__run_chroot__filename="docker_run_chroot.sh"
-    docker__run_chroot__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__run_chroot__filename}
+    docker__build_ispboootbin_filename="docker_build_ispboootbin.sh"
+    docker__build_ispboootbin_fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__build_ispboootbin_filename}
+
+    docker__fs_partition_menu__filename="docker_fs_partition_menu.sh"
+    docker__fs_partition_menu__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__fs_partition_menu__filename}
+
+    docker__fs_partition_diskpartition_menu_filename="docker_fs_partition_diskpartition_menu.sh"
+    docker__fs_partition_diskpartition_menu_fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__fs_partition_diskpartition_menu_filename}
+
+    docker__fs_partition_diskpartition_menu_output_filename="docker_fs_partition_diskpartition_menu.output"
+    docker__fs_partition_diskpartition_menu_output_fpath=${docker__tmp__dir}/${docker__fs_partition_diskpartition_menu_output_filename}
+
+    docker__fs_partition_disksize_menu__filename="docker_fs_partition_disksize_menu.sh"
+    docker__fs_partition_disksize_menu__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__fs_partition_disksize_menu__filename}
+
+    # docker__fs_partition_disksize_menu_output__filename="docker_fs_partition_disksize_menu.output"
+    # docker__fs_partition_disksize_menu_output__fpath=${docker__tmp__dir}/${docker__fs_partition_disksize_menu_output__filename}
+
+    docker__fs_partition_disksize_userdefined__filename="docker_fs_partition_disksize_userdefined.sh"
+    docker__fs_partition_disksize_userdefined__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__fs_partition_disksize_userdefined__filename}
+
+    docker__fs_partition_disksize_userdefined_output__filename="docker_fs_partition_disksize_userdefined.output"
+    docker__fs_partition_disksize_userdefined_output__fpath=${docker__tmp__dir}/${docker__fs_partition_disksize_userdefined_output__filename}
+
+    docker__container_build_ispboootbin_filename="docker_container_build_ispboootbin.sh"
+    docker__container_build_ispboootbin_fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__container_build_ispboootbin_filename}
 
     docker__containerlist_tableinfo__filename="docker_containerlist_tableinfo.sh"
     docker__containerlist_tableinfo__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__containerlist_tableinfo__filename}
 
-    docker__container_run_remove_menu__filename="docker_container_run_remove_menu.sh"
-    docker__container_run_remove_menu__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__container_run_remove_menu__filename}
+    docker__container_run_remove_build_menu__filename="docker_container_run_remove_build_menu.sh"
+    docker__container_run_remove_build_menu__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__container_run_remove_build_menu__filename}
 
     docker__cp_fromto_container__filename="docker_cp_fromto_container.sh"
     docker__cp_fromto_container__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__cp_fromto_container__filename}
@@ -5517,8 +6208,8 @@ docker__environmental_variables__sub() {
     docker__create_image_from_existing_repository__filename="docker_create_image_from_existing_repository.sh"
     docker__create_image_from_existing_repository__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__create_image_from_existing_repository__filename}
 
-    docker_create_images_from_dockerfile_dockerlist_menu__filename="docker_create_images_from_dockerfile_dockerlist_menu.sh"
-    docker_create_images_from_dockerfile_dockerlist_menu__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker_create_images_from_dockerfile_dockerlist_menu__filename}
+    docker__create_images_from_dockerfile_dockerlist_menu__filename="docker_create_images_from_dockerfile_dockerlist_menu.sh"
+    docker__create_images_from_dockerfile_dockerlist_menu__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__create_images_from_dockerfile_dockerlist_menu__filename}
 
     docker__enter_command__filename="docker_enter_command.sh"
     docker__enter_command__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__enter_command__filename}
@@ -5532,8 +6223,8 @@ docker__environmental_variables__sub() {
     docker__git_menu__filename="git_menu.sh"
     docker__git_menu__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__git_menu__filename}
 
-    docker_image_create_remove_rename_menu__filename="docker_image_create_remove_rename_menu.sh"
-    docker_image_create_remove_rename_menu__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker_image_create_remove_rename_menu__filename}
+    docker__image_create_remove_rename_menu__filename="docker_image_create_remove_rename_menu.sh"
+    docker__image_create_remove_rename_menu__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__image_create_remove_rename_menu__filename}
 
     docker__load__filename="docker_load.sh"
     docker__load__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__load__filename}
@@ -5547,8 +6238,8 @@ docker__environmental_variables__sub() {
     docker__remove_image__filename="docker_remove_image.sh"
     docker__remove_image__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__remove_image__filename}
 
-    docker_rename_repotag__filename="docker_rename_repotag.sh"
-    docker_rename_repotag__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker_rename_repotag__filename}
+    docker__rename_repotag__filename="docker_rename_repotag.sh"
+    docker__rename_repotag__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__rename_repotag__filename}
 
     docker__repo_link_checkout_menu_select__filename="docker_repo_link_checkout_menu_select.sh"
     docker__repo_link_checkout_menu_select__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__repo_link_checkout_menu_select__filename}
@@ -5558,6 +6249,9 @@ docker__environmental_variables__sub() {
 
 	docker__repolist_tableinfo__filename="docker_repolist_tableinfo.sh"
 	docker__repolist_tableinfo__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__repolist_tableinfo__filename}
+
+    docker__run_chroot__filename="docker_run_chroot.sh"
+    docker__run_chroot__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__run_chroot__filename}
 
     docker__run_container_from_a_repository__filename="docker_run_container_from_a_repository.sh"
     docker__run_container_from_a_repository__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__run_container_from_a_repository__filename}
@@ -5614,109 +6308,145 @@ docker__environmental_variables__sub() {
     git__git_undo_last_unpushed_commit__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${git__git_undo_last_unpushed_commit__filename}
 
 
+#---docker__root__dir - contents
+    docker__root__dir="/root"   #this is the 
+    docker__home_dotbashrc__fpath="${docker__root__dir}/.bashrc"
+
 
 #---docker__LTPP3_ROOTFS_docker__dir - contents
-    docker__dockerfile_ltps_sunplus_filename="dockerfile_ltps_sunplus"
-    docker__dockerfile_ltps_sunplus_fpath=${docker__LTPP3_ROOTFS_docker_dockerfiles__dir}/${docker__dockerfile_ltps_sunplus_filename}
+    docker__dockerfile_ltps_sunplus__filename="dockerfile_ltps_sunplus"
+    docker__dockerfile_ltps_sunplus_fpath=${docker__LTPP3_ROOTFS_docker_dockerfiles__dir}/${docker__dockerfile_ltps_sunplus__filename}
 
-    docker__LTPP3_ROOTFS_docker_environment_dir=${docker__LTPP3_ROOTFS_docker__dir}/environment
-    docker__exported_env_var_filename="exported_env_var.txt"
-    docker__exported_env_var_fpath=${docker__LTPP3_ROOTFS_docker_environment_dir}/${docker__exported_env_var_filename}
+    docker__LTPP3_ROOTFS_docker_environment__dir=${docker__LTPP3_ROOTFS_docker__dir}/environment
+    docker__exported_env_var__filename="exported_env_var.txt"
+    docker__exported_env_var__fpath=${docker__LTPP3_ROOTFS_docker_environment__dir}/${docker__exported_env_var__filename}
 
-    docker__LTPP3_ROOTFS_docker_environment_dir=${docker__LTPP3_ROOTFS_docker__dir}/environment
-    docker__exported_env_var_default_filename="exported_env_var_default.txt"
-    docker__exported_env_var_default_fpath=${docker__LTPP3_ROOTFS_docker_environment_dir}/${docker__exported_env_var_default_filename}
+    docker__LTPP3_ROOTFS_docker_environment__dir=${docker__LTPP3_ROOTFS_docker__dir}/environment
+    docker__exported_env_var_default__filename="exported_env_var_default.txt"
+    docker__exported_env_var_default__fpath=${docker__LTPP3_ROOTFS_docker_environment__dir}/${docker__exported_env_var_default__filename}
 
-#---docker__docker_config__dir - contents
-    docker__export_env_var_menu_cfg__filename="docker_export_env_var_menu.cfg"
-    docker__export_env_var_menu_cfg__fpath=${docker__docker_config__dir}/${docker__export_env_var_menu_cfg__filename}
+    docker__LTPP3_ROOTFS_build_scripts_isp_sh__fpath=${docker__LTPP3_ROOTFS_build_scripts__dir}/${docker__isp_sh__filename}
+    docker__LTPP3_ROOTFS_boot_configs_pentagram_common_h__fpath=${docker__LTPP3_ROOTFS_boot_configs__dir}/${docker__pentagram_common_h__filename}
+    docker__LTPP3_ROOTFS_linux_scripts_tb_init_sh__fpath=${docker__LTPP3_ROOTFS_linux_scripts__dir}/${docker__tb_init_sh__filename}
 
-#---docker__tmp_dir - contents
+
+#---docker__SP7021__dir - contents
+    #Note: this directory MUST be the same as the 'SP7021_dir' which is defined in 'sunplus_inst.sh'
+    docker__SP7021__dir="${docker__root__dir}/SP7021"
+    docker__SP7021_boot_uboot_include_configs__dir=${docker__SP7021__dir}/boot/uboot/include/configs
+    docker__SP7021_boot_uboot_tools__dir=${docker__SP7021__dir}/boot/uboot/tools
+    docker__SP7021_build__dir=${docker__SP7021__dir}/build
+    docker__SP7021_build_tools_isp__dir=${docker__SP7021__dir}/build/tools/isp
+    docker__SP7021_linux_rootfs_initramfs_disk_dir=${docker__SP7021__dir}/linux/rootfs/initramfs/disk
+    docker__SP7021_linux_rootfs_initramfs_disk_sbin__dir=${docker__SP7021_linux_rootfs_initramfs_disk_dir}/sbin
+    docker__SP7021_linux_rootfs_initramfs_disk_etc__dir=${docker__SP7021_linux_rootfs_initramfs_disk_dir}/etc
+
+    docker__SP7021_build_tools_isp_isp_c__fpath=${docker__SP7021_build_tools_isp__dir}/${docker__isp_c__filename}
+    docker__SP7021_build_tools_isp_isp_c_overlaybck__fpath=${docker__SP7021_build_tools_isp__dir}/${docker__isp_c_overlaybck__filename}
+    docker__SP7021_build_isp_sh__fpath=${docker__SP7021_build__dir}/${docker__isp_sh__filename}
+    docker__SP7021_build_isp_sh_overlaybck__fpath=${docker__SP7021_build__dir}/${docker__isp_sh_overlaybck__filename}
+    docker__SP7021_boot_uboot_include_configs_pentagram_common_h__fpath=${docker__SP7021_boot_uboot_include_configs__dir}/${docker__pentagram_common_h__filename}
+    docker__SP7021_boot_uboot_include_configs_pentagram_common_h_overlaybck__fpath=${docker__SP7021_boot_uboot_include_configs__dir}/${docker__pentagram_common_h_overlaybck__filename}
+    docker__SP7021_linux_rootfs_initramfs_disk_etc_fstab__fpath=${docker__SP7021_linux_rootfs_initramfs_disk_etc__dir}/${docker__fstab__filename}
+    docker__SP7021_linux_rootfs_initramfs_disk_etc_fstab_overlaybck__fpath=${docker__SP7021_linux_rootfs_initramfs_disk_etc__dir}/${docker__fstab_overlaybck__filename}
+    docker__SP7021_linux_rootfs_initramfs_disk_sbin_init__fpath=${docker__SP7021_linux_rootfs_initramfs_disk_sbin__dir}/${docker__init__filename}
+    docker__SP7021_linux_rootfs_initramfs_disk_sbin_tb_init_sh__fpath=${docker__SP7021_linux_rootfs_initramfs_disk_sbin__dir}/${docker__tb_init_sh__filename}
+
+
+#---docker__tmp__dir - contents
     compgen__query_w_autocomplete_out__filename="compgen_query_w_autocomplete.out"
-    compgen__query_w_autocomplete_out__fpath=${docker__tmp_dir}/${compgen__query_w_autocomplete_out__filename}
+    compgen__query_w_autocomplete_out__fpath=${docker__tmp__dir}/${compgen__query_w_autocomplete_out__filename}
 
     dirlist__readInput_w_autocomplete_out__filename="dirlist_readInput_w_autocomplete.out"
-    dirlist__readInput_w_autocomplete_out__fpath=${docker__tmp_dir}/${dirlist__readInput_w_autocomplete_out__filename}
+    dirlist__readInput_w_autocomplete_out__fpath=${docker__tmp__dir}/${dirlist__readInput_w_autocomplete_out__filename}
 
     dirlist__src_ls_1aA_output__filename="dirlist_src_ls_1aA.output"
-    dirlist__src_ls_1aA_output__fpath=${docker__tmp_dir}/${dirlist__src_ls_1aA_output__filename}
+    dirlist__src_ls_1aA_output__fpath=${docker__tmp__dir}/${dirlist__src_ls_1aA_output__filename}
     dirlist__src_ls_1aA_tmp__filename="dirlist_src_ls_1aA.tmp"
-    dirlist__src_ls_1aA_tmp__fpath=${docker__tmp_dir}/${dirlist__src_ls_1aA_tmp__filename}
+    dirlist__src_ls_1aA_tmp__fpath=${docker__tmp__dir}/${dirlist__src_ls_1aA_tmp__filename}
     dirlist__dst_ls_1aA_output__filename="dirlist_dst_ls_1aA.output"
-    dirlist__dst_ls_1aA_output__fpath=${docker__tmp_dir}/${dirlist__dst_ls_1aA_output__filename}
+    dirlist__dst_ls_1aA_output__fpath=${docker__tmp__dir}/${dirlist__dst_ls_1aA_output__filename}
     dirlist__dst_ls_1aA_tmp__filename="dirlist_dst_ls_1aA.tmp"
-    dirlist__dst_ls_1aA_tmp__fpath=${docker__tmp_dir}/${dirlist__dst_ls_1aA_tmp__filename}
+    dirlist__dst_ls_1aA_tmp__fpath=${docker__tmp__dir}/${dirlist__dst_ls_1aA_tmp__filename}
 
     dclcau_lh_ls__filename="dclcau_lh_ls.sh"
     dclcau_lh_ls__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${dclcau_lh_ls__filename}
     dclcau_dc_ls__filename="dclcau_dc_ls.sh"
     dclcau_dc_ls__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${dclcau_dc_ls__filename}
 
+    docker_build_ispboootbin_tmp_sh_filename="docker_build_ispboootbin_tmp.sh"
+    docker_build_ispboootbin_tmp_sh_fpath="${docker__tmp__dir}/${docker_build_ispboootbin_tmp_sh_filename}"
+
     docker__create_an_image_from_dockerfile_out__filename="docker_create_an_image_from_dockerfile.out"
-    docker__create_an_image_from_dockerfile_out__fpath=${docker__tmp_dir}/${docker__create_an_image_from_dockerfile_out__filename}
+    docker__create_an_image_from_dockerfile_out__fpath=${docker__tmp__dir}/${docker__create_an_image_from_dockerfile_out__filename}
 
     docker__create_images_from_dockerlist_out__filename="docker_create_images_from_dockerlist.out"
-    docker__create_images_from_dockerlist_out__fpath=${docker__tmp_dir}/${docker__create_images_from_dockerlist_out__filename}
+    docker__create_images_from_dockerlist_out__fpath=${docker__tmp__dir}/${docker__create_images_from_dockerlist_out__filename}
 
     docker__enter_cmdline_mode_out__filename="docker_enter_cmdline_mode.out"
-    docker__enter_cmdline_mode_out__fpath=${docker__tmp_dir}/${docker__enter_cmdline_mode_out__filename}
+    docker__enter_cmdline_mode_out__fpath=${docker__tmp__dir}/${docker__enter_cmdline_mode_out__filename}
 
     docker__enter_cmdline_mode_tmp__filename="docker_enter_cmdline_mode.tmp"
-    docker__enter_cmdline_mode_tmp__fpath=${docker__tmp_dir}/${docker__enter_cmdline_mode_tmp__filename}
+    docker__enter_cmdline_mode_tmp__fpath=${docker__tmp__dir}/${docker__enter_cmdline_mode_tmp__filename}
 
     docker__export_env_var_menu_out__filename="docker_export_env_var_menu.out"
-    docker__export_env_var_menu_out__fpath=${docker__tmp_dir}/${docker__export_env_var_menu_out__filename}
+    docker__export_env_var_menu_out__fpath=${docker__tmp__dir}/${docker__export_env_var_menu_out__filename}
 
     docker__readInput_w_autocomplete_out__filename="docker_readInput_w_autocomplete.out"
-    docker__readInput_w_autocomplete_out__fpath=${docker__tmp_dir}/${docker__readInput_w_autocomplete_out__filename}
+    docker__readInput_w_autocomplete_out__fpath=${docker__tmp__dir}/${docker__readInput_w_autocomplete_out__filename}
 
     docker__repo_link_checkout_menu_select_out__filname="docker_repo_link_checkout_menu_select.out"
-    docker__repo_link_checkout_menu_select_out__fpath=${docker__tmp_dir}/${docker__repo_link_checkout_menu_select_out__filname}
+    docker__repo_link_checkout_menu_select_out__fpath=${docker__tmp__dir}/${docker__repo_link_checkout_menu_select_out__filname}
 
     docker__repo_linkcheckout_profile_menu_select_out__filename="docker_repo_linkcheckout_profile_menu_select.out"
-    docker__repo_linkcheckout_profile_menu_select_out__fpath=${docker__tmp_dir}/${docker__repo_linkcheckout_profile_menu_select_out__filename}
+    docker__repo_linkcheckout_profile_menu_select_out__fpath=${docker__tmp__dir}/${docker__repo_linkcheckout_profile_menu_select_out__filename}
 
     docker__readDialog_w_Output__func_out__filename="readDialog_w_Output__func.out"
-    docker__readDialog_w_Output__func_out__fpath=${docker__tmp_dir}/${docker__readDialog_w_Output__func_out__filename}
+    docker__readDialog_w_Output__func_out__fpath=${docker__tmp__dir}/${docker__readDialog_w_Output__func_out__filename}
 
     docker__select_dockerfile_out__filename="docker_select_dockerfile.out"
-    docker__select_dockerfile_out__fpath=${docker__tmp_dir}/${docker__select_dockerfile_out__filename}
+    docker__select_dockerfile_out__fpath=${docker__tmp__dir}/${docker__select_dockerfile_out__filename}
 
     docker__show_choose_add_del_from_cache_out__filename="docker_show_choose_add_del_from_cache.out"
-    docker__show_choose_add_del_from_cache_out__fpath=${docker__tmp_dir}/${docker__show_choose_add_del_from_cache_out__filename}
+    docker__show_choose_add_del_from_cache_out__fpath=${docker__tmp__dir}/${docker__show_choose_add_del_from_cache_out__filename}
 
     docker__show_fileContent_wo_select_func_out__filename="show_fileContent_wo_select__func.out"
-    docker__show_fileContent_wo_select_func_out__fpath=${docker__tmp_dir}/${docker__show_fileContent_wo_select_func_out__filename}
+    docker__show_fileContent_wo_select_func_out__fpath=${docker__tmp__dir}/${docker__show_fileContent_wo_select_func_out__filename}
 
     docker__show_pathContent_w_selection_func_out__filename="show_pathContent_w_selection__func.out"
-    docker__show_pathContent_w_selection_func_out__fpath=${docker__tmp_dir}/${docker__show_pathContent_w_selection_func_out__filename}
+    docker__show_pathContent_w_selection_func_out__fpath=${docker__tmp__dir}/${docker__show_pathContent_w_selection_func_out__filename}
 
     git__git_create_checkout_local_branch_out__filename="git_create_checkout_local_branch.out"
-    git__git_create_checkout_local_branch_out__fpath=${docker__tmp_dir}/${git__git_create_checkout_local_branch_out__filename}
+    git__git_create_checkout_local_branch_out__fpath=${docker__tmp__dir}/${git__git_create_checkout_local_branch_out__filename}
 
     git__git_tag_create_link_and_push_out__filename="git_tag_create_link_and_push.out"
-    git__git_tag_create_link_and_push_out__fpath=${docker__tmp_dir}/${git__git_tag_create_link_and_push_out__filename}
+    git__git_tag_create_link_and_push_out__fpath=${docker__tmp__dir}/${git__git_tag_create_link_and_push_out__filename}
 
     git__git_delete_local_branch_out__filename="git_delete_local_branch.out"
-    git__git_delete_local_branch_out__fpath=${docker__tmp_dir}/${git__git_delete_local_branch_out__filename}
+    git__git_delete_local_branch_out__fpath=${docker__tmp__dir}/${git__git_delete_local_branch_out__filename}
 
     git__git_push_out__filename="git_push.out"
-    git__git_push_out__fpath=${docker__tmp_dir}/${git__git_push_out__filename}
+    git__git_push_out__fpath=${docker__tmp__dir}/${git__git_push_out__filename}
 
     git__git_readInput_w_autocomplete_out__filename="git_readInput_w_autocomplete.out"
-    git__git_readInput_w_autocomplete_out__fpath=${docker__tmp_dir}/${git__git_readInput_w_autocomplete_out__filename}
+    git__git_readInput_w_autocomplete_out__fpath=${docker__tmp__dir}/${git__git_readInput_w_autocomplete_out__filename}
 
     git__git_tag_create_and_push_out__filename="git_tag_create_and_push.out"
-    git__git_tag_create_and_push_out__fpath=${docker__tmp_dir}/${git__git_tag_create_and_push_out__filename}
+    git__git_tag_create_and_push_out__fpath=${docker__tmp__dir}/${git__git_tag_create_and_push_out__filename}
 
     git__git_tag_rename_out__filename="git_tag_rename.out"
-    git__git_tag_rename_out__fpath=${docker__tmp_dir}/${git__git_tag_rename_out__filename}
+    git__git_tag_rename_out__fpath=${docker__tmp__dir}/${git__git_tag_rename_out__filename}
 
     git__git_tag_remove_out__filename="git_tag_remove.out"
-    git__git_tag_remove_out__fpath=${docker__tmp_dir}/${git__git_tag_remove_out__filename}
+    git__git_tag_remove_out__fpath=${docker__tmp__dir}/${git__git_tag_remove_out__filename}
 
     git__git_undo_last_unpushed_commit_out__filename="git_undo_last_unpushed_commit.out"
-    git__git_undo_last_unpushed_commit_out__fpath=${docker__tmp_dir}/${git__git_undo_last_unpushed_commit_out__filename}
+    git__git_undo_last_unpushed_commit_out__fpath=${docker__tmp__dir}/${git__git_undo_last_unpushed_commit_out__filename}
+
+
+#---REAL PATH (ON THE LTPP3G2)
+    docker__sbin__dir=/sbin
+    docker__sbin_tb_init_sh__fpath=${docker__sbin__dir}/${docker__tb_init_sh__filename}
 
 
     #OLD VERSION (is temporarily present for backwards compaitibility)
@@ -5726,9 +6456,13 @@ docker__environmental_variables__sub() {
 	# docker__localhost_dirlist__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__localhost_dirlist__filename}
 }
 
+
 docker__create_dir__sub() {
     if [[ ! -d ${docker__docker__dir} ]]; then
         mkdir -p ${docker__docker__dir}
+    fi
+    if [[ ! -d ${docker__docker_overlayfs__dir} ]]; then
+        mkdir -p ${docker__docker_overlayfs__dir}
     fi
     if [[ ! -d ${docker__docker_cache__dir} ]]; then
         mkdir -p ${docker__docker_cache__dir}
@@ -5748,18 +6482,89 @@ docker__create_dir__sub() {
     if [[ ! -d ${docker__enter_cmdline_mode_cache__dir} ]]; then
         mkdir -p ${docker__enter_cmdline_mode_cache__dir}
     fi
-    if [[ ! -d ${docker__tmp_dir} ]]; then
-        mkdir -p ${docker__tmp_dir}
+    if [[ ! -d ${docker__tmp__dir} ]]; then
+        mkdir -p ${docker__tmp__dir}
     fi
+}
+docker__checkif_paths_are_related() {
+    #Input args
+    local scriptdir__input=${1}
+    local finddir__input=${2}
+    local pattern__input=${3}
+
+    #Define constants
+    local PHASE_PATTERN_CHECK1=1
+    local PHASE_PATTERN_CHECK2=10
+    local PHASE_PATH_COMPARISON=20
+    local PHASE_EXIT=100
+
+    #Define variables
+    local phase="${PHASE_PATTERN_CHECK1}"
+    local isfound1=""
+    local isfound2=""
+    local isfound3=""
+    local ret=false
+
+    while true
+    do
+        case "${phase}" in
+            "${PHASE_PATTERN_CHECK1}")
+                #Check if 'pattern__input' is found in 'scriptdir__input'
+                isfound1=$(echo "${scriptdir__input}" | \
+                        grep -o "${pattern__input}.*" | \
+                        cut -d"/" -f1 | grep -w "^${pattern__input}$")
+                if [[ -z "${isfound1}" ]]; then
+                    ret=false
+
+                    phase="${PHASE_EXIT}"
+                else
+                    phase="${PHASE_PATTERN_CHECK2}"
+                fi                
+                ;;
+            "${PHASE_PATTERN_CHECK2}")
+                #Check if 'pattern__input' is found in 'finddir__input'
+                isfound2=$(echo "${finddir__input}" | \
+                        grep -o "${pattern__input}.*" | \
+                        cut -d"/" -f1 | grep -w "^${pattern__input}$")
+                if [[ -z "${isfound2}" ]]; then
+                    ret=false
+
+                    phase="${PHASE_EXIT}"
+                else
+                    phase="${PHASE_PATH_COMPARISON}"
+                fi                
+                ;;
+            "${PHASE_PATH_COMPARISON}")
+                #Check if 'development_tools' is under the folder 'LTPP3_ROOTFS'
+                isfound3=$(echo "${scriptdir__input}" | \
+                        grep -w "${finddir__input}.*")
+                if [[ -z "${isfound3}" ]]; then
+                    ret=false
+                else
+                    ret=true
+                fi
+
+                phase="${PHASE_EXIT}"
+                ;;
+            "${PHASE_EXIT}")
+                break
+                ;;
+        esac
+    done
+
+    #Output
+    echo "${ret}"
+
+    return 0
 }
 
 docker__create_exported_env_var_file__sub() {
     #Check if 'docker__exported_env_var.txt' is present
-    if [[ ! -f ${docker__exported_env_var_fpath} ]]; then
-        #Copy from 'docker__exported_env_var_default_fpath' to 'docker__exported_env_var_fpath'
+    if [[ ! -f ${docker__exported_env_var__fpath} ]]; then
+        #Copy from 'docker__exported_env_var_default__fpath' to 'docker__exported_env_var__fpath'
         #Remark:
         #   Both paths are defined in 'docker__global__fpath'
-        cp ${docker__exported_env_var_default_fpath} ${docker__exported_env_var_fpath}
+        cp ${docker__exported_env_var_default__fpath} ${docker__exported_env_var__fpath}
     fi
 }
 
@@ -5767,7 +6572,7 @@ docker__create_exported_env_var_file__sub() {
 
 #---MAIN SUBROUTINE
 main__sub() {
-    docker__environmental_variables__sub
+    docker__get_source_fullpath__sub
 
     docker__create_dir__sub
 

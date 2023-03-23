@@ -56,9 +56,9 @@ Sudoers_Restore() {
 }
 
 Services_EnableStart() {
-    #Enable Services
-    systemctl enable "${NTIOS_SU_ADD_MONITOR_SERVICE}"
-    systemctl enable "${NTIOS_SU_ADD_MONITOR_TIMER}"
+    # #Enable Services
+    # systemctl enable "${NTIOS_SU_ADD_MONITOR_SERVICE}"
+    # systemctl enable "${NTIOS_SU_ADD_MONITOR_TIMER}"
 
 
     #Start Services

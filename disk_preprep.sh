@@ -60,6 +60,8 @@ echo -e "\r"
 echo -e "---Define Environmental Variables---"
 echo -e "\r"
 
+sunplus_foldername="SP7021"
+
 armhf_filename="ubuntu-base-20.04.1-base-armhf.tar.gz"
 brcm_patchram_plus_filename="brcm_patchram_plus"
 build_disk_filename="build_disk.sh"
@@ -74,10 +76,16 @@ daisychain_state_sh_filename="daisychain_state.sh"
 disk_foldername="disk"
 enable_eth1_before_login_service_filename="enable-eth1-before-login.service"
 enable_eth1_before_login_sh_filename="enable-eth1-before-login.sh"
+enable_ufw_before_login_service_filename="enable-ufw-before-login.service"
+enable_ufw_before_login_sh_filename="enable-ufw-before-login.sh"
 firmware_foldername="firmware"
 gpio_gpio_set_group_rules_filename="gpio-set_group.rules"
 hostname_filename="hostname"
 hosts_filename="hosts"
+irq_sp7021_intc_c_filename="irq-sp7021-intc.c"
+irq_sp7021_intc_c_patch_filename="irq-sp7021-intc.c.patch"
+isp_c_filename="isp.c"
+isp_c_patch_filename="isp.c.patch"
 make_menuconfig_filename="armhf_kernel.config"
 make_menuconfig_default_filename=".config"
 ntios_su_add_name="ntios-su-add"
@@ -91,8 +99,6 @@ ntios_su_add_monitor_timer_filename="${ntios_su_add_monitor_name}.timer"
 one_time_exec_sh_filename="one-time-exec.sh"
 one_time_exec_before_login_sh_filename="one-time-exec-before-login.sh"
 one_time_exec_before_login_service_filename="one-time-exec-before-login.service"
-enable_ufw_before_login_service_filename="enable-ufw-before-login.service"
-enable_ufw_before_login_sh_filename="enable-ufw-before-login.sh"
 profile_filename="profile"
 qemu_user_static_filename="qemu-arm-static"
 resolve_filename="resolv.conf"
@@ -101,8 +107,24 @@ sd_detect_rules_filename="sd-detect.rules"
 sd_detect_service_filename="sd-detect@.service"
 sd_detect_add_sh_filename="sd-detect-add.sh"
 sd_detect_remove_sh_filename="sd-detect-remove.sh"
-sp7021_ltpp3g2revD_filename="sp7021-ltpp3g2revD.dtsi"
-sunplus_foldername="SP7021"
+sp_go_c_filename="sp_go.c"
+sp_go_c_patch_filename="sp_go.c.patch"
+sp_ocotp_c_filename="sp-ocotp.c"
+sp_ocotp_c_patch_filename="sp-ocotp.c.patch"
+sp7021_ltpp3g2revD_dtsi_filename="sp7021-ltpp3g2revD.dtsi"
+sp7021_ltpp3g2revD_dtsi_patch_filename="sp7021-ltpp3g2revD.dtsi.patch"
+sp7021_common_dtsi_filename="sp7021-common.dtsi"
+sp7021_common_dtsi_patch_filename="sp7021-common.dtsi.patch"
+sppctl_gpio_c_filename="sppctl_gpio.c"
+sppctl_gpio_c_patch_filename="sppctl_gpio.c.patch"
+sppctl_gpio_ops_c_filename="sppctl_gpio_ops.c"
+sppctl_gpio_ops_c_patch_filename="sppctl_gpio_ops.c.patch"
+sppctl_gpio_ops_h_filename="sppctl_gpio_ops.h"
+sppctl_gpio_ops_h_patch_filename="sppctl_gpio_ops.h.patch"
+sunplus_icm_c_filename="sunplus_icm.c"
+sunplus_icm_c_patch_filename="sunplus_icm.c.patch"
+sunplus_uart_c_filename="sunplus-uart.c"
+sunplus_uart_c_patch_filename="sunplus-uart.c.patch"
 usb_mount_rules_filename="usb-mount.rules"
 usb_mount_service_filename="usb-mount@.service"
 usb_mount_sh_filename="usb-mount.sh"
@@ -111,6 +133,7 @@ home_dir=~	#this is the /root directory
 bin_dir=/bin
 # daisychain_dir=/sys/devices/platform/soc\@B/9c108000.l2sw
 etc_dir=/etc
+tmp_dir=/tmp
 usr_bin_dir=/usr/bin
 home_downloads_dir=${home_dir}/Downloads
 home_downloads_disk_dir=${home_downloads_dir}/${disk_foldername}
@@ -118,6 +141,8 @@ home_downloads_disk_lib_dir=${home_downloads_dir}/disk/lib
 
 scripts_dir=/${scripts_foldername}
 home_lttp3rootfs_dir=${home_dir}/LTPP3_ROOTFS
+home_lttp3rootfs_boot_drivers_dir=${home_lttp3rootfs_dir}/boot/drivers
+home_lttp3rootfs_build_drivers_dir=${home_lttp3rootfs_dir}/build/drivers
 home_lttp3rootfs_rootfs_initramfs_dir=${home_lttp3rootfs_dir}/rootfs/initramfs
 home_lttp3rootfs_rootfs_initramfs_disk_etc_dir=${home_lttp3rootfs_rootfs_initramfs_dir}/disk/etc
 home_lttp3rootfs_services_automount_dir=${home_lttp3rootfs_dir}/services/automount
@@ -129,12 +154,24 @@ home_lttp3rootfs_services_permissions_dir=${home_lttp3rootfs_dir}/services/permi
 home_lttp3rootfs_services_sudo_dir=${home_lttp3rootfs_dir}/services/sudo
 home_lttp3rootfs_kernel_dir=${home_lttp3rootfs_dir}/kernel
 home_lttp3rootfs_kernel_makeconfig_dir=${home_lttp3rootfs_kernel_dir}/makeconfig
-home_lttp3rootfs_kernel_drivers_clk_dir=${home_lttp3rootfs_kernel_dir}/drivers/clk
+# home_lttp3rootfs_kernel_drivers_clk_dir=${home_lttp3rootfs_kernel_dir}/drivers/clk
+home_lttp3rootfs_kernel_drivers_irqchip_dir=${home_lttp3rootfs_kernel_dir}/drivers/irqchip
+home_lttp3rootfs_kernel_drivers_misc_dir=${home_lttp3rootfs_kernel_dir}/drivers/misc
+home_lttp3rootfs_kernel_drivers_nvnmem_dir=${home_lttp3rootfs_kernel_dir}/drivers/nvmem
+home_lttp3rootfs_kernel_drivers_pinctrl_sunplus_dir=${home_lttp3rootfs_kernel_dir}/drivers/pinctrl/sunplus
+home_lttp3rootfs_kernel_drivers_serial_dir=${home_lttp3rootfs_kernel_dir}/drivers/serial
 home_lttp3rootfs_kernel_dts_dir=${home_lttp3rootfs_kernel_dir}/dts
 home_lttp3rootfs_usr_bin_dir=${home_lttp3rootfs_dir}/usr/bin
 SP7xxx_dir=${home_dir}/SP7021
+SP7xxx_boot_uboot_board_sunplus_pentagram_board_dir=${SP7xxx_dir}/boot/uboot/board/sunplus/pentagram_board
+SP7xxx_build_tools_isp_dir=${SP7xxx_dir}/build/tools/isp
 SP7xxx_linux_kernel_dir=${SP7xxx_dir}/linux/kernel
-SP7xxx_linux_kernel_drivers_clk=${SP7xxx_linux_kernel_dir}/drivers/clk
+# SP7xxx_linux_kernel_drivers_clk_dir=${SP7xxx_linux_kernel_dir}/drivers/clk
+SP7xxx_linux_kernel_drivers_irqchip_dir=${SP7xxx_linux_kernel_dir}/drivers/irqchip
+SP7xxx_linux_kernel_drivers_misc_dir=${SP7xxx_linux_kernel_dir}/drivers/misc
+SP7xxx_linux_kernel_drivers_nvmem_dir=${SP7xxx_linux_kernel_dir}/drivers/nvmem
+SP7xxx_linux_kernel_drivers_pinctrl_sunplus_dir=${SP7xxx_linux_kernel_dir}/drivers/pinctrl/sunplus
+SP7xxx_linux_kernel_drivers_tty_serial_dir=${SP7xxx_linux_kernel_dir}/drivers/tty/serial
 SP7xxx_linux_kernel_arch_arm_boot_dts_dir=${SP7xxx_linux_kernel_dir}/arch/arm/boot/dts
 SP7xxx_linux_rootfs_initramfs_dir=${SP7xxx_dir}/linux/rootfs/initramfs
 SP7xxx_linux_rootfs_initramfs_disk_dir=${SP7xxx_linux_rootfs_initramfs_dir}/${disk_foldername}
@@ -162,7 +199,7 @@ src_brcm_patchram_plus_fpath=${home_lttp3rootfs_usr_bin_dir}/${brcm_patchram_plu
 dst_brcm_patchram_plus_fpath=${SP7xxx_linux_rootfs_initramfs_disk_usr_bin_dir}/${brcm_patchram_plus_filename}
 
 #src_clkspq628c_fpath=${home_lttp3rootfs_kernel_drivers_clk_dir}/${clkspq628c_filename}
-#dst_clkspq628c_fpath=${SP7xxx_linux_kernel_drivers_clk}/${clkspq628c_filename}
+#dst_clkspq628c_fpath=${SP7xxx_linux_kernel_drivers_clk_dir}/${clkspq628c_filename}
 
 src_create_chown_pwm_service_fpath=${home_lttp3rootfs_services_pwm_dir}/${create_chown_pwm_service_filename}
 dst_create_chown_pwm_service_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}/${create_chown_pwm_service_filename}
@@ -239,9 +276,6 @@ dst_sd_detect_rules_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_udev_rulesd_d
 src_sd_detect_service_fpath=${home_lttp3rootfs_services_automount_dir}/${sd_detect_service_filename}
 dst_sd_detect_service_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}/${sd_detect_service_filename}
 
-src_sp7021_ltpp3g2revD_fpath=${home_lttp3rootfs_kernel_dts_dir}/${sp7021_ltpp3g2revD_filename}
-dst_sp7021_ltpp3g2revD_fpath=${SP7xxx_linux_kernel_arch_arm_boot_dts_dir}/${sp7021_ltpp3g2revD_filename}
-
 src_usb_mount_service_fpath=${home_lttp3rootfs_services_automount_dir}/${usb_mount_service_filename}
 dst_usb_mount_service_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}/${usb_mount_service_filename}
 
@@ -250,6 +284,50 @@ dst_usb_mount_sh_fpath=${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}/$
 
 src_usb_mount_rules_fpath=${home_lttp3rootfs_services_automount_dir}/${usb_mount_rules_filename}
 dst_usb_mount_rules_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_udev_rulesd_dir}/${usb_mount_rules_filename}
+
+old_isp_c_fpath=${SP7xxx_build_tools_isp_dir}/${isp_c_filename}
+new_isp_c_fpath=${home_lttp3rootfs_build_drivers_dir}/${isp_c_filename}
+isp_c_patch_fpath=${home_lttp3rootfs_build_drivers_dir}/${isp_c_patch_filename}
+
+old_sp_go_c_fpath=${SP7xxx_boot_uboot_board_sunplus_pentagram_board_dir}/${sp_go_c_filename}
+new_sp_go_c_fpath=${home_lttp3rootfs_boot_drivers_dir}/${sp_go_c_filename}
+sp_go_c_patch_fpath=${home_lttp3rootfs_boot_drivers_dir}/${sp_go_c_patch_filename}
+
+old_irq_sp7021_intc_c_fpath=${SP7xxx_linux_kernel_drivers_irqchip_dir}/${irq_sp7021_intc_c_filename}
+new_irq_sp7021_intc_c_fpath=${home_lttp3rootfs_kernel_drivers_irqchip_dir}/${irq_sp7021_intc_c_filename}
+irq_sp7021_intc_c_patch_fpath=${home_lttp3rootfs_kernel_drivers_irqchip_dir}/${irq_sp7021_intc_c_patch_filename}
+
+old_sp_ocotp_c_fpath=${SP7xxx_linux_kernel_drivers_nvmem_dir}/${sp_ocotp_c_filename}
+new_sp_ocotp_c_fpath=${home_lttp3rootfs_kernel_drivers_nvnmem_dir}/${sp_ocotp_c_filename}
+sp_ocotp_c_patch_fpath=${home_lttp3rootfs_kernel_drivers_nvnmem_dir}/${sp_ocotp_c_patch_filename}
+
+old_sppctl_gpio_c_fpath=${SP7xxx_linux_kernel_drivers_pinctrl_sunplus_dir}/${sppctl_gpio_c_filename}
+new_sppctl_gpio_c_fpath=${home_lttp3rootfs_kernel_drivers_pinctrl_sunplus_dir}/${sppctl_gpio_c_filename}
+sppctl_gpio_c_patch_fpath=${home_lttp3rootfs_kernel_drivers_pinctrl_sunplus_dir}/${sppctl_gpio_c_patch_filename}
+
+old_sppctl_gpio_ops_c_fpath=${SP7xxx_linux_kernel_drivers_pinctrl_sunplus_dir}/${sppctl_gpio_ops_c_filename}
+new_sppctl_gpio_ops_c_fpath=${home_lttp3rootfs_kernel_drivers_pinctrl_sunplus_dir}/${sppctl_gpio_ops_c_filename}
+sppctl_gpio_ops_c_patch_fpath=${home_lttp3rootfs_kernel_drivers_pinctrl_sunplus_dir}/${sppctl_gpio_ops_c_patch_filename}
+
+old_sppctl_gpio_ops_h_fpath=${SP7xxx_linux_kernel_drivers_pinctrl_sunplus_dir}/${sppctl_gpio_ops_h_filename}
+new_sppctl_gpio_ops_h_fpath=${home_lttp3rootfs_kernel_drivers_pinctrl_sunplus_dir}/${sppctl_gpio_ops_h_filename}
+sppctl_gpio_ops_h_patch_fpath=${home_lttp3rootfs_kernel_drivers_pinctrl_sunplus_dir}/${sppctl_gpio_ops_h_patch_filename}
+
+old_sunplus_icm_c_fpath=${SP7xxx_linux_kernel_drivers_misc_dir}/${sunplus_icm_c_filename}
+new_sunplus_icm_c_fpath=${home_lttp3rootfs_kernel_drivers_misc_dir}/${sunplus_icm_c_filename}
+sunplus_icm_c_patch_fpath=${home_lttp3rootfs_kernel_drivers_misc_dir}/${sunplus_icm_c_patch_filename}
+
+old_sunplus_uart_c_fpath=${SP7xxx_linux_kernel_drivers_tty_serial_dir}/${sunplus_uart_c_filename}
+new_sunplus_uart_c_fpath=${home_lttp3rootfs_kernel_drivers_serial_dir}/${sunplus_uart_c_filename}
+sunplus_uart_c_patch_fpath=${home_lttp3rootfs_kernel_drivers_serial_dir}/${sunplus_uart_c_patch_filename}
+
+old_sp7021_common_dtsi_fpath=${SP7xxx_linux_kernel_arch_arm_boot_dts_dir}/${sp7021_common_dtsi_filename}
+new_sp7021_common_dtsi_fpath=${home_lttp3rootfs_kernel_dts_dir}/${sp7021_common_dtsi_filename}
+sp7021_common_dtsi_patch_fpath=${home_lttp3rootfs_kernel_dts_dir}/${sp7021_common_dtsi_patch_filename}
+
+old_sp7021_ltpp3g2revD_dtsi_fpath=${SP7xxx_linux_kernel_arch_arm_boot_dts_dir}/${sp7021_ltpp3g2revD_dtsi_filename}
+new_sp7021_ltpp3g2revD_dtsi_fpath=${home_lttp3rootfs_kernel_dts_dir}/${sp7021_ltpp3g2revD_dtsi_filename}
+sp7021_ltpp3g2revD_dtsi_patch_fpath=${home_lttp3rootfs_kernel_dts_dir}/${sp7021_ltpp3g2revD_dtsi_patch_filename}
 
 
 
@@ -955,8 +1033,8 @@ echo -e ">>>Change permission to <-rw-r--r--> for folder: ${firmware_foldername}
 #echo -e "\r"
 #echo -e ">Copying: ${clkspq628c_filename}"
 #echo -e ">from: ${home_lttp3rootfs_kernel_drivers_clk_dir}"
-#echo -e ">to: ${SP7xxx_linux_kernel_drivers_clk}"
-#	cp ${src_clkspq628c_fpath} ${SP7xxx_linux_kernel_drivers_clk}
+#echo -e ">to: ${SP7xxx_linux_kernel_drivers_clk_dir}"
+#	cp ${src_clkspq628c_fpath} ${SP7xxx_linux_kernel_drivers_clk_dir}
 
 # echo -e "\r"
 # echo -e ">>>Change ownership to <root> for file: ${clkspq628c_filename}"
@@ -1013,25 +1091,6 @@ echo -e ">>>Navigate to ${SP7xxx_linux_kernel_dir}"
 
 
 
-#---DTSI
-press_any_key__func
-echo -e "\r"
-echo -e "---UART config file"
-echo -e ">Copying: ${sp7021_ltpp3g2revD_filename}>"
-echo -e ">from: ${home_lttp3rootfs_kernel_dts_uart_dir}"
-echo -e ">to: ${SP7xxx_linux_kernel_arch_arm_boot_dts_dir}"
-	cp ${src_sp7021_ltpp3g2revD_fpath} ${SP7xxx_linux_kernel_arch_arm_boot_dts_dir}
-
-echo -e "\r"
-echo -e ">>>Change ownership to <root> for file: ${sp7021_ltpp3g2revD_filename}"
-	chown root:root ${dst_sp7021_ltpp3g2revD_fpath}
-
-echo -e "\r"
-echo -e ">>>Change permission to <-rw-r--r--> for file: ${sp7021_ltpp3g2revD_filename}"
-	chmod 644 ${dst_sp7021_ltpp3g2revD_fpath}
-
-
-
 ###FIX error messages:
 #	WARN:	uid is 0 but '/etc' is owned by 1000
 echo -e "\r"
@@ -1081,3 +1140,138 @@ echo -e ">to: -rwxr-xr-x"
 echo -e "\r"
 chmod +x ${build_disk_fpath}
 
+
+
+###APPLYIBG PATCHES###
+press_any_key__func
+irq_sp7021_intc_c_diff=$(diff ${old_irq_sp7021_intc_c_fpath} ${new_irq_sp7021_intc_c_fpath})
+if [[ -n "${irq_sp7021_intc_c_diff}" ]]; then
+	echo -e "\r"
+	echo -e ">Patching file"
+	echo -e ">source: ${old_irq_sp7021_intc_c_fpath}"
+	echo -e ">with: ${irq_sp7021_intc_c_patch_fpath}"
+	patch "${old_irq_sp7021_intc_c_fpath}" < "${irq_sp7021_intc_c_patch_fpath}"
+else
+	echo -e "\r"
+	echo -e ">Patch already applied to: ${old_irq_sp7021_intc_c_fpath}"
+fi
+
+isp_c_diff=$(diff ${old_isp_c_fpath} ${new_isp_c_fpath})
+if [[ -n "${isp_c_diff}" ]]; then
+	echo -e "\r"
+	echo -e ">Patching file"
+	echo -e ">source: ${old_isp_c_fpath}"
+	echo -e ">with: ${isp_c_patch_fpath}"
+	patch "${old_isp_c_fpath}" < "${isp_c_patch_fpath}"
+else
+	echo -e "\r"
+	echo -e ">Patch already applied to: ${old_isp_c_fpath}"
+fi
+
+sp_go_c_diff=$(diff ${old_sp_go_c_fpath} ${new_sp_go_c_fpath})
+if [[ -n "${sp_go_c_diff}" ]]; then
+	echo -e "\r"
+	echo -e ">Patching file"
+	echo -e ">source: ${old_sp_go_c_fpath}"
+	echo -e ">with: ${sp_go_c_patch_fpath}"
+	patch "${old_sp_go_c_fpath}" < "${sp_go_c_patch_fpath}"
+else
+	echo -e "\r"
+	echo -e ">Patch already applied to: ${old_sp_go_c_fpath}"
+fi
+
+sp_ocotp_c_diff=$(diff ${old_sp_ocotp_c_fpath} ${new_sp_ocotp_c_fpath})
+if [[ -n "${sp_ocotp_c_diff}" ]]; then
+	echo -e "\r"
+	echo -e ">Patching file"
+	echo -e ">source: ${old_sp_ocotp_c_fpath}"
+	echo -e ">with: ${sp_ocotp_c_patch_fpath}"
+	patch "${old_sp_ocotp_c_fpath}" < "${sp_ocotp_c_patch_fpath}"
+else
+	echo -e "\r"
+	echo -e ">Patch already applied to: ${old_sp_ocotp_c_fpath}"
+fi
+
+sp7021_common_dtsi_diff=$(diff ${old_sp7021_common_dtsi_fpath} ${new_sp7021_common_dtsi_fpath})
+if [[ -n "${sp7021_common_dtsi_diff}" ]]; then
+	echo -e "\r"
+	echo -e ">Patching file"
+	echo -e ">source: ${old_sp7021_common_dtsi_fpath}"
+	echo -e ">with: ${sp7021_common_dtsi_patch_fpath}"
+	patch "${old_sp7021_common_dtsi_fpath}" < "${sp7021_common_dtsi_patch_fpath}"
+else
+	echo -e "\r"
+	echo -e ">Patch already applied to: ${old_sp7021_common_dtsi_fpath}"
+fi
+
+sp7021_ltpp3g2revD_dtsi_diff=$(diff ${old_sp7021_ltpp3g2revD_dtsi_fpath} ${new_sp7021_ltpp3g2revD_dtsi_fpath})
+if [[ -n "${sp7021_ltpp3g2revD_dtsi_diff}" ]]; then
+	echo -e "\r"
+	echo -e ">Patching file"
+	echo -e ">source: ${old_sp7021_ltpp3g2revD_dtsi_fpath}"
+	echo -e ">with: ${sp7021_ltpp3g2revD_dtsi_patch_fpath}"
+	patch "${old_sp7021_ltpp3g2revD_dtsi_fpath}" < "${sp7021_ltpp3g2revD_dtsi_patch_fpath}"
+else
+	echo -e "\r"
+	echo -e ">Patch already applied to: ${old_sp7021_ltpp3g2revD_dtsi_fpath}"
+fi
+
+sppctl_gpio_c_diff=$(diff ${old_sppctl_gpio_c_fpath} ${new_sppctl_gpio_c_fpath})
+if [[ -n "${sppctl_gpio_c_diff}" ]]; then
+	echo -e "\r"
+	echo -e ">Patching file"
+	echo -e ">source: ${old_sppctl_gpio_c_fpath}"
+	echo -e ">with: ${sppctl_gpio_c_patch_fpath}"
+	patch "${old_sppctl_gpio_c_fpath}" < "${sppctl_gpio_c_patch_fpath}"
+else
+	echo -e "\r"
+	echo -e ">Patch already applied to: ${old_sppctl_gpio_c_fpath}"
+fi
+
+sppctl_gpio_ops_c_diff=$(diff ${old_sppctl_gpio_ops_c_fpath} ${new_sppctl_gpio_ops_c_fpath})
+if [[ -n "${sppctl_gpio_ops_c_diff}" ]]; then
+	echo -e "\r"
+	echo -e ">Patching file"
+	echo -e ">source: ${old_sppctl_gpio_ops_c_fpath}"
+	echo -e ">with: ${sppctl_gpio_ops_c_patch_fpath}"
+	patch "${old_sppctl_gpio_ops_c_fpath}" < "${sppctl_gpio_ops_c_patch_fpath}"
+else
+	echo -e "\r"
+	echo -e ">Patch already applied to: ${old_sppctl_gpio_ops_c_fpath}"
+fi
+
+sppctl_gpio_ops_h_diff=$(diff ${old_sppctl_gpio_ops_h_fpath} ${new_sppctl_gpio_ops_h_fpath})
+if [[ -n "${sppctl_gpio_ops_h_diff}" ]]; then
+	echo -e "\r"
+	echo -e ">Patching file"
+	echo -e ">source: ${old_sppctl_gpio_ops_h_fpath}"
+	echo -e ">with: ${sppctl_gpio_ops_h_patch_fpath}"
+	patch "${old_sppctl_gpio_ops_h_fpath}" < "${sppctl_gpio_ops_h_patch_fpath}"
+else
+	echo -e "\r"
+	echo -e ">Patch already applied to: ${old_sppctl_gpio_ops_h_fpath}"
+fi
+
+sunplus_icm_c_diff=$(diff ${old_sunplus_icm_c_fpath} ${new_sunplus_icm_c_fpath})
+if [[ -n "${sunplus_icm_c_diff}" ]]; then
+	echo -e "\r"
+	echo -e ">Patching file"
+	echo -e ">source: ${old_sunplus_icm_c_fpath}"
+	echo -e ">with: ${sunplus_icm_c_patch_fpath}"
+	patch "${old_sunplus_icm_c_fpath}" < "${sunplus_icm_c_patch_fpath}"
+else
+	echo -e "\r"
+	echo -e ">Patch already applied to: ${old_sunplus_icm_c_fpath}"
+fi
+
+sunplus_uart_c_diff=$(diff ${old_sunplus_uart_c_fpath} ${new_sunplus_uart_c_fpath})
+if [[ -n "${sunplus_uart_c_diff}" ]]; then
+	echo -e "\r"
+	echo -e ">Patching file"
+	echo -e ">source: ${old_sunplus_uart_c_fpath}"
+	echo -e ">with: ${sunplus_uart_c_patch_fpath}"
+	patch "${old_sunplus_uart_c_fpath}" < "${sunplus_uart_c_patch_fpath}"
+else
+	echo -e "\r"
+	echo -e ">Patch already applied to: ${old_sunplus_uart_c_fpath}"
+fi

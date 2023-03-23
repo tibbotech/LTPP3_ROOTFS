@@ -1,0 +1,115 @@
+--- /root/SP7021/build/tools/isp/isp.c	2023-02-17 08:03:51.000000000 +0000
++++ /root/LTPP3_ROOTFS/build/isp/isp.c	2023-02-17 07:10:09.000000000 +0000
+@@ -105,9 +105,9 @@
+ 
+ 
+ #if defined(Q645) && (Q645 == 1)
+-#define FILE_SIZE_IMAGE_XBOOT0                      (192 << 10)
++#define FILE_SIZE_IMAGE_XBOOT0                      (160 << 10)
+ #elif defined(SP7350) && (SP7350 == 1)
+-#define FILE_SIZE_IMAGE_XBOOT0                      (192 << 10)
++#define FILE_SIZE_IMAGE_XBOOT0                      (160 << 10)
+ #else
+ #define FILE_SIZE_IMAGE_XBOOT0                      (64 << 10)
+ #endif
+@@ -435,6 +435,10 @@
+ 		fprintf(fd, "echo \"%s\"\n", cmd);
+ 		fprintf(fd, "%s\n\n", cmd);
+ 	} else if (nand_or_emmc == IDX_EMMC) {
++		fprintf(fd, "echo **************************************************\n");
++		fprintf(fd, "echo     Initializing Status LEDs for LTPP3G2  \n");
++		fprintf(fd, "echo **************************************************\n");
++		fprintf(fd, "tb_init\n");
+ 		fprintf(fd, "echo Initialize eMMC ...\n");
+ 		fprintf(fd, "mmc dev 0 && mmc rescan\n\n");
+ #ifndef XBOOT1_IN_EMMC_BOOTPART
+@@ -442,9 +446,11 @@
+ 		fprintf(fd, "mw.b $isp_ram_addr 0xFF 0x0400\n");
+ 		fprintf(fd, "mmc partconf 0 0 7 1\n");
+ 		fprintf(fd, "mmc write $isp_ram_addr 0x0000 0x0002\n");
++		fprintf(fd, "tb_update\n");
+ 		fprintf(fd, "mmc partconf 0 0 0 0\n");
+ #endif
+ 		fprintf(fd, "mw.b $isp_ram_addr 0xFF 0x4400 && mmc write $isp_ram_addr 0x00 0x22\n");  // fill GPT with 0xFF
++		fprintf(fd, "tb_update\n");
+ 		fprintf(fd, "mmc dev 0 && mmc rescan\n\n");
+ 
+ 		fprintf(fd, "uuid uuid_gpt_disk\n");
+@@ -540,16 +546,19 @@
+ 					fprintf(fd, "mmc partconf 0 0 7 1\n");
+ 					fprintf(fd, "mmc write $isp_ram_addr 0x0000 0x%x\n",
+ 						(u32)BYTE2BLOCK(isp_info.file_header.partition_info[i].file_size));
++					fprintf(fd, "tb_update\n");
+ 					fprintf(fd, "mmc partconf 0 0 0 0\n");
+ 				} else {
+ 					fprintf(fd, "mmc write $isp_ram_addr 0x%x 0x%x\n",
+ 						isp_info.file_header.partition_info[i].emmc_partition_start,
+ 						(u32)BYTE2BLOCK(isp_info.file_header.partition_info[i].file_size));
++					fprintf(fd, "tb_update\n");
+ 				}
+ #else
+ 				fprintf(fd, "mmc write $isp_ram_addr 0x%x 0x%x\n",
+ 					isp_info.file_header.partition_info[i].emmc_partition_start,
+ 					(u32)BYTE2BLOCK(isp_info.file_header.partition_info[i].file_size));
++				fprintf(fd, "tb_update\n");
+ #endif
+ 			}
+ 
+@@ -696,6 +705,7 @@
+ 					fprintf(fd, "mmc write $isp_ram_addr 0x%x 0x%x\n",
+ 						(u32)(isp_info.file_header.partition_info[i].emmc_partition_start + BYTE2BLOCK(size_programmed)),
+ 						BYTE2BLOCK(0x0800));
++					fprintf(fd, "tb_update\n");
+ 				}
+ 
+ 				while (file_size) {
+@@ -721,6 +731,7 @@
+ 					fprintf(fd, "mmc write $isp_ram_addr 0x%x 0x%x\n",
+ 						(u32)(isp_info.file_header.partition_info[i].emmc_partition_start + BYTE2BLOCK(size_programmed)), (u32)BYTE2BLOCK(size));
+ 					// fprintf(fd, "ispsp progress 0x%lx 0x00\n", size);
++					fprintf(fd, "tb_update\n");
+ 					size_programmed += size;
+ 					file_size       -= size;
+ 
+@@ -847,13 +858,19 @@
+ 					(u32)BYTE2BLOCK(size));
+ #endif
+ 			}
+-
++			fprintf(fd, "tb_green 1\n");
++			fprintf(fd, "tb_red 1\n");
+ 			fprintf(fd, "md5sum $isp_ram_addr 0x%lx md5sum_value\n", size);
+ 			md5sum(isp_info.full_file_name[i], size_verified, size, cmd);
+ 			fprintf(fd, "if test \"$md5sum_value\" = %s ; then\n", cmd);
+ 			fprintf(fd, "    echo md5sum: OK.\n");
++			fprintf(fd, "    tb_update\n");
+ 			fprintf(fd, "else\n");
+-			fprintf(fd, "    echo md5sum: Error!\n");
++			fprintf(fd, "    echo md5sum: Error0!\n");
++			fprintf(fd, "	 echo **************************************************\n");
++			fprintf(fd, "	 echo        ltpp3g2_upgrade_error reboot now         \n");
++			fprintf(fd, "	 echo **************************************************\n");
++			fprintf(fd, "	 tb_upgfl\n");
+ 			fprintf(fd, "    exit -1\n");
+ 			fprintf(fd, "fi\n\n");
+ 			// fprintf(fd, "ispsp progress 0x00 0x%lx\n\n", size);
+@@ -910,6 +927,11 @@
+ 	fprintf(fd, "echo               ISP all: Done                       \n");
+ 	fprintf(fd, "echo **************************************************\n");
+ 	fprintf(fd, "setenv isp_all_or_update_done 0x01\n");
++	fprintf(fd, "echo **************************************************\n");
++	fprintf(fd, "echo        Remove the jumpers and reboot now          \n");
++	fprintf(fd, "echo **************************************************\n");
++	fprintf(fd, "tb_bar 0\n");
++	fprintf(fd, "tb_upgok 900 300\n");
+ 
+ 	fclose(fd);
+ 
+@@ -1488,6 +1510,7 @@
+ 			snprintf(cmd, sizeof(cmd), "mmc write $isp_ram_addr 0x%x 0x%x",
+ 				 (u32)(file_header_extract4update.partition_info[i].emmc_partition_start + BYTE2BLOCK(size_programmed)),
+ 				 (u32)BYTE2BLOCK(size));
++			fprintf(fd, "tb_update\n");
+ 			fprintf(fd2, "    echo %s\n", cmd);
+ 			fprintf(fd2, "    %s\n", cmd);
+ #else

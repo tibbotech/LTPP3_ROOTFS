@@ -1,0 +1,21 @@
+--- /root/SP7021/linux/kernel/drivers/tty/serial/sunplus-uart.c	2023-02-18 09:56:27.000000000 +0000
++++ /root/LTPP3_ROOTFS/kernel/drivers/serial/sunplus-uart.c	2023-03-14 01:38:36.000000000 +0000
+@@ -130,6 +130,9 @@
+ 	struct hrtimer DelayRtsAfterSend;
+ };
+ struct sunplus_uart_port sunplus_uart_ports[NUM_UART];
++struct sunplus_uart_port* tpd_uart_ports = sunplus_uart_ports;
++EXPORT_SYMBOL(tpd_uart_ports);
++
+ 
+ struct sunplus_uartdma_info {
+ 	void __iomem *membase;	/* virtual address */
+@@ -1476,7 +1479,7 @@
+ {
+ 	unsigned int status;
+ 
+-	status = sp_uart_get_line_status(port->membase);
++		status = sp_uart_get_line_status(port->membase);
+ 	if (status & SP_UART_LSR_RX)
+ 		return sp_uart_get_char(port->membase);
+ 	else

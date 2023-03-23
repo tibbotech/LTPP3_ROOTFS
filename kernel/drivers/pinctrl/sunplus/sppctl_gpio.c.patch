@@ -1,0 +1,11 @@
+--- /root/SP7021/linux/kernel/drivers/pinctrl/sunplus/sppctl_gpio.c	2023-02-18 09:56:26.000000000 +0000
++++ /root/LTPP3_ROOTFS/kernel/drivers/pinctrl/sunplus/sppctl_gpio.c	2023-03-14 01:38:20.000000000 +0000
+@@ -169,7 +169,7 @@
+ 	gchip->owner =             THIS_MODULE;
+ #ifdef SPPCTL_H
+ 	gchip->request =           gpiochip_generic_request; // place new calls there
+-	gchip->free =              gpiochip_generic_free;
++	gchip->free =              sppctlgpio_f_free;
+ #else
+ 	gchip->request =           sppctlgpio_f_req;
+ 	gchip->free =              sppctlgpio_f_fre;

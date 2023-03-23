@@ -1,0 +1,67 @@
+--- /root/SP7021/linux/kernel/drivers/irqchip/irq-sp7021-intc.c	2023-02-18 09:56:25.000000000 +0000
++++ /root/LTPP3_ROOTFS/kernel/drivers/irqchip/irq-sp7021-intc.c	2023-03-14 01:36:50.000000000 +0000
+@@ -67,6 +67,7 @@
+ #define HW_IRQ_GPIO_INT7                127
+ #define SP_IRQ_TYPE_EDGE_ACTIVE         0x80
+ static char edge_trigger[SP_INTC_HWIRQ_MAX-SP_INTC_HWIRQ_MIN];
++static char edge_trigger_both[SP_INTC_HWIRQ_MAX-SP_INTC_HWIRQ_MIN];
+ #endif
+ 
+ static void sp_intc_ack_irq(struct irq_data *data);
+@@ -98,14 +99,24 @@
+ #ifdef WORKAROUND_FOR_EDGE_TRIGGER_BUG
+ 	if (edge_trigger[data->hwirq] & IRQ_TYPE_EDGE_BOTH) {
+ 		u32 trig_lvl = readl_relaxed(&sp_intc.g0->intr_polarity[idx]);
+-// FIX ?
+-		if (edge_trigger[data->hwirq] == IRQ_TYPE_EDGE_RISING)
+-			trig_lvl |= mask;
+-		else
+-			trig_lvl &= ~mask;
+-
+-		writel_relaxed(trig_lvl, &sp_intc.g0->intr_polarity[idx]);
+-		edge_trigger[data->hwirq] |= SP_IRQ_TYPE_EDGE_ACTIVE;
++		if(edge_trigger_both[data->hwirq] == IRQ_TYPE_EDGE_BOTH){
++			if (edge_trigger[data->hwirq] == IRQ_TYPE_EDGE_RISING) {
++				trig_lvl |= mask;
++				edge_trigger[data->hwirq] = IRQ_TYPE_EDGE_FALLING;
++			} else {
++				trig_lvl &= ~mask;
++				edge_trigger[data->hwirq] = IRQ_TYPE_EDGE_RISING;
++			}
++			writel_relaxed(trig_lvl, &sp_intc.g0->intr_polarity[idx]);
++			edge_trigger[data->hwirq] &= ~(SP_IRQ_TYPE_EDGE_ACTIVE);
++		} else {
++			if (edge_trigger[data->hwirq] == IRQ_TYPE_EDGE_RISING)
++				trig_lvl |= mask;
++			else
++				trig_lvl &= ~mask;
++			writel_relaxed(trig_lvl, &sp_intc.g0->intr_polarity[idx]);
++			edge_trigger[data->hwirq] |= SP_IRQ_TYPE_EDGE_ACTIVE;
++		}		
+ 	}
+ #endif
+ 	writel_relaxed(mask, &sp_intc.g1->intr_clr[idx]);
+@@ -180,6 +191,7 @@
+ #ifdef WORKAROUND_FOR_EDGE_TRIGGER_BUG
+ 		if ((data->hwirq >= HW_IRQ_GPIO_INT0) && (data->hwirq <= HW_IRQ_GPIO_INT7)) {
+ 			edge_trigger[data->hwirq] = IRQ_TYPE_EDGE_RISING;
++			edge_trigger_both[data->hwirq] = IRQ_TYPE_EDGE_RISING;
+ 			writel_relaxed((edge_type & ~mask), &sp_intc.g0->intr_type[idx]);
+ 		} else {
+ 			writel_relaxed((edge_type | mask), &sp_intc.g0->intr_type[idx]);
+@@ -193,6 +205,7 @@
+ #ifdef WORKAROUND_FOR_EDGE_TRIGGER_BUG
+ 		if ((data->hwirq >= HW_IRQ_GPIO_INT0) && (data->hwirq <= HW_IRQ_GPIO_INT7)) {
+ 			edge_trigger[data->hwirq] = IRQ_TYPE_EDGE_FALLING;
++			edge_trigger_both[data->hwirq] = IRQ_TYPE_EDGE_FALLING;
+ 			writel_relaxed((edge_type & ~mask), &sp_intc.g0->intr_type[idx]);
+ 		} else {
+ 			writel_relaxed((edge_type | mask), &sp_intc.g0->intr_type[idx]);
+@@ -206,6 +219,7 @@
+ #ifdef WORKAROUND_FOR_EDGE_TRIGGER_BUG
+ 		if ((data->hwirq >= HW_IRQ_GPIO_INT0) && (data->hwirq <= HW_IRQ_GPIO_INT7)) {
+ 			edge_trigger[data->hwirq] = IRQ_TYPE_EDGE_FALLING;
++			edge_trigger_both[data->hwirq] = IRQ_TYPE_EDGE_BOTH;
+ 			writel_relaxed((edge_type & ~mask), &sp_intc.g0->intr_type[idx]);
+ 		} else {
+ 			writel_relaxed((edge_type | mask), &sp_intc.g0->intr_type[idx]);

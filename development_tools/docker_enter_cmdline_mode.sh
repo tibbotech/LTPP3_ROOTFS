@@ -1,29 +1,259 @@
 #---INPUT ARGS
 containerID__input=${1}
+ltpp3g2_username=${2}
+ltpp3g2_ipAddr=${3}
+
 
 
 #---SUBROUTINES
-docker__environmental_variables__sub() {
-	docker__current_script_fpath="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
-    docker__current_dir=$(dirname ${docker__current_script_fpath})	#/repo/LTPP3_ROOTFS/development_tools
-	docker__parent_dir=${docker__current_dir%/*}    #gets one directory up (/repo/LTPP3_ROOTFS)
-    if [[ -z ${docker__parent_dir} ]]; then
-        docker__parent_dir="${DOCKER__SLASH}"
-    fi
-	docker__current_folder=`basename ${docker__current_dir}`
+docker__get_source_fullpath__sub() {
+    #Define constants
+    local PHASE_CHECK_CACHE=1
+    local PHASE_FIND_PATH=10
+    local PHASE_EXIT=100
 
-    docker__development_tools_folder="development_tools"
-    if [[ ${docker__current_folder} != ${docker__development_tools_folder} ]]; then
-        docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}/${docker__development_tools_folder}
-    else
-        docker__my_LTPP3_ROOTFS_development_tools_dir=${docker__current_dir}
+    #Define variables
+    local phase=""
+
+    local current_dir=""
+    local parent_dir=""
+    local search_dir=""
+    local tmp_dir=""
+
+    local development_tools_foldername=""
+    local lTPP3_ROOTFS_foldername=""
+    local global_filename=""
+    local parentDir_of_LTPP3_ROOTFS_dir=""
+
+    local mainmenu_path_cache_filename=""
+    local mainmenu_path_cache_fpath=""
+
+    local find_dir_result_arr=()
+    local find_dir_result_arritem=""
+
+    local path_of_development_tools_found=""
+    local parentpath_of_development_tools=""
+
+    local isfound=""
+
+    local retry_ctr=0
+
+    #Set variables
+    phase="${PHASE_CHECK_CACHE}"
+    current_dir=$(dirname $(readlink -f $0))
+    parent_dir="$(dirname "${current_dir}")"
+    tmp_dir=/tmp
+    development_tools_foldername="development_tools"
+    global_filename="docker_global.sh"
+    lTPP3_ROOTFS_foldername="LTPP3_ROOTFS"
+
+    mainmenu_path_cache_filename="docker__mainmenu_path.cache"
+    mainmenu_path_cache_fpath="${tmp_dir}/${mainmenu_path_cache_filename}"
+
+    result=false
+
+    #Start loop
+    while true
+    do
+        case "${phase}" in
+            "${PHASE_CHECK_CACHE}")
+                if [[ -f "${mainmenu_path_cache_fpath}" ]]; then
+                    #Get the directory stored in cache-file
+                    docker__LTPP3_ROOTFS_development_tools__dir=$(awk 'NR==1' "${mainmenu_path_cache_fpath}")
+
+                    #Move one directory up
+                    parentpath_of_development_tools=$(dirname "${docker__LTPP3_ROOTFS_development_tools__dir}")
+
+                    #Check if 'development_tools' is in the 'LTPP3_ROOTFS' folder
+                    isfound=$(docker__checkif_paths_are_related "${current_dir}" \
+                            "${parentpath_of_development_tools}" "${lTPP3_ROOTFS_foldername}")
+                    if [[ ${isfound} == false ]]; then
+                        phase="${PHASE_FIND_PATH}"
+                    else
+                        result=true
+
+                        phase="${PHASE_EXIT}"
+                    fi
+                else
+                    phase="${PHASE_FIND_PATH}"
+                fi
+                ;;
+            "${PHASE_FIND_PATH}")   
+                #Print
+                echo -e "---:\e[30;38;5;215mSTART\e[0;0m: find path of folder \e[30;38;5;246m'${development_tools_foldername}\e[0;0m"
+
+                #Initialize variables
+                docker__LTPP3_ROOTFS_development_tools__dir=""
+                search_dir="${current_dir}"   #start with search in the current dir
+
+                #Start loop
+                while true
+                do
+                    #Get all the directories containing the foldername 'LTPP3_ROOTFS'...
+                    #... and read to array 'find_result_arr'
+                    readarray -t find_dir_result_arr < <(find  "${search_dir}" -type d -iname "${lTPP3_ROOTFS_foldername}" 2> /dev/null)
+
+                    #Iterate thru each array-item
+                    for find_dir_result_arritem in "${find_dir_result_arr[@]}"
+                    do
+                        echo -e "---:\e[30;38;5;215mCHECKING\e[0;0m: ${find_dir_result_arritem}"
+
+                        #Find path
+                        isfound=$(docker__checkif_paths_are_related "${current_dir}" \
+                                "${find_dir_result_arritem}"  "${lTPP3_ROOTFS_foldername}")
+                        if [[ ${isfound} == true ]]; then
+                            #Update variable 'path_of_development_tools_found'
+                            path_of_development_tools_found="${find_dir_result_arritem}/${development_tools_foldername}"
+
+                            #Check if 'directory' exist
+                            if [[ -d "${path_of_development_tools_found}" ]]; then    #directory exists
+                                #Update variable
+                                #Remark:
+                                #   'docker__LTPP3_ROOTFS_development_tools__dir' is a global variable.
+                                #   This variable will be passed 'globally' to script 'docker_global.sh'.
+                                docker__LTPP3_ROOTFS_development_tools__dir="${path_of_development_tools_found}"
+
+                                break
+                            fi
+                        fi
+                    done
+
+                    #Check if 'docker__LTPP3_ROOTFS_development_tools__dir' contains any data
+                    if [[ -z "${docker__LTPP3_ROOTFS_development_tools__dir}" ]]; then  #contains no data
+                        case "${retry_ctr}" in
+                            0)
+                                search_dir="${parent_dir}"    #next search in the 'parent' directory
+                                ;;
+                            1)
+                                search_dir="/" #finally search in the 'main' directory (the search may take longer)
+                                ;;
+                            *)
+                                echo -e "\r"
+                                echo -e "***\e[1;31mERROR\e[0;0m: folder \e[30;38;5;246m${development_tools_foldername}\e[0;0m: \e[30;38;5;131mNot Found\e[0;0m"
+                                echo -e "\r"
+
+                                #Update variable
+                                result=false
+                                ;;
+                        esac
+                    else    #contains data
+                        #Print
+                        echo -e "---:\e[30;38;5;215mCOMPLETED\e[0;0m: find path of folder \e[30;38;5;246m'${development_tools_foldername}\e[0;0m"
+
+
+                        #Write to file
+                        echo "${docker__LTPP3_ROOTFS_development_tools__dir}" | tee "${mainmenu_path_cache_fpath}" >/dev/null
+
+                        #Print
+                        echo -e "---:\e[30;38;5;215mSTATUS\e[0;0m: write path to temporary cache-file: \e[1;33mDONE\e[0;0m"
+
+                        #Update variable
+                        result=true
+                    fi
+
+                    #set phase
+                    phase="${PHASE_EXIT}"
+
+                    #Exit loop
+                    break
+                done
+                ;;    
+            "${PHASE_EXIT}")
+                break
+                ;;
+        esac
+    done
+
+    #Exit if 'result = false'
+    if [[ ${result} == false ]]; then
+        exit 99
     fi
 
-    docker__global_filename="docker_global.sh"
-    docker__global__fpath=${docker__my_LTPP3_ROOTFS_development_tools_dir}/${docker__global_filename}
+    #Retrieve directories
+    #Remark:
+    #   'docker__LTPP3_ROOTFS__dir' is a global variable.
+    #   This variable will be passed 'globally' to script 'docker_global.sh'.
+    docker__LTPP3_ROOTFS__dir=${docker__LTPP3_ROOTFS_development_tools__dir%/*}    #move one directory up: LTPP3_ROOTFS/
+    parentDir_of_LTPP3_ROOTFS_dir=${docker__LTPP3_ROOTFS__dir%/*}    #move two directories up. This directory is the one-level higher than LTPP3_ROOTFS/
+
+    #Get full-path
+    #Remark:
+    #   'docker__global__fpath' is a global variable.
+    #   This variable will be passed 'globally' to script 'docker_global.sh'.
+    docker__global__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${global_filename}
 }
+docker__checkif_paths_are_related() {
+    #Input args
+    local scriptdir__input=${1}
+    local finddir__input=${2}
+    local pattern__input=${3}
 
-docker__load_source_files__sub() {
+    #Define constants
+    local PHASE_PATTERN_CHECK1=1
+    local PHASE_PATTERN_CHECK2=10
+    local PHASE_PATH_COMPARISON=20
+    local PHASE_EXIT=100
+
+    #Define variables
+    local phase="${PHASE_PATTERN_CHECK1}"
+    local isfound1=""
+    local isfound2=""
+    local isfound3=""
+    local ret=false
+
+    while true
+    do
+        case "${phase}" in
+            "${PHASE_PATTERN_CHECK1}")
+                #Check if 'pattern__input' is found in 'scriptdir__input'
+                isfound1=$(echo "${scriptdir__input}" | \
+                        grep -o "${pattern__input}.*" | \
+                        cut -d"/" -f1 | grep -w "^${pattern__input}$")
+                if [[ -z "${isfound1}" ]]; then
+                    ret=false
+
+                    phase="${PHASE_EXIT}"
+                else
+                    phase="${PHASE_PATTERN_CHECK2}"
+                fi                
+                ;;
+            "${PHASE_PATTERN_CHECK2}")
+                #Check if 'pattern__input' is found in 'finddir__input'
+                isfound2=$(echo "${finddir__input}" | \
+                        grep -o "${pattern__input}.*" | \
+                        cut -d"/" -f1 | grep -w "^${pattern__input}$")
+                if [[ -z "${isfound2}" ]]; then
+                    ret=false
+
+                    phase="${PHASE_EXIT}"
+                else
+                    phase="${PHASE_PATH_COMPARISON}"
+                fi                
+                ;;
+            "${PHASE_PATH_COMPARISON}")
+                #Check if 'development_tools' is under the folder 'LTPP3_ROOTFS'
+                isfound3=$(echo "${scriptdir__input}" | \
+                        grep -w "${finddir__input}.*")
+                if [[ -z "${isfound3}" ]]; then
+                    ret=false
+                else
+                    ret=true
+                fi
+
+                phase="${PHASE_EXIT}"
+                ;;
+            "${PHASE_EXIT}")
+                break
+                ;;
+        esac
+    done
+
+    #Output
+    echo "${ret}"
+
+    return 0
+}
+docker__load_global_fpath_paths__sub() {
     source ${docker__global__fpath}
 }
 
@@ -32,8 +262,6 @@ docker__init_variables__sub() {
     docker__cachedInput_arrLen=0
     docker__cachedInput_arrIndex=-1 #must be set to (-1)
     docker__cachedInput_arrIndex_max=0
-
-    docker__output_arr=()
 
     docker__cmd=${DOCKER__EMPTYSTRING}
     docker__cmd_clean=${DOCKER__EMPTYSTRING}
@@ -71,7 +299,7 @@ docker__load_constants__sub() {
     DOCKER__ENTER_CMD_REMARKS+="${DOCKER__FOURSPACES}${DOCKER__FG_YELLOW}TAB${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}auto-complete${DOCKER__NOCOLOR}\n"
     DOCKER__ENTER_CMD_REMARKS+="${DOCKER__FOURSPACES}${DOCKER__FG_YELLOW};c${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}clear${DOCKER__NOCOLOR}"
 
-    DOCKER__ENTER_CMD_LOCATIONINFO="${DOCKER__FOURSPACES}${DOCKER__FG_VERYLIGHTORANGE}Location${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}${docker__enter_cmdline_mode_out__fpath}${DOCKER__NOCOLOR}"
+    DOCKER__ENTER_CMD_LOCATIONINFO="${DOCKER__FOURSPACES}${DOCKER__FG_ORANGE223}Location${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}${docker__enter_cmdline_mode_out__fpath}${DOCKER__NOCOLOR}"
     DOCKER__ENTER_CMD_MENUOPTIONS="${DOCKER__FOURSPACES}${DOCKER__FG_YELLOW}Press-any-key${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}go back to cmd-input${DOCKER__NOCOLOR}"
     DOCKER__ENTER_CMD_ERRORMSG="-:${DOCKER__FG_LIGHTRED}No results${DOCKER__NOCOLOR}:-" #this message will be centered within the function
 }
@@ -95,8 +323,8 @@ docker__show_fileContent_handler__sub() {
     local cmd__input=${1}
 
     #Update 'menuTitle'
-    local menuTitle="${DOCKER__FG_DEEPORANGE}Output of command ${DOCKER__NOCOLOR} "
-    menuTitle+="<${DOCKER__FG_REDORANGE}${cmd__input}${DOCKER__NOCOLOR}>"
+    local menuTitle="${DOCKER__FG_ORANGE208}Output of command ${DOCKER__NOCOLOR} "
+    menuTitle+="<${DOCKER__FG_ORANGE203}${cmd__input}${DOCKER__NOCOLOR}>"
 
     #Execute function
     show_fileContent_wo_select__func "${docker__enter_cmdline_mode_out__fpath}" \
@@ -330,7 +558,7 @@ docker__enter_handler__sub() {
             if [[ ! -z ${docker__cmd} ]]; then  #command provided
                 #Execute command and write result to file
                 #Output: docker__isExcluded
-                docker__exec_cmd_and_write_output_toFile__sub "${docker__cmd}"
+                docker__exec_cmd_and_write_output_toFile__sub "${docker__cmd}" "${ltpp3g2_username}" "${ltpp3g2_ipAddr}"
 
                 if [[ ${docker__isExcluded} == false ]]; then
                     #Show file content (including Tibbo header)
@@ -382,9 +610,11 @@ docker__exit_handler__sub() {
 docker__exec_cmd_and_write_output_toFile__sub() {
     #Input args
     local cmd__input="${1}"
+    local usr__input="${2}"
+    local ip__input="${3}"
 
-    #Reset array
-    docker__output_arr=()
+    #Defube variables
+    local top_isfound="${DOCKER__EMPTYSTRING}"
 
     #Check if 'cmd__wo_leadingSpaces' is found in the exclusion array-list 'DOCKER__EXCL_CMD_ARR'
     docker__isExcluded=`checkFor_leading_partialMatch_of_pattern_within_array__func "${cmd__input}" \
@@ -394,41 +624,62 @@ docker__exec_cmd_and_write_output_toFile__sub() {
         #Execute command WIRHOUT writing to array and file
         ${cmd__input}
     else    
-        #Execute command WITH writing to array and file
-        #Remark:
-        #   In order to be able to execute commands with SPACES, 'eval' must be used
-        readarray -t docker__output_arr < <(eval ${cmd__input})
+        #Check if pattern 'top' is found in 'cmd__input'
+        top_isfound=$(echo "${cmd__input}" | grep -o "${DOCKER__PATTERN_TOP}")
+        if [[ -n "${top_isfound}" ]]; then
+            #Append string ( -n1) to 'top'
+            #Remark:
+            #   Since we are using a shell to call the 'top' command
+            #   ...it is important to append ( -n1), forces 'top' to show
+            #   ...only 1 result, after which 'top' MUST terminate.
+            cmd__input+=" -n1"
+        fi
+
+        #Execute command and write output to a file
+        if [[ -z "${usr__input}" ]] && [[ -z "${ip__input}" ]]; then
+            #Note: in order to be able to execute commands with SPACES, 'eval' must be used.
+            eval ${cmd__input} > ${docker__enter_cmdline_mode_out__fpath}
+        else
+            #Execute command via SSH
+            ssh -tt ${ltpp3g2_username}@${ltpp3g2_ipAddr} "${cmd__input}" > "${docker__enter_cmdline_mode_out__fpath}"
+        fi
+
+        #If command 'top' was execited, then:
+        #1. At the 1st line: remove characters ([?1h=[?25l[H[2J(B[m) BEFORE the pattern 'top'.
+        #Note: The escaped characters ([?1h=[?25l[H[2J(B[m) forces
+        #      ...the table to be shown on TOP of the Terminal Window.
+        if [[ -n "${top_isfound}" ]]; then
+            sed -i "1s/^.*${DOCKER__PATTERN_TOP}/${DOCKER__PATTERN_TOP}/" "${docker__enter_cmdline_mode_out__fpath}"
+        fi
+
+        #2. Replace all '[63;1H' with '[0;0m'
+        #Note: The escaped character ([63;1H) forces empty lines to be drawn...
+        #      ...below the table to fill up the empty space of the Terminal Window.
+        sed -i "s/${SED_LBRACKET_63_SEMICOLON_1H}/${SED_LEFBRACKET_0_SEMICOLON_0M}/g" "${docker__enter_cmdline_mode_out__fpath}"
     fi
 
     #Write input to 'docker__cachedInput_arr' and 'docker__enter_cmdline_mode_cache__fpath'
-    docker__write_input_to_cache_file_and_update_array__sub
-
-    #Write 'docker__output_arr' to file 'docker__enter_cmdline_mode_out__fpath'
-    #Remark:
-    #   Do NOT use 'echo' because...
-    #   ...all array-elements will be written to the file as ONE line...
-    #   ...instead of multiple lines.
-    printf "%s\n" "${docker__output_arr[@]}" > ${docker__enter_cmdline_mode_out__fpath}
+    docker__write_cmdinput_to_cache_file_and_update_array__sub
 }
-docker__write_input_to_cache_file_and_update_array__sub() {
+docker__write_cmdinput_to_cache_file_and_update_array__sub() {
     #Get the exit-code of the previously executed command.
     docker__exitCode=$?
 
     #Validate docker__exitCode
     if [[ ${docker__exitCode} -eq 0 ]]; then    #no errors found
-        #Check if 'cmd__input' is already added to file ''
+        #Check if 'cmd__input' is already added to file 'docker__enter_cmdline_mode_cache__fpath'
         local lineNum_found=`retrieve_lineNum_from_file__func "${cmd__input}" \
                         "${docker__enter_cmdline_mode_cache__fpath}"`
 
         if [[ ${lineNum_found} -gt ${DOCKER__LINENUM_1} ]]; then
-            #Deliete line specified by 'lineNum_found'
+            #Delete line specified by 'lineNum_found'
             delete_lineNum_from_file__func "${lineNum_found}" \
                         "${DOCKER__EMPTYSTRING}" \
                         "${docker__enter_cmdline_mode_cache__fpath}"
         fi
 
         #Add 'cmd__input' to cache-file 'docker__enter_cmdline_mode_cache__fpath'
-        insert_string_into_file_at_specified_lineNum__func "${cmd__input}" \
+        insert_string_at_specified_lineNum_in_file__func "${cmd__input}" \
                         "${DOCKER__LINENUM_1}" \
                         "${docker__enter_cmdline_mode_cache__fpath}" \
                         "${DOCKER__TRUE}"
@@ -560,10 +811,9 @@ docker__tab_handler__sub() {
 
 #---MAIN SUBROUTINE
 main__sub() {
+    docker__get_source_fullpath__sub
 
-    docker__environmental_variables__sub
-
-    docker__load_source_files__sub
+    docker__load_global_fpath_paths__sub
 
     docker__init_variables__sub
 
