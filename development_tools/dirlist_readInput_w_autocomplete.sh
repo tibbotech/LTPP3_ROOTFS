@@ -1138,7 +1138,7 @@ dirlist__show_dirContent_handler__sub() {
 main__sub() {
     docker__get_source_fullpath__sub
 
-    dirlist__load_source_files__sub
+    docker__load_global_fpath_paths__sub
 
     dirlist__initial_file_cleanup__sub
 
