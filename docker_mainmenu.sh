@@ -131,8 +131,15 @@ docker__get_source_fullpath__sub() {
 
                                 #Update variable
                                 result=false
+
+                                #set phase
+                                phase="${PHASE_EXIT}"
+
+                                break
                                 ;;
                         esac
+
+                        ((retry_ctr++))
                     else    #contains data
                         #Print
                         echo -e "---:\e[30;38;5;215mCOMPLETED\e[0;0m: find path of folder \e[30;38;5;246m'${development_tools_foldername}\e[0;0m"
@@ -146,13 +153,12 @@ docker__get_source_fullpath__sub() {
 
                         #Update variable
                         result=true
+
+                        #set phase
+                        phase="${PHASE_EXIT}"
+
+                        break
                     fi
-
-                    #set phase
-                    phase="${PHASE_EXIT}"
-
-                    #Exit loop
-                    break
                 done
                 ;;    
             "${PHASE_EXIT}")
@@ -327,7 +333,6 @@ docker__mainmenu__sub() {
         echo -e "${DOCKER__FOURSPACES}8. Copy file from${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}to ${DOCKER__FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
         echo -e "${DOCKER__FOURSPACES}9. Chroot from inside${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}outside ${DOCKER__FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}" 
         echo -e "${DOCKER__FOURSPACES}0. Enter Command Prompt"
-
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
         echo -e "${DOCKER__FOURSPACES}r. ${DOCKER__FG_PURPLE}Repository${DOCKER__NOCOLOR}-list"
         echo -e "${DOCKER__FOURSPACES}c. ${DOCKER__FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}-list"

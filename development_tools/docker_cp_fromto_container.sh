@@ -129,8 +129,15 @@ docker__get_source_fullpath__sub() {
 
                                 #Update variable
                                 result=false
+
+                                #set phase
+                                phase="${PHASE_EXIT}"
+
+                                break
                                 ;;
                         esac
+
+                        ((retry_ctr++))
                     else    #contains data
                         #Print
                         echo -e "---:\e[30;38;5;215mCOMPLETED\e[0;0m: find path of folder \e[30;38;5;246m'${development_tools_foldername}\e[0;0m"
@@ -144,13 +151,12 @@ docker__get_source_fullpath__sub() {
 
                         #Update variable
                         result=true
+
+                        #set phase
+                        phase="${PHASE_EXIT}"
+
+                        break
                     fi
-
-                    #set phase
-                    phase="${PHASE_EXIT}"
-
-                    #Exit loop
-                    break
                 done
                 ;;    
             "${PHASE_EXIT}")
@@ -880,6 +886,9 @@ docker__exit__sub() {
 
 #---MAIN SUBROUTINE
 main__sub() {
+	#Environmental variables must be defined and set first.
+	docker__get_source_fullpath__sub
+
 	#Then the source file(s) must be loaded.
 	docker__load_global_fpath_paths__sub
 
@@ -887,9 +896,6 @@ main__sub() {
 	#Remark:
 	#	This is necessary, because otherwise an asterisk '*' won't be treated as a character.
 	disable_expansion__func
-
-	#Environmental variables must be defined and set first.
-	docker__get_source_fullpath__sub
 
 	#Goto FIRST-Phase
 	goto__func PHASE_START

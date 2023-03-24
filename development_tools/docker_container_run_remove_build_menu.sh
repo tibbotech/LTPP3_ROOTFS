@@ -130,8 +130,15 @@ docker__get_source_fullpath__sub() {
 
                                 #Update variable
                                 result=false
+
+                                #set phase
+                                phase="${PHASE_EXIT}"
+
+                                break
                                 ;;
                         esac
+
+                        ((retry_ctr++))
                     else    #contains data
                         #Print
                         echo -e "---:\e[30;38;5;215mCOMPLETED\e[0;0m: find path of folder \e[30;38;5;246m'${development_tools_foldername}\e[0;0m"
@@ -145,13 +152,12 @@ docker__get_source_fullpath__sub() {
 
                         #Update variable
                         result=true
+
+                        #set phase
+                        phase="${PHASE_EXIT}"
+
+                        break
                     fi
-
-                    #set phase
-                    phase="${PHASE_EXIT}"
-
-                    #Exit loop
-                    break
                 done
                 ;;    
             "${PHASE_EXIT}")
@@ -263,7 +269,7 @@ docker__load_constants__sub() {
 
 docker__init_variables__sub() {
     docker__myChoice=${DOCKER__EMPTYSTRING}
-    docker__regEx="[1-3brcsiegq]"
+    docker__regEx="[1-30brcsiegq]"
     docker__tibboHeader_prepend_numOfLines=0
 }
 
@@ -297,6 +303,7 @@ docker__menu__sub() {
         echo -e "${DOCKER__FOURSPACES}1. Run container from ${DOCKER__FG_BORDEAUX}image${DOCKER__NOCOLOR}"
         echo -e "${DOCKER__FOURSPACES}2. Run exited container"
         echo -e "${DOCKER__FOURSPACES}3. Remove container"
+        echo -e "${DOCKER__FOURSPACES}0. Enter Command Prompt"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
         echo -e "${DOCKER__FOURSPACES}b. ${DOCKER__MENU} overlay & ISPBOOOT.BIN"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
@@ -347,6 +354,9 @@ docker__menu__sub() {
                 ;;
             3)
                 ${docker__remove_container__fpath}
+                ;;
+            0)
+                ${docker__enter_cmdline_mode__fpath} "${DOCKER__EMPTYSTRING}" "${DOCKER__EMPTYSTRING}" "${DOCKER__EMPTYSTRING}"
                 ;;
             b)
                 ${docker__fs_partition_menu__fpath}

@@ -130,8 +130,15 @@ docker__get_source_fullpath__sub() {
 
                                 #Update variable
                                 result=false
+
+                                #set phase
+                                phase="${PHASE_EXIT}"
+
+                                break
                                 ;;
                         esac
+
+                        ((retry_ctr++))
                     else    #contains data
                         #Print
                         echo -e "---:\e[30;38;5;215mCOMPLETED\e[0;0m: find path of folder \e[30;38;5;246m'${development_tools_foldername}\e[0;0m"
@@ -145,13 +152,12 @@ docker__get_source_fullpath__sub() {
 
                         #Update variable
                         result=true
+
+                        #set phase
+                        phase="${PHASE_EXIT}"
+
+                        break
                     fi
-
-                    #set phase
-                    phase="${PHASE_EXIT}"
-
-                    #Exit loop
-                    break
                 done
                 ;;    
             "${PHASE_EXIT}")
@@ -263,7 +269,7 @@ docker__load_constants__sub() {
 
 docker__init_variables__sub() {
     docker__myChoice=${DOCKER__EMPTYSTRING}
-    docker__regEx="[1-4rcsiegq]"
+    docker__regEx="[1-40rcsiegq]"
     docker__tibboHeader_prepend_numOfLines=0
 }
 
@@ -297,6 +303,7 @@ docker__menu__sub() {
         echo -e "${DOCKER__FOURSPACES}2. Create image from ${DOCKER__FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}"
         echo -e "${DOCKER__FOURSPACES}3. Remove image"
         echo -e "${DOCKER__FOURSPACES}4. Rename image ${DOCKER__FG_PURPLE}Repository${DOCKER__NOCOLOR}:${DOCKER__FG_PINK}Tag${DOCKER__NOCOLOR}"
+        echo -e "${DOCKER__FOURSPACES}0. Enter Command Prompt"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
         echo -e "${DOCKER__FOURSPACES}r. ${DOCKER__FG_PURPLE}Repository${DOCKER__NOCOLOR}-list"
         echo -e "${DOCKER__FOURSPACES}c. ${DOCKER__FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}-list"
@@ -348,6 +355,9 @@ docker__menu__sub() {
                 ;;
             4)
                 ${docker__rename_repotag__fpath}
+                ;;
+            0)
+                ${docker__enter_cmdline_mode__fpath} "${DOCKER__EMPTYSTRING}" "${DOCKER__EMPTYSTRING}" "${DOCKER__EMPTYSTRING}"
                 ;;
             c)
                 docker__show_containerList_handler__sub
