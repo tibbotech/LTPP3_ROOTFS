@@ -6020,7 +6020,7 @@ docker__get_source_fullpath__sub() {
                         echo -e "---:\e[30;38;5;215mCHECKING\e[0;0m: ${docker__find_dir_result__arritem}"
 
                         #Find path
-                        docker__isfound=$(docker__checkif_paths_are_related "${docker__current__dir}" \
+                        docker__isfound=$(docker__checkif_paths_are_related "${DOCKER__EMPTYSTRING}" \
                                 "${docker__find_dir_result__arritem}"  "${docker__LTPP3_ROOTFS__foldername}")
                         if [[ ${docker__isfound} == true ]]; then
                             #Update variable 'docker__path_of_development_tools__found'
@@ -6055,8 +6055,15 @@ docker__get_source_fullpath__sub() {
 
                                 #Update variable
                                 docker__result=false
+
+                                #set phase
+                                docker__phase="${DOCKER__PHASE_EXIT}"
+
+                                break
                                 ;;
                         esac
+
+                        ((docker__retry_ctr++))
                     else    #contains data
                         #Print
                         echo -e "---:\e[30;38;5;215mCOMPLETED\e[0;0m: find path of folder \e[30;38;5;246m'${docker__development_tools__foldername}\e[0;0m"
@@ -6070,13 +6077,13 @@ docker__get_source_fullpath__sub() {
 
                         #Update variable
                         docker__result=true
+
+                        #set phase
+                        docker__phase="${DOCKER__PHASE_EXIT}"
+
+                        #Exit loop
+                        break
                     fi
-
-                    #set phase
-                    docker__phase="${DOCKER__PHASE_EXIT}"
-
-                    #Exit loop
-                    break
                 done
                 ;;    
             "${DOCKER__PHASE_EXIT}")
@@ -6509,17 +6516,22 @@ docker__checkif_paths_are_related() {
     do
         case "${phase}" in
             "${PHASE_PATTERN_CHECK1}")
-                #Check if 'pattern__input' is found in 'scriptdir__input'
-                isfound1=$(echo "${scriptdir__input}" | \
-                        grep -o "${pattern__input}.*" | \
-                        cut -d"/" -f1 | grep -w "^${pattern__input}$")
-                if [[ -z "${isfound1}" ]]; then
-                    ret=false
+                #Check if 'scriptdir__input' is an Empty String
+                if [[ -n "${scriptdir__input}" ]]; then
+                    #Check if 'pattern__input' is found in 'scriptdir__input'
+                    isfound1=$(echo "${scriptdir__input}" | \
+                            grep -o "${pattern__input}.*" | \
+                            cut -d"/" -f1 | grep -w "^${pattern__input}$")
+                    if [[ -z "${isfound1}" ]]; then
+                        ret=false
 
-                    phase="${PHASE_EXIT}"
+                        phase="${PHASE_EXIT}"
+                    else
+                        phase="${PHASE_PATTERN_CHECK2}"
+                    fi
                 else
                     phase="${PHASE_PATTERN_CHECK2}"
-                fi                
+                fi        
                 ;;
             "${PHASE_PATTERN_CHECK2}")
                 #Check if 'pattern__input' is found in 'finddir__input'
@@ -6535,11 +6547,16 @@ docker__checkif_paths_are_related() {
                 fi                
                 ;;
             "${PHASE_PATH_COMPARISON}")
-                #Check if 'development_tools' is under the folder 'LTPP3_ROOTFS'
-                isfound3=$(echo "${scriptdir__input}" | \
-                        grep -w "${finddir__input}.*")
-                if [[ -z "${isfound3}" ]]; then
-                    ret=false
+                #Check if 'scriptdir__input' is an Empty String
+                if [[ -n "${scriptdir__input}" ]]; then
+                    #Check if 'development_tools' is under the folder 'LTPP3_ROOTFS'
+                    isfound3=$(echo "${scriptdir__input}" | \
+                            grep -w "${finddir__input}.*")
+                    if [[ -z "${isfound3}" ]]; then
+                        ret=false
+                    else
+                        ret=true
+                    fi
                 else
                     ret=true
                 fi
