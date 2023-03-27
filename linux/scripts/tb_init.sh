@@ -29,6 +29,7 @@ fsck_retry=0
 fsck_retry_fpath1=${rootfs_dir}/fsck_retry.tmp
 fsck_retry_fpath2=${tb_reserve_dir}/fsck_retry.bck
 
+dev_ismounted=false
 rootfs_partition_num=8
 
 
@@ -91,10 +92,16 @@ function trap_err__func() {
     #Check all partitions with partition-numbers 8 and above
     for i in "${dev_mmcblk0p_list_arr[@]}"
     do
-      if [[ ${i} -ge ${rootfs_partition_num} ]]; then
-        echo "---:STATUS: check ${dev_mmcblk0p}${i} (${fsck_retry} out-of ${FSCK_RETRY_MAX})"
+      dev_ismounted=false
 
-        fsck -a "${dev_mmcblk0p}${i}"
+      if [[ ${i} -ge ${rootfs_partition_num} ]]; then
+        #Check if partition is mounted
+        dev_ismounted=$(mount | grep "${dev_mmcblk0p}${i}")
+        if [[ -n "${dev_ismounted}" ]]; then  #is mounted
+          echo "---:STATUS: fsck -a ${dev_mmcblk0p}${i} (${fsck_retry} out-of ${FSCK_RETRY_MAX})"
+
+          fsck -a "${dev_mmcblk0p}${i}"
+        fi
       fi
     done
 
