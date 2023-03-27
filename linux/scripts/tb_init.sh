@@ -1,6 +1,7 @@
 #!/bin/bash
 #---CONSTANTS
 EXIT_CODE_1="exit 1"
+FSCK_RETRY_MAX=3
 
 
 
@@ -9,6 +10,7 @@ bin_bash_exec=/bin/bash
 lib_systemd_systemd_exec=/lib/systemd/systemd
 
 dev_mmcblk0=/dev/mmcblk0
+dev_mmcblk0p=/dev/mmcblk0p
 dev_mmcblk0p9=/dev/mmcblk0p9
 
 overlay_dir=/overlay
@@ -16,25 +18,99 @@ proc_dir=/proc
 proc_cmdline_fpath=${proc_dir}/cmdline
 proc_sys_kernel_sysrq=${proc_dir}/sys/kernel/sysrq
 proc_sysrqtrigger_fpath=${proc_dir}/sysrq-trigger
+rootfs_dir=/
 tb_reserve_dir=/tb_reserve
 usr_sbin_mkfsext4=/usr/sbin/mkfs.ext4
+
+dev_mmcblk0p_list_arr=()
+dev_mmcblk0p_list_arrstring=""
+
+fsck_retry=0
+fsck_retry_fpath1=${rootfs_dir}/fsck_retry.tmp
+fsck_retry_fpath2=${tb_reserve_dir}/fsck_retry.bck
+
+rootfs_partition_num=8
 
 
 
 #---FUNCTIONS
-#trap all errors into a function called error_trap
-function error_trap() {
+function fsck_retry_retrieve__func() {
+  #Temporarily mount /dev/mmcblk0p9
+  if [[ -f ${fsck_retry_fpath1} ]]; then  #path exists
+    fsck_retry=$(cat ${fsck_retry_fpath1})
+  else  #path does not exist
+    echo "---:STATUS: temporarily mount ${dev_mmcblk0p9}"
+    mount ${dev_mmcblk0p9} ${tb_reserve_dir}
+
+    if [[ -f ${fsck_retry_fpath2} ]]; then  #path exists
+      fsck_retry=$(cat ${fsck_retry_fpath2})
+    else  #path does not exist
+      echo "---:STATUS: updating file ${fsck_retry_fpath1} with fsck_retry: ${fsck_retry}"
+      echo "0" | tee ${fsck_retry_fpath1}
+      echo "---:STATUS: updating file ${fsck_retry_fpath2} with fsck_retry: ${fsck_retry}"
+      echo "0" | tee ${fsck_retry_fpath2}
+    fi
+
+    echo "---:STATUS: unmount ${dev_mmcblk0p9}"
+    umount ${dev_mmcblk0p9}  
+  fi
+}
+
+#trap all errors into a function called trap_err__func
+function trap_err__func() {
   echo "***ERROR:  An error was encountered while running the script."
 
-  ${bin_bash_exec}
+  #Retrieve 'fsck_retry'
+  fsck_retry_retrieve__func
 
-  ${EXIT_CODE_1}
+  if [[ ${fsck_retry} -le ${FSCK_RETRY_MAX} ]]; then
+    #Increment fsck
+    ((fsck_retry++))
+
+    #Write to files
+    echo "${fsck_retry}" | tee ${fsck_retry_fpath1}
+    echo "${fsck_retry}" | tee ${fsck_retry_fpath2}
+
+    #Get a list containing the partitions belonging to mmclbk0p
+    echo "---:STATUS: Get a list of partition-numbers belonging to mmcblk0p"
+    dev_mmcblk0p_list_arrstring=$(ls -1 /dev | grep "mmcblk0p" | sed "s/mmcblk0p//g" | sort -n)
+    dev_mmcblk0p_list_arr=(${dev_mmcblk0p_list_arrstring})
+
+    #Unmount all partitions with partition-numbers 8 and above
+    #Remark:
+    # partition-number 8 belongs to 'rootfs'
+    for i in "${dev_mmcblk0p_list_arr[@]}"
+    do
+      if [[ ${i} -ge ${rootfs_partition_num} ]]; then
+        echo "---:STATUS: unmounting ${dev_mmcblk0p}${i}"
+
+        umount "${dev_mmcblk0p}${i}"
+      fi
+    done
+
+    #Check all partitions with partition-numbers 8 and above
+    for i in "${dev_mmcblk0p_list_arr[@]}"
+    do
+      if [[ ${i} -ge ${rootfs_partition_num} ]]; then
+        echo "---:STATUS: check ${dev_mmcblk0p}${i} (${fsck_retry} out-of ${FSCK_RETRY_MAX})"
+
+        fsck -a "${dev_mmcblk0p}${i}"
+      fi
+    done
+
+    #Reboot
+    reboot now
+  else
+    ${bin_bash_exec}
+
+    ${EXIT_CODE_1}
+  fi
 }
 
 
 
 #Enable trap ERR
-trap error_trap ERR
+trap trap_err__func ERR
 
 
 
@@ -51,21 +127,28 @@ mount -t proc none ${proc_dir}
 
 #---TB_RESERVE
 if [[ ! -d "${tb_reserve_dir}" ]]; then
-    echo "---:STATUS: remounting /"
-    mount -o remount,rw / #remounting root in emmc as writeable
+  echo "---:STATUS: remounting ${rootfs_dir}"
+  mount -o remount,rw ${rootfs_dir} #remounting root in emmc as writeable
 
-    #this is also the first boot.
-    #Create an 'ext4' partition '/dev/mmcblk0p10'
-    echo "---:STATUS: creating ext4-partition ${dev_mmcblk0p9}"
-    ${usr_sbin_mkfsext4} ${dev_mmcblk0p9}
+  #this is also the first boot.
+  #Create an 'ext4' partition '/dev/mmcblk0p9'
+  echo "---:STATUS: creating ext4-partition ${dev_mmcblk0p9}"
+  ${usr_sbin_mkfsext4} ${dev_mmcblk0p9}
 
-    echo "---:STATUS: create directory ${tb_reserve_dir}"
-    mkdir "${tb_reserve_dir}"
+  echo "---:STATUS: create directory ${tb_reserve_dir}"
+  mkdir "${tb_reserve_dir}"
 
-    #flag that root is already remounted
-    flag_root_is_remounted=true
+  #flag that root is already remounted
+  flag_rootfs_is_remounted=true
 fi
 
+#>>>>>>>>>>>> THIS PART SHOULD BE REMOVED LATER<<<<<<<<<<<<<<<<<
+fsck_retry_retrieve__func
+
+echo ">>>fsck_retry: ${fsck_retry}" && sleep 5
+
+trap_err__func
+#>>>>>>>>>>>> THIS PART SHOULD BE REMOVED LATER<<<<<<<<<<<<<<<<<
 
 
 #---ADDITIONAL PARTITIONS
@@ -164,9 +247,9 @@ if [ -n "${tb_overlay}" ]; then
 
   #create /overlay if it doesn't exist
   if [ ! -d ${overlay_dir} ]; then    
-    if [[ ${flag_root_is_remounted} == false ]]; then
+    if [[ ${flag_rootfs_is_remounted} == false ]]; then
         echo "---:STATUS: remounting /"
-        mount -o remount,rw / #remounting root in emmc as writeable
+        mount -o remount,rw ${rootfs_dir} #remounting root in emmc as writeable
     fi
 
     echo "---:STATUS: creating ${overlay_dir}"
@@ -245,4 +328,4 @@ exec ${lib_systemd_systemd_exec}
 
 
 
-error_trap
+trap_err__func
