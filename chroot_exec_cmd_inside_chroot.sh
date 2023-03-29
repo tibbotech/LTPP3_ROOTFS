@@ -389,7 +389,7 @@ echo ">Add Tibbo-PPA-Key"
 
 echo -e "\r"
 echo ">Add Tibbo-PPA to 'sources.list'"
-	curl -s --compressed -o /etc/apt/sources.list.d/my_list_file.list "https://tibbotech.github.io/ltpp3g2_ppa/ppa/my_list_file.list"
+	curl -s --compressed -o /etc/apt/sources.list.d/my_list_file.list "deb https://tibbotech.github.io/ltpp3g2_ppa/u0_6_0 ./"
 
 echo -e "\r"
 echo ">Installing update"
