@@ -20,7 +20,7 @@ DISABLE="disable"
 
 
 #---ENVIRONMENT VARIABLES
-mode_fpath=/sys/devices/platform/soc@B/9c108000.l2sw/mode
+mode_fpath=/sys/devices/platform/soc-B/9c108000.l2sw/mode
 
 
 
