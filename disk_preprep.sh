@@ -60,10 +60,12 @@ echo -e "\r"
 echo -e "---Define Environmental Variables---"
 echo -e "\r"
 
+bcmdhd_foldername="bcmdhd"
 sunplus_foldername="SP7021"
 
 armhf_filename="ubuntu-base-20.04.1-base-armhf.tar.gz"
 brcm_patchram_plus_filename="brcm_patchram_plus"
+bcmdhd_targz_filename="bcmdhd.tar.gz"
 build_disk_filename="build_disk.sh"
 build_disk_bck_filename=${build_disk_filename}.bak
 build_disk_mod_filename=${build_disk_filename}.mod
@@ -160,6 +162,7 @@ home_lttp3rootfs_kernel_drivers_misc_dir=${home_lttp3rootfs_kernel_dir}/drivers/
 home_lttp3rootfs_kernel_drivers_nvnmem_dir=${home_lttp3rootfs_kernel_dir}/drivers/nvmem
 home_lttp3rootfs_kernel_drivers_pinctrl_sunplus_dir=${home_lttp3rootfs_kernel_dir}/drivers/pinctrl/sunplus
 home_lttp3rootfs_kernel_drivers_serial_dir=${home_lttp3rootfs_kernel_dir}/drivers/serial
+home_lttp3rootfs_kernel_drivers_wifi_dir=${home_lttp3rootfs_kernel_dir}/drivers/wifi
 home_lttp3rootfs_kernel_dts_dir=${home_lttp3rootfs_kernel_dir}/dts
 home_lttp3rootfs_usr_bin_dir=${home_lttp3rootfs_dir}/usr/bin
 SP7xxx_dir=${home_dir}/SP7021
@@ -169,6 +172,8 @@ SP7xxx_linux_kernel_dir=${SP7xxx_dir}/linux/kernel
 # SP7xxx_linux_kernel_drivers_clk_dir=${SP7xxx_linux_kernel_dir}/drivers/clk
 SP7xxx_linux_kernel_drivers_irqchip_dir=${SP7xxx_linux_kernel_dir}/drivers/irqchip
 SP7xxx_linux_kernel_drivers_misc_dir=${SP7xxx_linux_kernel_dir}/drivers/misc
+SP7xxx_linux_kernel_drivers_net_wireless_dir=${SP7xxx_linux_kernel_dir}/drivers/net/wireless
+SP7xxx_linux_kernel_drivers_net_wireless_bcmdhd_dir=${SP7xxx_linux_kernel_drivers_net_wireless_dir}/${bcmdhd_foldername}
 SP7xxx_linux_kernel_drivers_nvmem_dir=${SP7xxx_linux_kernel_dir}/drivers/nvmem
 SP7xxx_linux_kernel_drivers_pinctrl_sunplus_dir=${SP7xxx_linux_kernel_dir}/drivers/pinctrl/sunplus
 SP7xxx_linux_kernel_drivers_tty_serial_dir=${SP7xxx_linux_kernel_dir}/drivers/tty/serial
@@ -197,6 +202,9 @@ src_resolve_fpath=${etc_dir}/${resolve_filename}
 
 src_brcm_patchram_plus_fpath=${home_lttp3rootfs_usr_bin_dir}/${brcm_patchram_plus_filename}
 dst_brcm_patchram_plus_fpath=${SP7xxx_linux_rootfs_initramfs_disk_usr_bin_dir}/${brcm_patchram_plus_filename}
+
+src_brcmhd_targz_fpath=${home_lttp3rootfs_kernel_drivers_wifi_dir}/${bcmdhd_targz_filename}
+dst_brcmhd_targz_fpath=${SP7xxx_linux_kernel_drivers_net_wireless_dir}/${bcmdhd_targz_filename}
 
 #src_clkspq628c_fpath=${home_lttp3rootfs_kernel_drivers_clk_dir}/${clkspq628c_filename}
 #dst_clkspq628c_fpath=${SP7xxx_linux_kernel_drivers_clk_dir}/${clkspq628c_filename}
@@ -1148,7 +1156,7 @@ irq_sp7021_intc_c_diff=$(diff ${old_irq_sp7021_intc_c_fpath} ${new_irq_sp7021_in
 if [[ -n "${irq_sp7021_intc_c_diff}" ]]; then
 	echo -e "\r"
 	echo -e ">Patching file"
-	echo -e ">source: ${old_irq_sp7021_intc_c_fpath}"
+	echo -e ">from: ${old_irq_sp7021_intc_c_fpath}"
 	echo -e ">with: ${irq_sp7021_intc_c_patch_fpath}"
 	patch "${old_irq_sp7021_intc_c_fpath}" < "${irq_sp7021_intc_c_patch_fpath}"
 else
@@ -1160,7 +1168,7 @@ isp_c_diff=$(diff ${old_isp_c_fpath} ${new_isp_c_fpath})
 if [[ -n "${isp_c_diff}" ]]; then
 	echo -e "\r"
 	echo -e ">Patching file"
-	echo -e ">source: ${old_isp_c_fpath}"
+	echo -e ">from: ${old_isp_c_fpath}"
 	echo -e ">with: ${isp_c_patch_fpath}"
 	patch "${old_isp_c_fpath}" < "${isp_c_patch_fpath}"
 else
@@ -1172,7 +1180,7 @@ sp_go_c_diff=$(diff ${old_sp_go_c_fpath} ${new_sp_go_c_fpath})
 if [[ -n "${sp_go_c_diff}" ]]; then
 	echo -e "\r"
 	echo -e ">Patching file"
-	echo -e ">source: ${old_sp_go_c_fpath}"
+	echo -e ">from: ${old_sp_go_c_fpath}"
 	echo -e ">with: ${sp_go_c_patch_fpath}"
 	patch "${old_sp_go_c_fpath}" < "${sp_go_c_patch_fpath}"
 else
@@ -1184,7 +1192,7 @@ sp_ocotp_c_diff=$(diff ${old_sp_ocotp_c_fpath} ${new_sp_ocotp_c_fpath})
 if [[ -n "${sp_ocotp_c_diff}" ]]; then
 	echo -e "\r"
 	echo -e ">Patching file"
-	echo -e ">source: ${old_sp_ocotp_c_fpath}"
+	echo -e ">from: ${old_sp_ocotp_c_fpath}"
 	echo -e ">with: ${sp_ocotp_c_patch_fpath}"
 	patch "${old_sp_ocotp_c_fpath}" < "${sp_ocotp_c_patch_fpath}"
 else
@@ -1196,7 +1204,7 @@ sp7021_common_dtsi_diff=$(diff ${old_sp7021_common_dtsi_fpath} ${new_sp7021_comm
 if [[ -n "${sp7021_common_dtsi_diff}" ]]; then
 	echo -e "\r"
 	echo -e ">Patching file"
-	echo -e ">source: ${old_sp7021_common_dtsi_fpath}"
+	echo -e ">from: ${old_sp7021_common_dtsi_fpath}"
 	echo -e ">with: ${sp7021_common_dtsi_patch_fpath}"
 	patch "${old_sp7021_common_dtsi_fpath}" < "${sp7021_common_dtsi_patch_fpath}"
 else
@@ -1208,7 +1216,7 @@ sp7021_ltpp3g2revD_dtsi_diff=$(diff ${old_sp7021_ltpp3g2revD_dtsi_fpath} ${new_s
 if [[ -n "${sp7021_ltpp3g2revD_dtsi_diff}" ]]; then
 	echo -e "\r"
 	echo -e ">Patching file"
-	echo -e ">source: ${old_sp7021_ltpp3g2revD_dtsi_fpath}"
+	echo -e ">from: ${old_sp7021_ltpp3g2revD_dtsi_fpath}"
 	echo -e ">with: ${sp7021_ltpp3g2revD_dtsi_patch_fpath}"
 	patch "${old_sp7021_ltpp3g2revD_dtsi_fpath}" < "${sp7021_ltpp3g2revD_dtsi_patch_fpath}"
 else
@@ -1220,7 +1228,7 @@ sppctl_gpio_c_diff=$(diff ${old_sppctl_gpio_c_fpath} ${new_sppctl_gpio_c_fpath})
 if [[ -n "${sppctl_gpio_c_diff}" ]]; then
 	echo -e "\r"
 	echo -e ">Patching file"
-	echo -e ">source: ${old_sppctl_gpio_c_fpath}"
+	echo -e ">from: ${old_sppctl_gpio_c_fpath}"
 	echo -e ">with: ${sppctl_gpio_c_patch_fpath}"
 	patch "${old_sppctl_gpio_c_fpath}" < "${sppctl_gpio_c_patch_fpath}"
 else
@@ -1232,7 +1240,7 @@ sppctl_gpio_ops_c_diff=$(diff ${old_sppctl_gpio_ops_c_fpath} ${new_sppctl_gpio_o
 if [[ -n "${sppctl_gpio_ops_c_diff}" ]]; then
 	echo -e "\r"
 	echo -e ">Patching file"
-	echo -e ">source: ${old_sppctl_gpio_ops_c_fpath}"
+	echo -e ">from: ${old_sppctl_gpio_ops_c_fpath}"
 	echo -e ">with: ${sppctl_gpio_ops_c_patch_fpath}"
 	patch "${old_sppctl_gpio_ops_c_fpath}" < "${sppctl_gpio_ops_c_patch_fpath}"
 else
@@ -1244,7 +1252,7 @@ sppctl_gpio_ops_h_diff=$(diff ${old_sppctl_gpio_ops_h_fpath} ${new_sppctl_gpio_o
 if [[ -n "${sppctl_gpio_ops_h_diff}" ]]; then
 	echo -e "\r"
 	echo -e ">Patching file"
-	echo -e ">source: ${old_sppctl_gpio_ops_h_fpath}"
+	echo -e ">from: ${old_sppctl_gpio_ops_h_fpath}"
 	echo -e ">with: ${sppctl_gpio_ops_h_patch_fpath}"
 	patch "${old_sppctl_gpio_ops_h_fpath}" < "${sppctl_gpio_ops_h_patch_fpath}"
 else
@@ -1256,7 +1264,7 @@ sunplus_icm_c_diff=$(diff ${old_sunplus_icm_c_fpath} ${new_sunplus_icm_c_fpath})
 if [[ -n "${sunplus_icm_c_diff}" ]]; then
 	echo -e "\r"
 	echo -e ">Patching file"
-	echo -e ">source: ${old_sunplus_icm_c_fpath}"
+	echo -e ">from: ${old_sunplus_icm_c_fpath}"
 	echo -e ">with: ${sunplus_icm_c_patch_fpath}"
 	patch "${old_sunplus_icm_c_fpath}" < "${sunplus_icm_c_patch_fpath}"
 else
@@ -1268,10 +1276,27 @@ sunplus_uart_c_diff=$(diff ${old_sunplus_uart_c_fpath} ${new_sunplus_uart_c_fpat
 if [[ -n "${sunplus_uart_c_diff}" ]]; then
 	echo -e "\r"
 	echo -e ">Patching file"
-	echo -e ">source: ${old_sunplus_uart_c_fpath}"
+	echo -e ">from: ${old_sunplus_uart_c_fpath}"
 	echo -e ">with: ${sunplus_uart_c_patch_fpath}"
 	patch "${old_sunplus_uart_c_fpath}" < "${sunplus_uart_c_patch_fpath}"
 else
 	echo -e "\r"
 	echo -e ">Patch already applied to: ${old_sunplus_uart_c_fpath}"
 fi
+
+
+
+#PATCH: 'BCMDHD'
+press_any_key__func
+if [[ -d "${SP7xxx_linux_kernel_drivers_net_wireless_bcmdhd_dir}" ]]; then
+	echo -e "\r"
+	echo -e ">Remove folder ${bcmdhd_foldername}"
+	echo -e ">from: ${SP7xxx_linux_kernel_drivers_net_wireless_dir}"
+	rm -rf ${SP7xxx_linux_kernel_drivers_net_wireless_bcmdhd_dir}
+fi
+
+echo -e "\r"
+echo -e ">Extract ${bcmdhd_targz_filename}"
+echo -e ">from: ${home_lttp3rootfs_kernel_drivers_wifi_dir}"
+echo -e ">to: ${SP7xxx_linux_kernel_drivers_net_wireless_dir}"
+tar xzvf ${src_brcmhd_targz_fpath} --directory ${SP7xxx_linux_kernel_drivers_net_wireless_dir}
