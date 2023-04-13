@@ -1,5 +1,5 @@
---- /root/SP7021/boot/uboot/board/sunplus/pentagram_board/sp_go.c	2023-02-17 08:03:50.000000000 +0000
-+++ /root/LTPP3_ROOTFS/boot/pentagram_board/sp_go.c	2023-02-17 06:54:37.000000000 +0000
+--- sp_go.c.old	2023-03-30 09:34:24.000000000 +0000
++++ sp_go.c	2023-04-13 10:04:26.000000000 +0000
 @@ -4,6 +4,7 @@
  #include <mapmem.h>
  #include <malloc.h>
@@ -8,7 +8,7 @@
  
  
  static uint32_t sum32(uint32_t sum, uint8_t *data, uint32_t len)
-@@ -440,3 +441,269 @@
+@@ -440,3 +441,285 @@
  );
  
  #endif
@@ -259,13 +259,29 @@
 +
 +static int do_tb_button(struct cmd_tbl *cmdtp, int flag, int argc, char * const argv[]){
 +	int button_state = check_button();
-+	if(button_state == 1)
-+	{
++	if(button_state == 1) {
++		/*********************************************************************
++		* 'tb_button_state' is used in ~/SP7021/boot/uboot/include/configs/pentagram_common.h
++		*
++		* Note: function 'env_set' is the equivalent of the u-boot 'setenv' command.
++		**********************************************************************/
++		env_set("tb_button_state", "1");
++		/*********************************************************************/
++
 +		printf("Button is released \r\n");
-+	}
-+	else {
++	} else {
++		/*********************************************************************
++		* 'tb_button_state' is used in ~/SP7021/boot/uboot/include/configs/pentagram_common.h
++		*
++		* Note: function 'env_set' is the equivalent of the u-boot 'setenv' command.
++		**********************************************************************/
++		env_set("tb_button_state", "0");
++		/*********************************************************************/
++
 +		printf("Button is pressed \r\n");
 +	}
++
++	/* Output */
 +	return 0;
 +}
 +

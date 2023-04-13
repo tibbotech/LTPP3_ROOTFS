@@ -688,13 +688,29 @@ U_BOOT_CMD(
 
 static int do_tb_button(struct cmd_tbl *cmdtp, int flag, int argc, char * const argv[]){
 	int button_state = check_button();
-	if(button_state == 1)
-	{
+	if(button_state == 1) {
+		/*********************************************************************
+		* 'tb_button_state' is used in ~/SP7021/boot/uboot/include/configs/pentagram_common.h
+		*
+		* Note: function 'env_set' is the equivalent of the u-boot 'setenv' command.
+		**********************************************************************/
+		env_set("tb_button_state", "1");
+		/*********************************************************************/
+
 		printf("Button is released \r\n");
-	}
-	else {
+	} else {
+		/*********************************************************************
+		* 'tb_button_state' is used in ~/SP7021/boot/uboot/include/configs/pentagram_common.h
+		*
+		* Note: function 'env_set' is the equivalent of the u-boot 'setenv' command.
+		**********************************************************************/
+		env_set("tb_button_state", "0");
+		/*********************************************************************/
+
 		printf("Button is pressed \r\n");
 	}
+
+	/* Output */
 	return 0;
 }
 

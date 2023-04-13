@@ -117,6 +117,66 @@
 #define RASPBIAN_CMD                    // Enable Raspbian command
 
 
+
+/* Added to handle the situation when the MD-button is pressed */
+/* Note: 'tb_button_state' is determined and set in boot/uboot/board/sunplus/pentagram_board/sp_go.c */
+#define MD_BUTTON_DETECT__SDCARD_OR_USB_BOOT \
+"echo \n; " \
+"echo **************************************************\n; " \
+"echo     BOOT FROM SD OR USB (IF PRESENT)\n; " \
+"echo **************************************************\n; " \
+"setenv ISP_IF_NULL null \n; " \
+"setenv ISP_IF_SD1 sd_mmc_1 \n; " \
+"setenv ISP_IF_USB0 usb_dev_0 \n; " \
+"setenv SDDEV1_CMD mmc dev 1 \n; " \
+"setenv USBDEV0_CMD usb dev 0 \n; " \
+"setenv isp_if_test $ISP_IF_NULL \n; " \
+"echo \n; " \
+"echo ---:TIBBO:STATUS: DETECT IF MD-BUTTON IS PRESSED \n; " \
+"tb_button \n; " \
+"if test $tb_button_state = 0; then \n; " /* START: check if md-button is PRESSED */ \
+"echo \n; " \
+"echo ---:TIBBO:STATUS: DETECT IF SD-CARD IS PRESENT \n; " \
+"$SDDEV1_CMD \n; " \
+"if test $? = 0; then \n; " /* START: check if sd-card is PRESENT */ \
+"setenv isp_if_test $ISP_IF_SD1 \n; " \
+"fi \n; " /* END: check if sd-card is PRESENT */ \
+"if test $isp_if_test = $ISP_IF_NULL; then \n; " /* START: check if isp_if_test is null */ \
+"echo \n; " \
+"echo ---:TIBBO:STATUS: DETECT IF USB-0 IS PRESENT \n; " \
+"echo ------:TIBBO:NOTE: IF USB-0 AND/OR USB-1 ARE INSERTED, THEN... \n; " \
+"echo ------:TIBBO:NOTE: ...ONLY USB-0 IS CHECKED FOR ITS PRESENCE!\n; " \
+"echo \n; " \
+"$USBDEV0_CMD \n; " \
+"if test $? = 0; then \n; " /* START: check if usb-0 is PRESENT */ \
+"setenv isp_if_test $ISP_IF_USB0 \n; " \
+"fi \n; " /* END: check if usb-0 is PRESENT */ \
+"fi \n; " /* END: check if isp_if_test is null */ \
+"fi \n; " /* END: check if md-button is PRESSED */ \
+"if test $isp_if_test != $ISP_IF_NULL; then; \n; " /* START: check if isp_if_test is NOT null */ \
+"if test $isp_if_test = $ISP_IF_USB0; then; \n; " /* START: check if isp_if_test is usb_dev_0 */ \
+"echo \n; " \
+"echo ---:TIBBO:STATUS: RUN ISPBOOOT.BIN FROM USB-DEV-0 \n; " \
+"echo ************************************************** \n; " \
+"echo \n; " \
+"run isp_usb; \n; " \
+"else; \n; " /* ELSE: check if isp_if_test is mmc_dev_1 */ \
+"echo \n; " \
+"echo ---:TIBBO:STATUS: RUN ISPBOOOT.BIN FROM MMC-DEV-1 \n; " \
+"echo ************************************************** \n; " \
+"echo \n; " \
+"run isp_sdcard; \n; " \
+"fi; \n; " /* END: check if isp_if_test is usb_dev_0 */ \
+"else; \n; " \
+"echo \n; " \
+"echo ---:TIBBO:STATUS: MD-BUTTON IS RELEASED... \n; " \
+"echo ---:TIBBO:STATUS: REVERT TO DEFAULT BOOTCMD... \n; " \
+"echo ************************************************** \n; " \
+"echo \n; " \
+"fi; \n; " /* END: check if isp_if_test is NOT null */ \
+/* Added to handle the situation when the MD-button is pressed */
+
+
 /*
  * In the beginning, bootcmd will check bootmode in SRAM and the flag
  * if_zebu to choose different boot flow :
@@ -154,6 +214,7 @@
  */
 #define CONFIG_BOOTCOMMAND \
 "echo [scr] bootcmd started; " \
+"run md_button_detect__sdcard_or_usb_boot; " /* Added to handle the situation when the MD-button is pressed */ \
 "md.l ${bootinfo_base} 1; " \
 "if itest.l *${bootinfo_base} == " __stringify(SPI_NOR_BOOT) "; then " \
 	"if itest ${if_zebu} == 1; then " \
@@ -364,7 +425,7 @@
 	"cp.l ${addr_src_kernel} ${addr_dst_kernel} ${sz_kernel}; " \
 	dbg_scr("echo sp_go ${addr_dst_kernel} ${fdtcontroladdr}; ") \
 	"sp_go ${addr_dst_kernel} ${fdtcontroladdr}\0" \
-"emmc_boot=sp_wdt_set;" \
+"emmc_boot= sp_wdt_set;" \
 	DTS_LOAD_EMMC \
 	"mmc read ${addr_tmp_header} ${addr_src_kernel} 0x1; " \
 	"setenv tmpval 0; setexpr tmpaddr ${addr_tmp_header} + 0x0c; run be2le; " \
@@ -464,7 +525,12 @@
 	"dhcp $isp_ram_addr $serverip:TFTP0000.BIN; " \
 	"setenv isp_main_storage ${sp_main_storage} && printenv isp_main_storage; " \
 	"setexpr script_addr $isp_ram_addr + 0x00 && setenv script_addr 0x${script_addr} && source $script_addr; " \
+	"\0" \
+"md_button_detect__sdcard_or_usb_boot=;" /* Added to handle the situation when the MD-button is pressed */ \
+	MD_BUTTON_DETECT__SDCARD_OR_USB_BOOT \
 	"\0"
+
+
 
 /* MMC related configs */
 #define CONFIG_SUPPORT_EMMC_BOOT

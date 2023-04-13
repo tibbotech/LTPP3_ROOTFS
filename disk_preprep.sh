@@ -101,6 +101,8 @@ ntios_su_add_monitor_timer_filename="${ntios_su_add_monitor_name}.timer"
 one_time_exec_sh_filename="one-time-exec.sh"
 one_time_exec_before_login_sh_filename="one-time-exec-before-login.sh"
 one_time_exec_before_login_service_filename="one-time-exec-before-login.service"
+pentagram_common_h_filename="pentagram_common.h"
+pentagram_common_h_patch_filename="pentagram_common.h.patch"
 profile_filename="profile"
 qemu_user_static_filename="qemu-arm-static"
 resolve_filename="resolv.conf"
@@ -143,6 +145,7 @@ home_downloads_disk_lib_dir=${home_downloads_dir}/disk/lib
 
 scripts_dir=/${scripts_foldername}
 home_lttp3rootfs_dir=${home_dir}/LTPP3_ROOTFS
+home_lttp3rootfs_boot_configs_dir=${home_lttp3rootfs_dir}/boot/configs
 home_lttp3rootfs_boot_drivers_dir=${home_lttp3rootfs_dir}/boot/drivers
 home_lttp3rootfs_build_drivers_dir=${home_lttp3rootfs_dir}/build/drivers
 home_lttp3rootfs_rootfs_initramfs_dir=${home_lttp3rootfs_dir}/rootfs/initramfs
@@ -166,6 +169,7 @@ home_lttp3rootfs_kernel_drivers_wifi_dir=${home_lttp3rootfs_kernel_dir}/drivers/
 home_lttp3rootfs_kernel_dts_dir=${home_lttp3rootfs_kernel_dir}/dts
 home_lttp3rootfs_usr_bin_dir=${home_lttp3rootfs_dir}/usr/bin
 SP7xxx_dir=${home_dir}/SP7021
+SP7xxx_boot_uboot_include_configs_dir=${SP7xxx_dir}/boot/uboot/include/configs
 SP7xxx_boot_uboot_board_sunplus_pentagram_board_dir=${SP7xxx_dir}/boot/uboot/board/sunplus/pentagram_board
 SP7xxx_build_tools_isp_dir=${SP7xxx_dir}/build/tools/isp
 SP7xxx_linux_kernel_dir=${SP7xxx_dir}/linux/kernel
@@ -293,17 +297,21 @@ dst_usb_mount_sh_fpath=${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}/$
 src_usb_mount_rules_fpath=${home_lttp3rootfs_services_automount_dir}/${usb_mount_rules_filename}
 dst_usb_mount_rules_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_udev_rulesd_dir}/${usb_mount_rules_filename}
 
+old_irq_sp7021_intc_c_fpath=${SP7xxx_linux_kernel_drivers_irqchip_dir}/${irq_sp7021_intc_c_filename}
+new_irq_sp7021_intc_c_fpath=${home_lttp3rootfs_kernel_drivers_irqchip_dir}/${irq_sp7021_intc_c_filename}
+irq_sp7021_intc_c_patch_fpath=${home_lttp3rootfs_kernel_drivers_irqchip_dir}/${irq_sp7021_intc_c_patch_filename}
+
 old_isp_c_fpath=${SP7xxx_build_tools_isp_dir}/${isp_c_filename}
 new_isp_c_fpath=${home_lttp3rootfs_build_drivers_dir}/${isp_c_filename}
 isp_c_patch_fpath=${home_lttp3rootfs_build_drivers_dir}/${isp_c_patch_filename}
 
+old_pentagram_common_h_fpath=${SP7xxx_boot_uboot_include_configs_dir}/${pentagram_common_h_filename}
+new_pentagram_common_h_fpath=${home_lttp3rootfs_boot_configs_dir}/${pentagram_common_h_filename}
+pentagram_common_h_patch_fpath=${home_lttp3rootfs_boot_configs_dir}/${pentagram_common_h_patch_filename}
+
 old_sp_go_c_fpath=${SP7xxx_boot_uboot_board_sunplus_pentagram_board_dir}/${sp_go_c_filename}
 new_sp_go_c_fpath=${home_lttp3rootfs_boot_drivers_dir}/${sp_go_c_filename}
 sp_go_c_patch_fpath=${home_lttp3rootfs_boot_drivers_dir}/${sp_go_c_patch_filename}
-
-old_irq_sp7021_intc_c_fpath=${SP7xxx_linux_kernel_drivers_irqchip_dir}/${irq_sp7021_intc_c_filename}
-new_irq_sp7021_intc_c_fpath=${home_lttp3rootfs_kernel_drivers_irqchip_dir}/${irq_sp7021_intc_c_filename}
-irq_sp7021_intc_c_patch_fpath=${home_lttp3rootfs_kernel_drivers_irqchip_dir}/${irq_sp7021_intc_c_patch_filename}
 
 old_sp_ocotp_c_fpath=${SP7xxx_linux_kernel_drivers_nvmem_dir}/${sp_ocotp_c_filename}
 new_sp_ocotp_c_fpath=${home_lttp3rootfs_kernel_drivers_nvnmem_dir}/${sp_ocotp_c_filename}
@@ -1174,6 +1182,18 @@ if [[ -n "${isp_c_diff}" ]]; then
 else
 	echo -e "\r"
 	echo -e ">Patch already applied to: ${old_isp_c_fpath}"
+fi
+
+pentagram_common_h_diff=$(diff ${old_pentagram_common_h_fpath} ${new_pentagram_common_h_fpath})
+if [[ -n "${pentagram_common_h_diff}" ]]; then
+	echo -e "\r"
+	echo -e ">Patching file"
+	echo -e ">from: ${old_pentagram_common_h_fpath}"
+	echo -e ">with: ${pentagram_common_h_patch_fpath}"
+	patch "${old_pentagram_common_h_fpath}" < "${pentagram_common_h_patch_fpath}"
+else
+	echo -e "\r"
+	echo -e ">Patch already applied to: ${old_pentagram_common_h_fpath}"
 fi
 
 sp_go_c_diff=$(diff ${old_sp_go_c_fpath} ${new_sp_go_c_fpath})
