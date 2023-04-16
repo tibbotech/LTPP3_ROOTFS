@@ -3,9 +3,17 @@
 EXIT_CODE_1="exit 1"
 FSCK_RETRY_PRINT="fsck_retry"
 FSCK_RETRY_MAX=3
+NULL="null"
 
-PRINT_START_TB_INIT_SH="---:START: TB_INIT.SH"
-PRINT_COMPLETED_TB_INIT_SH="---:COMPLETED: TB_INIT.SH"
+PRINT_ERROR="***ERROR***"
+PRINT_TB_INIT_START="---:TB-INIT:-:START"
+PRINT_TB_INIT_COMPLETED="---:TB-INIT:-:COMPLETED"
+PRINT_TB_INIT_DISABLED="------:TB-INIT:-:DISABLED"
+PRINT_TB_INIT_ENABLED="------:TB-INIT:-:ENABLED"
+PRINT_TB_INIT_RESULT="------:TB-INIT:-:RESULT"
+PRINT_TB_INIT_OVERLAY_SECTION="------:TB-INIT:-:OVERLAY-SECTION"
+PRINT_TB_INIT_STATUS="------:TB_INIT:-:STATUS"
+PRINT_TB_INIT_REMOVING="---------:TB_INIT:-:REMOVING"
 
 
 
@@ -31,6 +39,8 @@ usr_sbin_mkfsext4=/usr/sbin/mkfs.ext4
 lib_systemd_systemd_exec=/lib/systemd/systemd
 fsck_retry_fpath1=${rootfs_etc_tibbo_uboot_dir}/fsck_retry.tmp
 fsck_retry_fpath2=${tb_reserve_dir}/.fsck_retry.tmp
+tb_init_bootargs_fpath=${tb_reserve_dir}/.tb_init_bootargs.tmp
+
 
 fsck_retry=0
 rootfs_partition_num=8
@@ -41,99 +51,18 @@ cmd_reboot="echo b >${proc_sysrqtrigger_fpath}"
 
 
 #---FUNCTIONS
-function mount_partition_and_write_data_to_file__func() {
-    #disable trap ERR
-    echo -e "------:DISABLED: trap ERR\n"
-    trap - ERR
-
-    #Input args
-    local data=${1}
-    local printmsg=${2}
-    local targetfpath=${3}
-    local devpart=${4}
-    local mntdir=${5}
-
-    #Print
-    echo -e "------:STATUS: first: unmounting ${devpart}\n"
-    #Unmount
-    umount ${devpart}
-
-    #Print
-    echo -e "------:TB_INIT:-:STATUS: then: temporarily mounting ${devpart}\n"
-    #Mount
-    if [[ "${mntdir}" == "${rootfs_dir}" ]]; then   #/dev/mmcblk0p8
-        mount -o remount,rw ${mntdir}
-    else    #all other partitions
-        mount ${devpart} ${mntdir}
-    fi
-
-    #Get directory
-    local targetdir=$(dirname ${targetfpath})
-    #Create directory if not present
-    if [[ ! -d "${targetdir}" ]] && [[ "${targetdir}" != "${rootfs_dir}" ]]; then
-        mkdir -p ${targetdir}
-    fi
-
-    #Print
-    echo -e "------:TB_INIT:-:STATUS: updating file ${targetfpath} with ${printmsg}: ${data}\n"
-    #Write data
-    echo "${data}" | tee ${targetfpath}
-
-    #Enable trap ERR
-    echo -e "------:ENABLED: trap ERR\n"
-    trap trap_err__func ERR
-}
-
-function fsck_retry_retrieve__func() {
-    #disable trap ERR
-    echo -e "------:DISABLED: trap ERR\n"
-    trap - ERR
-
-    #Define variables
-    local fsck_retry1=0
-    local fsck_retry2=0
-
-    #Temporarily mount /dev/mmcblk0p9
-    if [[ ! -f ${fsck_retry_fpath1} ]] && [[ ! -f ${fsck_retry_fpath2} ]]; then  #path exists
-        mount_partition_and_write_data_to_file__func "${fsck_retry}" \
-                "${FSCK_RETRY_PRINT}" \
-                "${fsck_retry_fpath1}" \
-                "${dev_mmcblk0p8}" \
-                "${rootfs_dir}"
-        mount_partition_and_write_data_to_file__func "${fsck_retry}" \
-                "${FSCK_RETRY_PRINT}" \
-                "${fsck_retry_fpath2}" \
-                "${dev_mmcblk0p9}" \
-                "${tb_reserve_dir}"
-    else  #path does not exist
-        #Get 'fsck_retry1' value from file 'fsck_retry_fpath1'
-        if [[ -f ${fsck_retry_fpath1} ]]; then  #path exists
-            fsck_retry1=$(cat ${fsck_retry_fpath1})
-        fi
-        #Get 'fsck_retry2' value from file 'fsck_retry_fpath2'
-        if [[ -f ${fsck_retry_fpath2} ]]; then  #path exists
-            fsck_retry2=$(cat ${fsck_retry_fpath2})
-        fi
-
-        #Update 'fsck_retry'
-        fsck_retry=${fsck_retry1}
-        if [[ ${fsck_retry2} -gt ${fsck_retry1} ]]; then
-            fsck_retry=${fsck_retry1}
-        fi
-    fi
-
-    #Enable trap ERR
-    echo -e "------:ENABLED: trap ERR\n"
-    trap trap_err__func ERR
+function reboot_exec() {
+    eval ${cmd_setto_safemode}
+    eval ${cmd_reboot}
 }
 
 function chkdsk__func() {
     #disable trap ERR
-    echo -e "------:DISABLED: trap ERR\n"
+    echo -e "${PRINT_TB_INIT_DISABLED}: trap ERR\n"
     trap - ERR
 
     #Get a list containing the partitions belonging to mmclbk0p
-    echo -e "------:TB_INIT:-:STATUS: Get a list of partition-numbers belonging to mmcblk0p\n"
+    echo -e "${PRINT_TB_INIT_STATUS}: Get a list of partition-numbers belonging to mmcblk0p\n"
     local dev_mmcblk0p_list_arrstring=$(ls -1 /dev | grep "mmcblk0p" | sed "s/mmcblk0p//g" | sort -n)
     local dev_mmcblk0p_list_arr=(${dev_mmcblk0p_list_arrstring})
 
@@ -151,23 +80,138 @@ function chkdsk__func() {
             #Check if partition is mounted
             dev_ismounted=$(mount | grep "${dev_mmcblk0pi}")
             if [[ -n "${dev_ismounted}" ]]; then  #is NOT mounted
-                echo -e "------:TB_INIT:-:STATUS: unmounting ${dev_mmcblk0pi}\n"
+                #Must unmount partition before doing the disk-check
+                echo -e "${PRINT_TB_INIT_STATUS}: unmounting ${dev_mmcblk0pi}\n"
                 umount "${dev_mmcblk0pi}"
 
-                echo -e "------:TB_INIT:-:STATUS: fsck -a ${dev_mmcblk0pi} (${fsck_retry} out-of ${FSCK_RETRY_MAX})\n"
+                echo -e "${PRINT_TB_INIT_STATUS}: fsck -a ${dev_mmcblk0pi} (${fsck_retry} out-of ${FSCK_RETRY_MAX})\n"
                 fsck -a "${dev_mmcblk0pi}"
             fi
         fi
     done
 
     #Enable trap ERR
-    echo -e "------:ENABLED: trap ERR\n"
+    echo -e "${PRINT_TB_INIT_ENABLED}: trap ERR\n"
     trap trap_err__func ERR
+}
+
+function mount_or_unmount_partition__func() {
+   #Input args
+    local devpart=${1}
+    local mntdir=${2}
+    local mountsetto=${3}
+
+    #Mount or unmount
+    if [[ "${mountsetto}" == true ]]; then    #mount
+        #Print
+        echo -e "${PRINT_TB_INIT_STATUS}: mount ${devpart} to ${mntdir}\n"
+
+        if [[ "${mntdir}" == "${rootfs_dir}" ]]; then   #/dev/mmcblk0p8
+            mount -o remount,rw ${mntdir}
+        else    #all other partitions
+            mount ${devpart} ${mntdir}
+        fi
+    else    #unmount
+        #Print
+        echo -e "${PRINT_TB_INIT_STATUS}: unmount ${devpart}\n"
+
+        umount ${devpart}
+    fi
+}
+
+function mount_partition_and_write_data_to_file__func() {
+    #disable trap ERR
+    echo -e "${PRINT_TB_INIT_DISABLED}: trap ERR\n"
+    trap - ERR
+
+    #Input args
+    local data=${1}
+    local printmsg=${2}
+    local targetfpath=${3}
+    local devpart=${4}
+    local mntdir=${5}
+
+    #Unmount
+    mount_or_unmount_partition__func "${devpart}" "${mntdir}" "false"
+
+    #Mount
+    mount_or_unmount_partition__func "${devpart}" "${mntdir}" "true"
+
+    #Get directory
+    local targetdir=$(dirname ${targetfpath})
+    #Create directory if not present
+    if [[ ! -d "${targetdir}" ]] && [[ "${targetdir}" != "${rootfs_dir}" ]]; then
+        mkdir -p ${targetdir}
+    fi
+
+    #Print
+    echo -e "${PRINT_TB_INIT_STATUS}: updating file ${targetfpath} with ${printmsg}: ${data}\n"
+    #Write data
+    echo "${data}" | tee ${targetfpath}
+
+    #Enable trap ERR
+    echo -e "${PRINT_TB_INIT_ENABLED}: trap ERR\n"
+    trap trap_err__func ERR
+}
+
+function fsck_retry_retrieve__func() {
+    #disable trap ERR
+    echo -e "${PRINT_TB_INIT_DISABLED}: trap ERR\n"
+    trap - ERR
+
+    #Define variables
+    local fsck_retry1=0
+    local fsck_retry2=0
+
+    #Temporarily mount /dev/mmcblk0p9
+    if [[ ! -f "${fsck_retry_fpath1}" ]] && [[ ! -f "${fsck_retry_fpath2}" ]]; then  #path exists
+        mount_partition_and_write_data_to_file__func "${fsck_retry}" \
+                "${FSCK_RETRY_PRINT}" \
+                "${fsck_retry_fpath1}" \
+                "${dev_mmcblk0p8}" \
+                "${rootfs_dir}"
+        mount_partition_and_write_data_to_file__func "${fsck_retry}" \
+                "${FSCK_RETRY_PRINT}" \
+                "${fsck_retry_fpath2}" \
+                "${dev_mmcblk0p9}" \
+                "${tb_reserve_dir}"
+    else  #path does not exist
+        #Get 'fsck_retry1' value from file 'fsck_retry_fpath1'
+        if [[ -f "${fsck_retry_fpath1}" ]]; then  #path exists
+            fsck_retry1=$(cat ${fsck_retry_fpath1})
+        fi
+        #Get 'fsck_retry2' value from file 'fsck_retry_fpath2'
+        if [[ -f "${fsck_retry_fpath2}" ]]; then  #path exists
+            fsck_retry2=$(cat ${fsck_retry_fpath2})
+        fi
+
+        #Update 'fsck_retry'
+        fsck_retry=${fsck_retry1}
+        if [[ ${fsck_retry2} -gt ${fsck_retry1} ]]; then
+            fsck_retry=${fsck_retry1}
+        fi
+    fi
+
+    #Enable trap ERR
+    echo -e "${PRINT_TB_INIT_ENABLED}: trap ERR\n"
+    trap trap_err__func ERR
+}
+
+function remove_file() {
+    #Input args
+    local targetfpath=${1}
+
+    #Remove file
+    if [[ -f ${targetfpath} ]]; then
+        echo -e "${PRINT_TB_INIT_REMOVING}: ${targetfpath}"
+
+        rm ${targetfpath}
+    fi
 }
 
 #trap all errors into a function called trap_err__func
 function trap_err__func() {
-    echo -e "***ERROR***:  An error was encountered while running the script\n"
+    echo -e "${PRINT_ERROR}:  An error was encountered while running the script\n"
 
     #Retrieve 'fsck_retry'
     fsck_retry_retrieve__func
@@ -194,6 +238,15 @@ function trap_err__func() {
         #Reboot
         eval ${cmd_reboot}
     else
+        echo -e "**************************************************\n"
+        echo -e "                    SAFE-MODE"
+        echo -e "**************************************************\n"
+        echo -e "Return back to the normal-mode with command:"
+        echo -e ""
+        echo -e "   echo 1 >/proc/sys/kernel/sysrq && echo b >/proc/sysrq-trigger"
+        echo -e ""
+        echo -e "**************************************************\n"
+
         ${bin_bash_exec}
 
         ${EXIT_CODE_1}
@@ -202,16 +255,13 @@ function trap_err__func() {
 
 
 
-
-echo -e "${PRINT_START_TB_INIT_SH}\n"
+#Print
+echo -e "${PRINT_TB_INIT_START}\n"
 
 #Enable trap ERR
 trap trap_err__func ERR
 
 
-
-#print out commands before executing them
-echo -e "------:TB_INIT:-:STATUS: Entering tb_overlay.sh\n"
 
 #echo -e "enabling trace\n"
 #set -o xtrace
@@ -223,15 +273,15 @@ mount -t proc none ${proc_dir}
 
 #---TB_RESERVE
 if [[ ! -d "${tb_reserve_dir}" ]]; then
-    echo -e "------:TB_INIT:-:STATUS: remounting ${rootfs_dir}\n"
-    mount -o remount,rw ${rootfs_dir} #remounting root in emmc as writeable
+    echo -e "${PRINT_TB_INIT_STATUS}: remounting ${rootfs_dir}\n"
+    mount -o remount,rw ${rootfs_dir} #remounting root in eMMC as writeable
 
     #this is also the first boot.
     #Create an 'ext4' partition '/dev/mmcblk0p9'
-    echo -e "------:TB_INIT:-:STATUS: creating ext4-partition ${dev_mmcblk0p9}\n"
+    echo -e "${PRINT_TB_INIT_STATUS}: creating ext4-partition ${dev_mmcblk0p9}\n"
     ${usr_sbin_mkfsext4} ${dev_mmcblk0p9}
 
-    echo -e "------:TB_INIT:-:STATUS: create directory ${tb_reserve_dir}\n"
+    echo -e "${PRINT_TB_INIT_STATUS}: create directory ${tb_reserve_dir}\n"
     mkdir "${tb_reserve_dir}"
 
     #flag that root is already remounted
@@ -243,80 +293,135 @@ fi
 #---ADDITIONAL PARTITIONS
 
 
-#---OVERLAY SECTION
-echo -e "------:TB_INIT:-:STATUS: retrieving kernel bootargs\n"
-cmdline_output=$(cat ${proc_cmdline_fpath})
+#---MOUNT /TB_RESERVE (to check if /tb_reserve/.tb_init_bootargs.tmp is present)
+mount_or_unmount_partition__func "${dev_mmcblk0p9}" "${tb_reserve_dir}" "true"
 
-#if cmdline_output contains the string "tb_overlay"
+#---OVERLAY SECTION
+echo -e "${PRINT_TB_INIT_STATUS}: initialize bootargs\n"
+tb_overlay="${NULL}"
+tb_rootfs_ro="${NULL}"
+tb_backup="${NULL}"
+tb_restore="${NULL}"
+tb_noboot="${NULL}"
+
+echo -e "${PRINT_TB_INIT_STATUS}: retrieving kernel bootargs\n"
+if [[ -f "${tb_init_bootargs_fpath}" ]]; then
+    cmdline_output=$(cat ${tb_init_bootargs_fpath})
+
+    remove_file "${tb_init_bootargs_fpath}"
+else
+    cmdline_output=$(cat ${proc_cmdline_fpath})
+fi
+
+#if cmdline_output contains the string "tb_overlay=/dev/mmcblk0p10"
 if [[ ${cmdline_output} == *"tb_overlay"* ]]; then
     tb_overlay=$(echo ${cmdline_output} | grep -oP 'tb_overlay=\K[^ ]*')
 
-    echo -e "-------:TB-INIT:-:RESULT: tb_overlay=${tb_overlay}\n"
+    echo -e "${PRINT_TB_INIT_RESULT}: tb_overlay=${tb_overlay}\n"
 else
     tb_overlay=""
 fi
 
-#if cmdline_output contains the string "tb_rootfs_ro"
+#if cmdline_output contains the string "tb_rootfs_ro=true"
 if [[ ${cmdline_output} == *"tb_rootfs_ro"* ]]; then
     tb_rootfs_ro=$(echo ${cmdline_output} | grep -oP 'tb_rootfs_ro=\K[^ ]*')
 
-    echo -e "-------:TB-INIT:-:RESULT: tb_rootfs_ro=${tb_rootfs_ro}\n"
-else
-    tb_rootfs_ro=""
+    echo -e "${PRINT_TB_INIT_RESULT}: tb_rootfs_ro=${tb_rootfs_ro}\n"
 fi
 
-#if cmdline_output contains the string "tb_backup"
+#if cmdline_output contains the string "tb_backup=<destination path>"
 if [[ ${cmdline_output} == *"tb_backup"* ]]; then
     tb_backup=$(echo ${cmdline_output} | grep -oP 'tb_backup=\K[^ ]*')
 
-    echo -e "-------:TB-INIT:-:RESULT: tb_backup=${tb_backup}\n"
-else
-    tb_backup=""
+    echo -e "${PRINT_TB_INIT_RESULT}: tb_backup=${tb_backup}\n"
 fi
 
-#if cmdline_output contains the string "tb_restore"
+#if cmdline_output contains the string "tb_restore=<source path>""
 if [[ ${cmdline_output} == *"tb_restore"* ]]; then
     tb_restore=$(echo ${cmdline_output} | grep -oP 'tb_restore=\K[^ ]*')
 
-    echo -e "-------:TB-INIT:-:RESULT: tb_restore=${tb_restore}\n"
-else
-    tb_restore=""
+    echo -e "${PRINT_TB_INIT_RESULT}: tb_restore=${tb_restore}\n"
 fi
 
-#if cmdline_output contains the string "tb_noboot"
+#if cmdline_output contains the string "tb_noboot=true"
 if [[ ${cmdline_output} == *"tb_noboot"* ]]; then
-    tb_restore=$(echo ${cmdline_output} | grep -oP 'tb_noboot=\K[^ ]*')
+    tb_noboot=$(echo ${cmdline_output} | grep -oP 'tb_noboot=\K[^ ]*')
 
-    echo -e "-------:TB-INIT:-:RESULT: tb_noboot=${tb_restore}\n"
-else
-    tb_noboot=""
+    echo -e "${PRINT_TB_INIT_RESULT}: tb_noboot=${tb_noboot}\n"
 fi
+
+
+#---UNMOUNT /TB_RESERVE
+mount_or_unmount_partition__func "${dev_mmcblk0p9}" "${tb_reserve_dir}" "false"
+
+
 
 #if tb_backup is set, then do a backup of the rootfs
-if [ ! -z ${tb_backup} ]; then
-    echo -e "------:TB_INIT:-:STATUS: Backing up of emmc\n"
+if [[ "${tb_backup}" != "${NULL}" ]]; then
+    #Print
+    echo -e "${PRINT_TB_INIT_STATUS}: backing up eMMC\n"
+
+    #Backup 'eMMC'
     dd if=${dev_mmcblk0} of=${tb_backup} oflag=direct status=progress
     sync
+
+    #Check exit-code
+    if [[ $? -ne 0 ]]; then
+        #Print
+        echo -e ""
+        echo -e "${PRINT_ERROR}: backing up eMMC: FAILED\n"
+
+        #Wait for 2 seeconds
+        sleep 3
+    else
+        #Print
+        echo -e ""
+        echo -e "${PRINT_TB_INIT_STATUS}: backing up eMMC: DONE\n"
+    fi
 fi
 
 #if tb_restore is set, then restore the rootfs from the backup
-if [ ! -z ${tb_restore} ]; then
-    trap - ERR #disable error trap
+if [[ "${tb_restore}" != "${NULL}" ]]; then
+    #Disable
+    trap - ERR
 
-    echo -e "------:TB_INIT:-:STATUS: Restoring emmc\n"
+    #Print
+    echo -e "${PRINT_TB_INIT_STATUS}: restoring eMMC\n"
+
+    #Restoring 'eMMC'
     dd if=${tb_restore} of=${dev_mmcblk0} oflag=direct status=progress
     sync
 
+    #Check exit-code
+    if [[ $? -ne 0 ]]; then
+        #Print
+        echo -e ""
+        echo -e "${PRINT_ERROR}: restoring eMMC: FAILED\n"
+
+        #Wait for 2 seeconds
+        sleep 3
+    else
+        #Print
+        echo -e ""
+        echo -e "${PRINT_TB_INIT_STATUS}: restoring eMMC: DONE\n"
+    fi
+
     #reboot to make sure the new rootfs is loaded
-    eval ${cmd_setto_safemode}
-    eval ${cmd_reboot}
+    reboot_exec
 fi
 
 #if tb_noboot is set, then boot to minimal system
-if [ ! -z ${tb_noboot} ]; then
+if [[ "${tb_noboot}" != "${NULL}" ]]; then
+    #Print
     while [ 1 ]; do
-        echo -e "------:TB_INIT:-:STATUS: To reboot in this environment enter the following command: "
-        echo -e "------:TB_INIT:-:STATUS: ${cmd_setto_safemode} && ${cmd_reboot}\n"
+        echo -e "**************************************************\n"
+        echo -e "                    SAFE-MODE"
+        echo -e "**************************************************\n"
+        echo -e "Return back to the normal-mode with command:"
+        echo -e ""
+        echo -e "   echo 1 >/proc/sys/kernel/sysrq && echo b >/proc/sysrq-trigger"
+        echo -e ""
+        echo -e "**************************************************\n"
         
         ${bin_bash_exec}
     done
@@ -328,31 +433,31 @@ fi
 # ...DO NOT add 'tb_overlay' in file 'penagram_common.h', line '"b_c=console=tty1 console=ttyS0,115200 earlyprintk\0" \
 # However, if overlay exist and 'size>0', then
 # ...ADD 'tb_overlay' in file 'penagram_common.h', line '"b_c=console=tty1 console=ttyS0,115200 earlyprintk tb_overlay\0" \
-if [ -n "${tb_overlay}" ]; then
-    echo -e "-------:TB-INIT:-:START: OVERLAY-SECTION\n"
+if [[ "${tb_overlay}"  != "${NULL}" ]]; then
+    echo -e "${PRINT_TB_INIT_OVERLAY_SECTION}: START\n"
 
     #create /overlay if it doesn't exist
-    if [ ! -d ${overlay_dir} ]; then    
-            if [[ ${flag_rootfs_is_remounted} == false ]]; then
-                echo -e "------:TB_INIT:-:STATUS: remounting ${rootfs_dir}\n"
-                mount -o remount,rw ${rootfs_dir} #remounting root in emmc as writeable
+    if [[ ! -d "${overlay_dir}" ]]; then    
+            if [[ "${flag_rootfs_is_remounted}" == false ]]; then
+                echo -e "${PRINT_TB_INIT_STATUS}: remounting ${rootfs_dir}\n"
+                mount -o remount,rw ${rootfs_dir} #remounting root in eMMC as writeable
 
                 #Create dir
-                if [[ ! -d ${rootfs_etc_tibbo_uboot_dir} ]]; then
-                    echo -e "------:TB_INIT:-:STATUS: create dir ${rootfs_etc_tibbo_uboot_dir}\n"
+                if [[ ! -d "${rootfs_etc_tibbo_uboot_dir}" ]]; then
+                    echo -e "${PRINT_TB_INIT_STATUS}: create dir ${rootfs_etc_tibbo_uboot_dir}\n"
                     mkdir -p ${rootfs_etc_tibbo_uboot_dir}
                 fi
             fi
 
-            echo -e "------:TB_INIT:-:STATUS: creating ${overlay_dir}\n"
+            echo -e "${PRINT_TB_INIT_STATUS}: creating ${overlay_dir}\n"
             mkdir ${overlay_dir}
 
             #Create an 'ext4' partition '/dev/mmcblk0p9'
-            echo -e "------:TB_INIT:-:STATUS: creating ext4-partition ${tb_overlay}\n"
+            echo -e "${PRINT_TB_INIT_STATUS}: creating ext4-partition ${tb_overlay}\n"
             ${usr_sbin_mkfsext4} ${tb_overlay}
     fi
 
-    echo -e "------:TB_INIT:-:STATUS: mounting ${overlay_dir}"
+    echo -e "${PRINT_TB_INIT_STATUS}: mounting ${overlay_dir}"
     mount ${tb_overlay} ${overlay_dir}
 
     #if tb_rootfs_ro is equal to true then delete the contents of /overlay
@@ -361,68 +466,77 @@ if [ -n "${tb_overlay}" ]; then
     # ...This means add 'tb_rootfs_ro' in file 'penagram_common.h', line "b_c=console=tty1 console=ttyS0,115200 earlyprintk tb_overlay tb_rootfs_ro\0"
     # persistent -> do not remove overlay partition. 
     # ...This means do NOT add 'tb_rootfs_ro' in file 'penagram_common.h', line "b_c=console=tty1 console=ttyS0,115200 earlyprintk tb_overlay\0"
-    if [ "${tb_rootfs_ro}" = "true" ]; then #non-persistent
-        echo -e "-------:TB-INIT:-:STATUS: tb_rootfs_ro is set, deleting contents of ${overlay_dir}\n"
-        rm -rf ${overlay_dir}/*
+    if [[ "${tb_rootfs_ro}" = "true" ]]; then #non-persistent
+        echo -e "${PRINT_TB_INIT_STATUS}: tb_rootfs_ro is set, deleting contents of ${overlay_dir}\n"
+        rm -rf "${overlay_dir}/*"
     else  #persistent
-        echo -e "-------:TB-INIT:-:STATUS: tb_rootfs_ro is not set, not deleting contents of ${overlay_dir}\n"
+        echo -e "${PRINT_TB_INIT_STATUS}: tb_rootfs_ro is not set, not deleting contents of ${overlay_dir}\n"
     fi
 
-    if [ ! -d ${overlay_dir}/root ]; then
-        echo -e "-------:TB-INIT:-:STATUS: Creating ${overlay_dir}/root\n"
+    if [[ ! -d "${overlay_dir}/root" ]]; then
+        echo -e "${PRINT_TB_INIT_STATUS}: creating ${overlay_dir}/root\n"
 
-        mkdir ${overlay_dir}/root
+        mkdir "${overlay_dir}/root"
     fi
 
     #if  /overlay/root_upper does not exist then create it
-    if [ ! -d ${overlay_dir}/root_upper ]; then
-        echo -e "-------:TB-INIT:-:STATUS: Creating ${overlay_dir}/root_upper\n"
+    if [[ ! -d "${overlay_dir}/root_upper" ]]; then
+        echo -e "${PRINT_TB_INIT_STATUS}: creating ${overlay_dir}/root_upper\n"
 
-        mkdir ${overlay_dir}/root_upper
+        mkdir "${overlay_dir}/root_upper"
     fi
 
     #if  /overlay/root_work does not exist then create it
-    if [ ! -d ${overlay_dir}/root_work ]; then
-        echo -e "-------:TB-INIT:-:STATUS: Creating ${overlay_dir}/root_work\n"
+    if [[ ! -d "${overlay_dir}/root_work" ]]; then
+        echo -e "${PRINT_TB_INIT_STATUS}: creating ${overlay_dir}/root_work\n"
 
-        mkdir ${overlay_dir}/root_work
+        mkdir "${overlay_dir}/root_work"
     fi
 
-    echo -e "-------:TB-INIT:-:STATUS: re-mounting / in EMMC as READONLY\n"
-    mount -o remount,ro / #remounting root in emmc as readonly
+    echo -e "${PRINT_TB_INIT_STATUS}: re-mounting / in EMMC as READONLY\n"
+    mount -o remount,ro / #remounting root in eMMC as readonly
 
-    echo -e "-------:TB-INIT:-:STATUS: mount -t overlay overlay ${overlay_dir}/root -o lowerdir=/,upperdir=${overlay_dir}/root_upper,workdir=${overlay_dir}/root_work\n"
+    echo -e "${PRINT_TB_INIT_STATUS}: mount -t overlay overlay ${overlay_dir}/root -o lowerdir=/,upperdir=${overlay_dir}/root_upper,workdir=${overlay_dir}/root_work\n"
     mount -t overlay overlay ${overlay_dir}/root -o lowerdir=/,upperdir=${overlay_dir}/root_upper,workdir=${overlay_dir}/root_work
 
-    echo -e "-------:TB-INIT:-:STATUS: navigating to ${overlay_dir}/root\n"
+    echo -e "${PRINT_TB_INIT_STATUS}: navigating to ${overlay_dir}/root\n"
     cd ${overlay_dir}/root
 
     #if oldroot does not exits then create it
-    if [ ! -d oldroot ]; then
-        echo -e "-------:TB-INIT:-:STATUS: Creating oldroot\n"
+    if [[ ! -d "oldroot" ]]; then
+        echo -e "${PRINT_TB_INIT_STATUS}: creating oldroot\n"
 
-        mkdir oldroot
+        mkdir "oldroot"
     fi
 
     #change root from '.' to 'oldroot'
     #Remark:
     # This means that the 'overlay' partition is placed under /oldroot
-    echo -e "-------:TB-INIT:-:STATUS: change from '.' to 'oldroot'\n"
-    pivot_root . oldroot
+    echo -e "${PRINT_TB_INIT_STATUS}: change from '.' to 'oldroot'\n"
+    pivot_root . "oldroot"
 
 
-    echo -e "-------:TB-INIT:-:END: OVERLAY-SECTION\n"
+    echo -e "${PRINT_TB_INIT_OVERLAY_SECTION}: END\n"
 fi
 
 
 
-#Attempt to start systemd 
-exec ${lib_systemd_systemd_exec}
+#Remove all temporary files
+echo -e "${PRINT_TB_INIT_STATUS}: remove temporary files\n"
+remove_file "${fsck_retry_fpath1}"
+remove_file "${fsck_retry_fpath2}"
+
+
+
+#Attempt to start systemd
+echo -e "${PRINT_TB_INIT_STATUS}: attempting to start systemd\n"
+exec "${lib_systemd_systemd_exec}"
 
 
 
 #Print
-echo -e "${PRINT_COMPLETED_TB_INIT_SH}\n"
+echo -e "${PRINT_TB_INIT_COMPLETED}\n"
+
 
 
 trap_err__func
