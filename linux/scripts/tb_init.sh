@@ -5,6 +5,10 @@ FSCK_RETRY_PRINT="fsck_retry"
 FSCK_RETRY_MAX=3
 NULL="null"
 
+PATTERN_TB_OVERLAY_OLD="tb_overlay=\/dev\/mmcblk0p10"
+PATTERN_TB_ROOTFS_RO="tb_rootfs_ro"
+PATTERN_TB_ROOTFS_RO_IS_TRUE="tb_rootfs_ro=true"
+
 PRINT_ERROR="***ERROR***"
 PRINT_TB_INIT_START="---:TB-INIT:-:START"
 PRINT_TB_INIT_COMPLETED="---:TB-INIT:-:COMPLETED"
@@ -13,7 +17,7 @@ PRINT_TB_INIT_ENABLED="------:TB-INIT:-:ENABLED"
 PRINT_TB_INIT_RESULT="------:TB-INIT:-:RESULT"
 PRINT_TB_INIT_OVERLAY_SECTION="------:TB-INIT:-:OVERLAY-SECTION"
 PRINT_TB_INIT_STATUS="------:TB_INIT:-:STATUS"
-PRINT_TB_INIT_REMOVING="---------:TB_INIT:-:REMOVING"
+PRINT_TB_INIT_REMOVING="------:TB_INIT:-:REMOVING"
 
 
 
@@ -203,10 +207,21 @@ function remove_file() {
 
     #Remove file
     if [[ -f ${targetfpath} ]]; then
-        echo -e "${PRINT_TB_INIT_REMOVING}: ${targetfpath}"
+        echo -e "${PRINT_TB_INIT_REMOVING}: ${targetfpath}\n"
 
         rm ${targetfpath}
     fi
+}
+
+function safemode_print() {
+    echo -e "**************************************************\n"
+    echo -e "                    SAFE-MODE"
+    echo -e "**************************************************\n"
+    echo -e "To return back to the normal-mode, use command:"
+    echo -e ""
+    echo -e "   echo 1 >/proc/sys/kernel/sysrq && echo b >/proc/sysrq-trigger"
+    echo -e ""
+    echo -e "**************************************************\n"
 }
 
 #trap all errors into a function called trap_err__func
@@ -238,14 +253,7 @@ function trap_err__func() {
         #Reboot
         eval ${cmd_reboot}
     else
-        echo -e "**************************************************\n"
-        echo -e "                    SAFE-MODE"
-        echo -e "**************************************************\n"
-        echo -e "Return back to the normal-mode with command:"
-        echo -e ""
-        echo -e "   echo 1 >/proc/sys/kernel/sysrq && echo b >/proc/sysrq-trigger"
-        echo -e ""
-        echo -e "**************************************************\n"
+        ${safemode_print}
 
         ${bin_bash_exec}
 
@@ -296,7 +304,7 @@ fi
 #---MOUNT /TB_RESERVE (to check if /tb_reserve/.tb_init_bootargs.tmp is present)
 mount_or_unmount_partition__func "${dev_mmcblk0p9}" "${tb_reserve_dir}" "true"
 
-#---OVERLAY SECTION
+#---DETERMINE BOOT OPTION SECTION
 echo -e "${PRINT_TB_INIT_STATUS}: initialize bootargs\n"
 tb_overlay="${NULL}"
 tb_rootfs_ro="${NULL}"
@@ -306,46 +314,68 @@ tb_noboot="${NULL}"
 
 echo -e "${PRINT_TB_INIT_STATUS}: retrieving kernel bootargs\n"
 if [[ -f "${tb_init_bootargs_fpath}" ]]; then
-    cmdline_output=$(cat ${tb_init_bootargs_fpath})
+    #Get /tb_reserve/.tb_init_bootargs.tmp' contents
+    tb_init_bootargs_result=$(cat ${tb_init_bootargs_fpath})
+
+    if [[ ${tb_init_bootargs_result} == *"tb_rootfs_ro"* ]]; then   #pattern 'tb_rootfs_ro' is found
+        if [[ ${tb_init_bootargs_result} == *"tb_rootfs_ro=true"* ]]; then  #pattern 'tb_rootfs_ro=true' is found
+            #Get '/proc/cmdline' content
+            proc_cmdline_result=$(cat ${proc_cmdline_fpath})
+
+            if [[ ${proc_cmdline_result} != *"tb_rootfs_ro"* ]]; then
+                #Update variable
+                pattern_tb_overlay_new="${PATTERN_TB_OVERLAY_OLD} ${PATTERN_TB_ROOTFS_RO_IS_TRUE}"
+
+                #Insert 'tb_rootfs_ro=true' into result
+                sed -i "s/${PATTERN_TB_OVERLAY_OLD}/${pattern_tb_overlay_new}/g" "${proc_cmdline_fpath}"
+
+                #Get '/proc/cmdline' content
+                bootargs_result=$(cat ${proc_cmdline_fpath})
+            fi
+        else    #pattern 'tb_rootfs_ro=true' is NOT found
+            #Exclude 'tb_rootfs_ro=true' from result
+            bootargs_result=$(sed "s/${PATTERN_TB_ROOTFS_RO_IS_TRUE}//g" "${proc_cmdline_fpath}")
+        fi
+    else    #pattern 'tb_rootfs_ro' is NOT found
+        bootargs_result="${tb_init_bootargs_result}"
+    fi
 
     remove_file "${tb_init_bootargs_fpath}"
 else
-    cmdline_output=$(cat ${proc_cmdline_fpath})
+    bootargs_result=$(cat ${proc_cmdline_fpath})
 fi
 
-#if cmdline_output contains the string "tb_overlay=/dev/mmcblk0p10"
-if [[ ${cmdline_output} == *"tb_overlay"* ]]; then
-    tb_overlay=$(echo ${cmdline_output} | grep -oP 'tb_overlay=\K[^ ]*')
+#if bootargs_result contains the string "tb_overlay=/dev/mmcblk0p10"
+if [[ ${bootargs_result} == *"tb_overlay"* ]]; then
+    tb_overlay=$(echo ${bootargs_result} | grep -oP 'tb_overlay=\K[^ ]*')
 
     echo -e "${PRINT_TB_INIT_RESULT}: tb_overlay=${tb_overlay}\n"
-else
-    tb_overlay=""
 fi
 
-#if cmdline_output contains the string "tb_rootfs_ro=true"
-if [[ ${cmdline_output} == *"tb_rootfs_ro"* ]]; then
-    tb_rootfs_ro=$(echo ${cmdline_output} | grep -oP 'tb_rootfs_ro=\K[^ ]*')
+#if bootargs_result contains the string "tb_rootfs_ro=true"
+if [[ ${bootargs_result} == *"tb_rootfs_ro"* ]]; then
+    tb_rootfs_ro=$(echo ${bootargs_result} | grep -oP 'tb_rootfs_ro=\K[^ ]*')
 
     echo -e "${PRINT_TB_INIT_RESULT}: tb_rootfs_ro=${tb_rootfs_ro}\n"
 fi
 
-#if cmdline_output contains the string "tb_backup=<destination path>"
-if [[ ${cmdline_output} == *"tb_backup"* ]]; then
-    tb_backup=$(echo ${cmdline_output} | grep -oP 'tb_backup=\K[^ ]*')
+#if bootargs_result contains the string "tb_backup=<destination path>"
+if [[ ${bootargs_result} == *"tb_backup"* ]]; then
+    tb_backup=$(echo ${bootargs_result} | grep -oP 'tb_backup=\K[^ ]*')
 
     echo -e "${PRINT_TB_INIT_RESULT}: tb_backup=${tb_backup}\n"
 fi
 
-#if cmdline_output contains the string "tb_restore=<source path>""
-if [[ ${cmdline_output} == *"tb_restore"* ]]; then
-    tb_restore=$(echo ${cmdline_output} | grep -oP 'tb_restore=\K[^ ]*')
+#if bootargs_result contains the string "tb_restore=<source path>""
+if [[ ${bootargs_result} == *"tb_restore"* ]]; then
+    tb_restore=$(echo ${bootargs_result} | grep -oP 'tb_restore=\K[^ ]*')
 
     echo -e "${PRINT_TB_INIT_RESULT}: tb_restore=${tb_restore}\n"
 fi
 
-#if cmdline_output contains the string "tb_noboot=true"
-if [[ ${cmdline_output} == *"tb_noboot"* ]]; then
-    tb_noboot=$(echo ${cmdline_output} | grep -oP 'tb_noboot=\K[^ ]*')
+#if bootargs_result contains the string "tb_noboot=true"
+if [[ ${bootargs_result} == *"tb_noboot"* ]]; then
+    tb_noboot=$(echo ${bootargs_result} | grep -oP 'tb_noboot=\K[^ ]*')
 
     echo -e "${PRINT_TB_INIT_RESULT}: tb_noboot=${tb_noboot}\n"
 fi
@@ -356,6 +386,7 @@ mount_or_unmount_partition__func "${dev_mmcblk0p9}" "${tb_reserve_dir}" "false"
 
 
 
+#---BACKUP SECTION
 #if tb_backup is set, then do a backup of the rootfs
 if [[ "${tb_backup}" != "${NULL}" ]]; then
     #Print
@@ -380,6 +411,9 @@ if [[ "${tb_backup}" != "${NULL}" ]]; then
     fi
 fi
 
+
+
+#---RESTORE SECTION
 #if tb_restore is set, then restore the rootfs from the backup
 if [[ "${tb_restore}" != "${NULL}" ]]; then
     #Disable
@@ -410,23 +444,22 @@ if [[ "${tb_restore}" != "${NULL}" ]]; then
     reboot_exec
 fi
 
+
+
+#---SAFEMODE SECTION
 #if tb_noboot is set, then boot to minimal system
 if [[ "${tb_noboot}" != "${NULL}" ]]; then
     #Print
     while [ 1 ]; do
-        echo -e "**************************************************\n"
-        echo -e "                    SAFE-MODE"
-        echo -e "**************************************************\n"
-        echo -e "Return back to the normal-mode with command:"
-        echo -e ""
-        echo -e "   echo 1 >/proc/sys/kernel/sysrq && echo b >/proc/sysrq-trigger"
-        echo -e ""
-        echo -e "**************************************************\n"
+        ${safemode_print}
         
         ${bin_bash_exec}
     done
 fi
 
+
+
+#---OVERLAY SECTION
 #if tb_overlay is set, then mount it
 #Remarks:
 # if overlay does NOT exist or 'size=0', then
