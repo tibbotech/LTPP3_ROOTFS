@@ -233,18 +233,9 @@ function fsck_retry_retrieve__func() {
 }
 
 function fsck_files_remove__func() {
-    #Unmount
-    mount_or_unmount_partition__func "${devpart}" "${mntdir}" "false"
-
-    #Mount
-    mount_or_unmount_partition__func "${devpart}" "${mntdir}" "true"
-
     #Remove files
     remove_file__func "${fsck_retry_fpath1}"
     remove_file__func "${fsck_retry_fpath2}"
-
-    #Unmount
-    mount_or_unmount_partition__func "${devpart}" "${mntdir}" "false"
 }
 
 function mount_or_unmount_partition__func() {
@@ -301,9 +292,6 @@ function mount_partition_and_write_data_to_file__func() {
     #Write data
     echo "${data}" | tee ${targetfpath}
 
-    #Unmount
-    mount_or_unmount_partition__func "${devpart}" "${mntdir}" "false"
-
     #Enable trap ERR
     echo -e "---:TB_INIT:-:TRAP ERR: ENABLE"
     trap trap_err__func ERR
@@ -327,18 +315,9 @@ function safemode_print__func() {
 }
 
 function tb_init_backup_lst_update__func() {
-    #Unmount "/tb_reserve"
-    mount_or_unmount_partition__func "${dev_mmcblk0p9}" "${tb_reserve_dir}" "false"
-
-    #Mount "/tb_reserve" to '/dev/mmcblk0p9'
-    mount_or_unmount_partition__func "${dev_mmcblk0p9}" "${tb_reserve_dir}" "true"
-
     #Update file 'tb_init_backup_lst_fpath'
     echo -e "---:TB_INIT:-:UPDATE: ${tb_init_backup_lst_fpath} with entry ${tb_backup}"
     echo "${tb_backup}" | tee -a "${tb_init_backup_lst_fpath}"
-
-    #Unmount "/tb_reserve"
-    mount_or_unmount_partition__func "${dev_mmcblk0p9}" "${tb_reserve_dir}" "false"
 }
 
 #trap all errors into a function called trap_err__func
@@ -517,11 +496,6 @@ fi
 
 
 
-#---UNMOUNT /TB_RESERVE
-mount_or_unmount_partition__func "${dev_mmcblk0p9}" "${tb_reserve_dir}" "false"
-
-
-
 #---BACKUP SECTION
 #if tb_backup is set, then do a backup of the rootfs
 if [ ! -z ${tb_backup} ]; then
@@ -545,11 +519,6 @@ if [ ! -z ${tb_backup} ]; then
 
     #Update file 'tb_init_backup_lst_fpath'
     tb_init_backup_lst_update__func
-
-    #reboot to make sure the new rootfs is loaded
-    echo -e "---:TB_INIT:-:REBOOT: now"
-    eval ${cmd_setto_mode_1}
-    eval ${cmd_reboot}
 fi
 
 
@@ -697,6 +666,9 @@ fi
 #Remove all temporary files
 fsck_files_remove__func
 
+
+# #---UNMOUNT /TB_RESERVE
+# mount_or_unmount_partition__func "${dev_mmcblk0p9}" "${tb_reserve_dir}" "false"
 
 
 #Attempt to start systemd
