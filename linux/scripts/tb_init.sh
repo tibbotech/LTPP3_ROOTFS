@@ -60,6 +60,114 @@ cmd_reboot="echo b >${proc_sysrqtrigger_fpath}"
 
 
 #---FUNCTIONS
+function cat_showprogress__func {
+    #Based on: https://www.baeldung.com/linux/command-line-progress-bar
+    #Input args
+    local srcpath=${1}
+    local dstpath=${2}
+    local pid=${3}
+
+    #Define constants
+    local WINDOW_NCOLS=$(tput cols)
+    local BAR_SIZE=$(( (WINDOW_NCOLS * 50) / 100 )) #50% of terminal window size (in horizontal direction)
+    local BAR_CHAR_PROCESSED="#"
+    local BAR_CHAR_TODO="-"
+
+    #Get srcsize (which is the size of srcpath)
+    local srcsize=$(cat_getsize__func "${srcpath}")
+
+    #Initialize variables
+    local pid_isfound=""
+
+    local dstsize=0
+    local progressbar_perc=0
+    local progressbar_processed=0
+    local progressbar_processed_sub=0
+    local progressbar_todo=0
+    local progressbar_todo_sub=0
+
+    while [ 1 ]; do
+        #Get dstpath (which is the size of dstpath)
+        dstsize=$(cat_getsize__func "${dstpath}")
+
+        # calculate the progress in percentage 
+        progressbar_perc=$(( (dstsize * 100) / srcsize ))
+
+        # The number of progressbar_processed and progressbar_todo characters
+        progressbar_processed=$(( (BAR_SIZE * progressbar_perc) / 100 ))
+        progressbar_todo=$(( BAR_SIZE - progressbar_processed ))
+
+        # build the progressbar_processed and progressbar_todo sub-bars
+        progressbar_processed_sub=$(printf "%${progressbar_processed}s" | tr " " "${BAR_CHAR_PROCESSED}")
+        progressbar_todo_sub=$(printf "%${progressbar_todo}s" | tr " " "${BAR_CHAR_TODO}")
+
+        # output the bar
+        echo -ne "\rProgress : [${progressbar_processed_sub}${progressbar_todo_sub}] ${progressbar_perc}% (${dstsize}/${srcsize})"
+
+        #Exit loop if 'pid' is not found anymore
+        pid_isfound=$(ps axf | grep "${pid}") | grep -v "color"
+        if [[ -z "${pid_isfound}" ]] && [[ ${progressbar_perc} -eq 100 ]]; then
+            echo -e ""
+
+            break
+        fi
+    done
+}
+function cat_getsize__func() {
+    #path can also be a partition (e.g. /dev/mmcblk0p11)
+    local path=${1}
+
+    #Define variables
+    local ret=0
+
+    #Get size
+    if [[ ! -z ${path} ]]; then
+        if [[ ! -z $(grep "/dev" <<< ${path}) ]]; then #path contains /dev
+            ret=$(fdisk -l "${path}" | grep "Disk" | grep -o "${path}.*" | cut -d"," -f2 | cut -d" " -f2)
+        else    #path does not contain /dev
+            ret=$(ls -l "${path}" | awk '{print $5}')
+        fi
+    fi
+
+    #Output
+    echo "${ret}"
+}
+function cat_killproc() {
+    #Input args
+    local pattern=${1}
+    
+    #Get list of pids matching 'pattern' and write to string
+    local pid_list_string=$(ps axf | grep "cat ${pattern}" | grep -v "color" | grep -v "grep" | awk '{print $1}')
+
+    if [[ ! -z "${pid_list_string}" ]]; then
+        #Convert string to array
+        local pid_list_arr=(${pid_list_string})
+
+        #Iterate thru array and kill processes
+        local pid_list_arritem=0
+        for pid_list_arritem in "${pid_list_arr[@]}"
+        do
+            kill -9 ${pid_list_arritem}
+        done
+    fi
+}
+function cat_w_progress__func() {
+    #Input args
+    local srcpath=${1}
+    local dstpath=${2}
+
+    #Kill all processes that contains the keyword 'cat ${srcpath}'
+    #For example: cat /dev/mmcblk0p11
+    cat_killproc "${srcpath}"
+
+    #Copy as a background job
+    cat "${srcpath}" > "${dstpath}" &
+    local pid=$!
+
+    #Show progress bar
+    cat_showprogress__func "${srcpath}" "${dstpath}" "${pid}"
+}
+
 function create_and_mount_dir__func() {
     #Input args
     local imagefpath=${1}
@@ -231,7 +339,6 @@ function fsck_retry_retrieve__func() {
     echo -e "---:TB_INIT:-:TRAP ERR: ENABLE"
     trap trap_err__func ERR
 }
-
 function fsck_files_remove__func() {
     #Remove files
     remove_file__func "${fsck_retry_fpath1}"
@@ -261,7 +368,6 @@ function mount_or_unmount_partition__func() {
         umount ${devpart}
     fi
 }
-
 function mount_partition_and_write_data_to_file__func() {
     #disable trap ERR
     echo -e "---:TB_INIT:-:TRAP ERR: DISABLE"
@@ -297,7 +403,6 @@ function mount_partition_and_write_data_to_file__func() {
     trap trap_err__func ERR
 }
 
-
 function remove_file__func() {
     #Input args
     local targetfpath=${1}
@@ -305,8 +410,12 @@ function remove_file__func() {
     #Remove file
     if [[ -f ${targetfpath} ]]; then
         echo -e "---:TB-INIT:-:REMOVE: ${targetfpath}"
+        rm ${targetfpath}; exitcode=$?
+        if [[ exitcode -ne 0 ]]; then
+            echo -e "---:TB-INIT:-:REMOVE: ${targetfpath} was *UNSUCCESSFUL*"
 
-        rm ${targetfpath}
+            trap_err__func
+        fi
     fi
 }
 
@@ -510,8 +619,7 @@ if [ ! -z ${tb_backup} ]; then
 
     #Backup
     echo -e "---:TB_INIT:-:BACKUP: start"
-    dd if=${tb_backup_if_devpart} of=${tb_backup_of_imagefpath} oflag=direct status=progress
-    sync
+    cat_w_progress__func "${tb_backup_if_devpart}" "${tb_backup_of_imagefpath}"
     echo -e "---:TB_INIT:-:BACKUP: completed successfully"
 
     #Unmount 'tb_backup_of_imagefpath'
@@ -519,6 +627,14 @@ if [ ! -z ${tb_backup} ]; then
 
     #Update file 'tb_init_backup_lst_fpath'
     tb_init_backup_lst_update__func
+
+    #(Double-confirm) remove file
+    remove_file__func "${tb_init_bootargs_tmp_fpath}"
+
+    #reboot to make sure the new rootfs is loaded
+    echo -e "---:TB_INIT:-:REBOOT: now"
+    eval ${cmd_setto_mode_1}
+    eval ${cmd_reboot}
 fi
 
 
@@ -540,12 +656,14 @@ if [ ! -z ${tb_restore} ]; then
 
     #Restore
     echo -e "---:TB_INIT:-:RESTORE: start"
-    dd if=${tb_restore_if_imagefpath} of=${tb_restore_of_devpart} oflag=direct status=progress
-    sync
+    cat_w_progress__func "${tb_restore_if_imagefpath}" "${tb_restore_of_devpart}"
     echo -e "---:TB_INIT:-:RESTORE: completed successfully"
 
     #Unmount
     umount_and_remove_dir__func "${tb_restore_if_imagefpath}"
+
+    #(Double-confirm) remove file
+    remove_file__func "${tb_init_bootargs_tmp_fpath}"
 
     #reboot to make sure the new rootfs is loaded
     echo -e "---:TB_INIT:-:REBOOT: now"
