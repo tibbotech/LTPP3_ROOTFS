@@ -1,12 +1,17 @@
 #!/bin/bash
 #---CONSTANTS
+EXITCODE_1=1
+
 BLKID_RETRY_MAX=10
 FSCK_RETRY_MAX=3
 
 FIRST_PARTITION_NUM=1
 ROOTFS_PARTITION_NUM=8
 
-EXITCODE_1=1
+COPYTYPE_BACKUP="backup"
+COPYTYPE_RESTORE="restore"
+
+DD_TX_SPEED="1M"
 
 DEV="/dev"
 DEV_MMCBLK0=/dev/mmcblk0
@@ -14,6 +19,8 @@ DEV_MMCBLK0P=${DEV_MMCBLK0}p
 DEV_MMCBLK0P8=${DEV_MMCBLK0P}8
 DEV_MMCBLK0P9=${DEV_MMCBLK0P}9
 DEV_NONE="none"
+
+FOUR_SPACES="    "
 
 FSCK_RETRY_PRINT="fsck_retry"
 
@@ -23,19 +30,6 @@ PATTERN_LABELIS="LABEL="
 PATTERN_TB_ROOTFS_RO="tb_rootfs_ro"
 PATTERN_TB_ROOTFS_RO_IS_TRUE="tb_rootfs_ro=true"
 
-PRINT_TB_INIT_SH_START="\n**************************************************\n"
-PRINT_TB_INIT_SH_START+="   TB_INIT.SH\n"
-PRINT_TB_INIT_SH_START+="**************************************************\n"
-
-PRINT_TB_INIT_SAFEMODE="\n**************************************************\n"
-PRINT_TB_INIT_SAFEMODE+="   SAFE-MODE\n"
-PRINT_TB_INIT_SAFEMODE+="**************************************************\n"
-PRINT_TB_INIT_SAFEMODE+="To go back to the normal-mode, use command:\n"
-PRINT_TB_INIT_SAFEMODE+="\n"
-PRINT_TB_INIT_SAFEMODE+="   echo 1 >/proc/sys/kernel/sysrq && echo b >/proc/sysrq-trigger\n"
-PRINT_TB_INIT_SAFEMODE+="\n"
-PRINT_TB_INIT_SAFEMODE+="**************************************************\n"
-
 
 
 #---VARIABLES
@@ -44,7 +38,7 @@ bin_bash_exec=/bin/bash
 overlay_dir=/overlay
 proc_dir=/proc
 proc_cmdline_fpath=${proc_dir}/cmdline
-proc_sys_kernel_sysrq=${proc_dir}/sys/kernel/sysrq
+proc_sys_kernel_sysrq_fpath=${proc_dir}/sys/kernel/sysrq
 proc_sysrqtrigger_fpath=${proc_dir}/sysrq-trigger
 rootfs_dir=/
 rootfs_etc_tibbo_uboot_dir=/etc/tibbo/uboot
@@ -60,7 +54,21 @@ tb_init_bootargs_cfg_fpath=${tb_reserve_dir}/.tb_init_bootargs.cfg
 
 fsck_retry=0
 
-reboot_exec="echo 1 >${proc_sys_kernel_sysrq} && echo b >${proc_sysrqtrigger_fpath}"
+reboot_cmd="echo 1 >${proc_sys_kernel_sysrq_fpath} && echo b >${proc_sysrqtrigger_fpath}"
+
+print_start="\n*********************************************************************\n"
+print_start+="${FOUR_SPACES}TB_INIT.SH\n"
+print_start+="*********************************************************************\n"
+
+print_safemode="\n*********************************************************************\n"
+print_safemode+="${FOUR_SPACES}SAFE-MODE\n"
+print_safemode+="*********************************************************************\n"
+print_safemode+="${FOUR_SPACES}To go back to the normal-mode, use command:\n"
+print_safemode+="\n"
+print_safemode+="${FOUR_SPACES}${FOUR_SPACES}${reboot_cmd}"
+print_safemode+="\n"
+print_safemode+="*********************************************************************\n"
+
 
 
 
@@ -70,7 +78,7 @@ function exit_handler__func() {
     local exitcode=${1}
 
     #Print
-    echo -e "${PRINT_TB_INIT_SAFEMODE}"
+    echo -e "${print_safemode}"
 
     #Mount '/proc' to 'none'
     mount -t proc ${DEV_NONE} ${proc_dir}
@@ -80,7 +88,7 @@ function exit_handler__func() {
 }
 
 function bin_bash_safemode_print__func() {
-    echo -e "${PRINT_TB_INIT_SAFEMODE}"
+    echo -e "${print_safemode}"
 }
 function bin_bash_handler__func() {
     bin_bash_safemode_print__func
@@ -88,114 +96,28 @@ function bin_bash_handler__func() {
     ${bin_bash_exec}
 }
 
-function cat_showprogress__func {
-    #Based on: https://www.baeldung.com/linux/command-line-progress-bar
-    #Input args
-    local srcpath=${1}
-    local dstpath=${2}
-    local pid=${3}
-
-    #Define constants
-    local WINDOW_NCOLS=$(tput cols)
-    local BAR_SIZE=$(( (WINDOW_NCOLS * 50) / 100 )) #50% of terminal window size (in horizontal direction)
-    local BAR_CHAR_PROCESSED="#"
-    local BAR_CHAR_TODO="-"
-
-    #Get srcsize (which is the size of srcpath)
-    local srcsize=$(cat_getsize__func "${srcpath}")
-
-    #Initialize variables
-    local pid_isfound=""
-
-    local dstsize=0
-    local progressbar_perc=0
-    local progressbar_processed=0
-    local progressbar_processed_sub=0
-    local progressbar_todo=0
-    local progressbar_todo_sub=0
-
-    while [ 1 ]; do
-        #Get dstpath (which is the size of dstpath)
-        dstsize=$(cat_getsize__func "${dstpath}")
-
-        # calculate the progress in percentage 
-        progressbar_perc=$(( (dstsize * 100) / srcsize ))
-
-        # The number of progressbar_processed and progressbar_todo characters
-        progressbar_processed=$(( (BAR_SIZE * progressbar_perc) / 100 ))
-        progressbar_todo=$(( BAR_SIZE - progressbar_processed ))
-
-        # build the progressbar_processed and progressbar_todo sub-bars
-        progressbar_processed_sub=$(printf "%${progressbar_processed}s" | tr " " "${BAR_CHAR_PROCESSED}")
-        progressbar_todo_sub=$(printf "%${progressbar_todo}s" | tr " " "${BAR_CHAR_TODO}")
-
-        # output the bar
-        echo -ne "\rProgress : [${progressbar_processed_sub}${progressbar_todo_sub}] ${progressbar_perc}% (${dstsize}/${srcsize})"
-
-        #Exit loop if 'pid' is not found anymore
-        pid_isfound=$(ps axf | grep "${pid}") | grep -v "color"
-        if [[ -z "${pid_isfound}" ]] && [[ ${progressbar_perc} -eq 100 ]]; then
-            echo -e ""
-
-            break
-        fi
-    done
-}
-function cat_getsize__func() {
-    #path can also be a partition (e.g. /dev/mmcblk0p11)
-    local path=${1}
-
-    #Define variables
-    local ret=0
-
-    #Get size
-    if [[ ! -z ${path} ]]; then
-        if [[ ! -z $(echo "${path}" | grep "/dev") ]]; then #path contains /dev
-            ret=$(fdisk -l "${path}" | grep "${PATTERN_DISK}" | grep -o "${path}.*" | cut -d"," -f2 | cut -d" " -f2)
-        else    #path does not contain /dev
-            ret=$(ls -l "${path}" | awk '{print $5}')
-        fi
-    fi
-
-    #Output
-    echo "${ret}"
-}
-function cat_killproc() {
-    #Input args
-    local pattern=${1}
-    
-    #Get list of pids matching 'pattern' and write to string
-    local pid_list_string=$(ps axf | grep "cat ${pattern}" | grep -v "color" | grep -v "grep" | awk '{print $1}')
-
-    if [[ ! -z "${pid_list_string}" ]]; then
-        #Convert string to array
-        local pid_list_arr=(${pid_list_string})
-
-        #Iterate thru array and kill processes
-        local pid_list_arritem=0
-        for pid_list_arritem in "${pid_list_arr[@]}"
-        do
-            kill -9 ${pid_list_arritem}
-        done
-    fi
-}
-function cat_w_progress__func() {
+function dd_handler__func() {
     #Input args
     local srcpath=${1}
     local dstpath=${2}
 
-    #Kill all processes that contains the keyword 'cat ${srcpath}'
-    #For example: cat /dev/mmcblk0p11
-    cat_killproc "${srcpath}"
+    #Print
+    local printmsg="\n*********************************************************************\n"
+    printmsg+="    COPY-OVERVIEW\n"
+    printmsg+="*********************************************************************\n"
+    printmsg+="    From:\t${srcpath}\n"
+    printmsg+="    To:\t\t${dstpath}\n"
+    printmsg+="\n"
+    printmsg+="    Note:\n"
+    printmsg+="\tIf the copy process appears to be frozen,\n"
+    printmsg+="\tPlease don't be alarmed and wait patiently.\n"
+    printmsg+="*********************************************************************\n"
+    echo -e "${printmsg}"
 
-    #Copy as a background job
-    cat "${srcpath}" > "${dstpath}" &
-    local pid=$!
 
-    #Show progress bar
-    cat_showprogress__func "${srcpath}" "${dstpath}" "${pid}"
+    #Copy
+    dd if=${srcpath} of=${dstpath} bs=${DD_TX_SPEED} oflag=dsync status=progress && sync
 }
-
 
 function create_and_mount_dir__func() {
     #Input args
@@ -207,36 +129,14 @@ function create_and_mount_dir__func() {
     #Retrieve 'blkid' column 1 and 2 data
     #Put data in string
     local blkid_retry=0
-    local label_listof_col12_string=""
+    local devpart=""
+    local fstype=""
 
     #Start loop
     while [ 1 ]
     do
-        #Get blkid info and pass to string
-        label_listof_col12_string=$(blkid | awk '{print $1, $2}' | grep "${PATTERN_LABEL}" | sed 's/: /;/g' | sed "s/${PATTERN_LABELIS}//g" | sed 's/"//g')
-        
-        #Convert string to array
-        local label_listof_col12_arr=(${label_listof_col12_string})
-
-        #Initialize variables
-        local devpart=""
-        local label_listof_col12_arritem=""
-        local labelname=""
-
-        #Iterate thru array
-        for label_listof_col12_arritem in ${label_listof_col12_arr[*]}
-        do
-
-            #Get 'labelname'
-            labelname=$(echo "${label_listof_col12_arritem}" | cut -d";" -f2)
-            #Check if 'labelname' is found in 'mountdir'
-            if [[ ${mountdir} == *"${labelname}"* ]]; then
-                #Get partition (including /dev)
-                devpart=$(echo "${label_listof_col12_arritem}" | cut -d";" -f1)
-
-                break
-            fi
-        done
+        devpart=$(lsblk --output PATH,MOUNTPOINT | grep "${mountdir}" | awk '{print $1}')
+        fstype=$(lsblk --output MOUNTPOINT,FSTYPE | grep "${mountdir}" | awk '{print $2}')
 
         #Check if 'label_listof_col12_string' is contains data
         if [ ! -z ${devpart} ]; then  #contains data
@@ -271,7 +171,7 @@ function create_and_mount_dir__func() {
 
     #Mount 'mountdir' to 'devpart'
     echo -e "---:TB-INIT:-:MOUNT: ${mountdir} to ${devpart}"
-    mount -t vfat "${devpart}" "${mountdir}"
+    mount -t ${fstype} "${devpart}" "${mountdir}"
 }
 function umount_and_remove_dir__func() {
     #Input args
@@ -381,6 +281,121 @@ function fsck_retry_retrieve__func() {
     trap trap_err__func ERR
 }
 
+function checkif_diskspace_is_sufficient__func() {
+    #Input args
+    local srcpath=${1}
+    local dstpath=${2}
+    local copytype=${3}
+
+    #Initialize variables
+    local printmsg=""
+    local dstdir=""
+    local exitcode=0
+    local srcsize_B=0
+    local srcsize_KB=0
+    local dstsize_B=0
+    local dstsize_KB=0
+
+    case "${copytype}" in
+        "${COPYTYPE_BACKUP}")
+            #Get source size in KB
+            srcsize_B=$(blockdev --getsize64 "${srcpath}" 2> /dev/null); exitcode=$?
+
+            if [[ ${exitcode} -eq 0 ]]; then    #succesful
+                #Convert to Kilobytes
+                srcsize_KB=$((srcsize_B / 1024))
+            else    #error
+                printmsg+="--:TB-INIT:-:DISKSPACE-ERROR: '${srcpath}' is *NOT* a partition\n"
+                printmsg+="--:TB-INIT:-:DISKSPACE-NOTE: SOURCE *must* be an existing partition (e.g. /dev/mmcblk0)\n"
+                echo -e "${printmsg}"
+
+                exit_handler__func "${EXITCODE_1}"
+            fi
+
+
+            #Get directory of 'dstpath'
+            dstdir=$(dirname "${dstpath}")
+            if [[ -d ${dstdir} ]]; then
+                #Get destination size in KB
+                dstsize_KB=$(df --output='avail' -k "${dstdir}" | tail -n1 | sed 's/^ *//g' | sed 's/* $//g'); exitcode=$?
+            else
+                exitcode=0
+            fi
+
+            if [[ ${exitcode} -ne 0 ]]; then    #error occurred
+                printmsg="--:TB-INIT:-:DISKSPACE-ERROR: '${dstdir}' does *NOT* exist\n"
+                printmsg+="--:TB-INIT:-:DISKSPACE-NOTE: please choose an existing DESTINATION location for the backup-file\n"
+                echo -e "${printmsg}"
+
+                exit_handler__func "${EXITCODE_1}"
+            fi
+
+
+            #Compare 'dstsize_KB' with 'srcsize_KB'
+            #Note: dstsize_KB MUST be greater than 'srcsize_KB'
+            if [[ ${dstsize_KB} -le ${srcsize_KB} ]]; then
+                printmsg="--:TB-INIT:-:DISKSPACE-SRC: ${srcpath}: ${srcsize_KB}K\n"
+                printmsg+="--:TB-INIT:-:DISKSPACE-DST: ${dstpath}: ${dstsize_KB}K\n"
+                printmsg+="--:TB-INIT:-:DISKSPACE-ERROR: *insufficient* diskspace (${srcsize_KB}K > ${dstsize_KB}K)\n"
+                printmsg+="--:TB-INIT:-:DISKSPACE-NOTE: free-up diskspace or choose another destination\n"
+                echo -e "${printmsg}"
+
+                # exit_handler__func "${EXITCODE_1}"
+            fi
+            ;;
+        "${COPYTYPE_RESTORE}")
+            if [[ -f "${srcpath}" ]]; then  #is a file
+                #Get source size in KB
+                srcsize_B=$(ls -l "${srcpath}" | awk '{print $5}'); exitcode=$?
+
+                if [[ ${exitcode} -eq 0 ]]; then    #succesful
+                    #Convert to Kilobytes
+                    srcsize_KB=$((srcsize_B / 1024))
+                else    #error
+                    exitcode=1
+                fi
+            else    #is not a file
+                exitcode=1          
+            fi
+
+            if [[ ${exitcode} -ne 0 ]]; then    #error occurred
+                printmsg="--:TB-INIT:-:DISKSPACE-ERROR: ${srcpath} is *NOT* a backup-file\n"
+                printmsg+="--:TB-INIT:-:DISKSPACE-NOTE: SOURCE *must* be an existing backup-file\n"
+                echo -e "${printmsg}"
+
+                exit_handler__func "${EXITCODE_1}"
+            fi
+
+
+            #Get destination size in KB
+            dstsize_B=$(blockdev --getsize64 "${dstpath}" 2> /dev/null); exitcode=$?
+            if [[ ${exitcode} -eq 0 ]]; then    #succesful
+                #Convert to Kilobytes
+                dstsize_KB=$((dstsize_B / 1024))
+            else    #error
+                printmsg+="--:TB-INIT:-:DISKSPACE-ERROR: '${dstpath}' is *NOT* a partition\n"
+                printmsg+="--:TB-INIT:-:DISKSPACE-NOTE: DESTINATION *must* be an existing partition (e.g. /dev/mmcblk0)\n"
+                echo -e "${printmsg}"
+
+                exit_handler__func "${EXITCODE_1}"
+            fi
+
+
+            #Compare 'dstsize_KB' with 'srcsize_KB'
+            #Note: dstsize_KB MUST be greater than 'srcsize_KB'
+            if [[ ${dstsize_KB} -lt ${srcsize_KB} ]]; then
+                printmsg="--:TB-INIT:-:DISKSPACE-SRC: ${srcpath}: ${srcsize_KB}K\n"
+                printmsg+="--:TB-INIT:-:DISKSPACE-DST: ${dstpath}: ${dstsize_KB}K\n"
+                printmsg+="--:TB-INIT:-:DISKSPACE-ERROR: *insufficient* diskspace (${srcsize_KB}K > ${dstsize_KB}K)\n"
+                printmsg+="--:TB-INIT:-:DISKSPACE-NOTE: free-up diskspace or choose another destination\n"
+                echo -e "${printmsg}"
+
+                exit_handler__func "${EXITCODE_1}"
+            fi
+            ;;
+    esac
+}
+
 function checkif_ismounted__func() {
     #Input args
     local devpart=${1}
@@ -466,9 +481,9 @@ function unmount__func() {
     umount ${devpart}; exitcode=$?
 
     if [[ ${exitcode} -ne 0 ]]; then  #successful
-        local printmsg="--:TB-INIT:-:UNMOUNT: ${devpart} *FAILED*\n"
-        printmsg+="------:TB-INIT:-:STATUS: ${devpart} is *IN-USE*\n"
-        printmsg+="------:TB-INIT:-:ADVICE: Make sure no script or app is run from ${devpart}\n"
+        local printmsg="--:TB-INIT:-:UNMOUNT-ERROR: ${devpart} *FAILED*\n"
+        printmsg+="------:TB-INIT:-:UNMOUNT-ERROR: ${devpart} is *IN-USE*\n"
+        printmsg+="------:TB-INIT:-:UNMOUNT-NOTE: Make sure no script or app is run from ${devpart}\n"
         echo -e "${printmsg}"
 
         exit_handler__func "${EXITCODE_1}"
@@ -504,7 +519,7 @@ function reboot_handler__func() {
     #reboot to make sure the new rootfs is loaded
     echo -e "---:TB_INIT:-:REBOOT: now \n"
 
-    eval ${reboot_exec}
+    eval ${reboot_cmd}
 }
 
 function remove_file__func() {
@@ -619,7 +634,7 @@ function trap_err__func() {
 
 #---START
 echo -e ""
-echo -e "${PRINT_TB_INIT_SH_START}"
+echo -e "${print_start}"
 
 
 
@@ -773,17 +788,18 @@ if [ ! -z ${tb_backup} ]; then
     echo -e "---:TB_INIT:-:RESULT: tb_backup_of_imagefpath: ${tb_backup_of_imagefpath}"
 
     #Unmount partition 'tb_backup_if_devpart'
-    unmount_handler__func "${tb_backup_if_devpart}"
+    # unmount_handler__func "${tb_backup_if_devpart}"
 
     #Mount 'tb_backup_of_imagefpath' to its partition
     create_and_mount_dir__func "${tb_backup_of_imagefpath}"
 
+    #Check if destination diskspace is sufficient
+    checkif_diskspace_is_sufficient__func "${tb_backup_if_devpart}" \
+            "${tb_backup_of_imagefpath}" \
+            "${COPYTYPE_BACKUP}"
+
     #Backup
-    echo -e "---:TB_INIT:-:BACKUP: start"
-    # dd if=${tb_backup_if_devpart} of=${tb_backup_of_imagefpath} oflag=direct status=progress
-    # sync
-    cat_w_progress__func "${tb_backup_if_devpart}" "${tb_backup_of_imagefpath}"
-    echo -e "---:TB_INIT:-:BACKUP: completed successfully"
+    dd_handler__func "${tb_backup_if_devpart}" "${tb_backup_of_imagefpath}"
 
     #Write 'tb_backup' to 'tb_init_backup_lst_fpath'
     write_to_file__func "${tb_backup}" \
@@ -812,17 +828,18 @@ if [ ! -z ${tb_restore} ]; then
     echo -e "---:TB_INIT:-:RESULT: tb_restore_of_devpart: ${tb_restore_of_devpart}"
 
     #Unmount partition 'tb_backup_if_devpart'
-    unmount_handler__func "${tb_restore_of_devpart}"
+    # unmount_handler__func "${tb_restore_of_devpart}"
 
     #Mount
     create_and_mount_dir__func "${tb_restore_if_imagefpath}"
 
+    #Check if destination diskspace is sufficient
+    checkif_diskspace_is_sufficient__func "${tb_restore_if_imagefpath}" \
+            "${tb_restore_of_devpart}" \
+            "${COPYTYPE_RESTORE}"
+
     #Restore
-    echo -e "---:TB_INIT:-:RESTORE: start"
-    # dd if=${tb_restore_if_imagefpath} of=${tb_restore_of_devpart} oflag=direct status=progress
-    # sync
-    cat_w_progress__func "${tb_restore_if_imagefpath}" "${tb_restore_of_devpart}"
-    echo -e "---:TB_INIT:-:RESTORE: completed successfully"
+    dd_handler__func "${tb_restore_if_imagefpath}" "${tb_restore_of_devpart}"
 
     #Unmount
     umount_and_remove_dir__func "${tb_restore_if_imagefpath}"
