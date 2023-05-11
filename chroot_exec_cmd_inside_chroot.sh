@@ -309,7 +309,6 @@ echo -e "\r"
 	apt-get -y install iproute2 iproute2-doc
 	apt-get -y install netplan.io
 	apt-get -y install traceroute
-	apt-get -y install cifs-utils
 
 echo -e "\r"
 echo ">>>Fixing ERROR: Dependency failed for Serial Getty on ttyS0"
