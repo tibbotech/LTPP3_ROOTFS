@@ -351,7 +351,7 @@ docker__mainmenu__sub() {
         while true
         do
             #Select an option
-            read -N1 -r -p "Please choose an option: " docker__myChoice
+            read -N1 -r -p "${DOCKER__PLEASE_CHOOSE_AN_OPTION}" docker__myChoice
             moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
             #Only continue if a valid option is selected

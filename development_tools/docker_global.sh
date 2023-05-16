@@ -147,7 +147,9 @@ DOCKER__EXIT="exit"
 DOCKER__TEN=10
 DOCKER__NINE=9
 
-DOCKER__TABLEWIDTH=100
+DOCKER__PERC_80=80
+DOCKER__TERMINALWINDOW_WIDTH=$(tput cols)
+DOCKER__TABLEWIDTH=$((( DOCKER__TERMINALWINDOW_WIDTH * DOCKER__PERC_80)/100 ))
 DOCKER__TABLEROWS_10=10
 DOCKER__TABLEROWS_20=20
 DOCKER__TABLECOLS_0=0
@@ -628,6 +630,7 @@ DOCKER__EXITING_NOW="Exiting now..."
 DOCKER__HORIZONTALLINE="---------------------------------------------------------------------"
 DOCKER__LATEST="latest"
 
+DOCKER__PLEASE_CHOOSE_AN_OPTION="Please choose an option: "
 DOCKER__QUIT_CTRL_C="${DOCKER__FG_LIGHTGREY}Quit${DOCKER__NOCOLOR} (${DOCKER__FG_LIGHTGREY}Ctrl+C${DOCKER__NOCOLOR})"
 
 DOCKER__FOURSPACES_Y_YES="${DOCKER__FOURSPACES}y. ${DOCKER__FG_LIGHTGREY}Yes${DOCKER__NOCOLOR}"
@@ -6133,6 +6136,7 @@ docker__get_source_fullpath__sub() {
     docker__pentagram_common_h__filename="pentagram_common.h"
     docker__pentagram_common_h_overlaybck__filename="pentagram_common.h.overlaybck"
     docker__tb_init_sh__filename="tb_init.sh"
+    docker__tb_init_bootmenu_sh__filename="tb_init_bootmenu.sh"
 
 
 #---docker__docker__dir - contents
@@ -6336,7 +6340,11 @@ docker__get_source_fullpath__sub() {
 
     docker__LTPP3_ROOTFS_build_scripts_isp_sh__fpath=${docker__LTPP3_ROOTFS_build_scripts__dir}/${docker__isp_sh__filename}
     docker__LTPP3_ROOTFS_boot_configs_pentagram_common_h__fpath=${docker__LTPP3_ROOTFS_boot_configs__dir}/${docker__pentagram_common_h__filename}
+
+
+#---docker__LTPP3_ROTFS_linux_scripts__dir
     docker__LTPP3_ROOTFS_linux_scripts_tb_init_sh__fpath=${docker__LTPP3_ROOTFS_linux_scripts__dir}/${docker__tb_init_sh__filename}
+    docker__tb_init_bootmenu_sh__fpath=${docker__LTPP3_ROOTFS_linux_scripts__dir}/${docker__tb_init_bootmenu_sh__filename}
 
 
 #---docker__SP7021__dir - contents
