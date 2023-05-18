@@ -80,6 +80,7 @@ TB_TB_ROOTFS_RO_IS_NULL="tb_rootfs_ro=null"
 TB_TB_ROOTFS_RO_IS_TRUE="tb_rootfs_ro=true"
 
 #---PATTERN CONSTANTS
+TB_PATTERN_LOST_AND_FOUND="lost+found"
 TB_PATTERN_TB_BACKUP="tb_backup"
 TB_PATTERN_TB_NOBOOT="tb_noboot"
 TB_PATTERN_TB_OVERLAY="tb_overlay"
@@ -88,16 +89,16 @@ TB_PATTERN_TB_ROOTFS_RO="tb_rootfs_ro"
 
 #---LEGEND CONSTANTS
 TB_LEGEND="${TB_FG_GREY_246}Legend:${TB_NOCOLOR}"
-TB_LEGEND_S="="
-TB_LEGEND_S_W_DESCRIPTION="${TB_LEGEND_S} : ${TB_FG_GREY_246}same${TB_NOCOLOR}"
-TB_LEGEND_N="${TB_FG_GREEN_158}+${TB_NOCOLOR}"
-TB_LEGEND_N_W_DESCRIPTION="${TB_LEGEND_N} : ${TB_FG_GREY_246}new${TB_NOCOLOR}"
-TB_LEGEND_P="${TB_LEGEND_N}${TB_FG_RED_9}*${TB_NOCOLOR}"
-TB_LEGEND_P_W_DESCRIPTION="${TB_LEGEND_P}: ${TB_FG_GREY_246}new with priority${TB_NOCOLOR}"
+TB_LEGEND_SAME="="
+TB_LEGEND_SAME_W_DESCRIPTION="${TB_LEGEND_SAME} : ${TB_FG_GREY_246}same${TB_NOCOLOR}"
+TB_LEGEND_NEW="${TB_FG_GREEN_158}+${TB_NOCOLOR}"
+TB_LEGEND_NEW_W_DESCRIPTION="${TB_LEGEND_NEW} : ${TB_FG_GREY_246}new${TB_NOCOLOR}"
+TB_LEGEND_NEW_PRIORITY="${TB_LEGEND_NEW}${TB_FG_RED_9}*${TB_NOCOLOR}"
+TB_LEGEND_NEW_PRIORITY_W_DESCRIPTION="${TB_LEGEND_NEW_PRIORITY}: ${TB_FG_GREY_246}new with priority${TB_NOCOLOR}"
 
 #---REMARK CONSTANTS
-TB_REMARK="${TB_FG_BLUE_45}Remark:${TB_NOCOLOR}"
-TB_REMARK_A_REBOOT_IS_REQUIRED_FOR_THE_CHANGE_TO_TAKE_EFFECT="${TB_FG_BLUE_33}a reboot is required for the change to take effect${TB_NOCOLOR}"
+TB_REMARKS="${TB_FG_BLUE_45}Remarks:${TB_NOCOLOR}"
+TB_REMARK_A_REBOOT_IS_REQUIRED_FOR_THE_CHANGE_TO_TAKE_EFFECT="${TB_FG_BLUE_33}A reboot is required for the change to take effect${TB_NOCOLOR}"
 
 #---SPACE CONSTANTS
 TB_EMPTYSTRING=""
@@ -107,7 +108,9 @@ TB_THREESPACES="${TB_TWOSPACES}${TB_ONESPACE}"
 TB_FOURSPACES="${TB_TWOSPACES}${TB_TWOSPACES}"
 
 #---PATHS
+overlay_dir="/overlay"
 proc_dir="/proc"
+rootfs_dir="/"
 tb_reserve_dir="/tb_reserve"
 tb_init_bootargs_cfg_fpath=${tb_reserve_dir}/.tb_init_bootargs.cfg
 tb_init_bootargs_tmp_fpath=${tb_reserve_dir}/.tb_init_bootargs.tmp
@@ -116,19 +119,24 @@ tb_proc_cmdline_fpath=${proc_dir}/cmdline
 
 
 #---VARIABLES
-tb_bootinto_get_printable="${TB_EMPTYSTRING}"
+tb_bootinto_get="${TB_EMPTYSTRING}"
+tb_bootinto_remarks="${TB_EMPTYSTRING}"
 tb_bootinto_set="${TB_EMPTYSTRING}"
 tb_bootinto_set_printable="${TB_EMPTYSTRING}"
 tb_mychoice="${TB_EMPTYSTRING}"
 tb_overlaymode_set="${TB_EMPTYSTRING}"
 tb_overlaymode_set_printable="${TB_EMPTYSTRING}"
+tb_overlaymode_tag="${TB_EMPTYSTRING}"
 tb_remark="${TB_EMPTYSTRING}"
+
+proc_cmdline_tb_overlay_get="${TB_EMPTYSTRING}"
+proc_cmdline_tb_rootfs_ro_get="${TB_EMPTYSTRING}"
+tb_init_bootargs_cfg_tb_rootfs_ro_get="${TB_EMPTYSTRING}"
 
 tb_mychoice_regex="[12rq]"
 tb_reboot_reegex="[yn]"
 
 flag_bootinto_isset=false
-flag_overlaymode_isset=${TB_LEGEND_S}
 
 
 
@@ -157,100 +165,108 @@ function exit__func() {
     exit ${exitcode__input}
 }
 
-function get_current_printable_datetime__func() {
-    #Get local time-zone
-    local mytimezone=$(curl https://ipapi.co/timezone 2> /dev/null)
-    #Set time-zone
-    timedatectl set-timezone ${mytimezone}
+function extract_if_and_of_from_string__func() {
+    #Extract 'if' and 'of'
+    local if=$(cut -d";" -f1 <<< "${tb_bootinto_get}")
+    local of=$(cut -d";" -f2 <<< "${tb_bootinto_get}")
 
-    #Get city from 'mytimezone'
-    local mycity=$(echo ${mytimezone} | cut -d"/" -f2)
-    
-    #Get current-date
-    local mydate=$(date +%Y/%b/%d)
-    
-    #Combine data
-    local mylocationinfo="${mycity}, ${mydate}"
-
-    #Add color
-    local ret="${TB_FG_GREY_246}${mylocationinfo}${TB_NOCOLOR}"
-
-    #Output
-    echo -e "${ret}"
+    #Update variables which are made ready for printing
+    tb_bootinto_remarks="${TB_FOURSPACES}${TB_FG_BLUE_33}if${TB_NOCOLOR}:${TB_FG_BLUE_45}${if}${TB_NOCOLOR}\n"
+    tb_bootinto_remarks+="${TB_FOURSPACES}${TB_FG_BLUE_33}of${TB_NOCOLOR}:${TB_FG_BLUE_45}${of}${TB_NOCOLOR}\n"
 }
 
-function get_overlaymode_setting__func() {
+function extract_overlaymode_info__func() {
+    #Check if folder 'lost+found' is present at locations '/' and '/overlay'
+    #Remark:
+    #   If folder 'lost+found' is found at both locations, then it means that
+    #       overlay-mode = persistent
+    #   On the other hand, if folder'lost+found is not present at both locations, then
+    #       overlay-mode = non-persistent
+    local rootfs_flag_lostandfound_ispresent=$(ls -l "${rootfs_dir}" | grep "${TB_PATTERN_LOST_AND_FOUND}")
+    local overlay_flag_lostandfound_ispresent=$(ls -l "${overlay_dir}" | grep "${TB_PATTERN_LOST_AND_FOUND}")
+    local flag_lostandfound_ispresent=false
+    if [[ -n "${rootfs_flag_lostandfound_ispresent}" ]] && [[ -n "${overlay_flag_lostandfound_ispresent}" ]]; then
+        flag_lostandfound_ispresent=true
+    fi
+
     #Get 'tb_overlay' value (if present)
-    local tb_overlay_val="${TB_EMPTYSTRING}"
+    proc_cmdline_tb_overlay_get="${TB_EMPTYSTRING}"
     if [[ -f "${tb_proc_cmdline_fpath}" ]]; then
-        tb_overlay_val=$(grep -o "${TB_PATTERN_TB_OVERLAY}.*" "${tb_proc_cmdline_fpath}")
+        proc_cmdline_tb_overlay_get=$(grep -o "${TB_PATTERN_TB_OVERLAY}.*" "${tb_proc_cmdline_fpath}")
     fi
 
     #Get 'tb_rootfs_ro' values from 2 files (if present)
-    #Remarks:
-    #   Regarding tB_rootfs_ro, check both files '/tb_reserve/tb_init_bootargs.cfg' and '/proc/cmdline'
-    #   'tb_rootfs_ro_custom_val' take precedence over 'tb_rootfs_ro_builtin_val'
-    local tb_rootfs_ro_builtin_val="${TB_EMPTYSTRING}"
+    proc_cmdline_tb_rootfs_ro_get="${TB_EMPTYSTRING}"
     if [[ -f "${tb_proc_cmdline_fpath}" ]]; then
-        tb_rootfs_ro_builtin_val=$(grep -o "${TB_PATTERN_TB_ROOTFS_RO}.*" "${tb_proc_cmdline_fpath}")
+        proc_cmdline_tb_rootfs_ro_get=$(grep -o "${TB_PATTERN_TB_ROOTFS_RO}.*" "${tb_proc_cmdline_fpath}")
     fi
-    local tb_rootfs_ro_custom_val="${TB_EMPTYSTRING}"
+    tb_init_bootargs_cfg_tb_rootfs_ro_get="${TB_EMPTYSTRING}"
     if [[ -f "${tb_init_bootargs_cfg_fpath}" ]]; then
-        tb_rootfs_ro_custom_val=$(grep -o "${TB_PATTERN_TB_ROOTFS_RO}.*" "${tb_init_bootargs_cfg_fpath}")
+        tb_init_bootargs_cfg_tb_rootfs_ro_get=$(grep -o "${TB_PATTERN_TB_ROOTFS_RO}.*" "${tb_init_bootargs_cfg_fpath}")
     fi
 
     #Check whether the current overlay-mode is set to 'persistent' or 'non-persistent'
-    flag_overlaymode_isset="${TB_LEGEND_S}"
+    tb_overlaymode_tag="${TB_EMPTYSTRING}"
     tb_overlaymode_set="${TB_MODE_DISABLED}"
-    tb_overlaymode_set_printable="${TB_FG_YELLOW_33}${TB_MODE_DISABLED}${TB_NOCOLOR}"
 
-    if [[ -n "${tb_overlay_val}" ]]; then
-        if [[ -z ${tb_rootfs_ro_custom_val} ]]; then  #tb_rootfs_ro is NOT set in '/tb_reserve/tb_init_bootargs.cfg'
-            if [[ -z ${tb_rootfs_ro_builtin_val} ]]; then  #tb_rootfs_ro is NOT set in '/proc/cmdline'
+    if [[ -n "${proc_cmdline_tb_overlay_get}" ]]; then
+        if [[ -z ${tb_init_bootargs_cfg_tb_rootfs_ro_get} ]]; then  #tb_rootfs_ro is NOT set in '/tb_reserve/tb_init_bootargs.cfg'
+            #Remark:
+            #   Since file '/tb_reserve/tb_init_bootargs.cfg' does NOT exist or contains NO data
+            #       flag 'flag_lostandfound_ispresent' does NOT need to be evaluated here.
+            if [[ -z ${proc_cmdline_tb_rootfs_ro_get} ]]; then  #tb_rootfs_ro is NOT set in '/proc/cmdline'
                 tb_overlaymode_set="${TB_MODE_PERSISTENT}"
-
-                tb_overlaymode_set_printable="${TB_FG_GREEN_158}${TB_MODE_PERSISTENT}${TB_NOCOLOR}"
             else    #tb_rootfs_ro is set in '/proc/cmdline'
                 tb_overlaymode_set="${TB_MODE_NONPERSISTENT}"
-
-                tb_overlaymode_set_printable="${TB_FG_RED_187}${TB_MODE_NONPERSISTENT}${TB_NOCOLOR}"
             fi
 
             #Set flag to 'false'
-            flag_overlaymode_isset="${TB_LEGEND_S}"
+            tb_overlaymode_tag="${TB_LEGEND_SAME}"
         else    #tb_rootfs_ro is set in '/tb_reserve/tb_init_bootargs.cfg'
-            if [[ "${tb_rootfs_ro_custom_val}" == "${TB_TB_ROOTFS_RO_IS_NULL}" ]]; then
+
+            if [[ "${tb_init_bootargs_cfg_tb_rootfs_ro_get}" == "${TB_TB_ROOTFS_RO_IS_NULL}" ]]; then
                 tb_overlaymode_set="${TB_MODE_PERSISTENT}"
 
-                tb_overlaymode_set_printable="${TB_FG_GREEN_158}${TB_MODE_PERSISTENT}${TB_NOCOLOR}"
-
-                if [[ -z ${tb_rootfs_ro_builtin_val} ]]; then
-                    flag_overlaymode_isset="${TB_LEGEND_S}"
-                else
-                    flag_overlaymode_isset="${TB_LEGEND_N}"
+                if [[ ${flag_lostandfound_ispresent} == true ]]; then
+                    tb_overlaymode_tag="${TB_LEGEND_SAME}"
+                else    #flag_lostandfound_ispresent = false
+                    tb_overlaymode_tag="${TB_LEGEND_NEW}"
                 fi
-            else
+            else    #tb_init_bootargs_cfg_tb_rootfs_ro_get = true
                 tb_overlaymode_set="${TB_MODE_NONPERSISTENT}"
 
-                tb_overlaymode_set_printable="${TB_FG_RED_187}${TB_MODE_NONPERSISTENT}${TB_NOCOLOR}"
-
-                if [[ -n ${tb_rootfs_ro_builtin_val} ]]; then
-                    flag_overlaymode_isset="${TB_LEGEND_S}"
-                else
-                    flag_overlaymode_isset="${TB_LEGEND_N}"
+                if [[ ${flag_lostandfound_ispresent} == false ]]; then
+                    tb_overlaymode_tag="${TB_LEGEND_SAME}"
+                else    #flag_lostandfound_ispresent = true
+                    tb_overlaymode_tag="${TB_LEGEND_NEW}"
                 fi
             fi
         fi
     fi
 
-    #Set legend to whether '[c]' or '[n]'
-    if [[ "${tb_overlaymode_set}" != "${TB_MODE_DISABLED}" ]]; then
-        if [[ "${flag_overlaymode_isset}" == "${TB_LEGEND_S}" ]]; then
-            tb_overlaymode_set_printable="${tb_overlaymode_set_printable}: ${TB_LEGEND_S}"
+    #Update printable
+    case "${tb_overlaymode_set}" in
+        "${TB_MODE_PERSISTENT}")
+            tb_overlaymode_set_printable="${TB_FG_GREEN_158}${tb_overlaymode_set}${TB_NOCOLOR}"
+            ;;
+        "${TB_MODE_NONPERSISTENT}")
+            tb_overlaymode_set_printable="${TB_FG_RED_187}${tb_overlaymode_set}${TB_NOCOLOR}"
+
+            ;;
+        *)
+            tb_overlaymode_set_printable="${TB_FG_YELLOW_33}${TB_MODE_DISABLED}${TB_NOCOLOR}"
+            ;;
+
+    esac    
+
+
+    #Append tag (if applicable)
+    if [[ -n "${tb_overlaymode_tag}" ]]; then
+        tb_overlaymode_set_printable+=": ${tb_overlaymode_tag}"
+
+        if [[ "${tb_overlaymode_tag}" == "${TB_LEGEND_SAME}" ]]; then
 
             remove_file__func "${tb_init_bootargs_cfg_fpath}"
-        else
-            tb_overlaymode_set_printable="${tb_overlaymode_set_printable}: ${TB_LEGEND_N}"
         fi
     fi
 }
@@ -265,7 +281,7 @@ function remove_file__func() {
     fi
 }
 
-function get_bootinto_setting__func() {
+function extract_bootinto_info__func() {
     #Define and initialize variables
     local backup_result="${TB_EMPTYSTRING}"
     local bootinto_get_raw="${TB_EMPTYSTRING}"
@@ -282,50 +298,45 @@ function get_bootinto_setting__func() {
     fi
    
     #Initialize global variables
-    flag_bootinto_isset="${TB_LEGEND_S}"
-    tb_bootinto_get_printable="${TB_EMPTYSTRING}"
+    flag_bootinto_isset="${TB_LEGEND_SAME}"
+    tb_bootinto_get="${TB_EMPTYSTRING}"
     tb_bootinto_set="${TB_MODE_DISABLED}"
     # tb_bootinto_set_printable="${TB_FG_YELLOW_33}${tb_bootinto_set}${TB_NOCOLOR}"
     tb_bootinto_set_printable="${tb_bootinto_set}"
 
     #Update variables based on the results (e.g., backup_result, restore_result, noboot_result)
+    #Remarks:
+    #   sed 's/\s+//g': remove whitespaces
+    #   tr -d '\r': remove carriage return
     if [[ -n "${noboot_result}" ]]; then
-        tb_bootinto_get_printable=$(echo "${noboot_result}" | cut -d"=" -f2 | sed 's/\s+//g' | tr -d '\r')
+        tb_bootinto_get=$(echo "${noboot_result}" | cut -d"=" -f2 | sed 's/\s+//g' | tr -d '\r')
 
         tb_bootinto_set="${TB_MODE_SAFEMODE}"
         # tb_bootinto_set_printable="${TB_FG_YELLOW_33}${TB_MODE_SAFEMODE}${TB_NOCOLOR}"
 
-        flag_bootinto_isset="${TB_LEGEND_P}"
+        flag_bootinto_isset="${TB_LEGEND_NEW_PRIORITY}"
     fi
     if [[ -n "${backup_result}" ]]; then
-        bootinto_get_raw=$(echo "${backup_result}" | cut -d"=" -f2 | sed 's/\s+//g' | tr -d '\r')
-        bootinto_get_if=$(echo "${bootinto_get_raw}" | cut -d";" -f1)
-        bootinto_get_of=$(echo "${bootinto_get_raw}" | cut -d";" -f2)
-
-        tb_bootinto_get_printable="${TB_FG_GREY_246}if:${TB_NOCOLOR}${bootinto_get_if}${TB_FG_GREY_246},${TB_NOCOLOR}${TB_FG_GREY_246}of:${TB_NOCOLOR}${bootinto_get_of}"
+        tb_bootinto_get=$(echo "${backup_result}" | cut -d"=" -f2 | sed 's/\s+//g' | tr -d '\r')
 
         tb_bootinto_set="${TB_MODE_BACKUPMODE}"
         # tb_bootinto_set_printable="${TB_FG_RED_187}${TB_MODE_BACKUPMODE}${TB_NOCOLOR}"
 
-        flag_bootinto_isset="${TB_LEGEND_P}"
+        flag_bootinto_isset="${TB_LEGEND_NEW_PRIORITY}"
     fi
     if [[ -n "${restore_result}" ]]; then
-        bootinto_get_raw=$(echo "${restore_result}" | cut -d"=" -f2 | sed 's/\s+//g' | tr -d '\r')
-        bootinto_get_if=$(echo "${bootinto_get_raw}" | cut -d";" -f1)
-        bootinto_get_of=$(echo "${bootinto_get_raw}" | cut -d";" -f2)
-
-        tb_bootinto_get_printable="${TB_FG_GREY_246}if:${TB_NOCOLOR}${bootinto_get_if}${TB_FG_GREY_246},${TB_NOCOLOR}${TB_FG_GREY_246}of:${TB_NOCOLOR}${bootinto_get_of}"
+        tb_bootinto_get=$(echo "${restore_result}" | cut -d"=" -f2 | sed 's/\s+//g' | tr -d '\r')
 
         tb_bootinto_set="${TB_MODE_RESTOREMODE}"
         # tb_bootinto_set_printable="${TB_FG_GREEN_158}${TB_MODE_RESTOREMODE}${TB_NOCOLOR}"
 
-        flag_bootinto_isset="${TB_LEGEND_P}"
+        flag_bootinto_isset="${TB_LEGEND_NEW_PRIORITY}"
     fi
 
     #Set legend to whether '[c]' or '[p]'
     if [[ "${tb_bootinto_set}" != "${TB_MODE_DISABLED}" ]]; then
-        if [[ ${flag_bootinto_isset} != "${TB_LEGEND_S}" ]]; then
-            tb_bootinto_set_printable="${tb_bootinto_set}: ${TB_LEGEND_P}"
+        if [[ ${flag_bootinto_isset} != "${TB_LEGEND_SAME}" ]]; then
+            tb_bootinto_set_printable="${tb_bootinto_set}: ${TB_LEGEND_NEW_PRIORITY}"
         else
             tb_bootinto_set_printable="${tb_bootinto_set}"
         fi
@@ -508,27 +519,28 @@ tb_ctrl_c__sub() {
     exit__func "${TB_EXITCODE_99}" "${TB_NUMOFLINES_2}"
 }
 
+mainmenu_extract_info__func() {
+    #Remark:
+    #   This function will pass values to global variables 'tb_overlaymode_set' and 'tb_overlaymode_set_printable'
+    extract_overlaymode_info__func
+
+    #Remark:
+    #   This function will pass values to global variables 'tb_bootinto_set' and 'tb_bootinto_set_printable'
+    extract_bootinto_info__func
+}
+
 tibbo_print_title__sub() {
     print_centered_string_w_leading_trailing_emptylines__func "${TB_TITLE_TIBBO}" "${TB_TABLEWIDTH}" "${TB_BG_ORANGE_215}" "${TB_NUMOFLINES_2}" "${TB_NUMOFLINES_0}"
 }
 
 mainmenu_print_title__sub() {
-    local mylocationinfo=$(get_current_printable_datetime__func)
-
     print_duplicate_char__func "${TB_DASH}" "${TB_TABLEWIDTH}" "${TB_NOCOLOR}"
-    print_leading_trailing_strings_on_opposite_sides__func "${TB_TITLE_TB_INIT_SH}" "${mylocationinfo}" "${TB_TABLEWIDTH}"
+    print_leading_trailing_strings_on_opposite_sides__func "${TB_TITLE_TB_INIT_SH}" "${proc_cmdline_tb_overlay_get_printable}" "${TB_TABLEWIDTH}"
     print_duplicate_char__func "${TB_DASH}" "${TB_TABLEWIDTH}" "${TB_NOCOLOR}"
 }
 
 mainmenu_print_body__sub() {
-    #Remark:
-    #   This function will pass values to global variables 'tb_overlaymode_set' and 'tb_overlaymode_set_printable'
-    get_overlaymode_setting__func
     print_menuitem__func "${TB_FOURSPACES}" "${TB_ITEMNUM_1}" "${TB_MENUITEM_OVERLAYMODE}" "${tb_overlaymode_set_printable}"
-
-    #Remark:
-    #   This function will pass values to global variables 'tb_bootinto_set' and 'tb_bootinto_set_printable'
-    get_bootinto_setting__func
     print_menuitem__func "${TB_FOURSPACES}" "${TB_ITEMNUM_2}" "${TB_MENU} ${TB_MENUITEM_BOOTINTO}" "${tb_bootinto_set_printable}"
 
     print_duplicate_char__func "${TB_DASH}" "${TB_TABLEWIDTH}" "${TB_NOCOLOR}"
@@ -540,19 +552,19 @@ mainmenu_print_body__sub() {
 mainmenu_print_legend__sub() {
     #Print
     print_menuitem__func "${TB_EMPTYSTRING}" "${TB_EMPTYSTRING}" "${TB_LEGEND}" "${TB_EMPTYSTRING}"
-    print_menuitem__func "${TB_FOURSPACES}" "${TB_EMPTYSTRING}" "${TB_LEGEND_S_W_DESCRIPTION}" "${TB_EMPTYSTRING}"
-    print_menuitem__func "${TB_FOURSPACES}" "${TB_EMPTYSTRING}" "${TB_LEGEND_N_W_DESCRIPTION}" "${TB_EMPTYSTRING}"
-    print_menuitem__func "${TB_FOURSPACES}" "${TB_EMPTYSTRING}" "${TB_LEGEND_P_W_DESCRIPTION}" "${TB_EMPTYSTRING}"
+    print_menuitem__func "${TB_FOURSPACES}" "${TB_EMPTYSTRING}" "${TB_LEGEND_SAME_W_DESCRIPTION}" "${TB_EMPTYSTRING}"
+    print_menuitem__func "${TB_FOURSPACES}" "${TB_EMPTYSTRING}" "${TB_LEGEND_NEW_W_DESCRIPTION}" "${TB_EMPTYSTRING}"
+    print_menuitem__func "${TB_FOURSPACES}" "${TB_EMPTYSTRING}" "${TB_LEGEND_NEW_PRIORITY_W_DESCRIPTION}" "${TB_EMPTYSTRING}"
     print_duplicate_char__func "${TB_DASH}" "${TB_TABLEWIDTH}" "${TB_NOCOLOR}"
 }
 
 mainmenu_print_remark__sub() {
-    if [[ "${flag_overlaymode_isset}" == "${TB_LEGEND_S}" ]] && [[ "${flag_bootinto_isset}" == "${TB_LEGEND_S}" ]]; then
+    if [[ "${tb_overlaymode_tag}" == "${TB_LEGEND_SAME}" ]] && [[ "${flag_bootinto_isset}" == "${TB_LEGEND_SAME}" ]]; then
         return 0;
     fi
 
     #Print
-    print_menuitem__func "${TB_EMPTYSTRING}" "${TB_EMPTYSTRING}" "${TB_REMARK}" "${TB_EMPTYSTRING}"
+    print_menuitem__func "${TB_EMPTYSTRING}" "${TB_EMPTYSTRING}" "${TB_REMARKS}" "${TB_EMPTYSTRING}"
     print_menuitem__func "${TB_FOURSPACES}" "${TB_EMPTYSTRING}" "${TB_REMARK_A_REBOOT_IS_REQUIRED_FOR_THE_CHANGE_TO_TAKE_EFFECT}" "${TB_EMPTYSTRING}"
     print_duplicate_char__func "${TB_DASH}" "${TB_TABLEWIDTH}" "${TB_NOCOLOR}"
 }
@@ -606,7 +618,18 @@ mainmenu_readdialog_handler__sub() {
 }
 
 mainmenu_readdialog_overlaymode_toggle__sub() {
+    #First check if 'tb_overlay' is set in '/proc/cmdline'
+    #Remark:
+    #   If not set, then exit this sub immediately.
+    if [[ -z "${proc_cmdline_tb_overlay_get}" ]]; then
+        return 0;
+    fi
+
     #Switch 'tb_overlaymode_set' to 'persistent' or 'non-persistent'
+    #Remark:
+    #   Even though file 'tb_init_bootargs_cfg_fpath' is created here.
+    #   However this file will be REMOVED in function 'extract_overlaymode_info__func'
+    #       if 'tb_overlaymode_tag = TB_LEGEND_SAME'.
     if [[ "${tb_overlaymode_set}" == "${TB_MODE_PERSISTENT}" ]]; then
         echo "${TB_TB_ROOTFS_RO_IS_TRUE}" | tee "${tb_init_bootargs_cfg_fpath}" > /dev/null
     else
@@ -623,12 +646,13 @@ mainmenu_readdialog_bootinto_config__sub() {
 
     #Print body
     bootinto_print_body__sub
+
+    #Print remark
+    bootinto_print_remark__sub
 }
 bootinto_print_title__sub() {
-    local mylocationinfo=$(get_current_printable_datetime__func)
-
     print_duplicate_char__func "${TB_DASH}" "${TB_TABLEWIDTH}" "${TB_NOCOLOR}"
-    print_leading_trailing_strings_on_opposite_sides__func "${TB_TITLE_BOOTINTO}" "${mylocationinfo}" "${TB_TABLEWIDTH}"
+    print_leading_trailing_strings_on_opposite_sides__func "${TB_TITLE_BOOTINTO}" "${proc_cmdline_tb_overlay_get_printable}" "${TB_TABLEWIDTH}"
     print_duplicate_char__func "${TB_DASH}" "${TB_TABLEWIDTH}" "${TB_NOCOLOR}"
 }
 bootinto_print_body__sub() {
@@ -638,21 +662,24 @@ bootinto_print_body__sub() {
     local print_restoremode="${TB_MODE_RESTOREMODE}"
     local print_disabled="${TB_MODE_DISABLED}"
 
+    #Extract 'bootinto' information
+    extract_bootinto_info__func
+
     #Update variables (if appliable)
     if [[ "${tb_bootinto_set}" != "${TB_MODE_SAFEMODE}" ]]; then
-        print_safemode="${TB_FG_GREY_246}${print_safemode}${TB_NOCOLOR}"
+        print_safemode="${TB_FG_GREY_246}${print_safemode} (false)${TB_NOCOLOR}"
     else
-        print_safemode="${print_safemode} (${tb_bootinto_get_printable})"
+        print_safemode="${print_safemode} (true)"
     fi
     if [[ "${tb_bootinto_set}" != "${TB_MODE_BACKUPMODE}" ]]; then
-        print_backupmode="${TB_FG_GREY_246}${print_backupmode}${TB_NOCOLOR}"
+        print_backupmode="${TB_FG_GREY_246}${print_backupmode} (false)${TB_NOCOLOR}"
     else
-        print_backupmode="${print_backupmode} (${tb_bootinto_get_printable})"
+        print_backupmode="${print_backupmode} (true)"
     fi
     if [[ "${tb_bootinto_set}" != "${TB_MODE_RESTOREMODE}" ]]; then
-        print_restoremode="${TB_FG_GREY_246}${print_restoremode}${TB_NOCOLOR}"
+        print_restoremode="${TB_FG_GREY_246}${print_restoremode} (false)${TB_NOCOLOR}"
     else
-        print_restoremode="${print_restoremode} (${tb_bootinto_get_printable})"
+        print_restoremode="${print_restoremode} (true)"
     fi
     if [[ "${tb_bootinto_set}" == "${TB_MODE_SAFEMODE}" ]] || \
             [[ "${tb_bootinto_set}" == "${TB_MODE_BACKUPMODE}" ]] || \
@@ -667,6 +694,23 @@ bootinto_print_body__sub() {
     print_menuitem__func "${TB_FOURSPACES}" "${TB_ITEMNUM_4}" "${print_disabled}"
     print_duplicate_char__func "${TB_DASH}" "${TB_TABLEWIDTH}" "${TB_NOCOLOR}"
     print_menuitem__func "${TB_FOURSPACES}" "${TB_OPTIONS_B}" "${TB_OPTIONS_BACK}" "${TB_EMPTYSTRING}"
+    print_duplicate_char__func "${TB_DASH}" "${TB_TABLEWIDTH}" "${TB_NOCOLOR}"
+}
+bootinto_print_remark__sub() {
+    if [[ ! -s "${tb_init_bootargs_tmp_fpath}" ]]; then
+        return 0;
+    fi
+
+    if [[ "${tb_bootinto_set}" == "${TB_MODE_SAFEMODE}" ]]; then
+        return 0;
+    fi
+
+    #Extract 'if' and 'of'
+    extract_if_and_of_from_string__func
+
+    #Print
+    print_menuitem__func "${TB_EMPTYSTRING}" "${TB_EMPTYSTRING}" "${TB_REMARKS}" "${TB_EMPTYSTRING}"
+    print_menuitem__func "${TB_EMPTYSTRING}" "${TB_EMPTYSTRING}" "${tb_bootinto_remarks}" "${TB_EMPTYSTRING}"
     print_duplicate_char__func "${TB_DASH}" "${TB_TABLEWIDTH}" "${TB_NOCOLOR}"
 }
 
@@ -721,6 +765,9 @@ main__sub() {
     do
         #Print header
         tibbo_print_title__sub
+
+        #Extract info from files
+        mainmenu_extract_info__func
 
         #Print main-menu title
         mainmenu_print_title__sub
