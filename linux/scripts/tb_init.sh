@@ -55,6 +55,7 @@ fsck_retry_fpath2=${tb_reserve_dir}/.fsck_retry.tmp
 tb_init_backup_lst_fpath=/tb_reserve/.tb_init_backup.lst
 tb_init_bootargs_tmp_fpath=${tb_reserve_dir}/.tb_init_bootargs.tmp
 tb_init_bootargs_cfg_fpath=${tb_reserve_dir}/.tb_init_bootargs.cfg
+tb_overlay_current_cfg_fpath=${tb_reserve_dir}/.tb_overlay_current.cfg
 
 reboot_cmd="echo 1 >${proc_sys_kernel_sysrq_fpath} && echo b >${proc_sysrqtrigger_fpath}"
 
@@ -490,18 +491,20 @@ function fsck_retry_retrieve__func() {
 
     #Temporarily mount /dev/mmcblk0p9
     if [[ ! -f ${fsck_retry_fpath1} ]] && [[ ! -f ${fsck_retry_fpath2} ]]; then  #path exists
-        write_to_file__func "${fsck_retry}" \
-                "${FSCK_RETRY_PRINT}" \
-                "${fsck_retry_fpath1}" \
-                "${DEV_MMCBLK0P8}" \
-                "${rootfs_dir}" \
-                "true"
-        write_to_file__func "${fsck_retry}" \
-                "${FSCK_RETRY_PRINT}" \
-                "${fsck_retry_fpath2}" \
-                "${DEV_MMCBLK0P9}" \
-                "${tb_reserve_dir}" \
-                "true"
+        echo "${fsck_retry}" | tee ${fsck_retry_fpath1}
+        # write_to_file__func "${fsck_retry}" \
+        #         "${FSCK_RETRY_PRINT}" \
+        #         "${fsck_retry_fpath1}" \
+        #         "${DEV_MMCBLK0P8}" \
+        #         "${rootfs_dir}" \
+        #         "true"
+        echo "${fsck_retry}" | tee ${fsck_retry_fpath2}
+        # write_to_file__func "${fsck_retry}" \
+        #         "${FSCK_RETRY_PRINT}" \
+        #         "${fsck_retry_fpath2}" \
+        #         "${DEV_MMCBLK0P9}" \
+        #         "${tb_reserve_dir}" \
+        #         "true"
     else  #path does not exist
         #Get 'fsck_retry1' value from file 'fsck_retry_fpath1'
         if [[ -f ${fsck_retry_fpath1} ]]; then  #path exists
@@ -596,76 +599,89 @@ choose_a_key_to_continue__func() {
     done
  }
 
-function unmount_handler__func() {
-   #Input args
-    local devpart=${1}
-    local mountdir=${2}
-
-    #Remove all trailing slash (/) from 'devpart' (if any)
-    local devpart_notrailingslash=$(echo "${devpart}" | sed 's/\/*$//g')
-
-    #Unmount
-    if [[ "${devpart_notrailingslash}" == "${DEV_MMCBLK0}" ]]; then
-        unmount_all_based_on_pattern__func "${DEV_MMCBLK0P}"
-    elif [[ "${devpart_notrailingslash}" == "${DEV_MMCBLK0P}" ]]; then
-        unmount_all_based_on_pattern__func "${DEV_MMCBLK0P}"
-    else
-        unmount__func "${devpart}" "${mountdir}"
-    fi
-}
-function unmount__func() {
-   #Input args
-    local devpart=${1}
-    local mountdir=${2}
-
-    #Check if already unmounted
-    if [[ $(checkif_ismounted__func "${devpart}" "${mountdir}") == false ]]; then
-        return
-    fi
-
+function unmount_mmcblk0p8_mccblk0p9__func() {
     #DISABLE TRAP when UNMOUNTING
     echo -e "---:TB_INIT:-:UNMOUNT: TRAP ERR *DISABLE*"
     trap - ERR
 
-    #Print
-    echo -e "---:TB-INIT:-:UNMOUNT: ${devpart}"
-    #Unmount
-    umount ${devpart}; exitcode=$?
-
-    if [[ ${exitcode} -ne 0 ]]; then  #successful
-        local printmsg="--:TB-INIT:-:UNMOUNT-ERROR: ${devpart} *FAILED*\n"
-        printmsg+="------:TB-INIT:-:UNMOUNT-ERROR: ${devpart} is *IN-USE*\n"
-        printmsg+="------:TB-INIT:-:UNMOUNT-NOTE: Make sure no script or app is run from ${devpart}\n"
-        echo -e "${printmsg}"
-
-        exit__func "${EXITCODE_1}"
-    fi
+    umount ${DEV_MMCBLK0P9}
+    umount ${DEV_MMCBLK0P8}
 
     #Enable trap ERR
     echo -e "---:TB_INIT:-:UNMOUNT: TRAP ERR *ENABLE*"
     trap trap_err__func ERR
 }
-function unmount_all_based_on_pattern__func() {
-    #Input args
-    local devpart=${1}
 
-    #Get basename
-    local partname=$(basename "${devpart}")
+# function unmount_handler__func() {
+#    #Input args
+#     local devpart=${1}
+#     local mountdir=${2}
 
-    #Get a list containing the partitions belonging to mmclbk0p
-    echo -e "---:TB-INIT:-:RETRIEVE: list of partitions belonging to ${devpart}"
-    local partitionlist_string=$(ls -1 "${DEV}"| grep "${partname}")
-    local partitionlist_arr=(${partitionlist_string})
-    local partitionlist_arritem=""
+#     #Remove all trailing slash (/) from 'devpart' (if any)
+#     local devpart_notrailingslash=$(echo "${devpart}" | sed 's/\/*$//g')
 
-    local partition_ismounted=false
+#     #Unmount
+#     if [[ "${devpart_notrailingslash}" == "${DEV_MMCBLK0}" ]]; then
+#         unmount_all_based_on_pattern__func "${DEV_MMCBLK0P}"
+#     elif [[ "${devpart_notrailingslash}" == "${DEV_MMCBLK0P}" ]]; then
+#         unmount_all_based_on_pattern__func "${DEV_MMCBLK0P}"
+#     else
+#         unmount__func "${devpart}" "${mountdir}"
+#     fi
+# }
+# function unmount__func() {
+#    #Input args
+#     local devpart=${1}
+#     local mountdir=${2}
 
-    #Unmount all partitions belonging to 'mmcblk0'
-    for partitionlist_arritem in "${partitionlist_arr[@]}"
-    do
-        unmount__func "${DEV}/${partitionlist_arritem}" ""
-    done
-}
+#     #Check if already unmounted
+#     if [[ $(checkif_ismounted__func "${devpart}" "${mountdir}") == false ]]; then
+#         return
+#     fi
+
+#     #DISABLE TRAP when UNMOUNTING
+#     echo -e "---:TB_INIT:-:UNMOUNT: TRAP ERR *DISABLE*"
+#     trap - ERR
+
+#     #Print
+#     echo -e "---:TB-INIT:-:UNMOUNT: ${devpart}"
+#     #Unmount
+#     umount ${devpart}; exitcode=$?
+
+#     if [[ ${exitcode} -ne 0 ]]; then  #successful
+#         local printmsg="--:TB-INIT:-:UNMOUNT-ERROR: ${devpart} *FAILED*\n"
+#         printmsg+="------:TB-INIT:-:UNMOUNT-ERROR: ${devpart} is *IN-USE*\n"
+#         printmsg+="------:TB-INIT:-:UNMOUNT-NOTE: Make sure no script or app is run from ${devpart}\n"
+#         echo -e "${printmsg}"
+
+#         exit__func "${EXITCODE_1}"
+#     fi
+
+#     #Enable trap ERR
+#     echo -e "---:TB_INIT:-:UNMOUNT: TRAP ERR *ENABLE*"
+#     trap trap_err__func ERR
+# }
+# function unmount_all_based_on_pattern__func() {
+#     #Input args
+#     local devpart=${1}
+
+#     #Get basename
+#     local partname=$(basename "${devpart}")
+
+#     #Get a list containing the partitions belonging to mmclbk0p
+#     echo -e "---:TB-INIT:-:RETRIEVE: list of partitions belonging to ${devpart}"
+#     local partitionlist_string=$(ls -1 "${DEV}"| grep "${partname}")
+#     local partitionlist_arr=(${partitionlist_string})
+#     local partitionlist_arritem=""
+
+#     local partition_ismounted=false
+
+#     #Unmount all partitions belonging to 'mmcblk0'
+#     for partitionlist_arritem in "${partitionlist_arr[@]}"
+#     do
+#         unmount__func "${DEV}/${partitionlist_arritem}" ""
+#     done
+# }
 
 function unmount_and_remove_dir__func() {
     #Input args
@@ -698,7 +714,9 @@ function safemode_or_reboot__func() {
         exit__func "${EXITCODE_1}"
     else
         #Unmount all
-        unmount_handler__func "${DEV_MMCBLK0}"
+        # unmount_handler__func "${DEV_MMCBLK0}"
+        unmount_mmcblk0p8_mccblk0p9__func
+
 
         #Reboot to normal-mode
         reboot__func
@@ -733,47 +751,47 @@ function sort_and_uniq_filecontent__func() {
     rm "${targetfpath}.tmp"
 }
 
-function write_to_file__func() {
-    #disable trap ERR
-    echo -e "---:TB_INIT:-:WRITE: TRAP ERR *DISABLE*"
-    trap - ERR
+# function write_to_file__func() {
+#     #disable trap ERR
+#     echo -e "---:TB_INIT:-:WRITE: TRAP ERR *DISABLE*"
+#     trap - ERR
 
-    #Input args
-    local data=${1}
-    local printmsg=${2}
-    local targetfpath=${3}
-    local devpart=${4}
-    local mountdir=${5}
-    local flag_overwrite=${6}
+#     #Input args
+#     local data=${1}
+#     local printmsg=${2}
+#     local targetfpath=${3}
+#     local devpart=${4}
+#     local mountdir=${5}
+#     local flag_overwrite=${6}
 
-    #Get directory
-    local targetdir=$(dirname ${targetfpath})
-    #Create directory if not present
-    if [[ ! -d "${targetdir}" ]] && [[ "${targetdir}" != "${rootfs_dir}" ]]; then
-        mkdir -p "${targetdir}"
-    fi
+#     #Get directory
+#     local targetdir=$(dirname ${targetfpath})
+#     #Create directory if not present
+#     if [[ ! -d "${targetdir}" ]] && [[ "${targetdir}" != "${rootfs_dir}" ]]; then
+#         mkdir -p "${targetdir}"
+#     fi
 
-    #Print
-    if [[ -z "${printmsg}" ]]; then
-        echo -e "---:TB-INIT:-:UPDATE: file ${targetfpath} with: ${data}"
-    else
-        echo -e "---:TB-INIT:-:UPDATE: file ${targetfpath} with ${printmsg}: ${data}"
-    fi
+#     #Print
+#     if [[ -z "${printmsg}" ]]; then
+#         echo -e "---:TB-INIT:-:UPDATE: file ${targetfpath} with: ${data}"
+#     else
+#         echo -e "---:TB-INIT:-:UPDATE: file ${targetfpath} with ${printmsg}: ${data}"
+#     fi
 
-    #Write data
-    if [[ ${flag_overwrite} == true ]]; then
-        echo "${data}" | tee "${targetfpath}"
-    else
-        echo "${data}" | tee -a "${targetfpath}"
+#     #Write data
+#     if [[ ${flag_overwrite} == true ]]; then
+#         echo "${data}" | tee "${targetfpath}"
+#     else
+#         echo "${data}" | tee -a "${targetfpath}"
 
-        #Remove double-entries in file 'targetfpath'
-        sort_and_uniq_filecontent__func "${targetfpath}"
-    fi
+#         #Remove double-entries in file 'targetfpath'
+#         sort_and_uniq_filecontent__func "${targetfpath}"
+#     fi
 
-    #Enable trap ERR
-    echo -e "---:TB_INIT:-:WRITE: TRAP ERR *ENABLE*"
-    trap trap_err__func ERR
-}
+#     #Enable trap ERR
+#     echo -e "---:TB_INIT:-:WRITE: TRAP ERR *ENABLE*"
+#     trap trap_err__func ERR
+# }
 
 function mount_proc__func() {
     mount -t ${PROC_FSTYPE} ${DEV_NONE} ${proc_dir}
@@ -791,18 +809,20 @@ function trap_err__func() {
         ((fsck_retry++))
 
         #Write data to file
-        write_to_file__func "${fsck_retry}" \
-                "${FSCK_RETRY_PRINT}" \
-                "${fsck_retry_fpath1}" \
-                "${DEV_MMCBLK0P8}" \
-                "${rootfs_dir}" \
-                "true"
-        write_to_file__func "${fsck_retry}" \
-                "${FSCK_RETRY_PRINT}" \
-                "${fsck_retry_fpath2}" \
-                "${DEV_MMCBLK0P9}" \
-                "${tb_reserve_dir}" \
-                "true"
+        echo "${fsck_retry}" | tee ${fsck_retry_fpath1}
+        # write_to_file__func "${fsck_retry}" \
+        #         "${FSCK_RETRY_PRINT}" \
+        #         "${fsck_retry_fpath1}" \
+        #         "${DEV_MMCBLK0P8}" \
+        #         "${rootfs_dir}" \
+        #         "true"
+        echo "${fsck_retry}" | tee ${fsck_retry_fpath2}
+        # write_to_file__func "${fsck_retry}" \
+        #         "${FSCK_RETRY_PRINT}" \
+        #         "${fsck_retry_fpath2}" \
+        #         "${DEV_MMCBLK0P9}" \
+        #         "${tb_reserve_dir}" \
+        #         "true"
 
         #Unmount partitions and run disk-check (with autorepair)
         chkdsk__func
@@ -852,6 +872,32 @@ fi
 
 
 #---ADDITIONAL PARTITIONS
+if [[ ! -d /mydata1 ]]; then
+  if [[ ${flag_root_is_remounted} == false ]]; then
+    echo "---:STATUS: remounting /"
+    mount -o remount,rw / #remounting root in emmc as writeable
+  fi
+
+  echo "---:STATUS: create directory /mydata1"
+  mkdir /mydata1
+
+  echo "---:STATUS: creating /dev/mmcblk0p11"
+  ${usr_sbin_mkfsext4} /dev/mmcblk0p11
+fi
+
+if [[ ! -d /mydata2 ]]; then
+  if [[ ${flag_root_is_remounted} == false ]]; then
+    echo "---:STATUS: remounting /"
+    mount -o remount,rw / #remounting root in emmc as writeable
+  fi
+
+  echo "---:STATUS: create directory /mydata2"
+  mkdir /mydata2
+
+  echo "---:STATUS: creating /dev/mmcblk0p12"
+  ${usr_sbin_mkfsext4} /dev/mmcblk0p12
+fi
+
 
 
 #---MOUNT /TB_RESERVE (to check if /tb_reserve/.tb_init_bootargs.tmp is present)
@@ -933,6 +979,12 @@ else
     tb_rootfs_ro=""
 fi
 
+#---WRITE 'tb_rootfs_ro' value to file
+#Remark:
+#   This is important, because it will be used in 'tb_init_bootmenu' for validation.
+echo "${PATTERN_TB_ROOTFS_RO}=${tb_rootfs_ro}" | tee ${tb_overlay_current_cfg_fpath}
+
+
 #if cmdline_output contains the string "tb_backup"
 if [[ ${cmdline_output} == *"tb_backup"* ]]; then
     tb_backup=$(echo ${cmdline_output} | grep -oP 'tb_backup=\K[^ ]*')
@@ -985,12 +1037,13 @@ if [ ! -z ${tb_backup} ]; then
         dd_handler__func "${tb_backup_if_devpart}" "${tb_backup_of_imagefpath}"
 
         #Write 'tb_backup' to 'tb_init_backup_lst_fpath'
-        write_to_file__func "${tb_backup}" \
-                "" \
-                "${tb_init_backup_lst_fpath}" \
-                "${DEV_MMCBLK0P9}" \
-                "${tb_reserve_dir}" \
-                "false"
+        echo "${tb_backup}" | tee -a ${tb_init_backup_lst_fpath}
+        # write_to_file__func "${tb_backup}" \
+        #         "" \
+        #         "${tb_init_backup_lst_fpath}" \
+        #         "${DEV_MMCBLK0P9}" \
+        #         "${tb_reserve_dir}" \
+        #         "false"
     fi
 
     #Unmount directory 'tb_backup_of_imagefpath'
@@ -1049,7 +1102,7 @@ fi
 #if tb_overlay is set, then mount it
 #Remarks:
 # if overlay does NOT exist or 'size=0', then
-# ...DO NOT add 'tb_overlay' in file 'penagram_common.h', line '"b_c=console=tty1 console=ttyS0,115200 earlyprintk\0" \
+# ...DO NOT add 'tb_overlay' in file 'pentagram_common.h', line '"b_c=console=tty1 console=ttyS0,115200 earlyprintk\0" \
 # However, if overlay exist and 'size>0', then
 # ...ADD 'tb_overlay' in file 'penagram_common.h', line '"b_c=console=tty1 console=ttyS0,115200 earlyprintk tb_overlay\0" \
 if [ ! -z ${tb_overlay} ]; then
@@ -1135,14 +1188,13 @@ if [ ! -z ${tb_overlay} ]; then
     echo -e "------:TB_INIT:-:CHANGE: rootfs from '.' to 'oldroot'"
     pivot_root . oldroot
 
-
     echo -e "---:TB-INIT:-:OVERLAY: END"
 fi
 
 
 
 #---UNMOUNT ALL
-unmount_handler__func "${DEV_MMCBLK0}"
+unmount_mmcblk0p8_mccblk0p9__func
 
 
 
