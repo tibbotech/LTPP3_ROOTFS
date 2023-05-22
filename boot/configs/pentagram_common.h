@@ -125,12 +125,22 @@
 "echo **************************************************\n; " \
 "echo     BOOT FROM SD OR USB (IF PRESENT)\n; " \
 "echo **************************************************\n; " \
+"echo ---:TIBBO:INITIALIZE: VARIABLES \n; " \
+"setenv tb_button_state released \n; " \
 "setenv ISP_IF_NULL null \n; " \
 "setenv ISP_IF_SD1 sd_mmc_1 \n; " \
 "setenv ISP_IF_USB0 usb_dev_0 \n; " \
 "setenv SDDEV1_CMD mmc dev 1 \n; " \
 "setenv USBDEV0_CMD usb dev 0 \n; " \
 "setenv isp_if_test $ISP_IF_NULL \n; " \
+"echo ------:TIBBO:INIT: tb_button_state=$tb_button_state \n; " \
+"echo ------:TIBBO:INIT: ISP_IF_NULL=$ISP_IF_NULL \n; " \
+"echo ------:TIBBO:INIT: ISP_IF_SD1=$ISP_IF_SD1 \n; " \
+"echo ------:TIBBO:INIT: ISP_IF_USB0=$ISP_IF_USB0 \n; " \
+"echo ------:TIBBO:INIT: SDDEV1_CMD=$SDDEV1_CMD \n; " \
+"echo ------:TIBBO:INIT: USBDEV0_CMD=$USBDEV0_CMD \n; " \
+"echo ------:TIBBO:INIT: isp_if_test=$isp_if_test \n; " \
+"echo \n; " \
 "echo ---:TIBBO:DETECT: IS MD-BUTTON PRESSED...? \n; " \
 "tb_button \n; " \
 "if test -n $tb_button_state; then \n; " /* START: check if variable is NOT an EMPTY STRING */ \
@@ -149,7 +159,6 @@
 "echo ---:TIBBO:DETECT: IS USB-0 PRESENT...? \n; " \
 "echo ------:TIBBO:NOTE: IF USB-0 AND/OR USB-1 ARE INSERTED, THEN... \n; " \
 "echo ------:TIBBO:NOTE: ...ONLY USB-0 IS CHECKED FOR ITS PRESENCE!\n; " \
-"echo \n; " \
 "$USBDEV0_CMD \n; " \
 "if test $? = 0; then \n; " /* START: check if usb-0 is PRESENT */ \
 "setenv isp_if_test $ISP_IF_USB0 \n; " \
@@ -173,6 +182,10 @@
 "echo \n; " \
 "run isp_sdcard; \n; " \
 "fi; \n; " /* END: check if isp_if_test is usb_dev_0 */ \
+"echo \n; " \
+"echo ---:TIBBO:FORCE-SET: memory-write to address (0x9e809408): 0x00000007 \n; " \
+"echo ------:TIBBO:NOTE: this will forcely connect both jumpers (CN10 and CN11) \n; " /* This is necessary to RE-INITIALIZE the U-BOOT partitions */ \
+"mw.l  0x9e809408  0x00000007 1 \n; " \
 "else; \n; " \
 "echo \n; " \
 "echo ---:TIBBO:RESULT: MD-BUTTON IS *NOT PRESSED*... \n; " \
