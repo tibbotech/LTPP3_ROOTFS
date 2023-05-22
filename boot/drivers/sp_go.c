@@ -694,7 +694,7 @@ static int do_tb_button(struct cmd_tbl *cmdtp, int flag, int argc, char * const 
 		*
 		* Note: function 'env_set' is the equivalent of the u-boot 'setenv' command.
 		**********************************************************************/
-		env_set("tb_button_state", "1");
+		env_set("tb_button_state", "released");
 		/*********************************************************************/
 
 		printf("Button is released \r\n");
@@ -704,7 +704,7 @@ static int do_tb_button(struct cmd_tbl *cmdtp, int flag, int argc, char * const 
 		*
 		* Note: function 'env_set' is the equivalent of the u-boot 'setenv' command.
 		**********************************************************************/
-		env_set("tb_button_state", "0");
+		env_set("tb_button_state", "pressed");
 		/*********************************************************************/
 
 		printf("Button is pressed \r\n");

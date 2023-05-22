@@ -1,6 +1,6 @@
---- pentagram_common.h.old	2023-03-30 09:34:24.000000000 +0000
-+++ pentagram_common.h	2023-04-13 00:19:53.000000000 +0000
-@@ -117,6 +117,66 @@
+--- /root/SP7021/boot/uboot/include/configs/pentagram_common.h	2023-04-13 16:17:25.000000000 +0000
++++ /root/LTPP3_ROOTFS/boot/configs/pentagram_common.h	2023-05-22 07:03:12.000000000 +0000
+@@ -117,6 +117,72 @@
  #define RASPBIAN_CMD                    // Enable Raspbian command
  
  
@@ -18,19 +18,22 @@
 +"setenv SDDEV1_CMD mmc dev 1 \n; " \
 +"setenv USBDEV0_CMD usb dev 0 \n; " \
 +"setenv isp_if_test $ISP_IF_NULL \n; " \
-+"echo \n; " \
-+"echo ---:TIBBO:STATUS: DETECT IF MD-BUTTON IS PRESSED \n; " \
++"echo ---:TIBBO:DETECT: IS MD-BUTTON PRESSED...? \n; " \
 +"tb_button \n; " \
-+"if test $tb_button_state = 0; then \n; " /* START: check if md-button is PRESSED */ \
++"if test -n $tb_button_state; then \n; " /* START: check if variable is NOT an EMPTY STRING */ \
 +"echo \n; " \
-+"echo ---:TIBBO:STATUS: DETECT IF SD-CARD IS PRESENT \n; " \
++"echo ---:TIBBO:RESULT: 'tb_button_state'=$tb_button_state \n; " \
++"if test $tb_button_state = pressed; then \n; " /* START: check if md-button is PRESSED */ \
++"echo \n; " \
++"echo ---:TIBBO:RESULT: MD-BUTTON IS *PRESSED*... \n; " \
++"echo ---:TIBBO:DETECT: IS SD-CARD PRESENT...? \n; " \
 +"$SDDEV1_CMD \n; " \
 +"if test $? = 0; then \n; " /* START: check if sd-card is PRESENT */ \
 +"setenv isp_if_test $ISP_IF_SD1 \n; " \
 +"fi \n; " /* END: check if sd-card is PRESENT */ \
 +"if test $isp_if_test = $ISP_IF_NULL; then \n; " /* START: check if isp_if_test is null */ \
 +"echo \n; " \
-+"echo ---:TIBBO:STATUS: DETECT IF USB-0 IS PRESENT \n; " \
++"echo ---:TIBBO:DETECT: IS USB-0 PRESENT...? \n; " \
 +"echo ------:TIBBO:NOTE: IF USB-0 AND/OR USB-1 ARE INSERTED, THEN... \n; " \
 +"echo ------:TIBBO:NOTE: ...ONLY USB-0 IS CHECKED FOR ITS PRESENCE!\n; " \
 +"echo \n; " \
@@ -40,24 +43,27 @@
 +"fi \n; " /* END: check if usb-0 is PRESENT */ \
 +"fi \n; " /* END: check if isp_if_test is null */ \
 +"fi \n; " /* END: check if md-button is PRESSED */ \
++"else; \n; " /* ELSE: check if variable is NOT an EMPTY STRING */ \
++"echo ---:TIBBO:RESULT: 'tb_button_state' is an *EMPTY STRING* \n; " \
++"fi \n; " /* END: check if variable is NOT an EMPTY STRING */ \
 +"if test $isp_if_test != $ISP_IF_NULL; then; \n; " /* START: check if isp_if_test is NOT null */ \
 +"if test $isp_if_test = $ISP_IF_USB0; then; \n; " /* START: check if isp_if_test is usb_dev_0 */ \
 +"echo \n; " \
-+"echo ---:TIBBO:STATUS: RUN ISPBOOOT.BIN FROM USB-DEV-0 \n; " \
++"echo ---:TIBBO:RUN: ISPBOOOT.BIN FROM USB-DEV-0 \n; " \
 +"echo ************************************************** \n; " \
 +"echo \n; " \
 +"run isp_usb; \n; " \
 +"else; \n; " /* ELSE: check if isp_if_test is mmc_dev_1 */ \
 +"echo \n; " \
-+"echo ---:TIBBO:STATUS: RUN ISPBOOOT.BIN FROM MMC-DEV-1 \n; " \
++"echo ---:TIBBO:RUN: ISPBOOOT.BIN FROM MMC-DEV-1 \n; " \
 +"echo ************************************************** \n; " \
 +"echo \n; " \
 +"run isp_sdcard; \n; " \
 +"fi; \n; " /* END: check if isp_if_test is usb_dev_0 */ \
 +"else; \n; " \
 +"echo \n; " \
-+"echo ---:TIBBO:STATUS: MD-BUTTON IS RELEASED... \n; " \
-+"echo ---:TIBBO:STATUS: REVERT TO DEFAULT BOOTCMD... \n; " \
++"echo ---:TIBBO:RESULT: MD-BUTTON IS *NOT PRESSED*... \n; " \
++"echo ---:TIBBO:START: *DEFAULT* BOOTCMD... \n; " \
 +"echo ************************************************** \n; " \
 +"echo \n; " \
 +"fi; \n; " /* END: check if isp_if_test is NOT null */ \
@@ -67,7 +73,7 @@
  /*
   * In the beginning, bootcmd will check bootmode in SRAM and the flag
   * if_zebu to choose different boot flow :
-@@ -154,6 +214,7 @@
+@@ -154,6 +220,7 @@
   */
  #define CONFIG_BOOTCOMMAND \
  "echo [scr] bootcmd started; " \
@@ -75,7 +81,7 @@
  "md.l ${bootinfo_base} 1; " \
  "if itest.l *${bootinfo_base} == " __stringify(SPI_NOR_BOOT) "; then " \
  	"if itest ${if_zebu} == 1; then " \
-@@ -364,7 +425,7 @@
+@@ -364,7 +431,7 @@
  	"cp.l ${addr_src_kernel} ${addr_dst_kernel} ${sz_kernel}; " \
  	dbg_scr("echo sp_go ${addr_dst_kernel} ${fdtcontroladdr}; ") \
  	"sp_go ${addr_dst_kernel} ${fdtcontroladdr}\0" \
@@ -84,7 +90,7 @@
  	DTS_LOAD_EMMC \
  	"mmc read ${addr_tmp_header} ${addr_src_kernel} 0x1; " \
  	"setenv tmpval 0; setexpr tmpaddr ${addr_tmp_header} + 0x0c; run be2le; " \
-@@ -464,8 +525,13 @@
+@@ -464,8 +531,13 @@
  	"dhcp $isp_ram_addr $serverip:TFTP0000.BIN; " \
  	"setenv isp_main_storage ${sp_main_storage} && printenv isp_main_storage; " \
  	"setexpr script_addr $isp_ram_addr + 0x00 && setenv script_addr 0x${script_addr} && source $script_addr; " \

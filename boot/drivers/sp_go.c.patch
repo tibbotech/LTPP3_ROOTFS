@@ -1,5 +1,5 @@
---- sp_go.c.old	2023-03-30 09:34:24.000000000 +0000
-+++ sp_go.c	2023-04-13 10:04:26.000000000 +0000
+--- /root/SP7021/boot/uboot/board/sunplus/pentagram_board/sp_go.c	2023-04-13 16:17:25.000000000 +0000
++++ /root/LTPP3_ROOTFS/boot/drivers/sp_go.c	2023-05-22 06:35:03.000000000 +0000
 @@ -4,6 +4,7 @@
  #include <mapmem.h>
  #include <malloc.h>
@@ -265,7 +265,7 @@
 +		*
 +		* Note: function 'env_set' is the equivalent of the u-boot 'setenv' command.
 +		**********************************************************************/
-+		env_set("tb_button_state", "1");
++		env_set("tb_button_state", "released");
 +		/*********************************************************************/
 +
 +		printf("Button is released \r\n");
@@ -275,7 +275,7 @@
 +		*
 +		* Note: function 'env_set' is the equivalent of the u-boot 'setenv' command.
 +		**********************************************************************/
-+		env_set("tb_button_state", "0");
++		env_set("tb_button_state", "pressed");
 +		/*********************************************************************/
 +
 +		printf("Button is pressed \r\n");
