@@ -169,17 +169,21 @@
 "echo ---:TIBBO:RESULT: 'tb_button_state' is an *EMPTY STRING* \n; " \
 "fi \n; " /* END: check if variable is NOT an EMPTY STRING */ \
 "if test $isp_if_test != $ISP_IF_NULL; then; \n; " /* START: check if isp_if_test is NOT null */ \
-"echo \n; " \
-"echo ---:TIBBO:FORCE-SET: memory-write to address (0x9e809408): 0x00000007 \n; " \
-"echo ------:TIBBO:NOTE: this will forcely connect both jumpers (CN10 and CN11) \n; " /* This is necessary to RE-INITIALIZE the U-BOOT partitions */ \
-"mw.l  0x9e809408  0x00000007 1 \n; " \
 "if test $isp_if_test = $ISP_IF_USB0; then; \n; " /* START: check if isp_if_test is usb_dev_0 */ \
+"echo \n; " \
+"echo ---:TIBBO:FORCE-SET: memory-write to address (0x9e809408): 0x00000017 \n; " \
+"echo ------:TIBBO:NOTE: this will forcely connect jumper (CN11) \n; " /* This is necessary to RE-INITIALIZE the U-BOOT partitions */ \
+"mw.l  0x9e809408  0x00000017 1 \n; " \
 "echo \n; " \
 "echo ---:TIBBO:RUN: ISPBOOOT.BIN FROM USB-DEV-0 \n; " \
 "echo ************************************************** \n; " \
 "echo \n; " \
 "run isp_usb; \n; " \
 "else; \n; " /* ELSE: check if isp_if_test is mmc_dev_1 */ \
+"echo \n; " \
+"echo ---:TIBBO:FORCE-SET: memory-write to address (0x9e809408): 0x00000007 \n; " \
+"echo ------:TIBBO:NOTE: this will forcely connect both jumpers (CN10 and CN11) \n; " /* This is necessary to RE-INITIALIZE the U-BOOT partitions */ \
+"mw.l  0x9e809408  0x00000007 1 \n; " \
 "echo \n; " \
 "echo ---:TIBBO:RUN: ISPBOOOT.BIN FROM MMC-DEV-1 \n; " \
 "echo ************************************************** \n; " \
