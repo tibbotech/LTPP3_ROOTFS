@@ -1,6 +1,6 @@
 --- /root/SP7021/boot/uboot/include/configs/pentagram_common.h	2023-05-22 11:15:28.000000000 +0000
-+++ /root/LTPP3_ROOTFS/boot/configs/pentagram_common.h	2023-05-29 06:08:39.000000000 +0000
-@@ -117,6 +117,89 @@
++++ /root/LTPP3_ROOTFS/boot/configs/pentagram_common.h	2023-05-29 10:19:04.000000000 +0000
+@@ -117,6 +117,84 @@
  #define RASPBIAN_CMD                    // Enable Raspbian command
  
  
@@ -58,39 +58,34 @@
 +"if test $isp_if_test != $ISP_IF_NULL; then; \n; " /* START: check if isp_if_test is NOT null */ \
 +"if test $isp_if_test = $ISP_IF_USB0; then; \n; " /* START: check if isp_if_test is usb_dev_0 */ \
 +"echo \n; " \
-+"echo ---:TIBBO:FORCE-SET: memory-write to address (0x9e809408): 0x00000017 \n; " \
-+"echo ------:TIBBO:NOTE: this will forcely connect jumper (CN11) \n; " /* This is necessary to RE-INITIALIZE the U-BOOT partitions */ \
++"echo ------:TIBBO:NOTE: this will run bootcmd 'isp_usb' \n; " \
 +"mw.l  0x9e809408  0x00000017 1 \n; " \
 +"echo \n; " \
-+"echo ---:TIBBO:RUN: ISPBOOOT.BIN FROM USB-DEV-0 \n; " \
-+"echo ************************************************** \n; " \
-+"echo \n; " \
-+"run isp_usb; \n; " \
++"echo ---:TIBBO:GET: memory-display of address (0x9e809408)\n; " \
++"md.l 0x9e809408 1 \n; " \
 +"else; \n; " /* ELSE: check if isp_if_test is mmc_dev_1 */ \
 +"echo \n; " \
 +"echo ---:TIBBO:FORCE-SET: memory-write to address (0x9e809408): 0x00000007 \n; " \
-+"echo ------:TIBBO:NOTE: this will forcely connect both jumpers (CN10 and CN11) \n; " /* This is necessary to RE-INITIALIZE the U-BOOT partitions */ \
++"echo ------:TIBBO:NOTE: this will run bootcmd 'isp_sdcard' \n; " \
 +"mw.l  0x9e809408  0x00000007 1 \n; " \
 +"echo \n; " \
-+"echo ---:TIBBO:RUN: ISPBOOOT.BIN FROM MMC-DEV-1 \n; " \
-+"echo ************************************************** \n; " \
-+"echo \n; " \
-+"run isp_sdcard; \n; " \
++"echo ---:TIBBO:GET: memory-display of address (0x9e809408)\n; " \
++"md.l 0x9e809408 1 \n; " \
 +"fi; \n; " /* END: check if isp_if_test is usb_dev_0 */ \
 +"else; \n; " \
 +"echo \n; " \
 +"echo ---:TIBBO:RESULT: MD-BUTTON IS *NOT PRESSED*... \n; " \
 +"echo ---:TIBBO:START: *DEFAULT* BOOTCMD... \n; " \
++"fi; \n; " /* END: check if isp_if_test is NOT null */ \
 +"echo ************************************************** \n; " \
 +"echo \n; " \
-+"fi; \n; " /* END: check if isp_if_test is NOT null */ \
 +/* Added to handle the situation when the MD-button is pressed */
 +
 +
  /*
   * In the beginning, bootcmd will check bootmode in SRAM and the flag
   * if_zebu to choose different boot flow :
-@@ -154,6 +237,7 @@
+@@ -154,6 +232,7 @@
   */
  #define CONFIG_BOOTCOMMAND \
  "echo [scr] bootcmd started; " \
@@ -98,7 +93,16 @@
  "md.l ${bootinfo_base} 1; " \
  "if itest.l *${bootinfo_base} == " __stringify(SPI_NOR_BOOT) "; then " \
  	"if itest ${if_zebu} == 1; then " \
-@@ -364,7 +448,7 @@
+@@ -300,7 +379,7 @@
+ 
+ #define CONFIG_EXTRA_ENV_SETTINGS \
+ "sz_sign=0x100\0" \
+-"b_c=console=tty1 console=ttyS0,115200 earlyprintk\0" \
++"b_c=console=tty1 console=ttyS0,115200 earlyprintk tb_overlay=/dev/mmcblk0p10\0" \
+ "emmc_root=root=/dev/mmcblk0p8 rw rootwait\0" \
+ "stdin=" STDIN_CFG "\0" \
+ "stdout=" STDOUT_CFG "\0" \
+@@ -364,7 +443,7 @@
  	"cp.l ${addr_src_kernel} ${addr_dst_kernel} ${sz_kernel}; " \
  	dbg_scr("echo sp_go ${addr_dst_kernel} ${fdtcontroladdr}; ") \
  	"sp_go ${addr_dst_kernel} ${fdtcontroladdr}\0" \
@@ -107,7 +111,7 @@
  	DTS_LOAD_EMMC \
  	"mmc read ${addr_tmp_header} ${addr_src_kernel} 0x1; " \
  	"setenv tmpval 0; setexpr tmpaddr ${addr_tmp_header} + 0x0c; run be2le; " \
-@@ -464,8 +548,13 @@
+@@ -464,8 +543,13 @@
  	"dhcp $isp_ram_addr $serverip:TFTP0000.BIN; " \
  	"setenv isp_main_storage ${sp_main_storage} && printenv isp_main_storage; " \
  	"setexpr script_addr $isp_ram_addr + 0x00 && setenv script_addr 0x${script_addr} && source $script_addr; " \

@@ -171,32 +171,27 @@
 "if test $isp_if_test != $ISP_IF_NULL; then; \n; " /* START: check if isp_if_test is NOT null */ \
 "if test $isp_if_test = $ISP_IF_USB0; then; \n; " /* START: check if isp_if_test is usb_dev_0 */ \
 "echo \n; " \
-"echo ---:TIBBO:FORCE-SET: memory-write to address (0x9e809408): 0x00000017 \n; " \
-"echo ------:TIBBO:NOTE: this will forcely connect jumper (CN11) \n; " /* This is necessary to RE-INITIALIZE the U-BOOT partitions */ \
+"echo ------:TIBBO:NOTE: this will run bootcmd 'isp_usb' \n; " \
 "mw.l  0x9e809408  0x00000017 1 \n; " \
 "echo \n; " \
-"echo ---:TIBBO:RUN: ISPBOOOT.BIN FROM USB-DEV-0 \n; " \
-"echo ************************************************** \n; " \
-"echo \n; " \
-"run isp_usb; \n; " \
+"echo ---:TIBBO:GET: memory-display of address (0x9e809408)\n; " \
+"md.l 0x9e809408 1 \n; " \
 "else; \n; " /* ELSE: check if isp_if_test is mmc_dev_1 */ \
 "echo \n; " \
 "echo ---:TIBBO:FORCE-SET: memory-write to address (0x9e809408): 0x00000007 \n; " \
-"echo ------:TIBBO:NOTE: this will forcely connect both jumpers (CN10 and CN11) \n; " /* This is necessary to RE-INITIALIZE the U-BOOT partitions */ \
+"echo ------:TIBBO:NOTE: this will run bootcmd 'isp_sdcard' \n; " \
 "mw.l  0x9e809408  0x00000007 1 \n; " \
 "echo \n; " \
-"echo ---:TIBBO:RUN: ISPBOOOT.BIN FROM MMC-DEV-1 \n; " \
-"echo ************************************************** \n; " \
-"echo \n; " \
-"run isp_sdcard; \n; " \
+"echo ---:TIBBO:GET: memory-display of address (0x9e809408)\n; " \
+"md.l 0x9e809408 1 \n; " \
 "fi; \n; " /* END: check if isp_if_test is usb_dev_0 */ \
 "else; \n; " \
 "echo \n; " \
 "echo ---:TIBBO:RESULT: MD-BUTTON IS *NOT PRESSED*... \n; " \
 "echo ---:TIBBO:START: *DEFAULT* BOOTCMD... \n; " \
+"fi; \n; " /* END: check if isp_if_test is NOT null */ \
 "echo ************************************************** \n; " \
 "echo \n; " \
-"fi; \n; " /* END: check if isp_if_test is NOT null */ \
 /* Added to handle the situation when the MD-button is pressed */
 
 
@@ -384,7 +379,7 @@
 
 #define CONFIG_EXTRA_ENV_SETTINGS \
 "sz_sign=0x100\0" \
-"b_c=console=tty1 console=ttyS0,115200 earlyprintk\0" \
+"b_c=console=tty1 console=ttyS0,115200 earlyprintk tb_overlay=/dev/mmcblk0p10\0" \
 "emmc_root=root=/dev/mmcblk0p8 rw rootwait\0" \
 "stdin=" STDIN_CFG "\0" \
 "stdout=" STDOUT_CFG "\0" \
