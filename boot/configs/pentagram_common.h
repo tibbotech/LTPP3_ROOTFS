@@ -392,7 +392,7 @@ MD_BUTTON_DETECT__NOTSUPPORTED \
 
 #define CONFIG_EXTRA_ENV_SETTINGS \
 "sz_sign=0x100\0" \
-"b_c=console=tty1 console=ttyS0,115200 earlyprintk tb_overlay=/dev/mmcblk0p10\0" \
+"b_c=console=tty1 console=ttyS0,115200 earlyprintk\0" \
 "emmc_root=root=/dev/mmcblk0p8 rw rootwait\0" \
 "stdin=" STDIN_CFG "\0" \
 "stdout=" STDOUT_CFG "\0" \

@@ -1,4 +1,4 @@
---- /root/SP7021/boot/uboot/board/sunplus/pentagram_board/sp_go.c	2023-05-22 11:15:28.000000000 +0000
+--- /root/SP7021/boot/uboot/board/sunplus/pentagram_board/sp_go.c	2023-05-31 12:17:20.000000000 +0000
 +++ /root/LTPP3_ROOTFS/boot/drivers/sp_go.c	2023-05-22 06:35:03.000000000 +0000
 @@ -4,6 +4,7 @@
  #include <mapmem.h>

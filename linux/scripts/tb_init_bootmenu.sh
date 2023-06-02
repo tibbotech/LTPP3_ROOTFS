@@ -76,6 +76,7 @@ TB_NUMOFLINES_10=10
 TB_NUMOFLINES_12=12
 
 #---OPTION CONSTANTS
+TB_TB_ROOTFS_RO_IS_EMPTYSTRING="tb_rootfs_ro="
 TB_TB_ROOTFS_RO_IS_NULL="tb_rootfs_ro=null"
 TB_TB_ROOTFS_RO_IS_TRUE="tb_rootfs_ro=true"
 
@@ -138,6 +139,7 @@ tb_mychoice_regex="[12rq]"
 tb_reboot_reegex="[yn]"
 
 flag_bootinto_isset=false
+flag_file_can_be_removed=false
 
 
 
@@ -177,9 +179,6 @@ function extract_if_and_of_from_string__func() {
 }
 
 function extract_overlaymode_info__func() {
-    #Check if folder 'lost+found' is present at locations '/' and '/overlay'
-    local flag_lostandfound_ispresent=$(extract_overlaymode_info__checkif_lostandfound_ispresent____func)
-
     #Get 'tb_overlay' value (if present)
     tb_proc_cmdline_tb_overlay_get="${TB_EMPTYSTRING}"
     if [[ -f "${tb_proc_cmdline_fpath}" ]]; then
@@ -194,6 +193,10 @@ function extract_overlaymode_info__func() {
     tb_init_bootargs_cfg_tb_rootfs_ro_get="${TB_EMPTYSTRING}"
     if [[ -f "${tb_init_bootargs_cfg_fpath}" ]]; then
         tb_init_bootargs_cfg_tb_rootfs_ro_get=$(grep -o "${TB_PATTERN_TB_ROOTFS_RO}.*" "${tb_init_bootargs_cfg_fpath}")
+    fi
+    tb_overlay_current_cfg_tb_rootfs_ro_get="${TB_EMPTYSTRING}"
+    if [[ -f "${tb_overlay_current_cfg_fpath}" ]]; then
+        tb_overlay_current_cfg_tb_rootfs_ro_get=$(grep -o "${TB_PATTERN_TB_ROOTFS_RO}.*" "${tb_overlay_current_cfg_fpath}")
     fi
 
     #Get tb_overlaymode_set and tb_overlaymode_tag
@@ -221,22 +224,6 @@ function extract_overlaymode_info__func() {
         extract_overlaymode_info__remove_tb_init_bootargs_cfg____func
     fi
 }
-function extract_overlaymode_info__checkif_lostandfound_ispresent____func() {
-    #Remark:
-    #   If folder 'lost+found' is found at both locations, then it means that
-    #       overlay-mode = persistent
-    #   On the other hand, if folder'lost+found is not present at both locations, then
-    #       overlay-mode = non-persistent
-    local rootfs_flag_lostandfound_ispresent=$(ls -l "${rootfs_dir}" | grep "${TB_PATTERN_LOST_AND_FOUND}")
-    local overlay_flag_lostandfound_ispresent=$(ls -l "${overlay_dir}" | grep "${TB_PATTERN_LOST_AND_FOUND}")
-    local ret=false
-    if [[ -n "${rootfs_flag_lostandfound_ispresent}" ]] && [[ -n "${overlay_flag_lostandfound_ispresent}" ]]; then
-        ret=true
-    fi
-
-    #Output
-    echo "${ret}"
-}
 function extract_overlaymode_info__tb_overlaymode_set_and_tag____func() {
     #Remark:
     #   This function passes results to global variables:
@@ -249,52 +236,52 @@ function extract_overlaymode_info__tb_overlaymode_set_and_tag____func() {
 
     #Validate overlay-mode (persistent or non-persistent)
     if [[ -n "${tb_proc_cmdline_tb_overlay_get}" ]]; then
+        #Determine the 'tb_overlaymode_set'
         if [[ -z ${tb_init_bootargs_cfg_tb_rootfs_ro_get} ]]; then  #tb_rootfs_ro is NOT set in '/tb_reserve/tb_init_bootargs.cfg'
-            #Remark:
-            #   Since file '/tb_reserve/tb_init_bootargs.cfg' does NOT exist or contains NO data
-            #       flag 'flag_lostandfound_ispresent' does NOT need to be evaluated here.
             if [[ -z ${tb_proc_cmdline_tb_rootfs_ro_get} ]]; then  #tb_rootfs_ro is NOT set in '/proc/cmdline'
                 tb_overlaymode_set="${TB_MODE_PERSISTENT}"
             else    #tb_rootfs_ro is set in '/proc/cmdline'
                 tb_overlaymode_set="${TB_MODE_NONPERSISTENT}"
             fi
-
-            #Set flag to 'false'
-            tb_overlaymode_tag="${TB_LEGEND_SAME}"
         else    #tb_rootfs_ro is set in '/tb_reserve/tb_init_bootargs.cfg'
             if [[ "${tb_init_bootargs_cfg_tb_rootfs_ro_get}" == "${TB_TB_ROOTFS_RO_IS_NULL}" ]]; then
                 tb_overlaymode_set="${TB_MODE_PERSISTENT}"
 
-                if [[ ${flag_lostandfound_ispresent} == true ]]; then
-                    tb_overlaymode_tag="${TB_LEGEND_SAME}"
-                else    #flag_lostandfound_ispresent = false
-                    tb_overlaymode_tag="${TB_LEGEND_NEW}"
+                if [[ -z "${tb_proc_cmdline_tb_rootfs_ro_get}" ]]; then  #tb_rootfs_ro is NOT set in '/proc/cmdline'
+                    flag_file_can_be_removed=true
+                else    #tb_rootfs_ro is already set in '/proc/cmdline'
+                    flag_file_can_be_removed=false
                 fi
             else    #tb_init_bootargs_cfg_tb_rootfs_ro_get = true
                 tb_overlaymode_set="${TB_MODE_NONPERSISTENT}"
 
-                if [[ ${flag_lostandfound_ispresent} == false ]]; then
-                    tb_overlaymode_tag="${TB_LEGEND_SAME}"
-                else    #flag_lostandfound_ispresent = true
-                    tb_overlaymode_tag="${TB_LEGEND_NEW}"
+                if [[ "${tb_proc_cmdline_tb_rootfs_ro_get}" == "${TB_TB_ROOTFS_RO_IS_TRUE}" ]]; then  #tb_rootfs_ro is already set in '/proc/cmdline'
+                    flag_file_can_be_removed=true
+                else    #tb_rootfs_ro is NOT set in '/proc/cmdline'
+                    flag_file_can_be_removed=false
                 fi
+            fi
+        fi
+
+        #Determine the 'tb_overlaymode_tag'
+        if [[ "${tb_overlaymode_set}" == "${TB_MODE_PERSISTENT}" ]]; then
+            if [[ "${tb_overlay_current_cfg_tb_rootfs_ro_get}" == "${TB_TB_ROOTFS_RO_IS_EMPTYSTRING}" ]]; then
+                tb_overlaymode_tag="${TB_LEGEND_SAME}"
+            else    #tb_overlay_current_cfg_tb_rootfs_ro_get = TB_TB_ROOTFS_RO_IS_TRUE
+                tb_overlaymode_tag="${TB_LEGEND_NEW}"
+            fi
+        else    #tb_overlaymode_set = TB_MODE_NONPERSISTENT
+            if [[ "${tb_overlay_current_cfg_tb_rootfs_ro_get}" == "${TB_TB_ROOTFS_RO_IS_TRUE}" ]]; then
+                tb_overlaymode_tag="${TB_LEGEND_SAME}"
+            else    #tb_overlay_current_cfg_tb_rootfs_ro_get = TB_TB_ROOTFS_RO_IS_EMPTYSTRING
+                tb_overlaymode_tag="${TB_LEGEND_NEW}"
             fi
         fi
     fi
 }
 function extract_overlaymode_info__remove_tb_init_bootargs_cfg____func() {
-    if [[ "${tb_overlaymode_tag}" == "${TB_LEGEND_SAME}" ]]; then
+    if [[ "${flag_file_can_be_removed}" == true ]]; then
         remove_file__func "${tb_init_bootargs_cfg_fpath}"
-    else    #tb_overlaymode_tag = TB_LEGEND_NEW
-        if [[ -z ${tb_proc_cmdline_tb_rootfs_ro_get} ]] && \
-                [[ "${tb_init_bootargs_cfg_tb_rootfs_ro_get}" == "${TB_TB_ROOTFS_RO_IS_NULL}" ]]; then
-            remove_file__func "${tb_init_bootargs_cfg_fpath}"
-        fi
-
-        if [[ -n ${tb_proc_cmdline_tb_rootfs_ro_get} ]] && \
-                [[ "${tb_init_bootargs_cfg_tb_rootfs_ro_get}" == "${TB_TB_ROOTFS_RO_IS_TRUE}" ]]; then
-            remove_file__func "${tb_init_bootargs_cfg_fpath}"
-        fi
     fi
 }
 

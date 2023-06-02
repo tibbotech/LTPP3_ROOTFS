@@ -327,7 +327,9 @@ docker__load_constants__sub() {
     DOCKER__ERRMSG_PATTERN_EMMC_NOT_FOUND="${DOCKER__ERROR}: pattern ${DOCKER__FG_LIGHTGREY}EMMC${DOCKER__NOCOLOR} not found!"
     DOCKER__ERRMSG_LINENUMEND_OF_EMMC_IS_ZERO="${DOCKER__ERROR}: ${DOCKER__FG_LIGHTGREY}linenumend${DOCKER__NOCOLOR} of ${DOCKER__FG_LIGHTGREY}EMMC${DOCKER__NOCOLOR} is zero (0)!"
     DOCKER__ERRMSG_PATTERN_ROOTFS_EX1E0000000_IS_OUT_OF_BOUND="${DOCKER__ERROR}: pattern ${DOCKER__FG_LIGHTGREY}rootfs 0x1e0000000${DOCKER__NOCOLOR} is out of bound!"
-    DOCKER__ERRMSG_FILECONTENT_IS_NOT_CONSISTENT_OR_CORRUPT="${DOCKER__ERROR}: file-content is NOT consistent or corrupt!"
+    DOCKER__ERRMSG_FILECONTENT_IS_NOT_CONSISTENT_OR_CORRUPT="${DOCKER__ERROR}: file-content is NOT consistent or corrupt!\n"
+    DOCKER__ERRMSG_FILECONTENT_IS_NOT_CONSISTENT_OR_CORRUPT+="${DOCKER__ERROR}: please make sure the search pattern matches exactly as specified.\n"
+    DOCKER__ERRMSG_FILECONTENT_IS_NOT_CONSISTENT_OR_CORRUPT+="${DOCKER__ERROR}: in other words, no extra spaces, strings, special characters."
     DOCKER__ERRMSG_COULD_NOT_CHANGE_FILE_PERMISSION_TO_RWXRXRX="${DOCKER__ERROR}: could NOT change file permission to rwxr-xr-x!"
     DOCKER__ERRMSG_COULD_NOT_CREATE_SOFTLINK="${DOCKER__ERROR}: could NOT create soft-link"
 

@@ -68,9 +68,11 @@ print_safemode+="${FOUR_SPACES}${FOUR_SPACES}${reboot_cmd}"
 print_safemode+="\n"
 print_safemode+="*********************************************************************\n"
 
-print_start="\n*********************************************************************\n"
+print_start="\n\n*********************************************************************\n"
 print_start+="${FOUR_SPACES}TB_INIT.SH\n"
-print_start+="*********************************************************************\n"
+print_start+="*********************************************************************"
+
+print_end="\n*********************************************************************\n"
 
 keyinput=""
 
@@ -490,7 +492,10 @@ function fsck_retry_retrieve__func() {
     local fsck_retry2=0
 
     #Temporarily mount /dev/mmcblk0p9
-    if [[ ! -f ${fsck_retry_fpath1} ]] && [[ ! -f ${fsck_retry_fpath2} ]]; then  #path exists
+    if [[ ! -f ${fsck_retry_fpath1} ]] && [[ ! -f ${fsck_retry_fpath2} ]]; then  #paths do NOT exist
+        #Make directory
+        mkdir__func "${rootfs_etc_tibbo_uboot_dir}"
+
         echo "${fsck_retry}" | tee ${fsck_retry_fpath1}
         # write_to_file__func "${fsck_retry}" \
         #         "${FSCK_RETRY_PRINT}" \
@@ -505,7 +510,7 @@ function fsck_retry_retrieve__func() {
         #         "${DEV_MMCBLK0P9}" \
         #         "${tb_reserve_dir}" \
         #         "true"
-    else  #path does not exist
+    else  #paths DO exist
         #Get 'fsck_retry1' value from file 'fsck_retry_fpath1'
         if [[ -f ${fsck_retry_fpath1} ]]; then  #path exists
             fsck_retry1=$(cat ${fsck_retry_fpath1})
@@ -525,6 +530,16 @@ function fsck_retry_retrieve__func() {
     #Enable trap ERR
     echo -e "---:TB_INIT:-:FSCK: TRAP ERR *ENABLE*"
     trap trap_err__func ERR
+}
+
+function mkdir__func() {
+    #Input args
+    local targetfpath=${1}
+
+    #Make directory
+    if [[ ! -d "${targetfpath}" ]]; then
+        mkdir -p "${rootfs_etc_tibbo_uboot_dir}"
+    fi
 }
 
 function mount__func() {
@@ -600,16 +615,8 @@ choose_a_key_to_continue__func() {
  }
 
 function unmount_mmcblk0p8_mccblk0p9__func() {
-    #DISABLE TRAP when UNMOUNTING
-    echo -e "---:TB_INIT:-:UNMOUNT: TRAP ERR *DISABLE*"
-    trap - ERR
-
-    umount ${DEV_MMCBLK0P9}
-    umount ${DEV_MMCBLK0P8}
-
-    #Enable trap ERR
-    echo -e "---:TB_INIT:-:UNMOUNT: TRAP ERR *ENABLE*"
-    trap trap_err__func ERR
+    unmount__func "${DEV_MMCBLK0P9}" ""
+    unmount__func "${DEV_MMCBLK0P8}" ""
 }
 
 # function unmount_handler__func() {
@@ -629,38 +636,38 @@ function unmount_mmcblk0p8_mccblk0p9__func() {
 #         unmount__func "${devpart}" "${mountdir}"
 #     fi
 # }
-# function unmount__func() {
-#    #Input args
-#     local devpart=${1}
-#     local mountdir=${2}
+function unmount__func() {
+   #Input args
+    local devpart=${1}
+    local mountdir=${2}
 
-#     #Check if already unmounted
-#     if [[ $(checkif_ismounted__func "${devpart}" "${mountdir}") == false ]]; then
-#         return
-#     fi
+    #Check if already unmounted
+    if [[ $(checkif_ismounted__func "${devpart}" "${mountdir}") == false ]]; then
+        return
+    fi
 
-#     #DISABLE TRAP when UNMOUNTING
-#     echo -e "---:TB_INIT:-:UNMOUNT: TRAP ERR *DISABLE*"
-#     trap - ERR
+    #DISABLE TRAP when UNMOUNTING
+    echo -e "---:TB_INIT:-:UNMOUNT: TRAP ERR *DISABLE*"
+    trap - ERR
 
-#     #Print
-#     echo -e "---:TB-INIT:-:UNMOUNT: ${devpart}"
-#     #Unmount
-#     umount ${devpart}; exitcode=$?
+    #Print
+    echo -e "---:TB-INIT:-:UNMOUNT: ${devpart}"
+    #Unmount
+    umount ${devpart}; exitcode=$?
 
-#     if [[ ${exitcode} -ne 0 ]]; then  #successful
-#         local printmsg="--:TB-INIT:-:UNMOUNT-ERROR: ${devpart} *FAILED*\n"
-#         printmsg+="------:TB-INIT:-:UNMOUNT-ERROR: ${devpart} is *IN-USE*\n"
-#         printmsg+="------:TB-INIT:-:UNMOUNT-NOTE: Make sure no script or app is run from ${devpart}\n"
-#         echo -e "${printmsg}"
+    if [[ ${exitcode} -ne 0 ]]; then  #successful
+        local printmsg="--:TB-INIT:-:UNMOUNT-ERROR: ${devpart} *FAILED*\n"
+        printmsg+="------:TB-INIT:-:UNMOUNT-ERROR: ${devpart} is *IN-USE*\n"
+        printmsg+="------:TB-INIT:-:UNMOUNT-NOTE: Make sure no script or app is run from ${devpart}\n"
+        echo -e "${printmsg}"
 
-#         exit__func "${EXITCODE_1}"
-#     fi
+        exit__func "${EXITCODE_1}"
+    fi
 
-#     #Enable trap ERR
-#     echo -e "---:TB_INIT:-:UNMOUNT: TRAP ERR *ENABLE*"
-#     trap trap_err__func ERR
-# }
+    #Enable trap ERR
+    echo -e "---:TB_INIT:-:UNMOUNT: TRAP ERR *ENABLE*"
+    trap trap_err__func ERR
+}
 # function unmount_all_based_on_pattern__func() {
 #     #Input args
 #     local devpart=${1}
@@ -734,6 +741,9 @@ function remove_file__func() {
         echo -e "---:TB-INIT:-:REMOVE: ${targetfpath}"
 
         rm ${targetfpath}
+    else
+        echo -e "---:TB-INIT:-:FILE NOT PRESENT: ${targetfpath}"
+        echo -e "---:TB-INIT:-:NOTHING TO REMOVE..."
     fi
 }
 
@@ -837,7 +847,6 @@ function trap_err__func() {
 
 
 #---START
-echo -e ""
 echo -e "${print_start}"
 
 
@@ -872,6 +881,32 @@ fi
 
 
 #---ADDITIONAL PARTITIONS
+if [[ ! -d /mydata1 ]]; then
+  if [[ ${flag_root_is_remounted} == false ]]; then
+    echo "---:STATUS: remounting /"
+    mount -o remount,rw / #remounting root in emmc as writeable
+  fi
+
+  echo "---:STATUS: create directory /mydata1"
+  mkdir /mydata1
+
+  echo "---:STATUS: creating /dev/mmcblk0p11"
+  ${usr_sbin_mkfsext4} /dev/mmcblk0p11
+fi
+
+if [[ ! -d /mydata2 ]]; then
+  if [[ ${flag_root_is_remounted} == false ]]; then
+    echo "---:STATUS: remounting /"
+    mount -o remount,rw / #remounting root in emmc as writeable
+  fi
+
+  echo "---:STATUS: create directory /mydata2"
+  mkdir /mydata2
+
+  echo "---:STATUS: creating /dev/mmcblk0p12"
+  ${usr_sbin_mkfsext4} /dev/mmcblk0p12
+fi
+
 if [[ ! -d /mydata1 ]]; then
   if [[ ${flag_root_is_remounted} == false ]]; then
     echo "---:STATUS: remounting /"
@@ -1194,12 +1229,14 @@ fi
 
 
 #---UNMOUNT ALL
-unmount_mmcblk0p8_mccblk0p9__func
+# unmount_mmcblk0p8_mccblk0p9__func
 
 
 
 #---Attempt to start systemd
 echo -e "---:TB-INIT:-:EXEC: ${lib_systemd_systemd_exec}"
+echo -e "${print_end}"
+
 exec ${lib_systemd_systemd_exec}
 
 
