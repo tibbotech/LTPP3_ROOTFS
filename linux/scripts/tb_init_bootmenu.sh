@@ -1,5 +1,6 @@
 #!/bin/bash
 #---CHARACTER CONSTANTS
+TB_BACKSPACE=$'\b'
 TB_DASH="-"
 TB_ENTER=$'\x0a'
 
@@ -12,6 +13,7 @@ TB_FG_GREY_243=$'\e[30;38;5;243m'
 TB_FG_GREY_246=$'\e[30;38;5;246m'
 TB_FG_ORANGE_131=$'\e[30;38;5;131m'
 TB_FG_ORANGE_208=$'\e[30;38;5;208m'
+TB_FG_ORANGE_215=$'\e[30;38;5;215m'
 TB_FG_RED_9=$'\e[30;38;5;9m'
 TB_FG_RED_187=$'\e[30;38;5;187m'
 TB_FG_YELLOW_33=$'\e[1;33m'
@@ -25,6 +27,10 @@ REBOOT_CMD="reboot now"
 TB_PERCENT_80=80
 TB_TERMWINDOW_WIDTH=$(tput cols)
 TB_TABLEWIDTH=$((( TB_TERMWINDOW_WIDTH * TB_PERCENT_80)/100 ))
+
+#---FLAG CONSTANTS
+TB_OUTPUT_SOURCE="source"
+TB_OUTPUT_DESTINATION="destination"
 
 #---MENU CONSTANTS
 TB_MENU="(${TB_FG_GREY_246}Menu${TB_NOCOLOR})"
@@ -51,6 +57,7 @@ TB_READDIALOG_ARE_YOU_SURE_YOU_WISH_TO_REBOOT="Are you sure you wish to reboot (
 TB_READDIALOG_PLEASE_CHOOSE_AN_OPTION="Please choose an option: "
 
 TB_TITLE_BOOTINTO="${TB_FG_BLUE_45}TB-INIT.SH: ${TB_FG_BLUE_33}BOOT-INTO-MENU${TB_NOCOLOR}"
+TB_TITLE_BACKUP_CHOOSE_SOURCE_PATH="${TB_FG_ORANGE_215}BACKUP:${TB_NOCOLOR} Choose source-path"
 TB_TITLE_TB_INIT_SH="${TB_FG_BLUE_45}TB-INIT.SH: ${TB_FG_BLUE_33}MAIN-MENU${TB_NOCOLOR}"
 TB_TITLE_TIBBO="TIBBO"
 
@@ -75,13 +82,16 @@ TB_NUMOFLINES_9=9
 TB_NUMOFLINES_10=10
 TB_NUMOFLINES_12=12
 
+TB_TRAPNUM_2=2
+
 #---OPTION CONSTANTS
-TB_TB_ROOTFS_RO_IS_EMPTYSTRING="tb_rootfs_ro="
-TB_TB_ROOTFS_RO_IS_NULL="tb_rootfs_ro=null"
-TB_TB_ROOTFS_RO_IS_TRUE="tb_rootfs_ro=true"
+TB_NOBOOT_IS_TRUE="tb_noboot=true"
+TB_ROOTFS_RO_IS_EMPTYSTRING="tb_rootfs_ro="
+TB_ROOTFS_RO_IS_NULL="tb_rootfs_ro=null"
+TB_ROOTFS_RO_IS_TRUE="tb_rootfs_ro=true"
 
 #---PATTERN CONSTANTS
-TB_PATTERN_LOST_AND_FOUND="lost+found"
+TB_PATTERN_DEV_MMCBLK="/dev/mmcblk"
 TB_PATTERN_TB_BACKUP="tb_backup"
 TB_PATTERN_TB_NOBOOT="tb_noboot"
 TB_PATTERN_TB_OVERLAY="tb_overlay"
@@ -122,28 +132,69 @@ tb_proc_cmdline_fpath=${proc_dir}/cmdline
 
 #---VARIABLES
 tb_bootinto_get="${TB_EMPTYSTRING}"
+tb_bootinto_mychoice="${TB_EMPTYSTRING}"
 tb_bootinto_remarks="${TB_EMPTYSTRING}"
 tb_bootinto_set="${TB_EMPTYSTRING}"
 tb_bootinto_set_printable="${TB_EMPTYSTRING}"
-tb_mychoice="${TB_EMPTYSTRING}"
+tb_init_bootargs_cfg_tb_rootfs_ro_get="${TB_EMPTYSTRING}"
+tb_mainmenu_mychoice="${TB_EMPTYSTRING}"
 tb_overlaymode_set="${TB_EMPTYSTRING}"
 tb_overlaymode_set_printable="${TB_EMPTYSTRING}"
 tb_overlaymode_tag="${TB_EMPTYSTRING}"
-tb_remark="${TB_EMPTYSTRING}"
-
 tb_proc_cmdline_tb_overlay_get="${TB_EMPTYSTRING}"
 tb_proc_cmdline_tb_rootfs_ro_get="${TB_EMPTYSTRING}"
-tb_init_bootargs_cfg_tb_rootfs_ro_get="${TB_EMPTYSTRING}"
+tb_remark="${TB_EMPTYSTRING}"
 
-tb_mychoice_regex="[12rq]"
+tb_dstpath_set="${TB_EMPTYSTRING}"
+tb_srcpath_set="${TB_EMPTYSTRING}"
+tb_path_list_arr=()
+
+tb_bootinto_mychoice_regex="[1234b]"
+tb_mainmenu_mychoice_regex="[12rq]"
 tb_reboot_reegex="[yn]"
 
+flag_backupmode_exitloop=false
+flag_bootintomenu_exitloop=false
 flag_bootinto_isset=false
 flag_file_can_be_removed=false
 
 
 
 #---FUNCTIONS
+function enable_normal_ctrl_c__func() {
+    trap ${TB_TRAPNUM_2}
+    trap tb_ctrl_c__sub SIGINT
+}
+function enable_bootinto_ctrl_c__func() {
+    trap ${TB_TRAPNUM_2}
+    trap tb_ctrl_c_clean_reprint_bootinto_readdialog__sub SIGINT
+
+    # trap '' ${TB_TRAPNUM_2}
+}
+
+function backspace__func() {
+    #Input args
+    local string__input=${1}
+
+    #CHeck if 'string__input' is an EMPTYSTRING
+    if [[ -z ${string__input} ]]; then
+        return
+    fi
+
+    #Constants
+    local OFFSET=0
+
+    #Lengths
+    local str_input_len=${#string__input}
+    local str_output_len=$((str_input_len-1))
+
+    #Get result
+    local str_output=${string__input:${OFFSET}:${str_output_len}}
+
+    #Output
+    echo "${str_output}"
+}
+
 function duplicate_char__func() {
     #Input args
     local char__input=${1}
@@ -244,7 +295,7 @@ function extract_overlaymode_info__tb_overlaymode_set_and_tag____func() {
                 tb_overlaymode_set="${TB_MODE_NONPERSISTENT}"
             fi
         else    #tb_rootfs_ro is set in '/tb_reserve/tb_init_bootargs.cfg'
-            if [[ "${tb_init_bootargs_cfg_tb_rootfs_ro_get}" == "${TB_TB_ROOTFS_RO_IS_NULL}" ]]; then
+            if [[ "${tb_init_bootargs_cfg_tb_rootfs_ro_get}" == "${TB_ROOTFS_RO_IS_NULL}" ]]; then
                 tb_overlaymode_set="${TB_MODE_PERSISTENT}"
 
                 if [[ -z "${tb_proc_cmdline_tb_rootfs_ro_get}" ]]; then  #tb_rootfs_ro is NOT set in '/proc/cmdline'
@@ -255,7 +306,7 @@ function extract_overlaymode_info__tb_overlaymode_set_and_tag____func() {
             else    #tb_init_bootargs_cfg_tb_rootfs_ro_get = true
                 tb_overlaymode_set="${TB_MODE_NONPERSISTENT}"
 
-                if [[ "${tb_proc_cmdline_tb_rootfs_ro_get}" == "${TB_TB_ROOTFS_RO_IS_TRUE}" ]]; then  #tb_rootfs_ro is already set in '/proc/cmdline'
+                if [[ "${tb_proc_cmdline_tb_rootfs_ro_get}" == "${TB_ROOTFS_RO_IS_TRUE}" ]]; then  #tb_rootfs_ro is already set in '/proc/cmdline'
                     flag_file_can_be_removed=true
                 else    #tb_rootfs_ro is NOT set in '/proc/cmdline'
                     flag_file_can_be_removed=false
@@ -265,15 +316,15 @@ function extract_overlaymode_info__tb_overlaymode_set_and_tag____func() {
 
         #Determine the 'tb_overlaymode_tag'
         if [[ "${tb_overlaymode_set}" == "${TB_MODE_PERSISTENT}" ]]; then
-            if [[ "${tb_overlay_current_cfg_tb_rootfs_ro_get}" == "${TB_TB_ROOTFS_RO_IS_EMPTYSTRING}" ]]; then
+            if [[ "${tb_overlay_current_cfg_tb_rootfs_ro_get}" == "${TB_ROOTFS_RO_IS_EMPTYSTRING}" ]]; then
                 tb_overlaymode_tag="${TB_LEGEND_SAME}"
-            else    #tb_overlay_current_cfg_tb_rootfs_ro_get = TB_TB_ROOTFS_RO_IS_TRUE
+            else    #tb_overlay_current_cfg_tb_rootfs_ro_get = TB_ROOTFS_RO_IS_TRUE
                 tb_overlaymode_tag="${TB_LEGEND_NEW}"
             fi
         else    #tb_overlaymode_set = TB_MODE_NONPERSISTENT
-            if [[ "${tb_overlay_current_cfg_tb_rootfs_ro_get}" == "${TB_TB_ROOTFS_RO_IS_TRUE}" ]]; then
+            if [[ "${tb_overlay_current_cfg_tb_rootfs_ro_get}" == "${TB_ROOTFS_RO_IS_TRUE}" ]]; then
                 tb_overlaymode_tag="${TB_LEGEND_SAME}"
-            else    #tb_overlay_current_cfg_tb_rootfs_ro_get = TB_TB_ROOTFS_RO_IS_EMPTYSTRING
+            else    #tb_overlay_current_cfg_tb_rootfs_ro_get = TB_ROOTFS_RO_IS_EMPTYSTRING
                 tb_overlaymode_tag="${TB_LEGEND_NEW}"
             fi
         fi
@@ -344,9 +395,24 @@ function extract_bootinto_info__func() {
         else
             tb_bootinto_set_printable="${tb_bootinto_set}"
         fi
-    else
+    else    #tb_bootinto_set = TB_MODE_DISABLED
         #Remove file (if present)
         remove_file__func "${tb_init_bootargs_tmp_fpath}"
+    fi
+}
+
+function isNumeric__func() {
+    #Input args
+    local string__input=${1}
+
+    #Define variables
+    local re='^[0-9]+$'
+
+    #Check if 'string__input' is numeric
+    if [[ $string__input =~ $re ]] ; then
+        echo true
+    else
+        echo false
     fi
 }
 
@@ -515,7 +581,7 @@ function print_menuitem__func() {
 }
 
 function readdialog_clean_buffer__func() {
-    read -t0.01 -p "" tmp
+    read -t0.01 -p "${TB_EMPTYSTRING}" tmp
 }
 
 function remove_file__func() {
@@ -536,6 +602,14 @@ tb_ctrl_c__sub() {
     exit__func "${TB_EXITCODE_99}" "${TB_NUMOFLINES_2}"
 }
 
+tb_ctrl_c_clean_reprint_bootinto_readdialog__sub() {
+    moveup_and_clean__func "${TB_NUMOFLINES_0}"
+
+    readdialog_clean_buffer__func
+
+    printf "%s" "${TB_READDIALOG_PLEASE_CHOOSE_AN_OPTION}"
+}
+
 mainmenu_extract_info__func() {
     #Remark:
     #   This function will pass values to global variables 'tb_overlaymode_set' and 'tb_overlaymode_set_printable'
@@ -552,7 +626,9 @@ tibbo_print_title__sub() {
 
 mainmenu_print_title__sub() {
     print_duplicate_char__func "${TB_DASH}" "${TB_TABLEWIDTH}" "${TB_NOCOLOR}"
-    print_leading_trailing_strings_on_opposite_sides__func "${TB_TITLE_TB_INIT_SH}" "${tb_proc_cmdline_tb_overlay_get_printable}" "${TB_TABLEWIDTH}"
+    print_leading_trailing_strings_on_opposite_sides__func "${TB_TITLE_TB_INIT_SH}" \
+            "${TB_EMPTYSTRING}" \
+            "${TB_TABLEWIDTH}"
     print_duplicate_char__func "${TB_DASH}" "${TB_TABLEWIDTH}" "${TB_NOCOLOR}"
 }
 
@@ -590,17 +666,17 @@ mainmenu_readdialog_choice__sub() {
     while [[ 1 ]]
     do
         #Select an option
-        read -N1 -r -p "${TB_READDIALOG_PLEASE_CHOOSE_AN_OPTION}" tb_mychoice
+        read -N1 -r -p "${TB_READDIALOG_PLEASE_CHOOSE_AN_OPTION}" tb_mainmenu_mychoice
         # movedown_and_clean__func "${TB_NUMOFLINES_1}"
 
         #Only continue if a valid option is selected
-        if [[ ! -z ${tb_mychoice} ]]; then
-            if [[ ${tb_mychoice} =~ ${tb_mychoice_regex} ]]; then
+        if [[ ! -z ${tb_mainmenu_mychoice} ]]; then
+            if [[ ${tb_mainmenu_mychoice} =~ ${tb_mainmenu_mychoice_regex} ]]; then
                 movedown_and_clean__func "${TB_NUMOFLINES_1}"
 
                 break
             else
-                if [[ ${tb_mychoice} == ${TB_ENTER} ]]; then
+                if [[ ${tb_mainmenu_mychoice} == ${TB_ENTER} ]]; then
                     moveup_and_clean__func "${TB_NUMOFLINES_1}"                    
                 else
                     moveup_and_clean__func "${TB_NUMOFLINES_0}"
@@ -616,14 +692,14 @@ mainmenu_readdialog_choice__sub() {
     done
 }
 
-mainmenu_readdialog_handler__sub() {
+mainmenu_readdialog_action__sub() {
     #Goto the selected option
-    case ${tb_mychoice} in
+    case ${tb_mainmenu_mychoice} in
         1)
             mainmenu_readdialog_overlaymode_toggle__sub
             ;;
         2)
-            mainmenu_readdialog_bootinto_config__sub
+            bootintomenu__sub
             ;;
         r)
             mainmenu_readdialog_reboot__sub
@@ -649,34 +725,220 @@ mainmenu_readdialog_overlaymode_toggle__sub() {
     #   2. In file 'tb_init_bootargs_cfg_fpath' will be validated again, and
     #       if needed, removed in function 'extract_overlaymode_info__func'
     if [[ "${tb_overlaymode_set}" == "${TB_MODE_PERSISTENT}" ]]; then   #currently 'tb_overlaymode_set = TB_MODE_NONPERSISTENT'
-        tb_rootfs_ro_set="${TB_TB_ROOTFS_RO_IS_TRUE}"
+        tb_rootfs_ro_set="${TB_ROOTFS_RO_IS_TRUE}"
     else    #currently 'tb_overlaymode_set = TB_MODE_PERSISTENT'
-        tb_rootfs_ro_set="${TB_TB_ROOTFS_RO_IS_NULL}"
+        tb_rootfs_ro_set="${TB_ROOTFS_RO_IS_NULL}"
     fi
 
     #Write to file
     echo "${tb_rootfs_ro_set}" | tee "${tb_init_bootargs_cfg_fpath}" > /dev/null
 }
 
-mainmenu_readdialog_bootinto_config__sub() {
-    #Print header
-    tibbo_print_title__sub    
+mainmenu_readdialog_reboot__sub() {
+    #Define variables
+    local keyinput="${TB_OPTIONS_N}"
 
-    #Print bootinto menutitle
-    bootinto_print_title__sub
+    #Move-down one line
+    movedown_and_clean__func "${TB_NUMOFLINES_1}"
 
-    #Print body
-    bootinto_print_body__sub
+    #Show read-dialog
+    while [[ 1 ]]
+    do
+        #Select an option
+        read -N1 -r -p "${TB_READDIALOG_ARE_YOU_SURE_YOU_WISH_TO_REBOOT}" keyinput
+        # movedown_and_clean__func "${TB_NUMOFLINES_1}"
 
-    #Print remark
-    bootinto_print_remark__sub
+        #Only continue if a valid option is selected
+        if [[ ! -z ${keyinput} ]]; then
+            if [[ ${keyinput} =~ ${tb_reboot_reegex} ]]; then
+                movedown_and_clean__func "${TB_NUMOFLINES_1}"
+
+                break
+            else
+                if [[ ${keyinput} == ${TB_ENTER} ]]; then
+                    moveup_and_clean__func "${TB_NUMOFLINES_1}"                    
+                else
+                    moveup_and_clean__func "${TB_NUMOFLINES_0}"
+                fi
+
+                readdialog_clean_buffer__func
+            fi
+        else
+            moveup_and_clean__func "${TB_NUMOFLINES_0}"
+
+            readdialog_clean_buffer__func
+        fi
+    done
+
+    if [[ "${keyinput}" == "${TB_OPTIONS_Y}" ]]; then
+        movedown_and_clean__func "${TB_NUMOFLINES_1}"
+        
+        ${REBOOT_CMD}
+    fi
 }
-bootinto_print_title__sub() {
+
+bootintomenu_arraylist_show__sub() {
+    #Move-down one line
+    movedown_and_clean__func "${TB_NUMOFLINES_1}"
+
+    #Print title
+    print_duplicate_char__func "${TB_DASH}" "${TB_TABLEWIDTH}" "${TB_FG_GREY_243}"
+    print_leading_trailing_strings_on_opposite_sides__func "${TB_TITLE_BACKUP_CHOOSE_SOURCE_PATH}" \
+            "${TB_EMPTYSTRING}" \
+            "${TB_TABLEWIDTH}"
+    print_duplicate_char__func "${TB_DASH}" "${TB_TABLEWIDTH}" "${TB_FG_GREY_243}"
+
+    #Show array-contents
+    local arrayitem="${TB_EMPTYSTRING}"
+    local listnum=1
+
+    for arrayitem in "${tb_path_list_arr[@]}"
+    do
+        #List each array-item
+        print_menuitem__func "${TB_FOURSPACES}" "${listnum}" "${arrayitem}"
+
+        #Increment index
+        ((listnum++))
+    done
+
+    #Show 'back'
+    print_duplicate_char__func "${TB_DASH}" "${TB_TABLEWIDTH}" "${TB_FG_GREY_243}"
+    print_menuitem__func "${TB_FOURSPACES}" "${TB_OPTIONS_B}" "${TB_OPTIONS_BACK}" "${TB_EMPTYSTRING}"
+    print_duplicate_char__func "${TB_DASH}" "${TB_TABLEWIDTH}" "${TB_FG_GREY_243}"
+}
+bootintomenu_arraylistitem_choice__sub() {
+    #Input args
+    local flag_output_src_or_dst=${1}
+
+    #Initalize variables
+    local arr_selected_index=0
+    local echomsg="${TB_EMPTYSTRING}"
+    local echomsg_len=0
+    local keyinput="${TB_EMPTYSTRING}"
+    local keyinput_tot="${TB_EMPTYSTRING}"
+
+    flag_backupmode_exitloop=false
+
+    while [[ 1 ]]
+    do
+        #Reset variable
+        keyinput="${TB_EMPTYSTRING}"
+
+        #Update string
+        echomsg="${TB_READDIALOG_PLEASE_CHOOSE_AN_OPTION}${keyinput_tot}"
+
+        #Update length
+        echomsg_len="${#echomsg}"
+
+        #Print message
+        echo -e "${echomsg}"
+
+        #Move up and then move to the end of 'echomsg'
+        tput cuu1 && tput cuf "${echomsg_len}"
+        
+        #Execute read-dialog and wait for input
+        read -N1 -rs keyinput
+
+        case "${keyinput}" in
+            "${TB_OPTIONS_B}")
+                #Move down and clean one line
+                movedown_and_clean__func "${TB_NUMOFLINES_1}"
+
+                #Set flag to true
+                flag_backupmode_exitloop=true
+
+                break
+                ;;
+            "${TB_BACKSPACE}")
+                #Get the updated 'keyinput_tot' after pressing BACKSPACE
+                keyinput_tot=$(backspace__func "${keyinput_tot}")
+                ;;
+            "${TB_ENTER}")
+                if [[ $(isNumeric__func "${keyinput_tot}") == true ]]; then
+                    if [[ ${keyinput_tot} -le ${tb_path_list_arrlen} ]]; then
+                        #Get array-index
+                        arr_selected_index=$((keyinput_tot - 1))
+
+                        #Update variable
+                        if [[ "${flag_output_src_or_dst}" == "${TB_OUTPUT_SOURCE}" ]]; then
+                            tb_srcpath_set=${tb_path_list_arr[arr_selected_index]}
+                        else    #flag_output_src_or_dst = TB_OUTPUT_DESTINATION
+                            tb_dstpath_set=${tb_path_list_arr[arr_selected_index]}
+                        fi
+
+                        #Move down and clean one line
+                        movedown_and_clean__func "${TB_NUMOFLINES_1}"
+
+                        break
+                    else
+                        #Reset variable
+                        keyinput_tot="${TB_EMPTYSTRING}"
+                    fi
+                else
+                    #Reset variable
+                    keyinput_tot="${TB_EMPTYSTRING}"
+                fi
+                ;;
+            *)
+                if [[ -n "${keyinput}" ]]; then
+                    #Update variable
+                    keyinput_tot="${keyinput_tot}${keyinput}"
+                fi
+                ;;
+        esac
+
+        #Move up and clean one line
+        moveup_and_clean__func "${TB_NUMOFLINES_0}"
+
+        #Clean read-dialog buffer
+        readdialog_clean_buffer__func
+    done
+}
+bootintomenu__sub() {
+    #Initialize variables
+    flag_bootintomenu_exitloop=false
+
+    while [[ 1 ]]
+    do
+        #Enable ctrl+C for bootinto
+        enable_bootinto_ctrl_c__func
+
+        #Print header
+        tibbo_print_title__sub    
+
+        #Print bootinto menutitle
+        bootintomenu_title_print__sub
+
+        #Print body
+        bootintomenu_body_print__sub
+
+        #Print remark
+        bootintomenu_remark_print__sub
+
+        #Show read-dialog (loop)
+        #Note: result is passed to global variable 'tb_bootinto_mychoice'
+        bootintomenu_readdialog_choice__sub
+
+        #Take action
+        bootintomenu_readdialog_action__sub
+
+        #Enable ctrl+C
+        enable_normal_ctrl_c__func
+
+        #Check if a flag was given to exit loop
+        if [[ "${flag_bootintomenu_exitloop}" == true ]]; then
+            break
+        fi
+    done
+}
+bootintomenu_title_print__sub() {
     print_duplicate_char__func "${TB_DASH}" "${TB_TABLEWIDTH}" "${TB_NOCOLOR}"
-    print_leading_trailing_strings_on_opposite_sides__func "${TB_TITLE_BOOTINTO}" "${tb_proc_cmdline_tb_overlay_get_printable}" "${TB_TABLEWIDTH}"
+    print_leading_trailing_strings_on_opposite_sides__func "${TB_TITLE_BOOTINTO}" \
+            "${TB_EMPTYSTRING}" \
+            "${TB_TABLEWIDTH}"
     print_duplicate_char__func "${TB_DASH}" "${TB_TABLEWIDTH}" "${TB_NOCOLOR}"
 }
-bootinto_print_body__sub() {
+bootintomenu_body_print__sub() {
     #Define and initialize variables
     local print_safemode="${TB_MODE_SAFEMODE}"
     local print_backupmode="${TB_MODE_BACKUPMODE}"
@@ -717,7 +979,7 @@ bootinto_print_body__sub() {
     print_menuitem__func "${TB_FOURSPACES}" "${TB_OPTIONS_B}" "${TB_OPTIONS_BACK}" "${TB_EMPTYSTRING}"
     print_duplicate_char__func "${TB_DASH}" "${TB_TABLEWIDTH}" "${TB_NOCOLOR}"
 }
-bootinto_print_remark__sub() {
+bootintomenu_remark_print__sub() {
     if [[ ! -s "${tb_init_bootargs_tmp_fpath}" ]]; then
         return 0;
     fi
@@ -734,29 +996,20 @@ bootinto_print_remark__sub() {
     print_menuitem__func "${TB_EMPTYSTRING}" "${TB_EMPTYSTRING}" "${tb_bootinto_remarks}" "${TB_EMPTYSTRING}"
     print_duplicate_char__func "${TB_DASH}" "${TB_TABLEWIDTH}" "${TB_NOCOLOR}"
 }
-
-mainmenu_readdialog_reboot__sub() {
-    #Define variables
-    local mychoice="${TB_OPTIONS_N}"
-
-    #Move-down one line
-    movedown_and_clean__func "${TB_NUMOFLINES_1}"
-
-    #Show read-dialog
+bootintomenu_readdialog_choice__sub() {
     while [[ 1 ]]
     do
         #Select an option
-        read -N1 -r -p "${TB_READDIALOG_ARE_YOU_SURE_YOU_WISH_TO_REBOOT}" mychoice
-        # movedown_and_clean__func "${TB_NUMOFLINES_1}"
+        read -N1 -r -p "${TB_READDIALOG_PLEASE_CHOOSE_AN_OPTION}" tb_bootinto_mychoice
 
         #Only continue if a valid option is selected
-        if [[ ! -z ${mychoice} ]]; then
-            if [[ ${mychoice} =~ ${tb_reboot_reegex} ]]; then
+        if [[ ! -z ${tb_bootinto_mychoice} ]]; then
+            if [[ ${tb_bootinto_mychoice} =~ ${tb_bootinto_mychoice_regex} ]]; then
                 movedown_and_clean__func "${TB_NUMOFLINES_1}"
 
                 break
             else
-                if [[ ${mychoice} == ${TB_ENTER} ]]; then
+                if [[ ${tb_bootinto_mychoice} == ${TB_ENTER} ]]; then
                     moveup_and_clean__func "${TB_NUMOFLINES_1}"                    
                 else
                     moveup_and_clean__func "${TB_NUMOFLINES_0}"
@@ -770,12 +1023,123 @@ mainmenu_readdialog_reboot__sub() {
             readdialog_clean_buffer__func
         fi
     done
+}
+bootintomenu_readdialog_action__sub() {
+    #Goto the selected option
+    case ${tb_bootinto_mychoice} in
+        1)
+            bootintomenu_safemode__sub
+            ;;
+        2)
+            bootintomenu_backupmode__sub
+            ;;
+        3)
+            echo -e "in progress (${tb_bootinto_mychoice})"
+            ;;
+        4)
+            bootinto_readdialog_disable__sub
+            ;;
+        b)
+            flag_bootintomenu_exitloop=true;
+            ;;
+    esac
+}
+bootintomenu_safemode__sub() {
+    #Remove file (if present)
+    remove_file__func "${tb_init_bootargs_tmp_fpath}"
 
-    if [[ "${mychoice}" == "${TB_OPTIONS_Y}" ]]; then
-        movedown_and_clean__func "${TB_NUMOFLINES_1}"
-        
-        ${REBOOT_CMD}
-    fi
+    #Update 'tb_rootfs_ro_set' based on 'tb_overlaymode_set' value.
+    tb_bootinto_set="${TB_NOBOOT_IS_TRUE}"
+
+    #Write to file
+    echo "${tb_bootinto_set}" | tee "${tb_init_bootargs_tmp_fpath}" > /dev/null
+}
+bootintomenu_backupmode__sub() {
+    #Define constants
+    local PHASE_BOOTINTO_READDIALOG_BACKUPMODE_SRCPATH=10
+    local PHASE_BOOTINTO_READDIALOG_BACKUPMODE_SRCSIZE=11
+    local PHASE_BOOTINTO_READDIALOG_BACKUPMODE_DSTPATH=20
+    local PHASE_BOOTINTO_READDIALOG_BACKUPMODE_DSTSIZE=21
+    local PHASE_BOOTINTO_READDIALOG_BACKUPMODE_COMPARE_SIZES=30
+    local PHASE_BOOTINTO_READDIALOG_BACKUPMODE_EXIT=100
+
+    #Define variables
+    local phase="${PHASE_BOOTINTO_READDIALOG_BACKUPMODE_SRCPATH}"
+
+    #Initialize variables
+    tb_dstpath_set="${TB_EMPTYSTRING}"
+    tb_srcpath_set="${TB_EMPTYSTRING}"
+
+    #Start loop
+    while [[ 1 ]]
+    do
+        case "${phase}" in
+            "${PHASE_BOOTINTO_READDIALOG_BACKUPMODE_SRCPATH}")
+                bootintomenu_backupmode_select_srcpath__sub
+
+                if [[ "${flag_backupmode_exitloop}" == true ]]; then
+                    phase="${PHASE_BOOTINTO_READDIALOG_BACKUPMODE_EXIT}"
+                else
+                    phase="${PHASE_BOOTINTO_READDIALOG_BACKUPMODE_SRCSIZE}"
+                fi
+                ;;
+            "${PHASE_BOOTINTO_READDIALOG_BACKUPMODE_SRCSIZE}")
+>>>>>CONTINUE HERE
+                echo "in progress: PHASE_BOOTINTO_READDIALOG_BACKUPMODE_SRCSIZE"
+
+                phase="${PHASE_BOOTINTO_READDIALOG_BACKUPMODE_DSTPATH}"
+                ;;
+            "${PHASE_BOOTINTO_READDIALOG_BACKUPMODE_DSTPATH}")
+                echo "in progress: PHASE_BOOTINTO_READDIALOG_BACKUPMODE_DSTPATH"
+
+                phase="${PHASE_BOOTINTO_READDIALOG_BACKUPMODE_DSTSIZE}"
+                ;;
+            "${PHASE_BOOTINTO_READDIALOG_BACKUPMODE_DSTSIZE}")
+                echo "in progress: PHASE_BOOTINTO_READDIALOG_BACKUPMODE_DSTSIZE"
+
+                phase="${PHASE_BOOTINTO_READDIALOG_BACKUPMODE_COMPARE_SIZES}"
+                ;;
+            "${PHASE_BOOTINTO_READDIALOG_BACKUPMODE_COMPARE_SIZES}")
+                echo "in progress: PHASE_BOOTINTO_READDIALOG_BACKUPMODE_COMPARE_SIZES"
+
+                phase="${PHASE_BOOTINTO_READDIALOG_BACKUPMODE_EXIT}"
+                ;;
+            "${PHASE_BOOTINTO_READDIALOG_BACKUPMODE_EXIT}")
+                # echo "in progress: PHASE_BOOTINTO_READDIALOG_BACKUPMODE_EXIT"
+
+                break
+                ;;
+        esac
+    done
+}
+bootintomenu_backupmode_select_srcpath__sub() {
+    #Initialize variables
+    tb_path_list_arr=()
+
+    #Get list of source-paths
+    local srcpath_list_string=$(lsblk --noheadings --output PATH | grep "${TB_PATTERN_DEV_MMCBLK}" | sort --version-sort)
+
+    #Convert string to array
+    tb_path_list_arr=(${srcpath_list_string})
+
+    #Get array-length
+    tb_path_list_arrlen=${#tb_path_list_arr[@]}
+
+    #Print body
+    bootintomenu_arraylist_show__sub
+
+    #Show read-dialog
+    bootintomenu_arraylistitem_choice__sub "${TB_OUTPUT_SOURCE}"
+
+
+
+}
+
+
+
+bootinto_readdialog_disable__sub() {
+    #Remove file (if present)
+    remove_file__func "${tb_init_bootargs_tmp_fpath}"
 }
 
 
@@ -803,11 +1167,11 @@ main__sub() {
         mainmenu_print_remark__sub
 
         #Show read-dialog (loop)
-        #Note: result is passed to global variable 'tb_mychoice'
+        #Note: result is passed to global variable 'tb_mainmenu_mychoice'
         mainmenu_readdialog_choice__sub
 
         #Take action
-        mainmenu_readdialog_handler__sub
+        mainmenu_readdialog_action__sub
     done
 }
 
