@@ -3,6 +3,8 @@
 TB_BACKSPACE=$'\b'
 TB_DASH="-"
 TB_ENTER=$'\x0a'
+TB_ESCAPEKEY=$'\x1b'
+TB_SEMICOLON=";"
 
 #---COLOR CONSTANTS
 TB_NOCOLOR=$'\e[0;0m'
@@ -32,6 +34,15 @@ TB_TABLEWIDTH=$((( TB_TERMWINDOW_WIDTH * TB_PERCENT_80)/100 ))
 TB_OUTPUT_SOURCE="source"
 TB_OUTPUT_DESTINATION="destination"
 
+#---LEGEND CONSTANTS
+TB_LEGEND="${TB_FG_GREY_246}Legend:${TB_NOCOLOR}"
+TB_LEGEND_SAME="="
+TB_LEGEND_SAME_W_DESCRIPTION="${TB_LEGEND_SAME} : ${TB_FG_GREY_246}same${TB_NOCOLOR}"
+TB_LEGEND_NEW="${TB_FG_GREEN_158}+${TB_NOCOLOR}"
+TB_LEGEND_NEW_W_DESCRIPTION="${TB_LEGEND_NEW} : ${TB_FG_GREY_246}new${TB_NOCOLOR}"
+TB_LEGEND_NEW_PRIORITY="${TB_LEGEND_NEW}${TB_FG_RED_9}*${TB_NOCOLOR}"
+TB_LEGEND_NEW_PRIORITY_W_DESCRIPTION="${TB_LEGEND_NEW_PRIORITY}: ${TB_FG_GREY_246}new with priority${TB_NOCOLOR}"
+
 #---MENU CONSTANTS
 TB_MENU="(${TB_FG_GREY_246}Menu${TB_NOCOLOR})"
 TB_MENUITEM_BOOTINTO="Boot into"
@@ -45,18 +56,34 @@ TB_MODE_NONPERSISTENT="non-persistent"
 TB_MODE_PERSISTENT="persistent"
 
 TB_OPTIONS_B="b"
+TB_OPTIONS_H="h"
+TB_OPTIONS_M="m"
 TB_OPTIONS_N="n"
 TB_OPTIONS_R="r"
 TB_OPTIONS_Q="q"
 TB_OPTIONS_Y="y"
 TB_OPTIONS_BACK="Back"
+TB_OPTIONS_CLEAR="Clear"
+TB_OPTIONS_HOME="Home"
+TB_OPTIONS_MAIN="Main"
 TB_OPTIONS_REBOOT="Reboot"
+TB_OPTIONS_REDO="Redo"
 TB_OPTIONS_QUIT_CTRL_C="Quit (${TB_FG_GREY_246}Ctrl+C${TB_NOCOLOR})"
 
+TB_OPTIONS_SEMICOLON_B=";b"
+TB_OPTIONS_SEMICOLON_C=";c"
+TB_OPTIONS_SEMICOLON_H=";h"
+TB_OPTIONS_SEMICOLON_M=";m"
+TB_OPTIONS_SEMICOLON_Q=";q"
+
 TB_READDIALOG_ARE_YOU_SURE_YOU_WISH_TO_REBOOT="Are you sure you wish to reboot (y/n)? "
-TB_READDIALOG_PLEASE_CHOOSE_AN_OPTION="Please choose an option: "
+TB_READDIALOG_CHOOSE_AN_OPTION="Choose an option: "
+TB_READDIALOG_CHOOSE_AN_OPTION_AND_PRESS_ENTER="Choose an option (${TB_FG_GREY_246}and press ENTER${TB_NOCOLOR}): "
+TB_READDIALOG_INPUT_AND_PRESS_ENTER="Input (${TB_FG_GREY_246}and press ENTER${TB_NOCOLOR}): "
 
 TB_TITLE_BOOTINTO="${TB_FG_BLUE_45}TB-INIT.SH: ${TB_FG_BLUE_33}BOOT-INTO-MENU${TB_NOCOLOR}"
+TB_TITLE_BACKUP_CHOOSE_DESTINATION_DIR="${TB_FG_ORANGE_215}BACKUP:${TB_NOCOLOR} Choose destination-dir"
+TB_TITLE_BACKUP_PROVIDE_DESTINATION_IMAGE_FILENAME="${TB_FG_ORANGE_215}BACKUP:${TB_NOCOLOR} Provide image-filename"
 TB_TITLE_BACKUP_CHOOSE_SOURCE_PATH="${TB_FG_ORANGE_215}BACKUP:${TB_NOCOLOR} Choose source-path"
 TB_TITLE_TB_INIT_SH="${TB_FG_BLUE_45}TB-INIT.SH: ${TB_FG_BLUE_33}MAIN-MENU${TB_NOCOLOR}"
 TB_TITLE_TIBBO="TIBBO"
@@ -98,14 +125,14 @@ TB_PATTERN_TB_OVERLAY="tb_overlay"
 TB_PATTERN_TB_RESTORE="tb_restore"
 TB_PATTERN_TB_ROOTFS_RO="tb_rootfs_ro"
 
-#---LEGEND CONSTANTS
-TB_LEGEND="${TB_FG_GREY_246}Legend:${TB_NOCOLOR}"
-TB_LEGEND_SAME="="
-TB_LEGEND_SAME_W_DESCRIPTION="${TB_LEGEND_SAME} : ${TB_FG_GREY_246}same${TB_NOCOLOR}"
-TB_LEGEND_NEW="${TB_FG_GREEN_158}+${TB_NOCOLOR}"
-TB_LEGEND_NEW_W_DESCRIPTION="${TB_LEGEND_NEW} : ${TB_FG_GREY_246}new${TB_NOCOLOR}"
-TB_LEGEND_NEW_PRIORITY="${TB_LEGEND_NEW}${TB_FG_RED_9}*${TB_NOCOLOR}"
-TB_LEGEND_NEW_PRIORITY_W_DESCRIPTION="${TB_LEGEND_NEW_PRIORITY}: ${TB_FG_GREY_246}new with priority${TB_NOCOLOR}"
+#---PRINT CONSTANTS
+TB_PRINT_ERROR="***${TB_FG_RED_9}ERROR${TB_NOCOLOR}"
+
+TB_PRINT_OPTIONS_SEMICOLON_B="${TB_FG_YELLOW_33};${TB_NOCOLOR}b"
+TB_PRINT_OPTIONS_SEMICOLON_C="${TB_FG_YELLOW_33};${TB_NOCOLOR}c"
+TB_PRINT_OPTIONS_SEMICOLON_H="${TB_FG_YELLOW_33};${TB_NOCOLOR}h"
+TB_PRINT_OPTIONS_SEMICOLON_M="${TB_FG_YELLOW_33};${TB_NOCOLOR}m"
+TB_PRINT_OPTIONS_SEMICOLON_Q="${TB_FG_YELLOW_33};${TB_NOCOLOR}q"
 
 #---REMARK CONSTANTS
 TB_REMARKS="${TB_FG_BLUE_45}Remarks:${TB_NOCOLOR}"
@@ -119,6 +146,7 @@ TB_THREESPACES="${TB_TWOSPACES}${TB_ONESPACE}"
 TB_FOURSPACES="${TB_TWOSPACES}${TB_TWOSPACES}"
 
 #---PATHS
+media_dir="/media"
 overlay_dir="/overlay"
 proc_dir="/proc"
 rootfs_dir="/"
@@ -136,6 +164,7 @@ tb_bootinto_mychoice="${TB_EMPTYSTRING}"
 tb_bootinto_remarks="${TB_EMPTYSTRING}"
 tb_bootinto_set="${TB_EMPTYSTRING}"
 tb_bootinto_set_printable="${TB_EMPTYSTRING}"
+tb_bootinto_status="${TB_EMPTYSTRING}"
 tb_init_bootargs_cfg_tb_rootfs_ro_get="${TB_EMPTYSTRING}"
 tb_mainmenu_mychoice="${TB_EMPTYSTRING}"
 tb_overlaymode_set="${TB_EMPTYSTRING}"
@@ -145,33 +174,27 @@ tb_proc_cmdline_tb_overlay_get="${TB_EMPTYSTRING}"
 tb_proc_cmdline_tb_rootfs_ro_get="${TB_EMPTYSTRING}"
 tb_remark="${TB_EMPTYSTRING}"
 
+tb_dstfilename_set="${TB_EMPTYSTRING}"
 tb_dstpath_set="${TB_EMPTYSTRING}"
+tb_dstpath_size_KB=0
+tb_numoflines_correction=${TB_NUMOFLINES_0}
 tb_srcpath_set="${TB_EMPTYSTRING}"
+tb_srcpath_size_B=0
+tb_srcpath_size_KB=0
+
 tb_path_list_arr=()
 
-tb_bootinto_mychoice_regex="[1234b]"
+tb_bootinto_mychoice_regex="[1234mq]"
 tb_mainmenu_mychoice_regex="[12rq]"
-tb_reboot_reegex="[yn]"
+tb_yesno_regex="[yn]"
 
-flag_backupmode_exitloop=false
+flag_backupmode_restoremode_exitloop=false
 flag_bootintomenu_exitloop=false
-flag_bootinto_isset=false
 flag_file_can_be_removed=false
-
+flag_go_back_onestep=false
 
 
 #---FUNCTIONS
-function enable_normal_ctrl_c__func() {
-    trap ${TB_TRAPNUM_2}
-    trap tb_ctrl_c__sub SIGINT
-}
-function enable_bootinto_ctrl_c__func() {
-    trap ${TB_TRAPNUM_2}
-    trap tb_ctrl_c_clean_reprint_bootinto_readdialog__sub SIGINT
-
-    # trap '' ${TB_TRAPNUM_2}
-}
-
 function backspace__func() {
     #Input args
     local string__input=${1}
@@ -193,6 +216,13 @@ function backspace__func() {
 
     #Output
     echo "${str_output}"
+}
+
+function cursor_hide__func() {
+    printf '\e[?25l'
+}
+function cursor_show__func() {
+    printf '\e[?25h'
 }
 
 function duplicate_char__func() {
@@ -353,7 +383,7 @@ function extract_bootinto_info__func() {
     fi
    
     #Initialize global variables
-    flag_bootinto_isset="${TB_LEGEND_SAME}"
+    tb_bootinto_status="${TB_LEGEND_SAME}"
     tb_bootinto_get="${TB_EMPTYSTRING}"
     tb_bootinto_set="${TB_MODE_DISABLED}"
     # tb_bootinto_set_printable="${TB_FG_YELLOW_33}${tb_bootinto_set}${TB_NOCOLOR}"
@@ -369,7 +399,7 @@ function extract_bootinto_info__func() {
         tb_bootinto_set="${TB_MODE_SAFEMODE}"
         # tb_bootinto_set_printable="${TB_FG_YELLOW_33}${TB_MODE_SAFEMODE}${TB_NOCOLOR}"
 
-        flag_bootinto_isset="${TB_LEGEND_NEW_PRIORITY}"
+        tb_bootinto_status="${TB_LEGEND_NEW_PRIORITY}"
     fi
     if [[ -n "${backup_result}" ]]; then
         tb_bootinto_get=$(echo "${backup_result}" | cut -d"=" -f2 | sed 's/\s+//g' | tr -d '\r')
@@ -377,7 +407,7 @@ function extract_bootinto_info__func() {
         tb_bootinto_set="${TB_MODE_BACKUPMODE}"
         # tb_bootinto_set_printable="${TB_FG_RED_187}${TB_MODE_BACKUPMODE}${TB_NOCOLOR}"
 
-        flag_bootinto_isset="${TB_LEGEND_NEW_PRIORITY}"
+        tb_bootinto_status="${TB_LEGEND_NEW_PRIORITY}"
     fi
     if [[ -n "${restore_result}" ]]; then
         tb_bootinto_get=$(echo "${restore_result}" | cut -d"=" -f2 | sed 's/\s+//g' | tr -d '\r')
@@ -385,12 +415,12 @@ function extract_bootinto_info__func() {
         tb_bootinto_set="${TB_MODE_RESTOREMODE}"
         # tb_bootinto_set_printable="${TB_FG_GREEN_158}${TB_MODE_RESTOREMODE}${TB_NOCOLOR}"
 
-        flag_bootinto_isset="${TB_LEGEND_NEW_PRIORITY}"
+        tb_bootinto_status="${TB_LEGEND_NEW_PRIORITY}"
     fi
 
     #Update printable or remove file
     if [[ "${tb_bootinto_set}" != "${TB_MODE_DISABLED}" ]]; then
-        if [[ ${flag_bootinto_isset} != "${TB_LEGEND_SAME}" ]]; then
+        if [[ ${tb_bootinto_status} != "${TB_LEGEND_SAME}" ]]; then
             tb_bootinto_set_printable="${tb_bootinto_set}: ${TB_LEGEND_NEW_PRIORITY}"
         else
             tb_bootinto_set_printable="${tb_bootinto_set}"
@@ -416,9 +446,38 @@ function isNumeric__func() {
     fi
 }
 
+function movedown__func() {
+    #Input args
+    local numoflines__input=${1}
+
+    #Exit right away if 'numoflines__input = 0'
+    if [[ ${numoflines__input} -eq 0 ]]; then
+        return 0;
+    fi
+
+    #Hide cursor
+    cursor_hide__func
+
+    local tcounter=1
+    while [[ ${tcounter} -le ${numoflines__input} ]]
+    do
+        #Move-up 1 line
+        tput cud1
+    
+        #Increment tcounter by 1
+        ((tcounter++))
+    done
+
+    #Show cursor
+    cursor_show__func
+}
+
 function movedown_and_clean__func() {
     #Input args
     local numoflines__input=${1}
+
+    #Hide cursor
+    cursor_hide__func
 
     #Clear lines
     local tcounter=1
@@ -431,11 +490,43 @@ function movedown_and_clean__func() {
         #Increment tcounter by 1
         ((tcounter++))
     done
+
+    #Show cursor
+    cursor_show__func
+}
+
+function moveup__func() {
+    #Input args
+    local numoflines__input=${1}
+
+    #Exit right away if 'numoflines__input = 0'
+    if [[ ${numoflines__input} -eq 0 ]]; then
+        return 0;
+    fi
+
+    #Hide cursor
+    cursor_hide__func
+
+    local tcounter=1
+    while [[ ${tcounter} -le ${numoflines__input} ]]
+    do
+        #Move-up 1 line
+        tput cuu1
+    
+        #Increment tcounter by 1
+        ((tcounter++))
+    done
+
+    #Show cursor
+    cursor_show__func
 }
 
 function moveup_and_clean__func() {
     #Input args
     local numoflines__input=${1}
+
+    #Hide cursor
+    cursor_hide__func
 
     #Clear lines
     local xpos_current=0
@@ -461,6 +552,9 @@ function moveup_and_clean__func() {
 
     #Move to the beginning of line
     tput cub ${xpos_current}
+
+    #Show cursor
+    cursor_show__func
 }
 
 function print_centered_string__func() {
@@ -594,20 +688,78 @@ function remove_file__func() {
     fi
 }
 
+function semicolon_option_validate_and_return_value() {
+    #Input args
+    local string__input=${1}
+
+	#Define variables
+	local all_chars_after_semicolon="${TB_EMPTYSTRING}"
+	local all_chars_after_semicolon_len=0
+	local semicolon_option="${TB_EMPTYSTRING}"
+	local first_char_followed_after_semicolon="${TB_EMPTYSTRING}"
+	local string_followed_after_first_char="${TB_EMPTYSTRING}"
+	local string_followed_after_first_char_len=0
+	local ret="${string__input}"
+
+    #Find the right-most semi-colon and get the string on the right-side of this semicolon
+    all_chars_after_semicolon=$(echo "${string__input}" | rev | cut -d";" -f1 | rev)
+
+	if [[ -n "${all_chars_after_semicolon}" ]]; then
+		#Get the T character on the right-side of the semicolon
+		first_char_followed_after_semicolon=${all_chars_after_semicolon:0:1}
+
+		#Get length of 'all_chars_after_semicolon'
+		all_chars_after_semicolon_len=${#all_chars_after_semicolon}
+
+		#Get the string which followed after this FIRST character
+		string_followed_after_first_char=${all_chars_after_semicolon:1:all_chars_after_semicolon_len}
+
+		#Get length of 'string_followed_after_first_char'
+		string_followed_after_first_char_len=${#string_followed_after_first_char}
+
+		#Combine semicolon (;) with 'first_char_followed_after_semicolon'
+		semicolon_option="${TB_SEMICOLON}${first_char_followed_after_semicolon}"
+
+		case "${semicolon_option}" in
+			"${TB_OPTIONS_SEMICOLON_C}")
+				#Remark: 
+				#	if a semicolon-c (;c) was inputted,
+				#		then return the substring followed AFTER this semicolon-c.
+				ret="${string_followed_after_first_char}"
+
+				#Note: if 'ret' is an empty string, then return the semicolon-c.
+				if [[ -z "${ret}" ]]; then
+					ret="${semicolon_option}"
+				fi
+				;;
+			*)
+				#Remarks:
+				#	Only return a semicolon-<any char> (e.g. ;x)
+				#		if this semicolon-<any char> is found on the RIGHTMOST side.
+				#	For all other cases, return the original string 'string__input' 
+				if [[ ${string_followed_after_first_char_len} -eq 0 ]]; then
+					ret="${semicolon_option}"
+				fi
+				;;
+		esac
+	fi
+
+	#Output
+	echo "${ret}"
+}
+
 
 
 #---SUBROUTINES
 trap tb_ctrl_c__sub SIGINT
 tb_ctrl_c__sub() {
-    exit__func "${TB_EXITCODE_99}" "${TB_NUMOFLINES_2}"
-}
+    #Remarks:
+    #   'tb_numoflines_correction' has been implemented due to 
+    #       subroutine 'bootintomenu_backupmode_dstfilename_choice_and_action__sub'
+    #       where the cursor is moved up with 8 lines.
+    local numoflines=$((TB_NUMOFLINES_2 + tb_numoflines_correction))
 
-tb_ctrl_c_clean_reprint_bootinto_readdialog__sub() {
-    moveup_and_clean__func "${TB_NUMOFLINES_0}"
-
-    readdialog_clean_buffer__func
-
-    printf "%s" "${TB_READDIALOG_PLEASE_CHOOSE_AN_OPTION}"
+    exit__func "${TB_EXITCODE_99}" "${numoflines}"
 }
 
 mainmenu_extract_info__func() {
@@ -652,7 +804,7 @@ mainmenu_print_legend__sub() {
 }
 
 mainmenu_print_remark__sub() {
-    if [[ "${tb_overlaymode_tag}" == "${TB_LEGEND_SAME}" ]] && [[ "${flag_bootinto_isset}" == "${TB_LEGEND_SAME}" ]]; then
+    if [[ "${tb_overlaymode_tag}" == "${TB_LEGEND_SAME}" ]] && [[ "${tb_bootinto_status}" == "${TB_LEGEND_SAME}" ]]; then
         return 0;
     fi
 
@@ -666,7 +818,7 @@ mainmenu_readdialog_choice__sub() {
     while [[ 1 ]]
     do
         #Select an option
-        read -N1 -r -p "${TB_READDIALOG_PLEASE_CHOOSE_AN_OPTION}" tb_mainmenu_mychoice
+        read -N1 -r -p "${TB_READDIALOG_CHOOSE_AN_OPTION}" tb_mainmenu_mychoice
         # movedown_and_clean__func "${TB_NUMOFLINES_1}"
 
         #Only continue if a valid option is selected
@@ -750,7 +902,7 @@ mainmenu_readdialog_reboot__sub() {
 
         #Only continue if a valid option is selected
         if [[ ! -z ${keyinput} ]]; then
-            if [[ ${keyinput} =~ ${tb_reboot_reegex} ]]; then
+            if [[ ${keyinput} =~ ${tb_yesno_regex} ]]; then
                 movedown_and_clean__func "${TB_NUMOFLINES_1}"
 
                 break
@@ -778,12 +930,22 @@ mainmenu_readdialog_reboot__sub() {
 }
 
 bootintomenu_arraylist_show__sub() {
+    #Input args
+    local flag_output_src_or_dst=${1}
+    local flag_show_option_back=${2}
+
+    #Update variable
+    local title_msg="${TB_TITLE_BACKUP_CHOOSE_SOURCE_PATH}"
+    if [[ "${flag_output_src_or_dst}" == "${TB_OUTPUT_DESTINATION}" ]]; then
+        title_msg="${TB_TITLE_BACKUP_CHOOSE_DESTINATION_DIR}"
+    fi
+
     #Move-down one line
     movedown_and_clean__func "${TB_NUMOFLINES_1}"
 
     #Print title
     print_duplicate_char__func "${TB_DASH}" "${TB_TABLEWIDTH}" "${TB_FG_GREY_243}"
-    print_leading_trailing_strings_on_opposite_sides__func "${TB_TITLE_BACKUP_CHOOSE_SOURCE_PATH}" \
+    print_leading_trailing_strings_on_opposite_sides__func "${title_msg}" \
             "${TB_EMPTYSTRING}" \
             "${TB_TABLEWIDTH}"
     print_duplicate_char__func "${TB_DASH}" "${TB_TABLEWIDTH}" "${TB_FG_GREY_243}"
@@ -803,21 +965,29 @@ bootintomenu_arraylist_show__sub() {
 
     #Show 'back'
     print_duplicate_char__func "${TB_DASH}" "${TB_TABLEWIDTH}" "${TB_FG_GREY_243}"
-    print_menuitem__func "${TB_FOURSPACES}" "${TB_OPTIONS_B}" "${TB_OPTIONS_BACK}" "${TB_EMPTYSTRING}"
+    if [[ "${flag_show_option_back}" == true ]]; then
+        print_menuitem__func "${TB_FOURSPACES}" "${TB_OPTIONS_B}" "${TB_OPTIONS_BACK}" "${TB_EMPTYSTRING}"
+    fi
+    print_menuitem__func "${TB_FOURSPACES}" "${TB_OPTIONS_H}" "${TB_OPTIONS_HOME}" "${TB_EMPTYSTRING}"
+    print_menuitem__func "${TB_FOURSPACES}" "${TB_OPTIONS_M}" "${TB_OPTIONS_MAIN}" "${TB_EMPTYSTRING}"
+    print_menuitem__func "${TB_FOURSPACES}" "${TB_OPTIONS_Q}" "${TB_OPTIONS_QUIT_CTRL_C}" "${TB_EMPTYSTRING}"
     print_duplicate_char__func "${TB_DASH}" "${TB_TABLEWIDTH}" "${TB_FG_GREY_243}"
 }
-bootintomenu_arraylistitem_choice__sub() {
+bootintomenu_arraylistitem_choice_and_action__sub() {
     #Input args
     local flag_output_src_or_dst=${1}
+    local flag_show_option_back=${2}
 
     #Initalize variables
     local arr_selected_index=0
     local echomsg="${TB_EMPTYSTRING}"
-    local echomsg_len=0
+    local echomsg_wo_color="${TB_EMPTYSTRING}"
+    local echomsg_wo_color_len=0
     local keyinput="${TB_EMPTYSTRING}"
     local keyinput_tot="${TB_EMPTYSTRING}"
 
-    flag_backupmode_exitloop=false
+    flag_backupmode_restoremode_exitloop=false
+    flag_go_back_onestep=false
 
     while [[ 1 ]]
     do
@@ -825,29 +995,60 @@ bootintomenu_arraylistitem_choice__sub() {
         keyinput="${TB_EMPTYSTRING}"
 
         #Update string
-        echomsg="${TB_READDIALOG_PLEASE_CHOOSE_AN_OPTION}${keyinput_tot}"
+        echomsg="${TB_READDIALOG_CHOOSE_AN_OPTION_AND_PRESS_ENTER}${keyinput_tot}"
+
+        #Get string w/o color
+        echomsg_wo_color=$(echo "${echomsg}" | sed "s,\x1B\[[0-9;]*m,,g")
 
         #Update length
-        echomsg_len="${#echomsg}"
+        echomsg_wo_color_len="${#echomsg_wo_color}"
 
         #Print message
         echo -e "${echomsg}"
 
         #Move up and then move to the end of 'echomsg'
-        tput cuu1 && tput cuf "${echomsg_len}"
+        tput cuu1 && tput cuf "${echomsg_wo_color_len}"
         
         #Execute read-dialog and wait for input
         read -N1 -rs keyinput
 
         case "${keyinput}" in
             "${TB_OPTIONS_B}")
+                if [[ "${flag_show_option_back}" == true ]]; then
+                    #Move down and clean one line
+                    movedown_and_clean__func "${TB_NUMOFLINES_1}"
+
+                    #Set flag to true
+                    flag_go_back_onestep=true
+
+                    break
+                fi
+                ;;
+            "${TB_OPTIONS_H}")
                 #Move down and clean one line
                 movedown_and_clean__func "${TB_NUMOFLINES_1}"
 
                 #Set flag to true
-                flag_backupmode_exitloop=true
+                flag_backupmode_restoremode_exitloop=true
 
                 break
+                ;;
+            "${TB_OPTIONS_M}")
+                #Move down and clean one line
+                movedown_and_clean__func "${TB_NUMOFLINES_1}"
+
+                #Set flags to true
+                flag_bootintomenu_exitloop=true
+                flag_backupmode_restoremode_exitloop=true
+
+                break
+                ;;
+            "${TB_OPTIONS_Q}")
+                #Move down and clean one line
+                movedown_and_clean__func "${TB_NUMOFLINES_1}"
+
+                #Exit script
+                exit__func "${TB_EXITCODE_99}" "${TB_NUMOFLINES_2}"
                 ;;
             "${TB_BACKSPACE}")
                 #Get the updated 'keyinput_tot' after pressing BACKSPACE
@@ -879,10 +1080,13 @@ bootintomenu_arraylistitem_choice__sub() {
                     keyinput_tot="${TB_EMPTYSTRING}"
                 fi
                 ;;
+            "${TB_ESCAPEKEY}")
+                #Do nothing
+                ;;
             *)
                 if [[ -n "${keyinput}" ]]; then
                     #Update variable
-                    keyinput_tot="${keyinput_tot}${keyinput}"
+                    keyinput_tot+="${keyinput}"
                 fi
                 ;;
         esac
@@ -895,13 +1099,10 @@ bootintomenu_arraylistitem_choice__sub() {
     done
 }
 bootintomenu__sub() {
-    #Initialize variables
-    flag_bootintomenu_exitloop=false
-
     while [[ 1 ]]
     do
-        #Enable ctrl+C for bootinto
-        enable_bootinto_ctrl_c__func
+        #Initialize variables
+        flag_bootintomenu_exitloop=false
 
         #Print header
         tibbo_print_title__sub    
@@ -921,9 +1122,6 @@ bootintomenu__sub() {
 
         #Take action
         bootintomenu_readdialog_action__sub
-
-        #Enable ctrl+C
-        enable_normal_ctrl_c__func
 
         #Check if a flag was given to exit loop
         if [[ "${flag_bootintomenu_exitloop}" == true ]]; then
@@ -976,7 +1174,8 @@ bootintomenu_body_print__sub() {
     print_menuitem__func "${TB_FOURSPACES}" "${TB_ITEMNUM_3}" "${print_restoremode}"
     print_menuitem__func "${TB_FOURSPACES}" "${TB_ITEMNUM_4}" "${print_disabled}"
     print_duplicate_char__func "${TB_DASH}" "${TB_TABLEWIDTH}" "${TB_NOCOLOR}"
-    print_menuitem__func "${TB_FOURSPACES}" "${TB_OPTIONS_B}" "${TB_OPTIONS_BACK}" "${TB_EMPTYSTRING}"
+    print_menuitem__func "${TB_FOURSPACES}" "${TB_OPTIONS_M}" "${TB_OPTIONS_MAIN}" "${TB_EMPTYSTRING}"
+    print_menuitem__func "${TB_FOURSPACES}" "${TB_OPTIONS_Q}" "${TB_OPTIONS_QUIT_CTRL_C}" "${TB_EMPTYSTRING}"
     print_duplicate_char__func "${TB_DASH}" "${TB_TABLEWIDTH}" "${TB_NOCOLOR}"
 }
 bootintomenu_remark_print__sub() {
@@ -1000,7 +1199,7 @@ bootintomenu_readdialog_choice__sub() {
     while [[ 1 ]]
     do
         #Select an option
-        read -N1 -r -p "${TB_READDIALOG_PLEASE_CHOOSE_AN_OPTION}" tb_bootinto_mychoice
+        read -N1 -r -p "${TB_READDIALOG_CHOOSE_AN_OPTION}" tb_bootinto_mychoice
 
         #Only continue if a valid option is selected
         if [[ ! -z ${tb_bootinto_mychoice} ]]; then
@@ -1037,10 +1236,13 @@ bootintomenu_readdialog_action__sub() {
             echo -e "in progress (${tb_bootinto_mychoice})"
             ;;
         4)
-            bootinto_readdialog_disable__sub
+            bootintomenu_disable__sub
             ;;
-        b)
+        m)
             flag_bootintomenu_exitloop=true;
+            ;;
+        q)
+            exit__func "${TB_EXITCODE_99}" "${TB_NUMOFLINES_2}"
             ;;
     esac
 }
@@ -1058,8 +1260,9 @@ bootintomenu_backupmode__sub() {
     #Define constants
     local PHASE_BOOTINTO_READDIALOG_BACKUPMODE_SRCPATH=10
     local PHASE_BOOTINTO_READDIALOG_BACKUPMODE_SRCSIZE=11
-    local PHASE_BOOTINTO_READDIALOG_BACKUPMODE_DSTPATH=20
+    local PHASE_BOOTINTO_READDIALOG_BACKUPMODE_DSTDIR=20
     local PHASE_BOOTINTO_READDIALOG_BACKUPMODE_DSTSIZE=21
+    local PHASE_BOOTINTO_READDIALOG_BACKUPMODE_DSTFILE=22
     local PHASE_BOOTINTO_READDIALOG_BACKUPMODE_COMPARE_SIZES=30
     local PHASE_BOOTINTO_READDIALOG_BACKUPMODE_EXIT=100
 
@@ -1075,29 +1278,59 @@ bootintomenu_backupmode__sub() {
     do
         case "${phase}" in
             "${PHASE_BOOTINTO_READDIALOG_BACKUPMODE_SRCPATH}")
-                bootintomenu_backupmode_select_srcpath__sub
+                bootintomenu_backupmode_srcpath_select__sub
 
-                if [[ "${flag_backupmode_exitloop}" == true ]]; then
+                if [[ "${flag_backupmode_restoremode_exitloop}" == true ]]; then
                     phase="${PHASE_BOOTINTO_READDIALOG_BACKUPMODE_EXIT}"
                 else
                     phase="${PHASE_BOOTINTO_READDIALOG_BACKUPMODE_SRCSIZE}"
                 fi
                 ;;
             "${PHASE_BOOTINTO_READDIALOG_BACKUPMODE_SRCSIZE}")
->>>>>CONTINUE HERE
-                echo "in progress: PHASE_BOOTINTO_READDIALOG_BACKUPMODE_SRCSIZE"
+                bootintomenu_backupmode_srcsize_get__sub
 
-                phase="${PHASE_BOOTINTO_READDIALOG_BACKUPMODE_DSTPATH}"
+                if [[ "${flag_backupmode_restoremode_exitloop}" == true ]]; then
+                    phase="${PHASE_BOOTINTO_READDIALOG_BACKUPMODE_EXIT}"
+                else
+                    phase="${PHASE_BOOTINTO_READDIALOG_BACKUPMODE_DSTDIR}"
+                fi
                 ;;
-            "${PHASE_BOOTINTO_READDIALOG_BACKUPMODE_DSTPATH}")
-                echo "in progress: PHASE_BOOTINTO_READDIALOG_BACKUPMODE_DSTPATH"
+            "${PHASE_BOOTINTO_READDIALOG_BACKUPMODE_DSTDIR}")
+                bootintomenu_backupmode_dstdir_select__sub
 
-                phase="${PHASE_BOOTINTO_READDIALOG_BACKUPMODE_DSTSIZE}"
+                if [[ "${flag_go_back_onestep}" == true ]]; then
+                    phase="${PHASE_BOOTINTO_READDIALOG_BACKUPMODE_SRCPATH}"
+                else
+                    if [[ "${flag_backupmode_restoremode_exitloop}" == true ]]; then
+                        phase="${PHASE_BOOTINTO_READDIALOG_BACKUPMODE_EXIT}"
+                    else
+                        phase="${PHASE_BOOTINTO_READDIALOG_BACKUPMODE_DSTFILE}"
+                    fi
+                fi
+                ;;
+            "${PHASE_BOOTINTO_READDIALOG_BACKUPMODE_DSTFILE}")
+                bootintomenu_backupmode_dstfilename_input__sub
+
+echo "${tb_dstfilename_set}"
+
+                if [[ "${flag_go_back_onestep}" == true ]]; then
+                    phase="${PHASE_BOOTINTO_READDIALOG_BACKUPMODE_DSTDIR}"
+                else
+                    if [[ "${flag_backupmode_restoremode_exitloop}" == true ]]; then
+                        phase="${PHASE_BOOTINTO_READDIALOG_BACKUPMODE_EXIT}"
+                    else
+                        phase="${PHASE_BOOTINTO_READDIALOG_BACKUPMODE_DSTSIZE}"
+                    fi
+                fi
                 ;;
             "${PHASE_BOOTINTO_READDIALOG_BACKUPMODE_DSTSIZE}")
-                echo "in progress: PHASE_BOOTINTO_READDIALOG_BACKUPMODE_DSTSIZE"
+                bootintomenu_backupmode_dstsize_get__sub
 
-                phase="${PHASE_BOOTINTO_READDIALOG_BACKUPMODE_COMPARE_SIZES}"
+                if [[ "${flag_backupmode_restoremode_exitloop}" == true ]]; then
+                    phase="${PHASE_BOOTINTO_READDIALOG_BACKUPMODE_EXIT}"
+                else
+                    phase="${PHASE_BOOTINTO_READDIALOG_BACKUPMODE_COMPARE_SIZES}"
+                fi
                 ;;
             "${PHASE_BOOTINTO_READDIALOG_BACKUPMODE_COMPARE_SIZES}")
                 echo "in progress: PHASE_BOOTINTO_READDIALOG_BACKUPMODE_COMPARE_SIZES"
@@ -1112,7 +1345,7 @@ bootintomenu_backupmode__sub() {
         esac
     done
 }
-bootintomenu_backupmode_select_srcpath__sub() {
+bootintomenu_backupmode_srcpath_select__sub() {
     #Initialize variables
     tb_path_list_arr=()
 
@@ -1126,18 +1359,257 @@ bootintomenu_backupmode_select_srcpath__sub() {
     tb_path_list_arrlen=${#tb_path_list_arr[@]}
 
     #Print body
-    bootintomenu_arraylist_show__sub
+    bootintomenu_arraylist_show__sub "${TB_OUTPUT_SOURCE}" "false"
 
     #Show read-dialog
-    bootintomenu_arraylistitem_choice__sub "${TB_OUTPUT_SOURCE}"
+    #Note: this subroutine passes the result to the global variable 'tb_srcpath_set'
+    bootintomenu_arraylistitem_choice_and_action__sub "${TB_OUTPUT_SOURCE}" "false"
+}
+bootintomenu_backupmode_srcsize_get__sub() {
+    #Note: 'blockdev' should only be used to get the size of the partitions (e.g. /dev/mmcblk0, /dev/mmcblk0p8)
+    tb_srcpath_size_B=$(sudo blockdev --getsize64 "${tb_srcpath_set}" 2> /dev/null); exitcode=$?
 
+    if [[ ${exitcode} -eq 0 ]]; then    #succesful
+        #Convert to Kilobytes
+        tb_srcpath_size_KB=$((tb_srcpath_size_B / 1024))
+    else    #error
+        #Set flag to true
+        flag_backupmode_restoremode_exitloop=true
 
+        #Move down and clean one line
+        movedown_and_clean__func "${TB_NUMOFLINES_1}"
 
+        #Print error-message
+        local printmsg="${TB_PRINT_ERROR}: invalid or non-existing partition '${tb_srcpath_set}'"
+
+        print_menuitem__func "${TB_EMPTYSTRING}" "${TB_EMPTYSTRING}" "${printmsg}" "${TB_EMPTYSTRING}"
+    fi
+
+}
+bootintomenu_backupmode_dstdir_select__sub() {
+    #Initialize variables
+    tb_path_list_arr=()
+
+    #Get list of source-paths
+    local dstfldr_list_string=$(ls -1 ${media_dir} | sort --version-sort)
+    local dstfldr_list_arr=(${dstfldr_list_string})
+    local dstpath_list_string=$(printf "${media_dir}/%s\n" "${dstfldr_list_arr[@]}")
+
+    #Convert string to array
+    tb_path_list_arr=(${dstpath_list_string})
+
+    #Get array-length
+    tb_path_list_arrlen=${#tb_path_list_arr[@]}
+
+    #Print body
+    bootintomenu_arraylist_show__sub "${TB_OUTPUT_DESTINATION}" "true"
+
+    #Show read-dialog
+    #Note: this subroutine passes the result to the global variable 'tb_dstpath_set'
+    bootintomenu_arraylistitem_choice_and_action__sub "${TB_OUTPUT_DESTINATION}" "true"
+}
+bootintomenu_backupmode_dstfilename_input__sub() {
+    #Print body
+    bootintomenu_backupmode_dstfilename_body_print__sub
+
+    #Show read-dialog
+    #Note: this subroutine passes the result to the global variable 'tb_dstfilename_set'
+    bootintomenu_backupmode_dstfilename_choice_and_action__sub
+}
+bootintomenu_backupmode_dstfilename_body_print__sub() {
+    #Move-down one line
+    movedown_and_clean__func "${TB_NUMOFLINES_1}"
+
+    #Print title
+    print_duplicate_char__func "${TB_DASH}" "${TB_TABLEWIDTH}" "${TB_FG_GREY_243}"
+    print_leading_trailing_strings_on_opposite_sides__func "${TB_TITLE_BACKUP_PROVIDE_DESTINATION_IMAGE_FILENAME}" \
+            "${TB_EMPTYSTRING}" \
+            "${TB_TABLEWIDTH}"
+    print_duplicate_char__func "${TB_DASH}" "${TB_TABLEWIDTH}" "${TB_FG_GREY_243}"
+
+    #Leave an empty line for adding the read-dialog later on
+    movedown_and_clean__func "${TB_NUMOFLINES_1}"
+
+    #Show 'back'
+    print_duplicate_char__func "${TB_DASH}" "${TB_TABLEWIDTH}" "${TB_FG_GREY_243}"
+    print_menuitem__func "${TB_FOURSPACES}" "${TB_PRINT_OPTIONS_SEMICOLON_C}" "${TB_OPTIONS_CLEAR}" "${TB_EMPTYSTRING}"
+    print_menuitem__func "${TB_FOURSPACES}" "${TB_PRINT_OPTIONS_SEMICOLON_B}" "${TB_OPTIONS_BACK}" "${TB_EMPTYSTRING}"
+    print_menuitem__func "${TB_FOURSPACES}" "${TB_PRINT_OPTIONS_SEMICOLON_H}" "${TB_OPTIONS_HOME}" "${TB_EMPTYSTRING}"
+    print_menuitem__func "${TB_FOURSPACES}" "${TB_PRINT_OPTIONS_SEMICOLON_M}" "${TB_OPTIONS_MAIN}" "${TB_EMPTYSTRING}"
+    print_menuitem__func "${TB_FOURSPACES}" "${TB_PRINT_OPTIONS_SEMICOLON_Q}" "${TB_OPTIONS_QUIT_CTRL_C}" "${TB_EMPTYSTRING}"
+    print_duplicate_char__func "${TB_DASH}" "${TB_TABLEWIDTH}" "${TB_FG_GREY_243}"
+
+    #Move-up seven (7) lines
+    moveup__func "${TB_NUMOFLINES_8}"
+}
+bootintomenu_backupmode_dstfilename_choice_and_action__sub() {
+    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    # Note: this subroutine is similar to 
+    #       'bootintomenu_arraylistitem_choice_and_action__sub'
+    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    #Initalize variables
+    local echomsg="${TB_EMPTYSTRING}"
+    local echomsg_wo_color_len=0
+    local keyinput="${TB_EMPTYSTRING}"
+    local keyinput_tot="${TB_EMPTYSTRING}"
+    local keyinput_tot_validated="${TB_EMPTYSTRING}"
+
+    flag_backupmode_restoremode_exitloop=false
+    flag_go_back_onestep=false
+
+    #Set variable
+    tb_numoflines_correction=${TB_NUMOFLINES_7}
+
+    while [[ 1 ]]
+    do
+        #Reset variable
+        keyinput="${TB_EMPTYSTRING}"
+
+        #Update string
+        echomsg="${TB_READDIALOG_INPUT_AND_PRESS_ENTER}${keyinput_tot}"
+
+        #Get string w/o color
+        echomsg_wo_color=$(echo "${echomsg}" | sed "s,\x1B\[[0-9;]*m,,g")
+
+        #Update length
+        echomsg_wo_color_len="${#echomsg_wo_color}"
+
+        #Print message
+        echo -e "${echomsg}"
+
+        #Move up and then move to the end of 'echomsg'
+        tput cuu1 && tput cuf "${echomsg_wo_color_len}"
+        
+        #Execute read-dialog and wait for input
+        read -N1 -rs keyinput
+
+        #Validate 'keyinput'
+        case "${keyinput}" in
+            "${TB_BACKSPACE}")
+                #Get the updated 'keyinput_tot' after pressing BACKSPACE
+                keyinput_tot=$(backspace__func "${keyinput_tot}")
+                ;;
+            "${TB_ENTER}")
+                if [[ -n "${keyinput_tot}" ]]; then
+                    keyinput_tot_validated=$(semicolon_option_validate_and_return_value "${keyinput_tot}")
+
+                     #Validate 'keyinput_tot_validated'
+                    case "${keyinput_tot_validated}" in
+                        "${TB_OPTIONS_SEMICOLON_C}")
+                            #Reset variable
+                            keyinput_tot="${TB_EMPTYSTRING}"
+
+                            moveup__func "${TB_NUMOFLINES_0}"
+                            ;;
+                        "${TB_OPTIONS_SEMICOLON_B}")
+                            #Move down and clean one line
+                            movedown__func "${TB_NUMOFLINES_7}"
+
+                            #Set flag to true
+                            flag_go_back_onestep=true
+
+                            break
+                            ;;
+                        "${TB_OPTIONS_SEMICOLON_H}")
+                            #Move down and clean one line
+                            movedown__func "${TB_NUMOFLINES_8}"
+
+                            #Set flag to true
+                            flag_backupmode_restoremode_exitloop=true
+
+                            break
+                            ;;
+                        "${TB_OPTIONS_SEMICOLON_M}")
+                            #Move down and clean one line
+                            movedown__func "${TB_NUMOFLINES_8}"
+
+                            #Set flags to true
+                            flag_bootintomenu_exitloop=true
+                            flag_backupmode_restoremode_exitloop=true
+
+                            break
+                            ;;
+                        "${TB_OPTIONS_SEMICOLON_Q}")
+                            #Move down and clean one line
+                            movedown__func "${TB_NUMOFLINES_8}"
+
+                            #Exit script
+                            exit__func "${TB_EXITCODE_99}" "${TB_NUMOFLINES_2}"
+                            ;;
+                        *)
+                            #Check if 'keyinput_tot' and 'keyinput_tot_validated' are the same
+                            #Remarks:
+                            #   If both strings are the same, then it means that no semicolon-c was executed.
+                            #   If both strings are different, then it means that a semicolon-c was executed.
+                            if [[ "${keyinput_tot}" == "${keyinput_tot_validated}" ]]; then    #same
+                                #Update variable
+                                tb_dstfilename_set="${keyinput_tot}"
+
+                                #Move down and clean one line
+                                movedown__func "${TB_NUMOFLINES_8}"
+
+                                break
+                            else    #different
+                                keyinput_tot="${keyinput_tot_validated}"
+                            fi
+                            ;;
+                    esac
+                else
+                    #Reset variable
+                    keyinput_tot="${TB_EMPTYSTRING}"
+                fi
+                ;;
+            "${TB_ESCAPEKEY}")
+                #Do nothing
+                ;;
+            *)
+                if [[ -n "${keyinput}" ]]; then
+                    #Update variable
+                    keyinput_tot+="${keyinput}"
+                fi
+                ;;
+        esac
+
+        #Move up and clean one line
+        moveup_and_clean__func "${TB_NUMOFLINES_0}"
+
+        #Clean read-dialog buffer
+        readdialog_clean_buffer__func
+    done
+
+    #Reset variable
+    tb_numoflines_correction=${TB_NUMOFLINES_0}
 }
 
 
 
-bootinto_readdialog_disable__sub() {
+bootintomenu_backupmode_dstsize_get__sub() {
+    if [[ -d "${tb_dstpath_set}" ]]; then   #directory exists
+        #Note: 'blockdev' should only be used to get the size of the partitions (e.g. /dev/mmcblk0, /dev/mmcblk0p8)
+        tb_dstpath_size_KB=$(df --output='avail' -k "${tb_dstpath_set}" | \
+                tail -n1 | \
+                sed 's/^ *//g' | \
+                sed 's/* $//g'); \
+                exitcode=$?
+    else    #directory does NOT exist
+        exitcode=99
+    fi
+
+    if [[ ${exitcode} -gt 0 ]]; then    #succesful
+        #Set flag to true
+        flag_backupmode_restoremode_exitloop=true
+
+        #Move down and clean one line
+        movedown_and_clean__func "${TB_NUMOFLINES_1}"
+
+        #Print error-message
+        local printmsg="${TB_PRINT_ERROR}: invalid or non-existing directory '${tb_dstpath_set}'"
+
+        print_menuitem__func "${TB_EMPTYSTRING}" "${TB_EMPTYSTRING}" "${printmsg}" "${TB_EMPTYSTRING}"
+    fi
+}
+
+bootintomenu_disable__sub() {
     #Remove file (if present)
     remove_file__func "${tb_init_bootargs_tmp_fpath}"
 }
