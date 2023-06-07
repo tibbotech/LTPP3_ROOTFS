@@ -120,12 +120,16 @@
 
 /* Added to handle the situation when the MD-button is pressed */
 /* Note: 'tb_button_state' is determined and set in boot/uboot/board/sunplus/pentagram_board/sp_go.c */
+#define USB1_ISP	0x27
+
 #define MD_BUTTON_DETECT__VARIABLES_DEFINE \
 "setenv ISP_IF_NULL null \n; " \
 "setenv ISP_IF_SD1 sd_mmc_1 \n; " \
 "setenv ISP_IF_USB0 usb_dev_0 \n; " \
+"setenv ISP_IF_USB1 usb_dev_1 \n; " \
 "setenv SDDEV1_CMD mmc dev 1 \n; " \
 "setenv USBDEV0_CMD usb dev 0 \n; " \
+"setenv USBDEV1_CMD usb dev 1 \n; " \
 "setenv isp_if_test $ISP_IF_NULL \n; " \
 "setenv tb_button_state $ISP_IF_NULL \n; " \
 
@@ -134,25 +138,50 @@
 "echo ------: tb_button_state=$tb_button_state \n; " \
 "echo ------: ISP_IF_SD1=$ISP_IF_SD1 \n; " \
 "echo ------: ISP_IF_USB0=$ISP_IF_USB0 \n; " \
+"echo ------: ISP_IF_USB1=$ISP_IF_USB1 \n; " \
 "echo ------: SDDEV1_CMD=$SDDEV1_CMD \n; " \
 "echo ------: USBDEV0_CMD=$USBDEV0_CMD \n; " \
+"echo ------: USBDEV1_CMD=$USBDEV1_CMD \n; " \
 "echo ------: isp_if_test=$isp_if_test \n; " \
 
-#define MD_BUTTON_DETECT__SDCARD_ISPRESENT \
+#define MD_BUTTON_VALIDATE_SD \
 "echo ---:tibbo:detect: sd-card state... \n; " \
 "$SDDEV1_CMD \n; " \
 "if test $? = 0; then \n; " /* START: check if sd-card is PRESENT */ \
+"if test -e mmc 1:1 /ISPBOOOT.BIN; then \n; " /* START: check if ISPBOOOT.BIN is PRESENT */ \
 "setenv isp_if_test $ISP_IF_SD1 \n; " \
+"else \n; " /* ELSE: check if ISPBOOOT.BIN is PRESENT */ \
+"echo ---:tibbo:sd-card (mmc 1:1): ISPBOOOT.BIN *NOT* found \n; " \
+"fi \n; " /* END: check if ISPBOOOT.BIN is PRESENT */ \
 "fi \n; " /* END: check if sd-card is PRESENT */ \
 
-#define MD_BUTTON_DETECT__USBCARD_ISPRESENT \
+#define MD_BUTTON_VALIDATE_USB0 \
 "echo ---:tibbo:detect: usb-0 state... \n; " \
-"echo ------:tibbo:note: if usb-0 and usb-1 are both in-use,... \n; " \
-"echo ------:tibbo:note: ...then usb-0 takes precedence\n; " \
 "$USBDEV0_CMD \n; " \
 "if test $? = 0; then \n; " /* START: check if usb-0 is PRESENT */ \
+"if test -e usb 0:1 /ISPBOOOT.BIN; then \n; " /* START: check if ISPBOOOT.BIN is PRESENT */ \
 "setenv isp_if_test $ISP_IF_USB0 \n; " \
+"else \n; " /* ELSE: check if ISPBOOOT.BIN is PRESENT */ \
+"echo ---:tibbo:usb0 (usb 0:1): ISPBOOOT.BIN *NOT* found \n; " \
+"fi \n; " /* END: check if ISPBOOOT.BIN is PRESENT */ \
 "fi \n; " /* END: check if usb-0 is PRESENT */ \
+
+#define MD_BUTTON_VALIDATE_USB1 \
+"echo ---:tibbo:detect: usb-1 state... \n; " \
+"$USBDEV0_CMD \n; " \
+"if test $? = 0; then \n; " /* START: check if usb-0 is PRESENT */ \
+"if test -e usb 1:1 /ISPBOOOT.BIN; then \n; " /* START: check if ISPBOOOT.BIN is PRESENT */ \
+"setenv isp_if_test $ISP_IF_USB1 \n; " \
+"else \n; " /* ELSE: check if ISPBOOOT.BIN is PRESENT */ \
+"echo ---:tibbo:usb1 (usb 1:1): ISPBOOOT.BIN *NOT* found \n; " \
+"fi \n; " /* END: check if ISPBOOOT.BIN is PRESENT */ \
+"fi \n; " /* END: check if usb-0 is PRESENT */ \
+
+#define MD_BUTTON_DETECT__MEM_WRITE_AND_READ_0X9E809408_0X00000027 \
+"echo ------:tibbo:note: this will run bootcmd 'isp_usb' \n; " \
+"mw.l  0x9e809408  0x00000027 1 \n; " \
+"echo ---:tibbo:get: memory-display of address (0x9e809408)\n; " \
+"md.l 0x9e809408 1 \n; " \
 
 #define MD_BUTTON_DETECT__MEM_WRITE_AND_READ_0X9E809408_0X00000017 \
 "echo ------:tibbo:note: this will run bootcmd 'isp_usb' \n; " \
@@ -184,25 +213,30 @@ MD_BUTTON_DETECT__VARIABLES_DEFINE \
 MD_BUTTON_DETECT__VARIABLES_INIT_SHOW \
 "if test $tb_button_state = pressed; then \n; " /* START: check if md-button is PRESSED */ \
 "echo ---:tibbo:state: md-button is *pressed*... \n; " \
-MD_BUTTON_DETECT__SDCARD_ISPRESENT \
-"if test $isp_if_test = $ISP_IF_NULL; then \n; " /* START: check if isp_if_test is null */ \
-MD_BUTTON_DETECT__USBCARD_ISPRESENT \
-"fi \n; " /* END: check if isp_if_test is null */ \
+MD_BUTTON_VALIDATE_SD \
+"if test $isp_if_test = $ISP_IF_NULL; then \n; " /* START: for SD: check if isp_if_test is null */ \
+MD_BUTTON_VALIDATE_USB0 \
+"if test $isp_if_test = $ISP_IF_NULL; then \n; " /* START: for USB0: check if isp_if_test is null */ \
+MD_BUTTON_VALIDATE_USB1 \
+"fi \n; " /* END: for USB0: check if isp_if_test is null */ \
+"fi \n; " /* END: for SD: check if isp_if_test is null */ \
 "fi \n; " /* END: check if md-button is PRESSED */ \
 "if test $isp_if_test != $ISP_IF_NULL; then; \n; " /* START: check if isp_if_test is NOT null */ \
-"if test $isp_if_test = $ISP_IF_USB0; then; \n; " /* START: check if isp_if_test is usb_dev_0/mmc_dev_1 */ \
+"if test $isp_if_test = $ISP_IF_USB1; then; \n; " /* START: check if isp_if_test is usb_dev_1 */ \
+MD_BUTTON_DETECT__MEM_WRITE_AND_READ_0X9E809408_0X00000027 \
+"elif test $isp_if_test = $ISP_IF_USB0; then; \n; " /* ELIF: check if isp_if_test is usb_dev_0 */ \
 MD_BUTTON_DETECT__MEM_WRITE_AND_READ_0X9E809408_0X00000017 \
-"else; \n; " /* ELSE: check if isp_if_test is usb_dev_0/mmc_dev_1 */ \
+"else; \n; " /* ELSE: check if isp_if_test is  sd_mmc_1 */ \
 MD_BUTTON_DETECT__MEM_WRITE_AND_READ_0X9E809408_0X00000007 \
 "fi; \n; " /* END: check if isp_if_test is usb_dev_0/mmc_dev_1 */ \
-"else; \n; " \
+"else; \n; " /* ELSE: check if isp_if_test is NOT null */ \
 "echo \n; " \
 "echo ---:tibbo:state: md-button *not* pressed... \n; " \
 "echo ---:tibbo:start: boot normally... \n; " \
 "fi; \n; " /* END: check if isp_if_test is NOT null */ \
 "echo ************************************************** \n; " \
 "echo \n; " \
-"else; \n; " \
+"else; \n; " /* ELSE: check if variable is NOT an EMPTY STRING */ \
 MD_BUTTON_DETECT__NOTSUPPORTED \
 "fi \n; " /* END: check if variable is NOT an EMPTY STRING */ \
 /* Added to handle the situation when the MD-button is pressed */
@@ -287,6 +321,9 @@ MD_BUTTON_DETECT__NOTSUPPORTED \
 "elif itest.l *${bootinfo_base} == " __stringify(USB_ISP) "; then " \
 	"echo [scr] ISP from USB storage; " \
 	"run isp_usb; " \
+"elif itest.l *${bootinfo_base} == " __stringify(USB1_ISP) "; then " \
+	"echo [scr] ISP from USB storage; " \
+	"run isp_usb1; " \
 "elif itest.l *${bootinfo_base} == " __stringify(SDCARD_ISP) "; then " \
 	"echo [scr] ISP from SD Card; " \
 	"run isp_sdcard; " \
@@ -513,6 +550,10 @@ MD_BUTTON_DETECT__NOTSUPPORTED \
 	"bootm ${addr_dst_kernel} - ${addr_dst_dtb}; " \
 	"\0" \
 "isp_usb=setenv isp_if usb && setenv isp_dev 0; " \
+	"$isp_if start; " \
+	"run isp_common; " \
+	"\0" \
+"isp_usb1=setenv isp_if usb && setenv isp_dev 1; " /* Added to handle the situation when the MD-button is pressed */ \
 	"$isp_if start; " \
 	"run isp_common; " \
 	"\0" \
