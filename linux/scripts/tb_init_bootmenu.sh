@@ -44,9 +44,15 @@ TB_LEGEND_NEW_PRIORITY="${TB_LEGEND_NEW}${TB_FG_RED_9}*${TB_NOCOLOR}"
 TB_LEGEND_NEW_PRIORITY_W_DESCRIPTION="${TB_LEGEND_NEW_PRIORITY}: ${TB_FG_GREY_246}new with priority${TB_NOCOLOR}"
 
 #---MENU CONSTANTS
-TB_MENU="(${TB_FG_GREY_246}Menu${TB_NOCOLOR})"
 TB_MENUITEM_BOOTINTO="Boot into"
+TB_MENUITEM_ISPBOOOTBIN_BOOTSEQ="ISPBOOOT.BIN boot-seq"
 TB_MENUITEM_OVERLAYMODE="Overlay-mode"
+TB_MODE_ISPBOOOTBIN_BOOTSEQ_SDUSB0USB1="SD>USB0>USB1"
+TB_MODE_ISPBOOOTBIN_BOOTSEQ_SDUSB1USB0="SD>USB1>USB0"
+TB_MODE_ISPBOOOTBIN_BOOTSEQ_USB0SDUSB1="USB0>SD>USB1"
+TB_MODE_ISPBOOOTBIN_BOOTSEQ_USB0USB1SD="USB0>USB1>SD"
+TB_MODE_ISPBOOOTBIN_BOOTSEQ_USB1SDUSB0="USB1>SD>USB0"
+TB_MODE_ISPBOOOTBIN_BOOTSEQ_USB1USB0SD="USB1>USB0>SD"
 TB_MODE_BACKUPMODE="backup-mode"
 TB_MODE_DISABLED="disabled"
 TB_MODE_NORMALMODE="normal-mode"
@@ -81,10 +87,11 @@ TB_READDIALOG_CHOOSE_AN_OPTION="Choose an option: "
 TB_READDIALOG_CHOOSE_AN_OPTION_AND_PRESS_ENTER="Choose an option (${TB_FG_GREY_246}and press ENTER${TB_NOCOLOR}): "
 TB_READDIALOG_INPUT_AND_PRESS_ENTER="Input (${TB_FG_GREY_246}and press ENTER${TB_NOCOLOR}): "
 
-TB_TITLE_BOOTINTO="${TB_FG_BLUE_45}TB-INIT.SH: ${TB_FG_BLUE_33}BOOT-INTO-MENU${TB_NOCOLOR}"
 TB_TITLE_BACKUP_CHOOSE_DESTINATION_DIR="${TB_FG_ORANGE_215}BACKUP:${TB_NOCOLOR} Choose destination-dir"
 TB_TITLE_BACKUP_PROVIDE_DESTINATION_IMAGE_FILENAME="${TB_FG_ORANGE_215}BACKUP:${TB_NOCOLOR} Provide image-filename"
 TB_TITLE_BACKUP_CHOOSE_SOURCE_PATH="${TB_FG_ORANGE_215}BACKUP:${TB_NOCOLOR} Choose source-path"
+TB_TITLE_BOOTINTO="${TB_FG_BLUE_45}TB-INIT.SH: ${TB_FG_BLUE_33}BOOT-INTO-MENU${TB_NOCOLOR}"
+TB_TITLE_ISPBOOOTBIN_BOOTSEQ="${TB_FG_BLUE_45}TB-INIT.SH: ${TB_FG_BLUE_33}ISPBOOOT.BIN BOOT-SEQ${TB_NOCOLOR}"
 TB_TITLE_TB_INIT_SH="${TB_FG_BLUE_45}TB-INIT.SH: ${TB_FG_BLUE_33}MAIN-MENU${TB_NOCOLOR}"
 TB_TITLE_TIBBO="TIBBO"
 
@@ -95,6 +102,8 @@ TB_ITEMNUM_1=1
 TB_ITEMNUM_2=2
 TB_ITEMNUM_3=3
 TB_ITEMNUM_4=4
+TB_ITEMNUM_5=5
+TB_ITEMNUM_6=6
 
 TB_NUMOFLINES_0=0
 TB_NUMOFLINES_1=1
@@ -128,11 +137,28 @@ TB_PATTERN_TB_ROOTFS_RO="tb_rootfs_ro"
 #---PRINT CONSTANTS
 TB_PRINT_ERROR="***${TB_FG_RED_9}ERROR${TB_NOCOLOR}"
 
+TB_MENU_WO_NOCOLOR="(${TB_FG_GREY_246}Menu)"
+TB_MENU="(${TB_FG_GREY_246}Menu)${TB_NOCOLOR}"
+
+TB_PRINT_MODE_ISPBOOOTBIN_BOOTSEQ_SDUSB0USB1="${TB_FG_GREEN_158}SD${TB_FG_GREY_246}>${TB_FG_GREEN_158}USB0${TB_FG_GREY_246}>${TB_FG_GREEN_158}USB1${TB_NOCOLOR}"
+TB_PRINT_MODE_ISPBOOOTBIN_BOOTSEQ_SDUSB1USB0="${TB_FG_GREEN_158}SD${TB_FG_GREY_246}>${TB_FG_GREEN_158}USB1${TB_FG_GREY_246}>${TB_FG_GREEN_158}USB0${TB_NOCOLOR}"
+TB_PRINT_MODE_ISPBOOOTBIN_BOOTSEQ_USB0SDUSB1="${TB_FG_GREEN_158}USB0${TB_FG_GREY_246}>${TB_FG_GREEN_158}SD${TB_FG_GREY_246}>${TB_FG_GREEN_158}USB1${TB_NOCOLOR}"
+TB_PRINT_MODE_ISPBOOOTBIN_BOOTSEQ_USB0USB1SD="${TB_FG_GREEN_158}USB0${TB_FG_GREY_246}>${TB_FG_GREEN_158}USB1${TB_FG_GREY_246}>${TB_FG_GREEN_158}SD${TB_NOCOLOR}"
+TB_PRINT_MODE_ISPBOOOTBIN_BOOTSEQ_USB1SDUSB0="${TB_FG_GREEN_158}USB1${TB_FG_GREY_246}>${TB_FG_GREEN_158}SD${TB_FG_GREY_246}>${TB_FG_GREEN_158}USB0${TB_NOCOLOR}"
+TB_PRINT_MODE_ISPBOOOTBIN_BOOTSEQ_USB1USB0SD="${TB_FG_GREEN_158}USB1${TB_FG_GREY_246}>${TB_FG_GREEN_158}USB0${TB_FG_GREY_246}>${TB_FG_GREEN_158}SD${TB_NOCOLOR}"
+
 TB_PRINT_OPTIONS_SEMICOLON_B="${TB_FG_YELLOW_33};${TB_NOCOLOR}b"
 TB_PRINT_OPTIONS_SEMICOLON_C="${TB_FG_YELLOW_33};${TB_NOCOLOR}c"
 TB_PRINT_OPTIONS_SEMICOLON_H="${TB_FG_YELLOW_33};${TB_NOCOLOR}h"
 TB_PRINT_OPTIONS_SEMICOLON_M="${TB_FG_YELLOW_33};${TB_NOCOLOR}m"
 TB_PRINT_OPTIONS_SEMICOLON_Q="${TB_FG_YELLOW_33};${TB_NOCOLOR}q"
+
+#---REGEX CONSTANTS
+TB_BOOTINTO_MYCHOICE_REGEX="[1234mq]"
+TB_ISPBOOOTBIN_BOOTSEQ_MYCHOICE_REGEX="[123456mq]"
+TB_MAINMENU_MYCHOICE_REGEX="[123rq]"
+TB_RQ_REGEX="[rq]"
+TB_YN_REGEX="[yn]"
 
 #---REMARK CONSTANTS
 TB_REMARKS="${TB_FG_BLUE_45}Remarks:${TB_NOCOLOR}"
@@ -153,7 +179,14 @@ rootfs_dir="/"
 tb_reserve_dir="/tb_reserve"
 tb_init_bootargs_cfg_fpath=${tb_reserve_dir}/.tb_init_bootargs.cfg
 tb_init_bootargs_tmp_fpath=${tb_reserve_dir}/.tb_init_bootargs.tmp
+tb_init_bootseq_sdusb0usb1_fpath=${tb_reserve_dir}/.tb_init_bootseq_sdusb0usb1
+tb_init_bootseq_sdusb1usb0_fpath=${tb_reserve_dir}/.tb_init_bootseq_sdusb1usb0
+tb_init_bootseq_usb0sdusb1_fpath=${tb_reserve_dir}/.tb_init_bootseq_usb0sdusb1
+tb_init_bootseq_usb0usb1sd_fpath=${tb_reserve_dir}/.tb_init_bootseq_usb0usb1sd
+tb_init_bootseq_usb1sdusb0_fpath=${tb_reserve_dir}/.tb_init_bootseq_usb1sdusb0
+tb_init_bootseq_usb1usb0sd_fpath=${tb_reserve_dir}/.tb_init_bootseq_usb1usb0sd
 tb_overlay_current_cfg_fpath=${tb_reserve_dir}/.tb_overlay_current.cfg
+
 tb_proc_cmdline_fpath=${proc_dir}/cmdline
 
 
@@ -166,6 +199,9 @@ tb_bootinto_set="${TB_EMPTYSTRING}"
 tb_bootinto_set_printable="${TB_EMPTYSTRING}"
 tb_bootinto_status="${TB_EMPTYSTRING}"
 tb_init_bootargs_cfg_tb_rootfs_ro_get="${TB_EMPTYSTRING}"
+tb_ispboootbin_bootseq_set="${TB_EMPTYSTRING}"
+tb_ispboootbin_bootseq_mychoice="${TB_EMPTYSTRING}"
+tb_ispboootbin_bootseq_printable="${TB_EMPTYSTRING}"
 tb_mainmenu_mychoice="${TB_EMPTYSTRING}"
 tb_overlaymode_set="${TB_EMPTYSTRING}"
 tb_overlaymode_set_printable="${TB_EMPTYSTRING}"
@@ -184,14 +220,11 @@ tb_srcpath_size_KB=0
 
 tb_path_list_arr=()
 
-tb_bootinto_mychoice_regex="[1234mq]"
-tb_mainmenu_mychoice_regex="[12rq]"
-tb_yesno_regex="[yn]"
-
 flag_backupmode_restoremode_exitloop=false
 flag_bootintomenu_exitloop=false
 flag_file_can_be_removed=false
 flag_go_back_onestep=false
+flag_ispboootbin_bootseq_exitloop=false
 
 
 #---FUNCTIONS
@@ -293,7 +326,7 @@ function extract_overlaymode_info__func() {
 
             ;;
         *)
-            tb_overlaymode_set_printable="${TB_FG_YELLOW_33}${TB_MODE_DISABLED}${TB_NOCOLOR}"
+            tb_overlaymode_set_printable="${TB_MODE_DISABLED}"
             ;;
     esac    
 
@@ -429,6 +462,64 @@ function extract_bootinto_info__func() {
         #Remove file (if present)
         remove_file__func "${tb_init_bootargs_tmp_fpath}"
     fi
+}
+
+function extract_ispboootbin_bootseq_info__func() {
+    #Initialize variable
+    tb_ispboootbin_bootseq_set="${TB_EMPTYSTRING}"
+
+    #Update 'tb_ispboootbin_bootseq_set' based on the existing file
+    while [[ -z "${tb_ispboootbin_bootseq_set}"  ]]
+    do
+        if [[ -f "${tb_init_bootseq_sdusb0usb1_fpath}" ]]; then
+            tb_ispboootbin_bootseq_set="${TB_MODE_ISPBOOOTBIN_BOOTSEQ_SDUSB0USB1}"
+
+            tb_ispboootbin_bootseq_printable="${TB_PRINT_MODE_ISPBOOOTBIN_BOOTSEQ_SDUSB0USB1}"
+
+            break
+        fi
+        if [[ -f "${tb_init_bootseq_sdusb1usb0_fpath}" ]]; then
+            tb_ispboootbin_bootseq_set="${TB_MODE_ISPBOOOTBIN_BOOTSEQ_SDUSB1USB0}"
+
+            tb_ispboootbin_bootseq_printable="${TB_PRINT_MODE_ISPBOOOTBIN_BOOTSEQ_SDUSB1USB0}"
+
+            break
+        fi
+        if [[ -f "${tb_init_bootseq_usb0sdusb1_fpath}" ]]; then
+            tb_ispboootbin_bootseq_set="${TB_MODE_ISPBOOOTBIN_BOOTSEQ_USB0SDUSB1}"
+
+            tb_ispboootbin_bootseq_printable="${TB_PRINT_MODE_ISPBOOOTBIN_BOOTSEQ_USB0SDUSB1}"
+
+            break
+        fi
+        if [[ -f "${tb_init_bootseq_usb0usb1sd_fpath}" ]]; then
+            tb_ispboootbin_bootseq_set="${TB_MODE_ISPBOOOTBIN_BOOTSEQ_USB0USB1SD}"
+
+            tb_ispboootbin_bootseq_printable="${TB_PRINT_MODE_ISPBOOOTBIN_BOOTSEQ_USB0USB1SD}"
+
+            break
+        fi
+        if [[ -f "${tb_init_bootseq_usb1sdusb0_fpath}" ]]; then
+            tb_ispboootbin_bootseq_set="${TB_MODE_ISPBOOOTBIN_BOOTSEQ_USB1SDUSB0}"
+
+            tb_ispboootbin_bootseq_printable="${TB_PRINT_MODE_ISPBOOOTBIN_BOOTSEQ_USB1SDUSB0}"
+
+            break
+        fi
+        if [[ -f "${tb_init_bootseq_usb1usb0sd_fpath}" ]]; then
+            tb_ispboootbin_bootseq_set="${TB_MODE_ISPBOOOTBIN_BOOTSEQ_USB1USB0SD}"
+
+            tb_ispboootbin_bootseq_printable="${TB_PRINT_MODE_ISPBOOOTBIN_BOOTSEQ_USB1USB0SD}"
+
+            break
+        fi
+
+        #In case 'tb_ispboootbin_bootseq_set' is still an Empty String
+        #   then set to the default value 'tb_ispboootbin_bootseq_set = TB_MODE_ISPBOOOTBIN_BOOTSEQ_SDUSB0USB1'
+        tb_ispboootbin_bootseq_set="${TB_MODE_ISPBOOOTBIN_BOOTSEQ_SDUSB0USB1}"
+        #Update 'tb_ispboootbin_bootseq_printable'
+        tb_ispboootbin_bootseq_printable="${TB_PRINT_MODE_ISPBOOOTBIN_BOOTSEQ_SDUSB0USB1}"
+    done
 }
 
 function isNumeric__func() {
@@ -762,6 +853,13 @@ tb_ctrl_c__sub() {
     exit__func "${TB_EXITCODE_99}" "${numoflines}"
 }
 
+tibbo_print_title__sub() {
+    print_centered_string_w_leading_trailing_emptylines__func "${TB_TITLE_TIBBO}" "${TB_TABLEWIDTH}" "${TB_BG_ORANGE_215}" "${TB_NUMOFLINES_2}" "${TB_NUMOFLINES_0}"
+}
+
+
+
+#---SECTION MAIN-MENU
 mainmenu_extract_info__func() {
     #Remark:
     #   This function will pass values to global variables 'tb_overlaymode_set' and 'tb_overlaymode_set_printable'
@@ -770,10 +868,10 @@ mainmenu_extract_info__func() {
     #Remark:
     #   This function will pass values to global variables 'tb_bootinto_set' and 'tb_bootinto_set_printable'
     extract_bootinto_info__func
-}
 
-tibbo_print_title__sub() {
-    print_centered_string_w_leading_trailing_emptylines__func "${TB_TITLE_TIBBO}" "${TB_TABLEWIDTH}" "${TB_BG_ORANGE_215}" "${TB_NUMOFLINES_2}" "${TB_NUMOFLINES_0}"
+    #Remark:
+    #   This function will pass values to global variables 'tb_ispboootbin_bootseq_set' and 'tb_ispboootbin_bootseq_printable'
+    extract_ispboootbin_bootseq_info__func
 }
 
 mainmenu_print_title__sub() {
@@ -785,9 +883,48 @@ mainmenu_print_title__sub() {
 }
 
 mainmenu_print_body__sub() {
-    print_menuitem__func "${TB_FOURSPACES}" "${TB_ITEMNUM_1}" "${TB_MENUITEM_OVERLAYMODE}" "${tb_overlaymode_set_printable}"
-    print_menuitem__func "${TB_FOURSPACES}" "${TB_ITEMNUM_2}" "${TB_MENU} ${TB_MENUITEM_BOOTINTO}" "${tb_bootinto_set_printable}"
+    #Update 'print_menuitem_1', 'print_menuitem_2, 'print_menuitem_3' based on
+    #   whether 'tb_proc_cmdline_tb_overlay_get' is an Empty String or Not.
+    #In other words, whether 'tb_overlay' is found in '/proc/cmdline' or not.
+    local print_menuitem_1=""
+    local print_menuitem_2=""
+    local print_menuitem_3=""
 
+    if [[ -z "${tb_proc_cmdline_tb_overlay_get}" ]]; then
+        print_menuitem_1="${TB_FG_GREY_246}"
+        print_menuitem_2="${TB_FG_GREY_246}"
+        print_menuitem_3="${TB_FG_GREY_246}"
+    fi
+    
+    print_menuitem_1+="${TB_ITEMNUM_1}. ${TB_MENUITEM_OVERLAYMODE} "
+    if [[ -z "${tb_proc_cmdline_tb_overlay_get}" ]]; then
+        print_menuitem_2+="${TB_ITEMNUM_2}. ${TB_MENU_WO_NOCOLOR}"
+        print_menuitem_3+="${TB_ITEMNUM_3}. ${TB_MENU_WO_NOCOLOR}"
+    else
+        print_menuitem_2+="${TB_ITEMNUM_2}. ${TB_MENU}"
+        print_menuitem_3+="${TB_ITEMNUM_3}. ${TB_MENU}"
+    fi
+
+    if [[ -z "${tb_proc_cmdline_tb_overlay_get}" ]]; then
+        tb_overlaymode_set_printable="${TB_MODE_DISABLED}"
+        tb_bootinto_set_printable="${TB_MODE_DISABLED}"
+        tb_ispboootbin_bootseq_printable="${TB_MODE_ISPBOOOTBIN_BOOTSEQ_SDUSB0USB1}"
+    fi
+
+    print_menuitem_1+="(${tb_overlaymode_set_printable})"
+    print_menuitem_2+="${TB_MENUITEM_BOOTINTO} (${tb_bootinto_set_printable})"
+    print_menuitem_3+="${TB_MENUITEM_ISPBOOOTBIN_BOOTSEQ} (${tb_ispboootbin_bootseq_printable})"
+
+    if [[ -z "${tb_proc_cmdline_tb_overlay_get}" ]]; then
+        print_menuitem_1+="${TB_NOCOLOR}"
+        print_menuitem_2+="${TB_NOCOLOR}"
+        print_menuitem_3+="${TB_NOCOLOR}"
+    fi
+
+    #Print body
+    print_menuitem__func "${TB_FOURSPACES}" "${TB_EMPTYSTRING}" "${print_menuitem_1}" "${TB_EMPTYSTRING}"
+    print_menuitem__func "${TB_FOURSPACES}" "${TB_EMPTYSTRING}" "${print_menuitem_2}" "${TB_EMPTYSTRING}"
+    print_menuitem__func "${TB_FOURSPACES}" "${TB_EMPTYSTRING}" "${print_menuitem_3}" "${TB_EMPTYSTRING}"
     print_duplicate_char__func "${TB_DASH}" "${TB_TABLEWIDTH}" "${TB_NOCOLOR}"
     print_menuitem__func "${TB_FOURSPACES}" "${TB_OPTIONS_R}" "${TB_OPTIONS_REBOOT}" "${TB_EMPTYSTRING}"
     print_menuitem__func "${TB_FOURSPACES}" "${TB_OPTIONS_Q}" "${TB_OPTIONS_QUIT_CTRL_C}" "${TB_EMPTYSTRING}"
@@ -815,6 +952,15 @@ mainmenu_print_remark__sub() {
 }
 
 mainmenu_readdialog_choice__sub() {
+    #Define and initialize variables
+    local regex="${TB_MAINMENU_MYCHOICE_REGEX}"
+
+    #Update 'regex' based on whether 'tb_proc_cmdline_tb_overlay_get' is an Empty String or Not.
+    #In other words, whether 'tb_overlay' is found in '/proc/cmdline' or not.
+    if [[ -z "${tb_proc_cmdline_tb_overlay_get}" ]]; then
+        regex="${TB_RQ_REGEX}"
+    fi
+    
     while [[ 1 ]]
     do
         #Select an option
@@ -823,7 +969,7 @@ mainmenu_readdialog_choice__sub() {
 
         #Only continue if a valid option is selected
         if [[ ! -z ${tb_mainmenu_mychoice} ]]; then
-            if [[ ${tb_mainmenu_mychoice} =~ ${tb_mainmenu_mychoice_regex} ]]; then
+            if [[ ${tb_mainmenu_mychoice} =~ ${regex} ]]; then
                 movedown_and_clean__func "${TB_NUMOFLINES_1}"
 
                 break
@@ -848,13 +994,16 @@ mainmenu_readdialog_action__sub() {
     #Goto the selected option
     case ${tb_mainmenu_mychoice} in
         1)
-            mainmenu_readdialog_overlaymode_toggle__sub
+            overlaymode_toggle__sub
             ;;
         2)
             bootintomenu__sub
             ;;
+        3)
+            ispboootbin_bootseqmenu__sub
+            ;;
         r)
-            mainmenu_readdialog_reboot__sub
+            reboot__sub
             ;;
         q)
             exit__func "${TB_EXITCODE_99}" "${TB_NUMOFLINES_2}"
@@ -862,15 +1011,10 @@ mainmenu_readdialog_action__sub() {
     esac
 }
 
-mainmenu_readdialog_overlaymode_toggle__sub() {
-    #First check if 'tb_overlay' is set in '/proc/cmdline'
-    #Remark:
-    #   If not set, then it means that overlay feature is not enabled.
-    #   In this case, exit subroutine right away.
-    if [[ -z "${tb_proc_cmdline_tb_overlay_get}" ]]; then
-        return 0;
-    fi
 
+
+#---SECTION: OVERLAY-MODE TOGGLE
+overlaymode_toggle__sub() {
     #Update 'tb_rootfs_ro_set' based on 'tb_overlaymode_set' value.
     #Remarks:
     #   1. 
@@ -883,52 +1027,12 @@ mainmenu_readdialog_overlaymode_toggle__sub() {
     fi
 
     #Write to file
-    echo "${tb_rootfs_ro_set}" | tee "${tb_init_bootargs_cfg_fpath}" > /dev/null
+    echo "${tb_rootfs_ro_set}" | tee "${tb_init_bootargs_cfg_fpath}" >/dev/null
 }
 
-mainmenu_readdialog_reboot__sub() {
-    #Define variables
-    local keyinput="${TB_OPTIONS_N}"
 
-    #Move-down one line
-    movedown_and_clean__func "${TB_NUMOFLINES_1}"
 
-    #Show read-dialog
-    while [[ 1 ]]
-    do
-        #Select an option
-        read -N1 -r -p "${TB_READDIALOG_ARE_YOU_SURE_YOU_WISH_TO_REBOOT}" keyinput
-        # movedown_and_clean__func "${TB_NUMOFLINES_1}"
-
-        #Only continue if a valid option is selected
-        if [[ ! -z ${keyinput} ]]; then
-            if [[ ${keyinput} =~ ${tb_yesno_regex} ]]; then
-                movedown_and_clean__func "${TB_NUMOFLINES_1}"
-
-                break
-            else
-                if [[ ${keyinput} == ${TB_ENTER} ]]; then
-                    moveup_and_clean__func "${TB_NUMOFLINES_1}"                    
-                else
-                    moveup_and_clean__func "${TB_NUMOFLINES_0}"
-                fi
-
-                readdialog_clean_buffer__func
-            fi
-        else
-            moveup_and_clean__func "${TB_NUMOFLINES_0}"
-
-            readdialog_clean_buffer__func
-        fi
-    done
-
-    if [[ "${keyinput}" == "${TB_OPTIONS_Y}" ]]; then
-        movedown_and_clean__func "${TB_NUMOFLINES_1}"
-        
-        ${REBOOT_CMD}
-    fi
-}
-
+#---SECTION: BOOT-INTO-MENU
 bootintomenu_arraylist_show__sub() {
     #Input args
     local flag_output_src_or_dst=${1}
@@ -1203,7 +1307,7 @@ bootintomenu_readdialog_choice__sub() {
 
         #Only continue if a valid option is selected
         if [[ ! -z ${tb_bootinto_mychoice} ]]; then
-            if [[ ${tb_bootinto_mychoice} =~ ${tb_bootinto_mychoice_regex} ]]; then
+            if [[ ${tb_bootinto_mychoice} =~ ${TB_BOOTINTO_MYCHOICE_REGEX} ]]; then
                 movedown_and_clean__func "${TB_NUMOFLINES_1}"
 
                 break
@@ -1254,7 +1358,7 @@ bootintomenu_safemode__sub() {
     tb_bootinto_set="${TB_NOBOOT_IS_TRUE}"
 
     #Write to file
-    echo "${tb_bootinto_set}" | tee "${tb_init_bootargs_tmp_fpath}" > /dev/null
+    echo "${tb_bootinto_set}" | tee "${tb_init_bootargs_tmp_fpath}" >/dev/null
 }
 bootintomenu_backupmode__sub() {
     #Define constants
@@ -1367,7 +1471,7 @@ bootintomenu_backupmode_srcpath_select__sub() {
 }
 bootintomenu_backupmode_srcsize_get__sub() {
     #Note: 'blockdev' should only be used to get the size of the partitions (e.g. /dev/mmcblk0, /dev/mmcblk0p8)
-    tb_srcpath_size_B=$(sudo blockdev --getsize64 "${tb_srcpath_set}" 2> /dev/null); exitcode=$?
+    tb_srcpath_size_B=$(sudo blockdev --getsize64 "${tb_srcpath_set}" 2>/dev/null); exitcode=$?
 
     if [[ ${exitcode} -eq 0 ]]; then    #succesful
         #Convert to Kilobytes
@@ -1581,8 +1685,6 @@ bootintomenu_backupmode_dstfilename_choice_and_action__sub() {
     tb_numoflines_correction=${TB_NUMOFLINES_0}
 }
 
-
-
 bootintomenu_backupmode_dstsize_get__sub() {
     if [[ -d "${tb_dstpath_set}" ]]; then   #directory exists
         #Note: 'blockdev' should only be used to get the size of the partitions (e.g. /dev/mmcblk0, /dev/mmcblk0p8)
@@ -1612,6 +1714,192 @@ bootintomenu_backupmode_dstsize_get__sub() {
 bootintomenu_disable__sub() {
     #Remove file (if present)
     remove_file__func "${tb_init_bootargs_tmp_fpath}"
+}
+
+
+
+#---SECTION: ISPBOOOT.BIN BOOT-SEQUENCE
+ispboootbin_bootseqmenu__sub() {
+    #Print header
+    tibbo_print_title__sub    
+
+    #Print bootinto menutitle
+    ispboootbin_bootseqmenu__sub_title_print__sub
+
+    #Print body
+    ispboootbin_bootseqmenu_body_print__sub
+
+    #Show read-dialog (loop)
+    #Note: result is passed to global variable 'tb_ispboootbin_bootseq_mychoice'
+    ispboootbin_bootseqmenu_readdialog_choice__sub
+
+    #Take action
+    ispboootbin_bootseqmenu_readdialog_action__sub
+}
+ispboootbin_bootseqmenu__sub_title_print__sub() {
+    print_duplicate_char__func "${TB_DASH}" "${TB_TABLEWIDTH}" "${TB_NOCOLOR}"
+    print_leading_trailing_strings_on_opposite_sides__func "${TB_TITLE_ISPBOOOTBIN_BOOTSEQ}" \
+            "${TB_EMPTYSTRING}" \
+            "${TB_TABLEWIDTH}"
+    print_duplicate_char__func "${TB_DASH}" "${TB_TABLEWIDTH}" "${TB_NOCOLOR}"
+}
+ispboootbin_bootseqmenu_body_print__sub() {
+    #Define and initialize variables
+    local print_menuitem_1="${TB_FG_GREY_246}${TB_MODE_ISPBOOOTBIN_BOOTSEQ_SDUSB0USB1}${TB_NOCOLOR}"
+    local print_menuitem_2="${TB_FG_GREY_246}${TB_MODE_ISPBOOOTBIN_BOOTSEQ_SDUSB1USB0}${TB_NOCOLOR}"
+    local print_menuitem_3="${TB_FG_GREY_246}${TB_MODE_ISPBOOOTBIN_BOOTSEQ_USB0SDUSB1}${TB_NOCOLOR}"
+    local print_menuitem_4="${TB_FG_GREY_246}${TB_MODE_ISPBOOOTBIN_BOOTSEQ_USB0USB1SD}${TB_NOCOLOR}"
+    local print_menuitem_5="${TB_FG_GREY_246}${TB_MODE_ISPBOOOTBIN_BOOTSEQ_USB1SDUSB0}${TB_NOCOLOR}"
+    local print_menuitem_6="${TB_FG_GREY_246}${TB_MODE_ISPBOOOTBIN_BOOTSEQ_USB1USB0SD}${TB_NOCOLOR}"
+
+    #Extract 'ispboootbin bootseq' information
+    extract_ispboootbin_bootseq_info__func
+
+    #Update variables (if appliable)
+    case "${tb_ispboootbin_bootseq_set}" in
+        "${TB_MODE_ISPBOOOTBIN_BOOTSEQ_SDUSB0USB1}")
+            print_menuitem_1="${TB_PRINT_MODE_ISPBOOOTBIN_BOOTSEQ_SDUSB0USB1}"
+            ;;
+        "${TB_MODE_ISPBOOOTBIN_BOOTSEQ_SDUSB0USB1}")
+            print_menuitem_2="${TB_PRINT_MODE_ISPBOOOTBIN_BOOTSEQ_SDUSB1USB0}"
+            ;;
+        "${TB_MODE_ISPBOOOTBIN_BOOTSEQ_SDUSB0USB1}")
+            print_menuitem_3="${TB_PRINT_MODE_ISPBOOOTBIN_BOOTSEQ_USB0SDUSB1}"
+            ;;
+        "${TB_MODE_ISPBOOOTBIN_BOOTSEQ_SDUSB0USB1}")
+            print_menuitem_4="${TB_PRINT_MODE_ISPBOOOTBIN_BOOTSEQ_USB0USB1SD}"
+            ;;
+        "${TB_MODE_ISPBOOOTBIN_BOOTSEQ_SDUSB0USB1}")
+            print_menuitem_5="${TB_PRINT_MODE_ISPBOOOTBIN_BOOTSEQ_USB1SDUSB0}"
+            ;;
+        "${TB_MODE_ISPBOOOTBIN_BOOTSEQ_SDUSB0USB1}")
+            print_menuitem_6="${TB_PRINT_MODE_ISPBOOOTBIN_BOOTSEQ_USB1USB0SD}"
+            ;;
+    esac
+
+    #Print
+    print_menuitem__func "${TB_FOURSPACES}" "${TB_ITEMNUM_1}" "${print_menuitem_1}"
+    print_menuitem__func "${TB_FOURSPACES}" "${TB_ITEMNUM_2}" "${print_menuitem_2}"
+    print_menuitem__func "${TB_FOURSPACES}" "${TB_ITEMNUM_3}" "${print_menuitem_3}"
+    print_menuitem__func "${TB_FOURSPACES}" "${TB_ITEMNUM_4}" "${print_menuitem_4}"
+    print_menuitem__func "${TB_FOURSPACES}" "${TB_ITEMNUM_5}" "${print_menuitem_5}"
+    print_menuitem__func "${TB_FOURSPACES}" "${TB_ITEMNUM_6}" "${print_menuitem_6}"
+    print_duplicate_char__func "${TB_DASH}" "${TB_TABLEWIDTH}" "${TB_NOCOLOR}"
+    print_menuitem__func "${TB_FOURSPACES}" "${TB_OPTIONS_M}" "${TB_OPTIONS_MAIN}" "${TB_EMPTYSTRING}"
+    print_menuitem__func "${TB_FOURSPACES}" "${TB_OPTIONS_Q}" "${TB_OPTIONS_QUIT_CTRL_C}" "${TB_EMPTYSTRING}"
+    print_duplicate_char__func "${TB_DASH}" "${TB_TABLEWIDTH}" "${TB_NOCOLOR}"
+}
+ispboootbin_bootseqmenu_readdialog_choice__sub() {
+    while [[ 1 ]]
+    do
+        #Select an option
+        read -N1 -r -p "${TB_READDIALOG_CHOOSE_AN_OPTION}" tb_ispboootbin_bootseq_mychoice
+
+        #Only continue if a valid option is selected
+        if [[ ! -z ${tb_ispboootbin_bootseq_mychoice} ]]; then
+            if [[ ${tb_ispboootbin_bootseq_mychoice} =~ ${TB_ISPBOOOTBIN_BOOTSEQ_MYCHOICE_REGEX} ]]; then
+                movedown_and_clean__func "${TB_NUMOFLINES_1}"
+
+                break
+            else
+                if [[ ${tb_ispboootbin_bootseq_mychoice} == ${TB_ENTER} ]]; then
+                    moveup_and_clean__func "${TB_NUMOFLINES_1}"                    
+                else
+                    moveup_and_clean__func "${TB_NUMOFLINES_0}"
+                fi
+
+                readdialog_clean_buffer__func
+            fi
+        else
+            moveup_and_clean__func "${TB_NUMOFLINES_0}"
+
+            readdialog_clean_buffer__func
+        fi
+    done
+}
+ispboootbin_bootseqmenu_readdialog_action__sub() {
+    #Remove file starting with pattern '.tb_init_bootseq_*'
+    remove_file__func "${tb_init_bootseq_sdusb0usb1_fpath}"
+    remove_file__func "${tb_init_bootseq_sdusb1usb0_fpath}"
+    remove_file__func "${tb_init_bootseq_usb0sdusb1_fpath}"
+    remove_file__func "${tb_init_bootseq_usb0usb1sd_fpath}"
+    remove_file__func "${tb_init_bootseq_usb1sdusb0_fpath}"
+    remove_file__func "${tb_init_bootseq_usb1usb0sd_fpath}"
+
+    #Create file based on the selection
+    local targetfpath="${TB_EMPTYSTRING}"
+    case "${tb_ispboootbin_bootseq_mychoice}" in
+        "1")
+            targetfpath="${tb_init_bootseq_sdusb0usb1_fpath}"
+            ;;
+        "2")
+            targetfpath="${tb_init_bootseq_sdusb1usb0_fpath}"
+            ;;
+        "3")
+            targetfpath="${tb_init_bootseq_usb0sdusb1_fpath}"
+            ;;
+        "4")
+            targetfpath="${tb_init_bootseq_usb0usb1sd_fpath}"
+            ;;
+        "5")
+            targetfpath="${tb_init_bootseq_usb1sdusb0_fpath}"
+            ;;
+        "6")
+            targetfpath="${tb_init_bootseq_usb1usb0sd_fpath}"
+            ;;
+        *)
+            #Do nothing
+            ;;
+    esac
+
+    #Write to file
+    touch "${targetfpath}" >/dev/null
+}
+
+
+
+#---SECTION: REBOOT
+reboot__sub() {
+    #Define variables
+    local keyinput="${TB_OPTIONS_N}"
+
+    #Move-down one line
+    movedown_and_clean__func "${TB_NUMOFLINES_1}"
+
+    #Show read-dialog
+    while [[ 1 ]]
+    do
+        #Select an option
+        read -N1 -r -p "${TB_READDIALOG_ARE_YOU_SURE_YOU_WISH_TO_REBOOT}" keyinput
+        # movedown_and_clean__func "${TB_NUMOFLINES_1}"
+
+        #Only continue if a valid option is selected
+        if [[ ! -z ${keyinput} ]]; then
+            if [[ ${keyinput} =~ ${TB_YN_REGEX} ]]; then
+                movedown_and_clean__func "${TB_NUMOFLINES_1}"
+
+                break
+            else
+                if [[ ${keyinput} == ${TB_ENTER} ]]; then
+                    moveup_and_clean__func "${TB_NUMOFLINES_1}"                    
+                else
+                    moveup_and_clean__func "${TB_NUMOFLINES_0}"
+                fi
+
+                readdialog_clean_buffer__func
+            fi
+        else
+            moveup_and_clean__func "${TB_NUMOFLINES_0}"
+
+            readdialog_clean_buffer__func
+        fi
+    done
+
+    if [[ "${keyinput}" == "${TB_OPTIONS_Y}" ]]; then
+        movedown_and_clean__func "${TB_NUMOFLINES_1}"
+        
+        ${REBOOT_CMD}
+    fi
 }
 
 
