@@ -165,38 +165,45 @@
 "echo ------: isp_bootseq3=$isp_bootseq3 \n; " \
 
 #define MD_BUTTON_BOOTSEQ_SELECT \
-"echo ---:tibbo:bootseq-select: start \n; " \
-"echo ------:tibbo:bootseq-note: please ignore warnings (should there be any) \n; " \
+"echo ---:tibbo:isp-bootseq-start: selection \n; " \
+"echo ------:tibbo:isp-bootseq-note: please ignore warnings (should there be any) \n; " \
 "if test -e mmc 0:9 /.tb_init_bootseq_sdusb0usb1; then \n; " /* START: check if .tb_init_bootseq_sdusb0usb1 is PRESENT in /tb_reserve */ \
+"echo ------:tibbo:bootseq-chosen: SD > USB0 > USB1 \n; " \
 "setenv isp_bootseq1 run md_button_validate_sd_cmd \n; " \
 "setenv isp_bootseq2 run md_button_validate_usb0_cmd \n; " \
 "setenv isp_bootseq3 run md_button_validate_usb1_cmd \n; " \
 "elif test -e mmc 0:9 /.tb_init_bootseq_sdusb1usb0; then \n; " /* ELIF: check if .tb_init_bootseq_sdusb1usb0 is PRESENT in /tb_reserve */ \
+"echo ------:tibbo:bootseq-chosen: SD > USB1 > USB0 \n; " \
 "setenv isp_bootseq1 run md_button_validate_sd_cmd \n; " \
 "setenv isp_bootseq2 run md_button_validate_usb1_cmd \n; " \
 "setenv isp_bootseq3 run md_button_validate_usb0_cmd \n; " \
 "elif test -e mmc 0:9 /.tb_init_bootseq_usb0sdusb1; then \n; " /* ELIF: check if .tb_init_bootseq_usb0sdusb1 is PRESENT in /tb_reserve */ \
+"echo ------:tibbo:bootseq-chosen: USB0 > SD > USB1 \n; " \
 "setenv isp_bootseq1 run md_button_validate_usb0_cmd \n; " \
 "setenv isp_bootseq2 run md_button_validate_sd_cmd \n; " \
 "setenv isp_bootseq3 run md_button_validate_usb1_cmd \n; " \
 "elif test -e mmc 0:9 /.tb_init_bootseq_usb0usb1sd; then \n; " /* ELIF: check if .tb_init_bootseq_usb0usb1sd is PRESENT in /tb_reserve */ \
+"echo ------:tibbo:bootseq-chosen: USB0 > USB1 > SD \n; " \
 "setenv isp_bootseq1 run md_button_validate_usb0_cmd \n; " \
 "setenv isp_bootseq2 run md_button_validate_usb1_cmd \n; " \
 "setenv isp_bootseq3 run md_button_validate_sd_cmd \n; " \
 "elif test -e mmc 0:9 /.tb_init_bootseq_usb1sdusb0; then \n; " /* ELIF: check if .tb_init_bootseq_usb1sdusb0 is PRESENT in /tb_reserve */ \
+"echo ------:tibbo:bootseq-chosen: USB1 > SD > USB0 \n; " \
 "setenv isp_bootseq1 run md_button_validate_usb1_cmd \n; " \
 "setenv isp_bootseq2 run md_button_validate_sd_cmd \n; " \
 "setenv isp_bootseq3 run md_button_validate_usb0_cmd \n; " \
 "elif test -e mmc 0:9 /.tb_init_bootseq_usb1usb0sd; then \n; " /* ELIF: check if .tb_init_bootseq_usb1usb0sd is PRESENT in /tb_reserve */ \
+"echo ------:tibbo:bootseq-chosen: USB1 > USB0 > SD \n; " \
 "setenv isp_bootseq1 run md_button_validate_usb1_cmd \n; " \
 "setenv isp_bootseq2 run md_button_validate_usb0_cmd \n; " \
 "setenv isp_bootseq3 run md_button_validate_sd_cmd \n; " \
 "else \n; " /* ELSE: for all other cases */ \
+"echo ------:tibbo:bootseq-default: SD > USB0 > USB1 \n; " \
 "setenv isp_bootseq1 run md_button_validate_sd_cmd \n; " \
 "setenv isp_bootseq2 run md_button_validate_usb0_cmd \n; " \
 "setenv isp_bootseq3 run md_button_validate_usb1_cmd \n; " \
 "fi \n; " \
-"echo ---:tibbo:bootseq-select: done \n; " \
+"echo ---:tibbo:isp-bootseq-end: selection \n; " \
 
 #define MD_BUTTON_VALIDATE_SD \
 "echo ---:tibbo:detect: sd-card state... \n; " \

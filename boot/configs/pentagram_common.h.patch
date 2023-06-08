@@ -1,6 +1,6 @@
 --- /root/SP7021/boot/uboot/include/configs/pentagram_common.h	2023-05-31 12:17:21.000000000 +0000
-+++ /root/LTPP3_ROOTFS/boot/configs/pentagram_common.h	2023-06-07 10:22:16.000000000 +0000
-@@ -117,6 +117,188 @@
++++ /root/LTPP3_ROOTFS/boot/configs/pentagram_common.h	2023-06-08 03:29:29.000000000 +0000
+@@ -117,6 +117,195 @@
  #define RASPBIAN_CMD                    // Enable Raspbian command
  
  
@@ -52,38 +52,45 @@
 +"echo ------: isp_bootseq3=$isp_bootseq3 \n; " \
 +
 +#define MD_BUTTON_BOOTSEQ_SELECT \
-+"echo ---:tibbo:bootseq-select: start \n; " \
-+"echo ------:tibbo:bootseq-note: please ignore warnings (should there be any) \n; " \
++"echo ---:tibbo:isp-bootseq-start: selection \n; " \
++"echo ------:tibbo:isp-bootseq-note: please ignore warnings (should there be any) \n; " \
 +"if test -e mmc 0:9 /.tb_init_bootseq_sdusb0usb1; then \n; " /* START: check if .tb_init_bootseq_sdusb0usb1 is PRESENT in /tb_reserve */ \
++"echo ------:tibbo:bootseq-chosen: SD > USB0 > USB1 \n; " \
 +"setenv isp_bootseq1 run md_button_validate_sd_cmd \n; " \
 +"setenv isp_bootseq2 run md_button_validate_usb0_cmd \n; " \
 +"setenv isp_bootseq3 run md_button_validate_usb1_cmd \n; " \
 +"elif test -e mmc 0:9 /.tb_init_bootseq_sdusb1usb0; then \n; " /* ELIF: check if .tb_init_bootseq_sdusb1usb0 is PRESENT in /tb_reserve */ \
++"echo ------:tibbo:bootseq-chosen: SD > USB1 > USB0 \n; " \
 +"setenv isp_bootseq1 run md_button_validate_sd_cmd \n; " \
 +"setenv isp_bootseq2 run md_button_validate_usb1_cmd \n; " \
 +"setenv isp_bootseq3 run md_button_validate_usb0_cmd \n; " \
 +"elif test -e mmc 0:9 /.tb_init_bootseq_usb0sdusb1; then \n; " /* ELIF: check if .tb_init_bootseq_usb0sdusb1 is PRESENT in /tb_reserve */ \
++"echo ------:tibbo:bootseq-chosen: USB0 > SD > USB1 \n; " \
 +"setenv isp_bootseq1 run md_button_validate_usb0_cmd \n; " \
 +"setenv isp_bootseq2 run md_button_validate_sd_cmd \n; " \
 +"setenv isp_bootseq3 run md_button_validate_usb1_cmd \n; " \
 +"elif test -e mmc 0:9 /.tb_init_bootseq_usb0usb1sd; then \n; " /* ELIF: check if .tb_init_bootseq_usb0usb1sd is PRESENT in /tb_reserve */ \
++"echo ------:tibbo:bootseq-chosen: USB0 > USB1 > SD \n; " \
 +"setenv isp_bootseq1 run md_button_validate_usb0_cmd \n; " \
 +"setenv isp_bootseq2 run md_button_validate_usb1_cmd \n; " \
 +"setenv isp_bootseq3 run md_button_validate_sd_cmd \n; " \
 +"elif test -e mmc 0:9 /.tb_init_bootseq_usb1sdusb0; then \n; " /* ELIF: check if .tb_init_bootseq_usb1sdusb0 is PRESENT in /tb_reserve */ \
++"echo ------:tibbo:bootseq-chosen: USB1 > SD > USB0 \n; " \
 +"setenv isp_bootseq1 run md_button_validate_usb1_cmd \n; " \
 +"setenv isp_bootseq2 run md_button_validate_sd_cmd \n; " \
 +"setenv isp_bootseq3 run md_button_validate_usb0_cmd \n; " \
 +"elif test -e mmc 0:9 /.tb_init_bootseq_usb1usb0sd; then \n; " /* ELIF: check if .tb_init_bootseq_usb1usb0sd is PRESENT in /tb_reserve */ \
++"echo ------:tibbo:bootseq-chosen: USB1 > USB0 > SD \n; " \
 +"setenv isp_bootseq1 run md_button_validate_usb1_cmd \n; " \
 +"setenv isp_bootseq2 run md_button_validate_usb0_cmd \n; " \
 +"setenv isp_bootseq3 run md_button_validate_sd_cmd \n; " \
 +"else \n; " /* ELSE: for all other cases */ \
++"echo ------:tibbo:bootseq-default: SD > USB0 > USB1 \n; " \
 +"setenv isp_bootseq1 run md_button_validate_sd_cmd \n; " \
 +"setenv isp_bootseq2 run md_button_validate_usb0_cmd \n; " \
 +"setenv isp_bootseq3 run md_button_validate_usb1_cmd \n; " \
 +"fi \n; " \
-+"echo ---:tibbo:bootseq-select: done \n; " \
++"echo ---:tibbo:isp-bootseq-end: selection \n; " \
 +
 +#define MD_BUTTON_VALIDATE_SD \
 +"echo ---:tibbo:detect: sd-card state... \n; " \
@@ -189,7 +196,7 @@
  /*
   * In the beginning, bootcmd will check bootmode in SRAM and the flag
   * if_zebu to choose different boot flow :
-@@ -154,6 +336,7 @@
+@@ -154,6 +343,7 @@
   */
  #define CONFIG_BOOTCOMMAND \
  "echo [scr] bootcmd started; " \
@@ -197,7 +204,7 @@
  "md.l ${bootinfo_base} 1; " \
  "if itest.l *${bootinfo_base} == " __stringify(SPI_NOR_BOOT) "; then " \
  	"if itest ${if_zebu} == 1; then " \
-@@ -195,6 +378,9 @@
+@@ -195,6 +385,9 @@
  "elif itest.l *${bootinfo_base} == " __stringify(USB_ISP) "; then " \
  	"echo [scr] ISP from USB storage; " \
  	"run isp_usb; " \
@@ -207,7 +214,7 @@
  "elif itest.l *${bootinfo_base} == " __stringify(SDCARD_ISP) "; then " \
  	"echo [scr] ISP from SD Card; " \
  	"run isp_sdcard; " \
-@@ -364,7 +550,7 @@
+@@ -364,7 +557,7 @@
  	"cp.l ${addr_src_kernel} ${addr_dst_kernel} ${sz_kernel}; " \
  	dbg_scr("echo sp_go ${addr_dst_kernel} ${fdtcontroladdr}; ") \
  	"sp_go ${addr_dst_kernel} ${fdtcontroladdr}\0" \
@@ -216,7 +223,7 @@
  	DTS_LOAD_EMMC \
  	"mmc read ${addr_tmp_header} ${addr_src_kernel} 0x1; " \
  	"setenv tmpval 0; setexpr tmpaddr ${addr_tmp_header} + 0x0c; run be2le; " \
-@@ -464,8 +650,26 @@
+@@ -464,8 +657,26 @@
  	"dhcp $isp_ram_addr $serverip:TFTP0000.BIN; " \
  	"setenv isp_main_storage ${sp_main_storage} && printenv isp_main_storage; " \
  	"setexpr script_addr $isp_ram_addr + 0x00 && setenv script_addr 0x${script_addr} && source $script_addr; " \
