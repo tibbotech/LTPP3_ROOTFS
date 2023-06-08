@@ -100,6 +100,38 @@ function get_MEDIAFULLPATH__func() {
 	echo ${mediafullpath}
 }
 
+print_unmount_on_all_tty_lines__sub() {
+	ttylist_string=$(ls -1 /dev | grep "ttyS" | sort --version-sort)
+	ttylist_arr=(${ttylist_string})
+
+	for ttylist_arritem in "${ttylist_arr[@]}"
+	do
+		exec 1>/dev/${ttylist_arritem}
+		echo -e "\r"	
+		echo -e "\r"
+		echo -e "${FG_ORANGE}INFO${NOCOLOR}: ${BLINK}${FG_SOFLIGHTRED}UNMOUNTED${NOCOLOR} MMC: ${FG_LIGHTGREY}${devfullpath_in}${NOCOLOR}"
+		echo -e "${FG_ORANGE}INFO${NOCOLOR}: REMOVED MOUNT-POINT: ${FG_LIGHTGREY}${mtab_MEDIAFULLPATH}${NOCOLOR}"
+		echo -e "\r"
+		echo -e "\r"
+	done
+}
+
+print_unmount_on_all_pts_lines__sub() {
+	ptslist_string=$(ls -1 /dev | grep pts | sort --version-sort | sed 's/pts//g')
+	ptslist_arr=(${ptslist_string})
+
+	for ptslist_arritem in "${ptslist_arr[@]}"
+	do
+		exec 1>/dev/pts/${ptslist_arritem}
+		echo -e "\r"	
+		echo -e "\r"
+		echo -e "${FG_ORANGE}INFO${NOCOLOR}: ${BLINK}${FG_SOFLIGHTRED}UNMOUNTED${NOCOLOR} MMC: ${FG_LIGHTGREY}${devfullpath_in}${NOCOLOR}"
+		echo -e "${FG_ORANGE}INFO${NOCOLOR}: REMOVED MOUNT-POINT: ${FG_LIGHTGREY}${mtab_MEDIAFULLPATH}${NOCOLOR}"
+		echo -e "\r"
+		echo -e "\r"
+	done
+}
+
 remove_unused_mountpoints__sub() {
 	#---------------------------------------------------------------#
 	# 	Delete all empty folders in directory /media that aren't 	#
@@ -143,7 +175,7 @@ remove_unused_mountpoints__sub() {
 do_UNmount_sub() 
 {
 	#Using the Mount information, get ${mtab_MEDIAFULLPATH} (e.g. /media/HIEN_E) which is stored in /etc/mtab
-	local mtab_MEDIAFULLPATH=`cat ${etc_dir}/mtab | grep "${devfullpath_in}" | cut -d " " -f2`
+	mtab_MEDIAFULLPATH=`cat ${etc_dir}/mtab | grep "${devfullpath_in}" | cut -d " " -f2`
 
 	#Unmount devfullpath_in (e.g. /dev/sda1) 
 	${usr_bin_dir}/umount ${devfullpath_in}
@@ -153,13 +185,11 @@ do_UNmount_sub()
 		rm -rf ${mtab_MEDIAFULLPATH}
 	fi
 
-	echo -e "\r"	
-	echo -e "\r"
-	echo -e "${FG_ORANGE}INFO${NOCOLOR}: ${BLINK}${FG_SOFLIGHTRED}UNMOUNTED${NOCOLOR} MMC: ${FG_LIGHTGREY}${devfullpath_in}${NOCOLOR}"
-	echo -e "${FG_ORANGE}INFO${NOCOLOR}: MOUNT-POINT: ${FG_LIGHTGREY}${mtab_MEDIAFULLPATH}${NOCOLOR}"
-	echo -e "\r"
-	echo -e "\r"
+	#Print on all tty lines
+	print_unmount_on_all_tty_lines__sub
 
+	#Print on all pts lines
+	print_unmount_on_all_pts_lines__sub
 
 	#Remove unused mointpoints
 	remove_unused_mountpoints__sub

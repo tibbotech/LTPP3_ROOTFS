@@ -101,6 +101,40 @@ function get_MEDIAFULLPATH__func() {
 	echo ${mediafullpath}
 }
 
+print_mount_on_all_tty_lines__sub() {
+	ttylist_string=$(ls -1 /dev | grep "ttyS" | sort --version-sort)
+	ttylist_arr=(${ttylist_string})
+
+	for ttylist_arritem in "${ttylist_arr[@]}"
+	do
+		exec 1>/dev/${ttylist_arritem}
+		echo -e "\r"
+		echo -e "\r"
+		echo -e "${FG_ORANGE}INFO${NOCOLOR}: ${BLINK}${FG_LIGHTGREEN}MOUNTED${NOCOLOR} MMC: ${FG_LIGHTGREY}${devfullpath_in}${NOCOLOR}"
+		echo -e "${FG_ORANGE}INFO${NOCOLOR}: CREATED MOUNT-POINT: ${FG_LIGHTGREY}${MEDIAFULLPATH}${NOCOLOR}"
+		echo -e "${FG_ORANGE}INFO${NOCOLOR}: PERMISSION: ${FG_LIGHTGREY}${MEDIAFULLPATH_permission}${NOCOLOR}"
+		echo -e "\r"
+		echo -e "\r"
+	done
+}
+
+print_mount_on_all_pts_lines__sub() {
+	ptslist_string=$(ls -1 /dev | grep pts | sort --version-sort | sed 's/pts//g')
+	ptslist_arr=(${ptslist_string})
+
+	for ptslist_arritem in "${ptslist_arr[@]}"
+	do
+		exec 1>/dev/pts/${ptslist_arritem}
+		echo -e "\r"
+		echo -e "\r"
+		echo -e "${FG_ORANGE}INFO${NOCOLOR}: ${BLINK}${FG_LIGHTGREEN}MOUNTED${NOCOLOR} MMC: ${FG_LIGHTGREY}${devfullpath_in}${NOCOLOR}"
+		echo -e "${FG_ORANGE}INFO${NOCOLOR}: CREATED MOUNT-POINT: ${FG_LIGHTGREY}${MEDIAFULLPATH}${NOCOLOR}"
+		echo -e "${FG_ORANGE}INFO${NOCOLOR}: PERMISSION: ${FG_LIGHTGREY}${MEDIAFULLPATH_permission}${NOCOLOR}"
+		echo -e "\r"
+		echo -e "\r"
+	done
+}
+
 remove_unused_mountpoints__sub() {
 	#---------------------------------------------------------------#
 	# 	Delete all empty folders in directory /media that aren't 	#
@@ -182,20 +216,13 @@ do_Mount_sub()
 	#Get permission of directory
 	local MEDIAFULLPATH_permission=`ls -ld ${MEDIAFULLPATH} | cut -d" " -f1`
 
-	echo -e "\r"
-	echo -e "\r"
-	echo -e "${FG_ORANGE}INFO${NOCOLOR}: ${BLINK}${FG_LIGHTGREEN}MOUNTED${NOCOLOR} MMC: ${FG_LIGHTGREY}${devfullpath_in}${NOCOLOR}"
-	echo -e "${FG_ORANGE}INFO${NOCOLOR}: MOUNT-POINT: ${FG_LIGHTGREY}${MEDIAFULLPATH}${NOCOLOR}"
-	echo -e "${FG_ORANGE}INFO${NOCOLOR}: PERMISSION: ${FG_LIGHTGREY}${MEDIAFULLPATH_permission}${NOCOLOR}"
-	echo -e "\r"
-	echo -e "\r"
+	#Print on all tty lines
+	print_mount_on_all_tty_lines__sub
+
+	#Print on all pts lines
+	print_mount_on_all_pts_lines__sub
 }
 
-#---Show message
-# echo -e "\r"
-# echo -e "\r"
-# echo -e "${FG_ORANGE}INFO${NOCOLOR}: DETECTED MMC: ${FG_LIGHTGREY}${devpart_in}${NOCOLOR}"
-# echo -e "\r"
 
 
 #---Check input args

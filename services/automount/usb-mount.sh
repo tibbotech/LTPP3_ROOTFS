@@ -108,6 +108,72 @@ function get_MEDIAFULLPATH__func() {
 	echo ${mediafullpath}
 }
 
+print_mount_on_all_tty_lines__sub() {
+	ttylist_string=$(ls -1 /dev | grep "ttyS" | sort --version-sort)
+	ttylist_arr=(${ttylist_string})
+
+	for ttylist_arritem in "${ttylist_arr[@]}"
+	do
+		exec 1>/dev/${ttylist_arritem}
+		echo -e "\r"
+		echo -e "\r"
+		echo -e "${FG_ORANGE}INFO${NOCOLOR}: ${BLINK}${FG_LIGHTGREEN}MOUNTED${NOCOLOR} MMC: ${FG_LIGHTGREY}${devfullpath_in}${NOCOLOR}"
+		echo -e "${FG_ORANGE}INFO${NOCOLOR}: CREATED MOUNT-POINT: ${FG_LIGHTGREY}${MEDIAFULLPATH}${NOCOLOR}"
+		echo -e "${FG_ORANGE}INFO${NOCOLOR}: PERMISSION: ${FG_LIGHTGREY}${MEDIAFULLPATH_permission}${NOCOLOR}"
+		echo -e "\r"
+		echo -e "\r"
+	done
+}
+
+print_mount_on_all_pts_lines__sub() {
+	ptslist_string=$(ls -1 /dev | grep pts | sort --version-sort | sed 's/pts//g')
+	ptslist_arr=(${ptslist_string})
+
+	for ptslist_arritem in "${ptslist_arr[@]}"
+	do
+		exec 1>/dev/pts/${ptslist_arritem}
+		echo -e "\r"
+		echo -e "\r"
+		echo -e "${FG_ORANGE}INFO${NOCOLOR}: ${BLINK}${FG_LIGHTGREEN}MOUNTED${NOCOLOR} MMC: ${FG_LIGHTGREY}${devfullpath_in}${NOCOLOR}"
+		echo -e "${FG_ORANGE}INFO${NOCOLOR}: CREATED MOUNT-POINT: ${FG_LIGHTGREY}${MEDIAFULLPATH}${NOCOLOR}"
+		echo -e "${FG_ORANGE}INFO${NOCOLOR}: PERMISSION: ${FG_LIGHTGREY}${MEDIAFULLPATH_permission}${NOCOLOR}"
+		echo -e "\r"
+		echo -e "\r"
+	done
+}
+
+print_unmount_on_all_tty_lines__sub() {
+	ttylist_string=$(ls -1 /dev | grep "ttyS" | sort --version-sort)
+	ttylist_arr=(${ttylist_string})
+
+	for ttylist_arritem in "${ttylist_arr[@]}"
+	do
+		exec 1>/dev/${ttylist_arritem}
+		echo -e "\r"	
+		echo -e "\r"
+		echo -e "${FG_ORANGE}INFO${NOCOLOR}: ${BLINK}${FG_SOFLIGHTRED}UNMOUNTED${NOCOLOR} MMC: ${FG_LIGHTGREY}${devfullpath_in}${NOCOLOR}"
+		echo -e "${FG_ORANGE}INFO${NOCOLOR}: REMOVED MOUNT-POINT: ${FG_LIGHTGREY}${mtab_MEDIAFULLPATH}${NOCOLOR}"
+		echo -e "\r"
+		echo -e "\r"
+	done
+}
+
+print_unmount_on_all_pts_lines__sub() {
+	ptslist_string=$(ls -1 /dev | grep pts | sort --version-sort | sed 's/pts//g')
+	ptslist_arr=(${ptslist_string})
+
+	for ptslist_arritem in "${ptslist_arr[@]}"
+	do
+		exec 1>/dev/pts/${ptslist_arritem}
+		echo -e "\r"	
+		echo -e "\r"
+		echo -e "${FG_ORANGE}INFO${NOCOLOR}: ${BLINK}${FG_SOFLIGHTRED}UNMOUNTED${NOCOLOR} MMC: ${FG_LIGHTGREY}${devfullpath_in}${NOCOLOR}"
+		echo -e "${FG_ORANGE}INFO${NOCOLOR}: REMOVED MOUNT-POINT: ${FG_LIGHTGREY}${mtab_MEDIAFULLPATH}${NOCOLOR}"
+		echo -e "\r"
+		echo -e "\r"
+	done
+}
+
 remove_unused_mountpoints__sub() {
 	#---------------------------------------------------------------#
 	# 	Delete all empty folders in directory /media that aren't 	#
@@ -119,6 +185,7 @@ remove_unused_mountpoints__sub() {
 	local mediafullpath_array=${media_dir}/*	#note: mediafullpath_array is an ARRAY containing mediafullpaths
 	local mediafullpath_arrayitem=""
 	local mtab_devfullpath=""
+	local exitcode=0
 
 	for mediafullpath_arrayitem in ${mediafullpath_array}	#note: mediafullpath_arrayitem is the same as 'mediafullpath'
 	do
@@ -129,9 +196,8 @@ remove_unused_mountpoints__sub() {
 			if [[ -d "$mediafullpath_arrayitem" ]]; then
 				#${usr_bin_dir}/umount -l ${mediafullpath_arrayitem}	#unmount with forcibly removing entry in /etc/mtab
 
-				${usr_bin_dir}/umount ${mediafullpath_arrayitem}	#unmount
-
-				${usr_bin_dir}/rm -r ${mediafullpath_arrayitem}	#remove
+				${usr_bin_dir}/umount ${mediafullpath_arrayitem} 2>/dev/null; exitcode=$?	#unmount
+				${usr_bin_dir}/rm -r ${mediafullpath_arrayitem} 2>/dev/null; exitcode=$?	#unmount
 			fi
 		else
 			#Checkif there is a match for 'mtab_devfullpath'
@@ -140,9 +206,8 @@ remove_unused_mountpoints__sub() {
 			if [[ -z ${match_isFound} ]]; then	#In case no info is found, then umount & remove the ${mediafullpath}
 				#${usr_bin_dir}/umount -l ${mediafullpath_arrayitem}	#unmount with forcibly removing entry in /etc/mtab
 
-				${usr_bin_dir}/umount ${mediafullpath_arrayitem}	#unmount
-
-				${usr_bin_dir}/rm -r ${mediafullpath_arrayitem}	#remove
+				${usr_bin_dir}/umount ${mediafullpath_arrayitem} 2>/dev/null; exitcode=$?	#unmount
+				${usr_bin_dir}/rm -r ${mediafullpath_arrayitem} 2>/dev/null; exitcode=$?	#unmount
 			fi
 		fi
 	done
@@ -176,7 +241,7 @@ do_Mount_sub()
 	
 	#Get MEDIAFULLPATH
 	#MEDIAFULLPATH=${media_dir}/${MEDIAPART}
-	local MEDIAFULLPATH=`get_MEDIAFULLPATH__func "${MEDIAPART}"`
+	MEDIAFULLPATH=`get_MEDIAFULLPATH__func "${MEDIAPART}"`
 
 	#Create folder ${MEDIAPART}
 	if [[ ! -d ${MEDIAFULLPATH} ]]; then
@@ -187,15 +252,13 @@ do_Mount_sub()
 	${usr_bin_dir}/mount -t vfat -o rw,users,umask=000,exec ${devfullpath_in} ${MEDIAFULLPATH}
 
 	#Get permission of directory
-	local MEDIAFULLPATH_permission=`ls -ld ${MEDIAFULLPATH} | cut -d" " -f1`
+	MEDIAFULLPATH_permission=`ls -ld ${MEDIAFULLPATH} | cut -d" " -f1`
 
-	echo -e "\r"
-	echo -e "\r"
-	echo -e "${FG_ORANGE}INFO${NOCOLOR}: ${BLINK}${FG_LIGHTGREEN}MOUNTED${NOCOLOR} USB: ${FG_LIGHTGREY}${devfullpath_in}${NOCOLOR}"
-	echo -e "${FG_ORANGE}INFO${NOCOLOR}: MOUNT-POINT: ${FG_LIGHTGREY}${MEDIAFULLPATH}${NOCOLOR}"
-	echo -e "${FG_ORANGE}INFO${NOCOLOR}: PERMISSION: ${FG_LIGHTGREY}${MEDIAFULLPATH_permission}${NOCOLOR}"
-	echo -e "\r"
-	echo -e "\r"
+	#Print on all tty lines
+	print_mount_on_all_tty_lines__sub
+
+	#Print on all pts lines
+	print_mount_on_all_pts_lines__sub
 }
 
 do_UNmount_sub() 
@@ -211,12 +274,11 @@ do_UNmount_sub()
 		rm -rf ${mtab_MEDIAFULLPATH}
 	fi
 
-	echo -e "\r"	
-	echo -e "\r"
-	echo -e "${FG_ORANGE}INFO${NOCOLOR}: ${BLINK}${FG_SOFLIGHTRED}UNMOUNTED${NOCOLOR} USB: ${FG_LIGHTGREY}${devfullpath_in}${NOCOLOR}"
-	echo -e "${FG_ORANGE}INFO${NOCOLOR}: MOUNT-POINT: ${FG_LIGHTGREY}${mtab_MEDIAFULLPATH}${NOCOLOR}"
-	echo -e "\r"
-	echo -e "\r"
+	#Print on all tty lines
+	print_unmount_on_all_tty_lines__sub
+
+	#Print on all pts lines
+	print_unmount_on_all_pts_lines__sub
 
 	#Remove unused mointpoints
 	remove_unused_mountpoints__sub
