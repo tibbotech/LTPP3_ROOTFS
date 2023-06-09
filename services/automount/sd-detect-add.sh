@@ -39,6 +39,7 @@ FG_ORANGE=$'\e[30;38;5;209m'
 FG_LIGHTGREY=$'\e[30;38;5;246m'
 FG_LIGHTGREEN=$'\e[30;38;5;71m'
 FG_SOFLIGHTRED=$'\e[30;38;5;131m'
+BG_ORANGE=$'\e[30;48;5;215m'
 BLINK=$'\e[5m'
 
 
@@ -46,9 +47,9 @@ BLINK=$'\e[5m'
 #---SUBROUTINES/FUNCTIONS
 usage_sub() 
 {
-	echo -e "\r"
+	echo -e ":\r"
     echo -e ":-->${BLINK}${FG_LIGHTRED}USAGE${NOCOLOR}: $0 <dev_id> (e.g. mmcblk1p1)"
-	echo -e "\r"
+	echo -e ":\r"
 	
     exit 99
 }
@@ -108,13 +109,11 @@ print_mount_on_all_tty_lines__sub() {
 	for ttylist_arritem in "${ttylist_arr[@]}"
 	do
 		exec 1>/dev/${ttylist_arritem}
-		echo -e "\r"
-		echo -e "\r"
-		echo -e "${FG_ORANGE}INFO${NOCOLOR}: ${BLINK}${FG_LIGHTGREEN}MOUNTED${NOCOLOR} MMC: ${FG_LIGHTGREY}${devfullpath_in}${NOCOLOR}"
-		echo -e "${FG_ORANGE}INFO${NOCOLOR}: CREATED MOUNT-POINT: ${FG_LIGHTGREY}${MEDIAFULLPATH}${NOCOLOR}"
-		echo -e "${FG_ORANGE}INFO${NOCOLOR}: PERMISSION: ${FG_LIGHTGREY}${MEDIAFULLPATH_permission}${NOCOLOR}"
-		echo -e "\r"
-		echo -e "\r"
+		echo -e ":\r"
+		echo -e ":--->${BG_ORANGE}TIBBO${NOCOLOR}: ${BLINK}${FG_LIGHTGREEN}MOUNTED${NOCOLOR} MMC: ${FG_LIGHTGREY}${devfullpath_in}${NOCOLOR}"
+		echo -e ":--->${BG_ORANGE}TIBBO${NOCOLOR}: CREATED MOUNT-POINT: ${FG_LIGHTGREY}${MEDIAFULLPATH}${NOCOLOR}"
+		echo -e ":--->${BG_ORANGE}TIBBO${NOCOLOR}: PERMISSION: ${FG_LIGHTGREY}${MEDIAFULLPATH_permission}${NOCOLOR}"
+		echo -e ":\r"
 	done
 }
 
@@ -125,13 +124,11 @@ print_mount_on_all_pts_lines__sub() {
 	for ptslist_arritem in "${ptslist_arr[@]}"
 	do
 		exec 1>/dev/pts/${ptslist_arritem}
-		echo -e "\r"
-		echo -e "\r"
-		echo -e "${FG_ORANGE}INFO${NOCOLOR}: ${BLINK}${FG_LIGHTGREEN}MOUNTED${NOCOLOR} MMC: ${FG_LIGHTGREY}${devfullpath_in}${NOCOLOR}"
-		echo -e "${FG_ORANGE}INFO${NOCOLOR}: CREATED MOUNT-POINT: ${FG_LIGHTGREY}${MEDIAFULLPATH}${NOCOLOR}"
-		echo -e "${FG_ORANGE}INFO${NOCOLOR}: PERMISSION: ${FG_LIGHTGREY}${MEDIAFULLPATH_permission}${NOCOLOR}"
-		echo -e "\r"
-		echo -e "\r"
+		echo -e ":\r"
+		echo -e ":--->${BG_ORANGE}TIBBO${NOCOLOR}: ${BLINK}${FG_LIGHTGREEN}MOUNTED${NOCOLOR} MMC: ${FG_LIGHTGREY}${devfullpath_in}${NOCOLOR}"
+		echo -e ":--->${BG_ORANGE}TIBBO${NOCOLOR}: CREATED MOUNT-POINT: ${FG_LIGHTGREY}${MEDIAFULLPATH}${NOCOLOR}"
+		echo -e ":--->${BG_ORANGE}TIBBO${NOCOLOR}: PERMISSION: ${FG_LIGHTGREY}${MEDIAFULLPATH_permission}${NOCOLOR}"
+		echo -e ":\r"
 	done
 }
 
