@@ -9,6 +9,7 @@ TB_ESCAPEKEY=$'\x1b'
 TB_SEMICOLON=";"
 TB_SLASH="/"
 
+
 #---COLOR CONSTANTS
 TB_NOCOLOR=$'\e[0;0m'
 TB_FG_BLUE_33=$'\e[30;38;5;33m'
@@ -36,8 +37,11 @@ TB_TABLEWIDTH=$((( TB_TERMWINDOW_WIDTH * TB_PERCENT_80)/100 ))
 TB_LISTPAGE_LEN=10  #Please note: TB_LISTPAGE_LEN <= 10
 
 #---FLAG CONSTANTS
-TB_OUTPUT_SOURCE="source"
-TB_OUTPUT_DESTINATION="destination"
+TB_OUTPUT_SOURCE="Source"
+TB_OUTPUT_DESTINATION="Destination"
+TB_OUTPUT_FILE="File"
+TB_TYPE_BACKUP="Backup"
+TB_TYPE_RESTORE="Restore"
 
 #---LEGEND CONSTANTS
 TB_LEGEND="${TB_FG_GREY_246}Legend:${TB_NOCOLOR}"
@@ -96,12 +100,14 @@ TB_OPTIONS_SEMICOLON_Q=";q"
 
 TB_READDIALOG_ARE_YOU_SURE_YOU_WISH_TO_REBOOT="Are you sure you wish to reboot (y/n)? "
 TB_READDIALOG_CHOOSE_AN_OPTION="Choose an option: "
+TB_READDIALOG_CHOOSE_AN_OPTION_AND_C_TO_CONFIRM="Choose an option (${TB_FG_GREY_246}and press ${TB_FG_YELLOW_33}c${TB_FG_GREY_246}onfirm${TB_NOCOLOR}): "
 TB_READDIALOG_CHOOSE_AN_OPTION_AND_PRESS_ENTER="Choose an option (${TB_FG_GREY_246}and press ENTER${TB_NOCOLOR}): "
-TB_READDIALOG_INPUT_AND_PRESS_ENTER="Input (${TB_FG_GREY_246}and press ENTER${TB_NOCOLOR}): "
+TB_READDIALOG_INPUT_FILENAME_AND_PRESS_ENTER="Input filename (${TB_FG_GREY_246}and press ENTER${TB_NOCOLOR}): "
 
 TB_TITLE_BACKUP_CHOOSE_DESTINATION_DIR="${TB_FG_ORANGE_215}BACKUP:${TB_NOCOLOR} Choose destination-dir"
-TB_TITLE_BACKUP_PROVIDE_DESTINATION_IMAGE_FILENAME="${TB_FG_ORANGE_215}BACKUP:${TB_NOCOLOR} Provide image-filename"
 TB_TITLE_BACKUP_CHOOSE_SOURCE_PATH="${TB_FG_ORANGE_215}BACKUP:${TB_NOCOLOR} Choose source-path"
+TB_TITLE_BACKUP_INPUT_FILENAME="${TB_FG_ORANGE_215}BACKUP:${TB_NOCOLOR} Input filename"
+TB_TITLE_BACKUP_PROVIDE_DESTINATION_IMAGE_FILENAME="${TB_FG_ORANGE_215}BACKUP:${TB_NOCOLOR} Provide image-filename"
 TB_TITLE_BOOTINTO="${TB_FG_BLUE_45}TB-INIT.SH: ${TB_FG_BLUE_33}BOOT-INTO-MENU${TB_NOCOLOR}"
 TB_TITLE_ISPBOOOTBIN_BOOTSEQ="${TB_FG_BLUE_45}TB-INIT.SH: ${TB_FG_BLUE_33}ISPBOOOT.BIN BOOT-SEQ${TB_NOCOLOR}"
 TB_TITLE_TB_INIT_SH="${TB_FG_BLUE_45}TB-INIT.SH: ${TB_FG_BLUE_33}MAIN-MENU${TB_NOCOLOR}"
@@ -139,6 +145,7 @@ TB_ROOTFS_RO_IS_NULL="tb_rootfs_ro=null"
 TB_ROOTFS_RO_IS_TRUE="tb_rootfs_ro=true"
 
 #---PATTERN CONSTANTS
+TB_PATTERN_LBRACKET_D_RBRACKET="[d]"
 TB_PATTERN_MMCBLK0="mmcblk0"
 TB_PATTERN_TB_BACKUP="tb_backup"
 TB_PATTERN_TB_NOBOOT="tb_noboot"
@@ -147,10 +154,10 @@ TB_PATTERN_TB_RESTORE="tb_restore"
 TB_PATTERN_TB_ROOTFS_RO="tb_rootfs_ro"
 
 #---PRINT CONSTANTS
-TB_PRINT_ERROR="***${TB_FG_RED_9}ERROR${TB_NOCOLOR}"
-
 TB_MENU_WO_NOCOLOR="(${TB_FG_GREY_246}Menu)"
 TB_MENU="(${TB_FG_GREY_246}Menu)${TB_NOCOLOR}"
+
+TB_PRINT_ERROR="***${TB_FG_RED_9}ERROR${TB_NOCOLOR}"
 
 TB_PRINT_MODE_ISPBOOOTBIN_BOOTSEQ_SDUSB0USB1="${TB_FG_GREEN_158}SD${TB_FG_GREY_246}>${TB_FG_GREEN_158}USB0${TB_FG_GREY_246}>${TB_FG_GREEN_158}USB1${TB_NOCOLOR}"
 TB_PRINT_MODE_ISPBOOOTBIN_BOOTSEQ_SDUSB1USB0="${TB_FG_GREEN_158}SD${TB_FG_GREY_246}>${TB_FG_GREEN_158}USB1${TB_FG_GREY_246}>${TB_FG_GREEN_158}USB0${TB_NOCOLOR}"
@@ -175,6 +182,10 @@ TB_YN_REGEX="[yn]"
 #---REMARK CONSTANTS
 TB_REMARKS="${TB_FG_BLUE_45}Remarks:${TB_NOCOLOR}"
 TB_REMARK_A_REBOOT_IS_REQUIRED_FOR_THE_CHANGE_TO_TAKE_EFFECT="${TB_FG_BLUE_33}A reboot is required for the change to take effect${TB_NOCOLOR}"
+
+#---SED CONSTANTS
+TB_SED_PATTERN_LBRACKET_D_RBRACKET="\\[d\\]"
+TB_SED_SLASH="\\/"
 
 #---SPACE CONSTANTS
 TB_EMPTYSTRING=""
@@ -210,13 +221,12 @@ tb_proc_cmdline_fpath=${proc_dir}/cmdline
 
 
 #---VARIABLES
-tb_bootinto_get="${TB_EMPTYSTRING}"
-tb_bootinto_mychoice="${TB_EMPTYSTRING}"
-tb_bootinto_remarks="${TB_EMPTYSTRING}"
-tb_bootinto_set="${TB_EMPTYSTRING}"
-tb_bootinto_set_printable="${TB_EMPTYSTRING}"
-tb_bootinto_status="${TB_EMPTYSTRING}"
-tb_dir_set="${TB_EMPTYSTRING}"
+tb_bootoptions_get="${TB_EMPTYSTRING}"
+tb_bootoptions_mychoice="${TB_EMPTYSTRING}"
+tb_bootoptions_remarks="${TB_EMPTYSTRING}"
+tb_bootoptions_set="${TB_EMPTYSTRING}"
+tb_bootoptions_set_printable="${TB_EMPTYSTRING}"
+tb_bootoptions_status="${TB_EMPTYSTRING}"
 tb_dstfilename_set="${TB_EMPTYSTRING}"
 tb_dstpath_set="${TB_EMPTYSTRING}"
 tb_init_bootargs_cfg_tb_rootfs_ro_get="${TB_EMPTYSTRING}"
@@ -227,11 +237,12 @@ tb_mainmenu_mychoice="${TB_EMPTYSTRING}"
 tb_overlaymode_set="${TB_EMPTYSTRING}"
 tb_overlaymode_set_printable="${TB_EMPTYSTRING}"
 tb_overlaymode_tag="${TB_EMPTYSTRING}"
+tb_path_set="${TB_EMPTYSTRING}"
+tb_path_select="${TB_EMPTYSTRING}"
 tb_proc_cmdline_tb_overlay_get="${TB_EMPTYSTRING}"
 tb_proc_cmdline_tb_rootfs_ro_get="${TB_EMPTYSTRING}"
 tb_remark="${TB_EMPTYSTRING}"
 tb_srcpath_set="${TB_EMPTYSTRING}"
-tb_selpath="${TB_EMPTYSTRING}"
 
 tb_dstpath_size_KB=0
 tb_listpage_start=0
@@ -244,7 +255,8 @@ tb_path_list_arrlen=0
 
 flag_backupmode_restoremode_exitloop=false
 flag_backupmode_srcpath_select_exitloop=false
-flag_bootintomenu_exitloop=false
+flag_bootoptions_exitloop=false
+flag_diskspace_isok=false
 flag_file_can_be_removed=false
 flag_go_back_onestep=false
 
@@ -274,11 +286,250 @@ function backspace__func() {
     echo "${str_output}"
 }
 
+function substring_isfound_in_string__func() {
+    #Input args
+    local string__input=${1}
+    local pattern__input=${2}
+
+    #Define variables
+    local result="${TB_EMPTYSTRING}"
+    local ret=false
+
+    #Check if 'pattern__input' is found in 'string__input'
+    result=$(echo "${string__input}" | grep -o "${pattern__input}")
+    if [[ -n "${result}" ]]; then
+        ret=true
+    fi
+
+    #Output
+    echo "${ret}"
+}
+
+function count_numof_occur_of_char_in_string__func() {
+    #Input args
+    local string__input=${1}
+    local char__input=${2}
+
+    #Define variables
+    local ret=0
+
+    #Count the number of occurrences
+    ret=$(echo "${string__input}" | grep -o "${char__input}" | wc -l)
+
+    #Output
+    echo "${ret}"
+}
+
 function cursor_hide__func() {
     printf '\e[?25l'
 }
 function cursor_show__func() {
     printf '\e[?25h'
+}
+
+function diskspace_isok__func() {
+    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    # This function passes the result to 
+    # the global variable 'flag_diskspace_isok'.
+    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    #Input args
+    local srcpath=${1}
+    local dstpath=${2}
+    local copytype=${3}
+
+    #Define constants
+    local PHASE_BACKUP_SRCSIZE=10
+    local PHASE_BACKUP_DSTSIZE=11
+    local PHASE_BACKUP_COMPARE_SIZES=12
+    local PHASE_BACKUP_EXIT=13
+    local PHASE_RESTORE_SRCSIZE=20
+    local PHASE_RESTORE_DSTSIZE=21
+    local PHASE_RESTORE_COMPARE_SIZES=22
+    local PHASE_RESTORE_EXIT=23
+
+    #Define variables
+    local dstdir=""
+    local phase=""
+    local printmsg=""
+    local exitcode=0
+    local dstsize_B=0
+    local dstsize_KB=0
+    local srcsize_B=0
+    local srcsize_KB=0
+
+    #Initialize variables
+    flag_diskspace_isok=false
+    
+    case "${copytype}" in
+        "${TB_TYPE_BACKUP}")
+            #Set start phase
+            phase="${PHASE_BACKUP_SRCSIZE}"
+
+            while [[ 1 ]]
+            do
+                case "${phase}" in
+                    "${PHASE_BACKUP_SRCSIZE}")
+                        #Get source size in KB
+                        srcsize_B=$(blockdev --getsize64 "${srcpath}" 2> /dev/null); exitcode=$?
+
+                        if [[ ${exitcode} -eq 0 ]]; then    #succesful
+                            #Convert to Kilobytes
+                            srcsize_KB=$((srcsize_B / 1024))
+
+                            #Goto next-phase
+                            phase="${PHASE_BACKUP_DSTSIZE}"
+                        else    #error
+                            #Print error-message
+                            printmsg+="${TB_PRINT_ERROR}: '${srcpath}' is *NOT* a partition\n"
+                            printmsg+="${TB_PRINT_ERROR}: SOURCE *must* be an existing partition (e.g. /dev/mmcblk0)\n"
+                            echo -e "${printmsg}"
+
+                            #Goto next-phase
+                            phase="${PHASE_BACKUP_EXIT}"
+                        fi
+                        ;;
+                    "${PHASE_BACKUP_DSTSIZE}")
+                        #Get directory of 'dstpath'
+                        dstdir=$(dirname "${dstpath}")
+                        if [[ -d ${dstdir} ]]; then
+                            #Get destination size in KB
+                            dstsize_KB=$(df --output='avail' -k "${dstdir}" | tail -n1 | sed 's/^ *//g' | sed 's/* $//g'); exitcode=$?
+
+                            #Goto next-phase
+                            phase="${PHASE_BACKUP_COMPARE_SIZES}"
+                        else
+                            #Print error-message
+                            printmsg="${TB_PRINT_ERROR}: '${dstdir}' does *NOT* exist\n"
+                            printmsg+="${TB_PRINT_ERROR}: please choose an existing DESTINATION location for the backup-file\n"
+                            echo -e "${printmsg}"
+
+                            #Set exitcode
+                            exitcode=1
+
+                            #Goto next-phase
+                            phase="${PHASE_BACKUP_EXIT}"
+                        fi
+                        ;;
+                    "${PHASE_BACKUP_COMPARE_SIZES}")
+                        #Compare 'dstsize_KB' with 'srcsize_KB'
+                        #Note: dstsize_KB MUST be greater than 'srcsize_KB'
+                        if [[ ${dstsize_KB} -gt ${srcsize_KB} ]]; then
+                            #Set exitcode
+                            exitcode=0
+                        else
+                            printmsg="Src: ${srcpath}: ${srcsize_KB}K\n"
+                            printmsg+="Dst: ${dstpath}: ${dstsize_KB}K\n"
+                            printmsg+="${TB_PRINT_ERROR}: *insufficient* diskspace (${srcsize_KB}K > ${dstsize_KB}K)\n"
+                            printmsg+="${TB_PRINT_ERROR}: free-up diskspace or choose another destination\n"
+                            echo -e "${printmsg}"
+
+                            #Set exitcode
+                            exitcode=1
+                        fi
+
+                        #Goto next-phase
+                        phase="${PHASE_BACKUP_EXIT}"
+                        ;;
+                    "${PHASE_BACKUP_EXIT}")
+                        if [[ ${exitcode} -eq 0 ]]; then    #error occurred
+                            flag_diskspace_isok=true
+                        else
+                            flag_diskspace_isok=false
+                        fi
+
+                        break
+                        ;;
+                esac
+            done
+            ;;
+        "${TB_TYPE_RESTORE}")
+            #Set start phase
+            phase="${PHASE_RESTORE_SRCSIZE}"
+
+            while [[ 1 ]]
+            do
+                case "${phase}" in
+                    "${PHASE_RESTORE_SRCSIZE}")
+                        if [[ -f "${srcpath}" ]]; then  #is a file
+                            #Get source size in KB
+                            srcsize_B=$(ls -l "${srcpath}" | awk '{print $5}'); exitcode=$?
+
+                            if [[ ${exitcode} -eq 0 ]]; then    #succesful
+                                #Convert to Kilobytes
+                                srcsize_KB=$((srcsize_B / 1024))
+
+                                #Goto next-phase
+                                phase="${PHASE_RESTORE_DSTSIZE}"
+                            else
+                                #Goto next-phase
+                                phase="${PHASE_RESTORE_EXIT}"
+                            fi
+                        else    #is not a file
+                            #Print error-message
+                            printmsg="${TB_PRINT_ERROR}: ${srcpath} is *NOT* a backup-file\n"
+                            printmsg+="${TB_PRINT_ERROR}: SOURCE *must* be an existing backup-file\n"
+                            echo -e "${printmsg}"
+
+                            #Set exitcode
+                            exitcode=1
+
+                            #Goto next-phase
+                            phase="${PHASE_RESTORE_EXIT}"
+                        fi
+                        ;;
+                    "${PHASE_RESTORE_DSTSIZE}")
+                        #Get destination size in KB
+                        dstsize_B=$(blockdev --getsize64 "${dstpath}" 2> /dev/null); exitcode=$?
+                        if [[ ${exitcode} -eq 0 ]]; then    #succesful
+                            #Convert to Kilobytes
+                            dstsize_KB=$((dstsize_B / 1024))
+
+                            #Goto next-phase
+                            phase="${PHASE_RESTORE_COMPARE_SIZES}"
+                        else    #error
+                            #Print error-message
+                            printmsg+="${TB_PRINT_ERROR}: '${dstpath}' is *NOT* a partition\n"
+                            printmsg+="${TB_PRINT_ERROR}: DESTINATION *must* be an existing partition (e.g. /dev/mmcblk0)\n"
+                            echo -e "${printmsg}"
+
+                            #Goto next-phase
+                            phase="${PHASE_RESTORE_EXIT}"
+                        fi
+
+                        ;;
+                    "${PHASE_RESTORE_COMPARE_SIZES}")
+                        #Compare 'dstsize_KB' with 'srcsize_KB'
+                        #Note: dstsize_KB MUST be greater than 'srcsize_KB'
+                        if [[ ${dstsize_KB} -lt ${srcsize_KB} ]]; then
+                            printmsg="Src: ${srcpath}: ${srcsize_KB}K\n"
+                            printmsg+="Dst: ${dstpath}: ${dstsize_KB}K\n"
+                            printmsg+="${TB_PRINT_ERROR}: *insufficient* diskspace (${srcsize_KB}K > ${dstsize_KB}K)\n"
+                            printmsg+="${TB_PRINT_ERROR}: free-up diskspace or choose another destination\n"
+                            echo -e "${printmsg}"
+
+                            #Set exitcode
+                            exitcode=1
+                        else
+                            #Set exitcode
+                            exitcode=0
+                        fi
+
+                        #Goto next-phase
+                        phase="${PHASE_RESTORE_EXIT}"
+                        ;;
+                    "${PHASE_RESTORE_EXIT}")
+                        if [[ ${exitcode} -eq 0 ]]; then    #error occurred
+                            flag_diskspace_isok=true
+                        else
+                            flag_diskspace_isok=false
+                        fi
+
+                        break
+                        ;;
+                esac
+            done
+            ;;
+    esac
 }
 
 function duplicate_char__func() {
@@ -307,12 +558,12 @@ function exit__func() {
 
 function extract_if_and_of_from_string__func() {
     #Extract 'if' and 'of'
-    local if=$(cut -d";" -f1 <<< "${tb_bootinto_get}")
-    local of=$(cut -d";" -f2 <<< "${tb_bootinto_get}")
+    local if=$(cut -d";" -f1 <<< "${tb_bootoptions_get}")
+    local of=$(cut -d";" -f2 <<< "${tb_bootoptions_get}")
 
     #Update variables which are made ready for printing
-    tb_bootinto_remarks="${TB_FOURSPACES}${TB_FG_BLUE_33}if${TB_NOCOLOR}:${TB_FG_BLUE_45}${if}${TB_NOCOLOR}\n"
-    tb_bootinto_remarks+="${TB_FOURSPACES}${TB_FG_BLUE_33}of${TB_NOCOLOR}:${TB_FG_BLUE_45}${of}${TB_NOCOLOR}\n"
+    tb_bootoptions_remarks="${TB_FOURSPACES}${TB_FG_BLUE_33}if${TB_NOCOLOR}:${TB_FG_BLUE_45}${if}${TB_NOCOLOR}\n"
+    tb_bootoptions_remarks+="${TB_FOURSPACES}${TB_FG_BLUE_33}of${TB_NOCOLOR}:${TB_FG_BLUE_45}${of}${TB_NOCOLOR}\n"
 }
 
 function extract_overlaymode_info__func() {
@@ -422,12 +673,12 @@ function extract_overlaymode_info__remove_tb_init_bootargs_cfg____func() {
     fi
 }
 
-function extract_bootinto_info__func() {
+function extract_bootoptions_info__func() {
     #Define and initialize variables
     local backup_result="${TB_EMPTYSTRING}"
-    local bootinto_get_raw="${TB_EMPTYSTRING}"
-    local bootinto_get_if="${TB_EMPTYSTRING}"
-    local bootinto_get_of="${TB_EMPTYSTRING}"
+    local bootoptions_get_raw="${TB_EMPTYSTRING}"
+    local bootoptions_get_if="${TB_EMPTYSTRING}"
+    local bootoptions_get_of="${TB_EMPTYSTRING}"
     local noboot_result="${TB_EMPTYSTRING}"
     local restore_result="${TB_EMPTYSTRING}"
 
@@ -439,49 +690,49 @@ function extract_bootinto_info__func() {
     fi
    
     #Initialize global variables
-    tb_bootinto_status="${TB_LEGEND_SAME}"
-    tb_bootinto_get="${TB_EMPTYSTRING}"
-    tb_bootinto_set="${TB_MODE_DISABLED}"
-    # tb_bootinto_set_printable="${TB_FG_YELLOW_33}${tb_bootinto_set}${TB_NOCOLOR}"
-    tb_bootinto_set_printable="${tb_bootinto_set}"
+    tb_bootoptions_status="${TB_LEGEND_SAME}"
+    tb_bootoptions_get="${TB_EMPTYSTRING}"
+    tb_bootoptions_set="${TB_MODE_DISABLED}"
+    # tb_bootoptions_set_printable="${TB_FG_YELLOW_33}${tb_bootoptions_set}${TB_NOCOLOR}"
+    tb_bootoptions_set_printable="${tb_bootoptions_set}"
 
     #Update variables based on the results (e.g., backup_result, restore_result, noboot_result)
     #Remarks:
     #   sed 's/\s+//g': remove whitespaces
     #   tr -d '\r': remove carriage return
     if [[ -n "${noboot_result}" ]]; then
-        tb_bootinto_get=$(echo "${noboot_result}" | cut -d"=" -f2 | sed 's/\s+//g' | tr -d '\r')
+        tb_bootoptions_get=$(echo "${noboot_result}" | cut -d"=" -f2 | sed 's/\s+//g' | tr -d '\r')
 
-        tb_bootinto_set="${TB_MODE_SAFEMODE}"
-        # tb_bootinto_set_printable="${TB_FG_YELLOW_33}${TB_MODE_SAFEMODE}${TB_NOCOLOR}"
+        tb_bootoptions_set="${TB_MODE_SAFEMODE}"
+        # tb_bootoptions_set_printable="${TB_FG_YELLOW_33}${TB_MODE_SAFEMODE}${TB_NOCOLOR}"
 
-        tb_bootinto_status="${TB_LEGEND_NEW_PRIORITY}"
+        tb_bootoptions_status="${TB_LEGEND_NEW_PRIORITY}"
     fi
     if [[ -n "${backup_result}" ]]; then
-        tb_bootinto_get=$(echo "${backup_result}" | cut -d"=" -f2 | sed 's/\s+//g' | tr -d '\r')
+        tb_bootoptions_get=$(echo "${backup_result}" | cut -d"=" -f2 | sed 's/\s+//g' | tr -d '\r')
 
-        tb_bootinto_set="${TB_MODE_BACKUPMODE}"
-        # tb_bootinto_set_printable="${TB_FG_RED_187}${TB_MODE_BACKUPMODE}${TB_NOCOLOR}"
+        tb_bootoptions_set="${TB_MODE_BACKUPMODE}"
+        # tb_bootoptions_set_printable="${TB_FG_RED_187}${TB_MODE_BACKUPMODE}${TB_NOCOLOR}"
 
-        tb_bootinto_status="${TB_LEGEND_NEW_PRIORITY}"
+        tb_bootoptions_status="${TB_LEGEND_NEW_PRIORITY}"
     fi
     if [[ -n "${restore_result}" ]]; then
-        tb_bootinto_get=$(echo "${restore_result}" | cut -d"=" -f2 | sed 's/\s+//g' | tr -d '\r')
+        tb_bootoptions_get=$(echo "${restore_result}" | cut -d"=" -f2 | sed 's/\s+//g' | tr -d '\r')
 
-        tb_bootinto_set="${TB_MODE_RESTOREMODE}"
-        # tb_bootinto_set_printable="${TB_FG_GREEN_158}${TB_MODE_RESTOREMODE}${TB_NOCOLOR}"
+        tb_bootoptions_set="${TB_MODE_RESTOREMODE}"
+        # tb_bootoptions_set_printable="${TB_FG_GREEN_158}${TB_MODE_RESTOREMODE}${TB_NOCOLOR}"
 
-        tb_bootinto_status="${TB_LEGEND_NEW_PRIORITY}"
+        tb_bootoptions_status="${TB_LEGEND_NEW_PRIORITY}"
     fi
 
     #Update printable or remove file
-    if [[ "${tb_bootinto_set}" != "${TB_MODE_DISABLED}" ]]; then
-        if [[ ${tb_bootinto_status} != "${TB_LEGEND_SAME}" ]]; then
-            tb_bootinto_set_printable="${tb_bootinto_set}: ${TB_LEGEND_NEW_PRIORITY}"
+    if [[ "${tb_bootoptions_set}" != "${TB_MODE_DISABLED}" ]]; then
+        if [[ ${tb_bootoptions_status} != "${TB_LEGEND_SAME}" ]]; then
+            tb_bootoptions_set_printable="${tb_bootoptions_set}: ${TB_LEGEND_NEW_PRIORITY}"
         else
-            tb_bootinto_set_printable="${tb_bootinto_set}"
+            tb_bootoptions_set_printable="${tb_bootoptions_set}"
         fi
-    else    #tb_bootinto_set = TB_MODE_DISABLED
+    else    #tb_bootoptions_set = TB_MODE_DISABLED
         #Remove file (if present)
         remove_file__func "${tb_init_bootargs_tmp_fpath}"
     fi
@@ -869,7 +1120,7 @@ trap tb_ctrl_c__sub SIGINT
 tb_ctrl_c__sub() {
     #Remarks:
     #   'tb_numoflines_correction' has been implemented due to 
-    #       subroutine 'bootintomenu_backupmode_dstfilename_choice_and_action__sub'
+    #       subroutine 'bootoptions_backupmode_dstfilename_choice_and_action__sub'
     #       where the cursor is moved up with 8 lines.
     local numoflines=$((TB_NUMOFLINES_2 + tb_numoflines_correction))
 
@@ -880,6 +1131,88 @@ tibbo_print_title__sub() {
     print_centered_string_w_leading_trailing_emptylines__func "${TB_TITLE_TIBBO}" "${TB_TABLEWIDTH}" "${TB_BG_ORANGE_215}" "${TB_NUMOFLINES_2}" "${TB_NUMOFLINES_0}"
 }
 
+dircontent_get_and_show__sub() {
+    #Input args
+    local dir__input=${1}
+    local dir_parent__input=${2}
+    local pattern__input=${3}
+    local listpagestart__input=${4}
+    local outputtype__input=${5}
+    local flag_back_option_isenabled__input=${6}
+    local flag_dir_isfixed__input=${7}
+    local flag_type_isdir__input=${8}
+    local flag_type_isfile__input=${9}
+    local flag_itemnum_isshown__input=${10}
+
+    #Define and initialize variables
+    local flag_dircontent_retrieve_isallowed=true
+    local title_msg="${TB_EMPTYSTRING}"
+
+    #Update variable
+    case "${outputtype__input}" in
+        "${TB_OUTPUT_SOURCE}")
+            title_msg="${TB_TITLE_BACKUP_CHOOSE_SOURCE_PATH}"
+            ;;
+        "${TB_OUTPUT_DESTINATION}")
+            title_msg="${TB_TITLE_BACKUP_CHOOSE_DESTINATION_DIR}"
+            ;;
+        "${TB_OUTPUT_FILE}")
+            title_msg="${TB_TITLE_BACKUP_INPUT_FILENAME}"
+            ;;
+    esac
+
+    #Move-down one line
+    movedown_and_clean__func "${TB_NUMOFLINES_1}"
+
+    #Print title
+    print_duplicate_char__func "${TB_DASH}" "${TB_TABLEWIDTH}" "${TB_FG_GREY_243}"
+    print_leading_trailing_strings_on_opposite_sides__func "${title_msg}" \
+            "${TB_EMPTYSTRING}" \
+            "${TB_TABLEWIDTH}"
+    print_duplicate_char__func "${TB_DASH}" "${TB_TABLEWIDTH}" "${TB_FG_GREY_243}"
+
+    #Check if 'flag_dir_isfixed__input = true' AND 'tb_path_list_arrlen > 0'
+    #Note: initially 'tb_path_list_arrlen = 0', therefore 'flag_dircontent_retrieve_isallowed = true' 
+    if [[ "${flag_dir_isfixed__input}" == true ]] && [[ ${tb_path_list_arrlen} -gt 0 ]]; then
+        flag_dircontent_retrieve_isallowed=false
+    fi
+
+    #Get directory contents based on a specified value for 'dir__input'
+    #Note: this subroutine passes a value to global variable 'tb_path_list_arr'
+    if [[ "${flag_dircontent_retrieve_isallowed}" == true ]]; then
+        dircontent_get__sub "${dir__input}" "${pattern__input}" "${flag_type_isdir__input}" "${flag_type_isfile__input}"
+    fi
+
+    #Show directory content
+    dircontent_show__sub "${dir__input}" \
+            "${dir_parent__input}" \
+            "${listpagestart__input}" \
+            "${TB_LISTPAGE_LEN}" \
+            "${TB_FOURSPACES}" \
+            "${TB_TABLEWIDTH}" \
+            "${flag_dir_isfixed__input}" \
+            "${flag_itemnum_isshown__input}" \
+            "${tb_path_list_arr[@]}"
+
+    #Show current selected path
+    print_duplicate_char__func "${TB_DASH}" "${TB_TABLEWIDTH}" "${TB_FG_GREY_243}"
+    print_menuitem__func "${TB_FOURSPACES}" "${TB_EMPTYSTRING}" "${TB_FG_BLUE_45}${tb_path_select}${TB_NOCOLOR}" "${TB_EMPTYSTRING}"
+
+    #Show menu-options
+    print_duplicate_char__func "${TB_DASH}" "${TB_TABLEWIDTH}" "${TB_FG_GREY_243}"
+    print_menuitem__func "${TB_FOURSPACES}" "${TB_OPTIONS_LARROW}" "${TB_OPTIONS_PAGE_PREV}" "${TB_EMPTYSTRING}"
+    print_menuitem__func "${TB_FOURSPACES}" "${TB_OPTIONS_RARROW}" "${TB_OPTIONS_PAGE_NEXT}" "${TB_EMPTYSTRING}"
+    if [[ "${flag_back_option_isenabled__input}" == true ]]; then
+        print_menuitem__func "${TB_FOURSPACES}" "${TB_OPTIONS_B}" "${TB_OPTIONS_BACK}" "${TB_EMPTYSTRING}"
+    fi
+    if [[ "${flag_itemnum_isshown__input}" == true ]]; then
+        print_menuitem__func "${TB_FOURSPACES}" "${TB_OPTIONS_C}" "${TB_OPTIONS_CONFIRM}" "${TB_EMPTYSTRING}"
+    fi
+    print_menuitem__func "${TB_FOURSPACES}" "${TB_OPTIONS_H}" "${TB_OPTIONS_HOME}" "${TB_EMPTYSTRING}"
+    print_menuitem__func "${TB_FOURSPACES}" "${TB_OPTIONS_M}" "${TB_OPTIONS_MAIN}" "${TB_EMPTYSTRING}"
+    print_menuitem__func "${TB_FOURSPACES}" "${TB_OPTIONS_Q}" "${TB_OPTIONS_QUIT_CTRL_C}" "${TB_EMPTYSTRING}"
+    print_duplicate_char__func "${TB_DASH}" "${TB_TABLEWIDTH}" "${TB_FG_GREY_243}"
+}
 dircontent_get__sub() {
     #Input args
     local dir__input=${1}
@@ -940,7 +1273,7 @@ dircontent_get__sub() {
         do
             dir_dirbasename=$(basename "${dir_dirfpath_listarr_item}")
             if [[ "${dir_clean_basename}" != "${dir_dirbasename}" ]]; then
-                tb_path_list_arr[path_list_arr_index]="[${dir_dirbasename}]"
+                tb_path_list_arr[path_list_arr_index]="${TB_PATTERN_LBRACKET_D_RBRACKET}${dir_dirbasename}"
 
                 ((path_list_arr_index++))
             fi
@@ -962,15 +1295,18 @@ dircontent_get__sub() {
     #Get array-length
     tb_path_list_arrlen=${#tb_path_list_arr[@]}
 }
-
 dircontent_show__sub() {
     #Input args
     local dir__input=${1}
-    local listpagestart__input=${2}
-    local listpagelen__input=${3}
-    local indentstring__input=${4}
-    local tablewidth__input=${5}
-    local flag_dir_isfixed__input=${6}
+    local dir_parent__input=${2}
+    local listpagestart__input=${3}
+    local listpagelen__input=${4}
+    local indentstring__input=${5}
+    local tablewidth__input=${6}
+    local flag_dir_isfixed__input=${7}
+    local flag_itemnum_isshown__input=${8}
+    shift
+    shift
     shift
     shift
     shift
@@ -982,6 +1318,7 @@ dircontent_show__sub() {
 
     #Define variables
     local array_item="${TB_EMPTYSTRING}"
+    local array_item_stripped="${TB_EMPTYSTRING}"
     local array_len=0
     local arrow_info="${TB_EMPTYSTRING}"
     local arrow_info_pos=0
@@ -1004,7 +1341,6 @@ dircontent_show__sub() {
     #Get 'array__input' length
     array_len=${#array__input[@]}
 
-
     #Calculate 'listpage_start' and 'listpage_end'
     listpage_start=${listpagestart__input}
     if [[ ${listpage_start} -gt ${array_len} ]]; then
@@ -1021,12 +1357,16 @@ dircontent_show__sub() {
     menuitem_index=0
 
     #Print [.] and [..]
-    if [[ "${flag_dir_isfixed__input}" == false ]]; then
+    #The following 2 conditions have to be met:
+    #   flag_dir_isfixed__input = false
+    #   dir__input != dir_parent__input
+    if [[ "${flag_dir_isfixed__input}" == false ]] && \
+            [[ "${dir__input}" != "${dir_parent__input}" ]]; then
         #Print [..]
-        echo "${indentstring__input}${TB_OPTIONS_R}. ${TB_FG_BLUE_45}[${TB_DOTDOT}]${TB_NOCOLOR}"
+        echo "${indentstring__input}${TB_OPTIONS_R}. ${TB_FG_BLUE_45}[${TB_NOCOLOR}${TB_DOTDOT}${TB_FG_BLUE_45}]${TB_NOCOLOR}"
 
         #Print [.]
-        echo "${indentstring__input}${TB_OPTIONS_P}. ${TB_FG_BLUE_45}[${TB_DOT}]${TB_NOCOLOR}"
+        echo "${indentstring__input}${TB_OPTIONS_P}. ${TB_FG_BLUE_45}[${TB_NOCOLOR}${TB_DOT}${TB_FG_BLUE_45}]${TB_NOCOLOR}"
     fi
 
     #Print array-contents
@@ -1050,8 +1390,22 @@ dircontent_show__sub() {
             for array_item in "${array__input[@]}"
             do
                 if [[ ${ctr} -ge ${listpage_start} ]] && [[ ${ctr} -le ${listpage_end} ]]; then
-                    echo "${indentstring__input}${menuitem_index}. ${array_item}"
+                    #Check if 'array_item' is a directory
+                    if [[ $(substring_isfound_in_string__func "${array_item}" "${TB_PATTERN_LBRACKET_D_RBRACKET}") == true ]]; then
+                        #Strip off [d]
+                        array_item_stripped=$(echo "${array_item}" | sed "s/${TB_SED_PATTERN_LBRACKET_D_RBRACKET}//g")
+                        #Update 'array_item' by prepending and appending left and right bracket respectively
+                        array_item="${TB_FG_BLUE_45}[${TB_NOCOLOR}${array_item_stripped}${TB_FG_BLUE_45}]${TB_NOCOLOR}"
+                    fi
 
+                    #Print
+                    if [[ "${flag_itemnum_isshown__input}" == true ]]; then
+                        echo "${indentstring__input}${menuitem_index}. ${array_item}"
+                    else
+                        echo "${indentstring__input}${array_item}"
+                    fi
+
+                    #Increment index by 1
                     ((menuitem_index++))
                 elif [[ ${ctr} -gt ${listpage_end} ]]; then
                     break
@@ -1116,6 +1470,361 @@ dircontent_show__sub() {
     echo -e "\r"
 }
 
+dircontent_handler__sub() {
+    #Input args
+    local dir__input=${1}
+    local dir_parent__input=${2}
+    local outputtype__input=${3}
+    local flag_back_option_isenabled__input=${4}
+    local flag_dir_isfixed__input=${5}
+    local flag_dir_parent_isnot_tobe_used__input=${6}
+    local flag_itemnum_isshown__input=${7}
+
+    #Initalize variables
+    local echomsg="${TB_EMPTYSTRING}"
+    local echomsg_wo_color="${TB_EMPTYSTRING}"
+    local keyinput="${TB_EMPTYSTRING}"
+    local keyinput_tot="${TB_EMPTYSTRING}"
+    local path_list_arr_selitem="${TB_EMPTYSTRING}"
+    local path_list_arr_selitem_clean="${TB_EMPTYSTRING}"
+    local path_bck="${TB_EMPTYSTRING}"
+    local path_new="${TB_EMPTYSTRING}"
+    local path_new_raw="${TB_EMPTYSTRING}"
+    local readdialog_msg="${TB_EMPTYSTRING}"
+
+    local dir_numof_slashes=0
+    local dir_parent_numof_slashes=0
+    local echomsg_wo_color_len=0
+    local listpage_start_bck=0
+    local path_list_arr_selindex=0
+    local path_list_arr_selindex_max=0
+
+    local flag_skip_this=false
+
+    flag_backupmode_restoremode_exitloop=false
+    flag_backupmode_srcpath_select_exitloop=false
+    flag_go_back_onestep=false
+
+    #Update 'readdialog_msg' depending on the specified 'flag_itemnum_isshown__input'
+    #Remarks:
+    #   flag_itemnum_isshown__input = true: item-numbers are selectable by pressing [0-9]
+    #   flag_itemnum_isshown__input = false: item-numbers are not selectable!!!
+    if [[ "${flag_itemnum_isshown__input}" == true ]]; then
+        readdialog_msg="${TB_READDIALOG_CHOOSE_AN_OPTION_AND_C_TO_CONFIRM}"
+    else
+        readdialog_msg="${TB_READDIALOG_INPUT_FILENAME_AND_PRESS_ENTER}"
+    fi
+
+    while [[ 1 ]]
+    do
+        #Reset variable
+        keyinput="${TB_EMPTYSTRING}"
+
+        if [[ "${flag_skip_this}" == false ]]; then
+            #Update 'echomsg'
+            if [[ "${flag_itemnum_isshown__input}" == true ]]; then
+                echomsg="${readdialog_msg}${keyinput}"
+            else    #flag_itemnum_isshown__input = false
+                echomsg="${readdialog_msg}${keyinput_tot}"
+            fi
+
+            #Get string w/o color
+            echomsg_wo_color=$(echo "${echomsg}" | sed "s,\x1B\[[0-9;]*m,,g")
+
+            #Update length
+            echomsg_wo_color_len="${#echomsg_wo_color}"
+
+            #Print message
+            echo -e "${echomsg}"
+
+            #Move up and then move to the end of 'echomsg'
+            tput cuu1 && tput cuf "${echomsg_wo_color_len}"
+        else
+            flag_skip_this=false
+        fi
+        
+        #Execute read-dialog and wait for input
+        read -N1 -rs keyinput
+
+        case "${keyinput}" in
+            "${TB_OPTIONS_LARROW}")
+                #Backup variable
+                listpage_start_bck=${tb_listpage_start}
+
+                #Decrement variable
+                tb_listpage_start=$(( listpage_start_bck - TB_LISTPAGE_LEN ))
+
+                #Final action
+                if [[ ${tb_listpage_start} -gt 0 ]]; then
+                    #Move down and clean two lines
+                    movedown_and_clean__func "${TB_NUMOFLINES_2}"
+
+                    break
+                else
+                    tb_listpage_start=${listpage_start_bck}
+                fi
+                ;;
+            "${TB_OPTIONS_RARROW}")
+                #Backup variable
+                listpage_start_bck=${tb_listpage_start}
+
+                #Incrementvariable
+                tb_listpage_start=$(( tb_listpage_start + TB_LISTPAGE_LEN ))
+
+                #Final action
+                if [[ ${tb_listpage_start} -le ${tb_path_list_arrlen} ]]; then
+                    #Move down and clean two lines
+                    movedown_and_clean__func "${TB_NUMOFLINES_2}"
+
+                    break
+                else
+                    tb_listpage_start=${listpage_start_bck}
+                fi
+                ;;
+            "${TB_OPTIONS_B}")
+                if [[ "${flag_back_option_isenabled__input}" == true ]]; then
+                    #Move down and clean one line
+                    movedown_and_clean__func "${TB_NUMOFLINES_1}"
+
+                    #Set flags to true
+                    flag_backupmode_srcpath_select_exitloop=true
+                    flag_go_back_onestep=true
+
+                    break
+                fi
+                ;;
+            "${TB_OPTIONS_C}")
+                if [[ "${flag_dir_parent_isnot_tobe_used}" == true ]] && \
+                        [[ "${tb_path_select}" == "${dir_parent__input}" ]]; then
+                    #Set flag to 'true'
+                    flag_skip_this=true
+                fi
+                
+                if [[ "${flag_skip_this}" == false ]]; then
+                    if [[ "${outputtype__input}" == "${TB_OUTPUT_SOURCE}" ]]; then
+                        tb_srcpath_set="${tb_path_select}"
+                    else    #outputtype__input = TB_OUTPUT_DESTINATION
+                        tb_dstpath_set="${tb_path_select}"
+                    fi
+
+                    #Set flags to true
+                    flag_backupmode_srcpath_select_exitloop=true
+
+                    #Move down and clean two lines
+                    movedown_and_clean__func "${TB_NUMOFLINES_2}"
+
+                    break
+                fi
+                ;;
+            "${TB_OPTIONS_H}")
+                #Move down and clean one line
+                movedown_and_clean__func "${TB_NUMOFLINES_1}"
+
+                #Set flags to true
+                flag_backupmode_srcpath_select_exitloop=true
+                flag_backupmode_restoremode_exitloop=true
+
+                break
+                ;;
+            "${TB_OPTIONS_M}")
+                #Move down and clean one line
+                movedown_and_clean__func "${TB_NUMOFLINES_1}"
+
+                #Set flags to true
+                flag_backupmode_restoremode_exitloop=true
+                flag_backupmode_srcpath_select_exitloop=true
+                flag_bootoptions_exitloop=true
+
+                break
+                ;;
+            "${TB_OPTIONS_P}")
+                #Backup variable
+                path_bck="${dir__input}"
+
+                #Get the directory of fullpath 'path_bck'
+                path_new=$(dirname ${dir__input})
+
+                #Check if 'dir__input' is alowed to be changed
+                if [[ "${flag_dir_isfixed__input}" == true ]]; then #not allowed to be changed
+                    #Set flag to 'true'
+                    flag_skip_this=true
+                fi
+                
+                if [[ "${flag_skip_this}" == false ]]; then
+                    #Check if 'dir_parent__input' is part of parent directory 'path_new'
+                    #Note: 'dir_parent__input' can NOT be an Empty String
+                    if [[ $(substring_isfound_in_string__func "${path_new}" "${dir_parent__input}") == false ]] && \
+                            [[ -n "${dir_parent__input}" ]]; then
+                        #Set flag to 'true'
+                        flag_skip_this=true
+                    fi
+                    
+                    if [[ "${flag_skip_this}" == false ]]; then
+                        #Check if 'path_new' is not the same as 'path_bck'
+                        if [[ "${path_new}" != "${path_bck}" ]]; then
+                            #Reset variable
+                            tb_listpage_start=1
+
+                            #Update global variables
+                            tb_path_set="${path_new}"
+                            tb_path_select="${path_new}"
+
+                            #Move down and clean one line
+                            movedown_and_clean__func "${TB_NUMOFLINES_2}"
+
+                            break
+                        fi
+                    fi
+                fi
+                ;;
+            "${TB_OPTIONS_Q}")
+                #Move down and clean one line
+                movedown_and_clean__func "${TB_NUMOFLINES_1}"
+
+                #Exit script
+                exit__func "${TB_EXITCODE_99}" "${TB_NUMOFLINES_2}"
+                ;;
+            "${TB_OPTIONS_R}")
+                #Backup variable
+                path_bck="${dir__input}"
+
+                #Update variable
+                if [[ -n "${dir_parent__input}" ]]; then
+                    path_new="${dir_parent__input}"
+                else
+                    path_new="${TB_SLASH}"
+                fi
+
+                #Check if 'dir__input' is allowed to be changed
+                if [[ "${flag_dir_isfixed__input}" == true ]]; then #not allowed to be changed
+                    #Set flag to 'true'
+                    flag_skip_this=true
+                fi
+                
+                if [[ "${flag_skip_this}" == false ]]; then
+                    #Check if 'dir_parent__input' is part of parent directory 'path_new'
+                    #Note: 'dir_parent__input' can NOT be an Empty String
+                    if [[ $(substring_isfound_in_string__func "${path_new}" "${dir_parent__input}") == false ]] && \
+                            [[ -n "${dir_parent__input}" ]]; then
+                        #Set flag to 'true'
+                        flag_skip_this=true
+                    fi
+                    
+                    if [[ "${flag_skip_this}" == false ]]; then
+                        if [[ "${path_new}" != "${path_bck}" ]]; then
+                            #Reset variable
+                            tb_listpage_start=1
+
+                            #Update global variables
+                            tb_path_set="${path_new}"
+                            tb_path_select="${path_new}"
+
+                            #Move down and clean two lines
+                            movedown_and_clean__func "${TB_NUMOFLINES_2}"
+
+                            break
+                        fi
+                    fi
+                fi
+                ;;
+            "${TB_BACKSPACE}")
+                #Get the updated 'keyinput_tot' after pressing BACKSPACE
+                keyinput_tot=$(backspace__func "${keyinput_tot}")
+                ;;
+            "${TB_ESCAPEKEY}")
+                #Do nothing
+                ;;
+            *)
+                #Backup variable
+                path_bck="${dir__input}"
+
+                if [[ $(isNumeric__func "${keyinput}") == true ]]; then #is numeric             
+                    if [[ ${tb_path_list_arrlen} -gt 0 ]]; then
+                        #Only calculate 'path_list_arr_selindex_max' if 'tb_path_list_arrlen > 0'
+                        path_list_arr_selindex_max=$((tb_path_list_arrlen - 1))
+                    else
+                        #Set flag to 'true'
+                        flag_skip_this=true
+                    fi
+                    
+                    if [[ "${flag_skip_this}" == false ]]; then
+                        if [[ ${keyinput} -le ${path_list_arr_selindex_max} ]]; then
+                            #Get array-index
+                            path_list_arr_selindex=$((tb_listpage_start + keyinput - 1))
+
+                            #Update variable
+                            path_list_arr_selitem="${tb_path_list_arr[path_list_arr_selindex]}"
+
+                            #Strip off '[d]' (if present)
+                            path_list_arr_selitem_clean=$(echo "${path_list_arr_selitem}" | sed "s/${TB_SED_PATTERN_LBRACKET_D_RBRACKET}//g")
+
+                            #Update variable
+                            if [[ "${flag_dir_isfixed__input}" == true ]]; then #not allowed
+                                path_new_raw="${dir_parent__input}/${path_list_arr_selitem_clean}"
+                            else
+                                path_new_raw="${dir__input}/${path_list_arr_selitem_clean}"
+                            fi
+
+                            #Remove double slashes
+                            path_new=$(echo "${path_new_raw}" | sed 's/\/\//\//g')
+
+                            #Check if path has changed
+                            #Remark:
+                            #   If false, then it means that data do NOT need to be refreshed.
+                            if [[ "${path_new}" == "${dir__input}" ]]; then
+                                #Set flag to 'true'
+                                flag_skip_this=true
+                            fi
+                            
+                            if [[ "${flag_skip_this}" == false ]]; then
+                                #Check if 'path_new' is a directory
+                                if [[ -d "${path_new}" ]]; then
+                                    #Check if flag is set to NOT allow a directory change
+                                    if [[ "${flag_dir_isfixed__input}" == true ]]; then #not allowed to be changed
+                                        # #Set values back to 'path_bck'
+                                        # tb_path_set="${path_bck}"
+                                        # tb_path_select="${path_bck}"
+
+                                        #Set flag to 'true'
+                                        flag_skip_this=true
+                                    fi
+
+                                    if [[ "${flag_skip_this}" == false ]]; then
+                                        #Reset variable
+                                        tb_listpage_start=1
+                                    fi
+                                fi
+
+                                #Update global variables
+                                tb_path_set="${path_new}"
+                                tb_path_select="${path_new}"
+
+                                #Move down and clean one line
+                                movedown_and_clean__func "${TB_NUMOFLINES_2}"
+
+                                break
+                            fi
+                        fi
+                    fi
+                else    #is NOT numeric
+                    #Append 'keyinput' to 'keyinput_tot'
+                    if [[ "${flag_itemnum_isshown__input}" == false ]]; then
+                        keyinput_tot+="${keyinput}"
+                    fi
+                fi
+                ;;
+        esac
+
+        if [[ "${flag_skip_this}" == false ]]; then
+            #Move up and clean zero lines
+            moveup_and_clean__func "${TB_NUMOFLINES_0}"
+
+            #Clean read-dialog buffer
+            readdialog_clean_buffer__func
+        fi
+    done
+}
+
 
 
 #---SECTION MAIN-MENU
@@ -1125,8 +1834,8 @@ mainmenu_extract_info__func() {
     extract_overlaymode_info__func
 
     #Remark:
-    #   This function will pass values to global variables 'tb_bootinto_set' and 'tb_bootinto_set_printable'
-    extract_bootinto_info__func
+    #   This function will pass values to global variables 'tb_bootoptions_set' and 'tb_bootoptions_set_printable'
+    extract_bootoptions_info__func
 
     #Remark:
     #   This function will pass values to global variables 'tb_ispboootbin_bootseq_set' and 'tb_ispboootbin_bootseq_printable'
@@ -1166,12 +1875,12 @@ mainmenu_print_body__sub() {
 
     if [[ -z "${tb_proc_cmdline_tb_overlay_get}" ]]; then
         tb_overlaymode_set_printable="${TB_MODE_DISABLED}"
-        tb_bootinto_set_printable="${TB_MODE_DISABLED}"
+        tb_bootoptions_set_printable="${TB_MODE_DISABLED}"
         tb_ispboootbin_bootseq_printable="${TB_MODE_ISPBOOOTBIN_BOOTSEQ_SDUSB0USB1}"
     fi
 
     print_menuitem_1+="(${tb_overlaymode_set_printable})"
-    print_menuitem_2+="${TB_MENUITEM_BOOTOPTIONS} (${tb_bootinto_set_printable})"
+    print_menuitem_2+="${TB_MENUITEM_BOOTOPTIONS} (${tb_bootoptions_set_printable})"
     print_menuitem_3+="${TB_MENUITEM_ISPBOOOTBIN_BOOTSEQ} (${tb_ispboootbin_bootseq_printable})"
 
     if [[ -z "${tb_proc_cmdline_tb_overlay_get}" ]]; then
@@ -1200,7 +1909,7 @@ mainmenu_print_legend__sub() {
 }
 
 mainmenu_print_remark__sub() {
-    if [[ "${tb_overlaymode_tag}" == "${TB_LEGEND_SAME}" ]] && [[ "${tb_bootinto_status}" == "${TB_LEGEND_SAME}" ]]; then
+    if [[ "${tb_overlaymode_tag}" == "${TB_LEGEND_SAME}" ]] && [[ "${tb_bootoptions_status}" == "${TB_LEGEND_SAME}" ]]; then
         return 0;
     fi
 
@@ -1256,7 +1965,7 @@ mainmenu_readdialog_action__sub() {
             overlaymode_toggle__sub
             ;;
         2)
-            bootintomenu__sub
+            bootoptions__sub
             ;;
         3)
             ispboootbin_bootseqmenu__sub
@@ -1292,349 +2001,45 @@ overlaymode_toggle__sub() {
 
 
 #---SECTION: BOOT-INTO-MENU
-dircontent_get_and_show__sub() {
-    #Input args
-    local dir__input=${1}
-    local dir_parent__input=${2}
-    local pattern__input=${3}
-    local listpagestart__input=${4}
-    local flag_outputtype_is_src_or_dst__input=${5}
-    local flag_back_option_isenabled__input=${6}
-    local flag_dir_isfixed__input=${7}
-    local flag_type_isdir__input=${8}
-    local flag_type_isfile__input=${9}
-
-    #Define and initialize variables
-    local flag_get_dircontent_isallowed=true
-    local title_msg="${TB_EMPTYSTRING}"
-
-    #Update variable
-    title_msg="${TB_TITLE_BACKUP_CHOOSE_SOURCE_PATH}"
-    if [[ "${flag_outputtype_is_src_or_dst__input}" == "${TB_OUTPUT_DESTINATION}" ]]; then
-        title_msg="${TB_TITLE_BACKUP_CHOOSE_DESTINATION_DIR}"
-    fi
-
-    #Move-down one line
-    movedown_and_clean__func "${TB_NUMOFLINES_1}"
-
-    #Print title
-    print_duplicate_char__func "${TB_DASH}" "${TB_TABLEWIDTH}" "${TB_FG_GREY_243}"
-    print_leading_trailing_strings_on_opposite_sides__func "${title_msg}" \
-            "${TB_EMPTYSTRING}" \
-            "${TB_TABLEWIDTH}"
-    print_duplicate_char__func "${TB_DASH}" "${TB_TABLEWIDTH}" "${TB_FG_GREY_243}"
-
-    #Check if 'flag_dir_isfixed__input = true' AND 'tb_path_list_arrlen > 0'
-    #Remark:
-    #   This means that dir-content is only allowed to be retrieved once.
-    if [[ "${flag_dir_isfixed__input}" == true ]] && [[ ${tb_path_list_arrlen} -gt 0 ]]; then
-        flag_get_dircontent_isallowed=false
-    fi
-
-    #Get directory contents based on a specified value for 'dir__input'
-    #Note: this subroutine passes a value to global variable 'tb_path_list_arr'
-    if [[ "${flag_get_dircontent_isallowed}" == true ]]; then
-        dircontent_get__sub "${dir__input}" "${pattern__input}" "${flag_type_isdir__input}" "${flag_type_isfile__input}"
-    fi
-
-    #Show directory content
-    dircontent_show__sub "${TB_EMPTYSTRING}" \
-            "${listpagestart__input}" \
-            "${TB_LISTPAGE_LEN}" \
-            "${TB_FOURSPACES}" \
-            "${TB_TABLEWIDTH}" \
-            "${flag_dir_isfixed__input}" \
-            "${tb_path_list_arr[@]}"
-
-    #Show current selected path
-    print_duplicate_char__func "${TB_DASH}" "${TB_TABLEWIDTH}" "${TB_FG_GREY_243}"
-    print_menuitem__func "${TB_FOURSPACES}" "${TB_EMPTYSTRING}" "${TB_FG_BLUE_45}${tb_selpath}${TB_NOCOLOR}" "${TB_EMPTYSTRING}"
-
-    #Show menu-options
-    print_duplicate_char__func "${TB_DASH}" "${TB_TABLEWIDTH}" "${TB_FG_GREY_243}"
-    if [[ "${flag_back_option_isenabled__input}" == true ]]; then
-        print_menuitem__func "${TB_FOURSPACES}" "${TB_OPTIONS_B}" "${TB_OPTIONS_BACK}" "${TB_EMPTYSTRING}"
-    fi
-    print_menuitem__func "${TB_FOURSPACES}" "${TB_OPTIONS_LARROW}" "${TB_OPTIONS_PAGE_PREV}" "${TB_EMPTYSTRING}"
-    print_menuitem__func "${TB_FOURSPACES}" "${TB_OPTIONS_RARROW}" "${TB_OPTIONS_PAGE_NEXT}" "${TB_EMPTYSTRING}"
-    print_menuitem__func "${TB_FOURSPACES}" "${TB_OPTIONS_C}" "${TB_OPTIONS_CONFIRM}" "${TB_EMPTYSTRING}"
-    print_menuitem__func "${TB_FOURSPACES}" "${TB_OPTIONS_H}" "${TB_OPTIONS_HOME}" "${TB_EMPTYSTRING}"
-    print_menuitem__func "${TB_FOURSPACES}" "${TB_OPTIONS_M}" "${TB_OPTIONS_MAIN}" "${TB_EMPTYSTRING}"
-    print_menuitem__func "${TB_FOURSPACES}" "${TB_OPTIONS_Q}" "${TB_OPTIONS_QUIT_CTRL_C}" "${TB_EMPTYSTRING}"
-    print_duplicate_char__func "${TB_DASH}" "${TB_TABLEWIDTH}" "${TB_FG_GREY_243}"
-}
-dircontent_handler__sub() {
-    #Input args
-    local flag_outputtype_is_src_or_dst__input=${1}
-    local flag_back_option_isenabled__input=${2}
-    local flag_dir_isfixed__input=${3}
-
-    #Initalize variables
-    local path_list_arr_selindex=0
-    local path_list_arr_selindex_max=0
-    local path_list_arr_selitem="${TB_EMPTYSTRING}"
-    local path_list_arr_selitem_wo_brackets="${TB_EMPTYSTRING}"
-    local dir_set_bck="${TB_EMPTYSTRING}"
-    local echomsg="${TB_EMPTYSTRING}"
-    local echomsg_wo_color="${TB_EMPTYSTRING}"
-    local echomsg_wo_color_len=0
-    local keyinput="${TB_EMPTYSTRING}"
-    local listpage_start_bck=0
-
-    flag_backupmode_restoremode_exitloop=false
-    flag_backupmode_srcpath_select_exitloop=false
-    flag_go_back_onestep=false
-
-    while [[ 1 ]]
-    do
-        #Reset variable
-        keyinput="${TB_EMPTYSTRING}"
-
-        #Update string
-        echomsg="${TB_READDIALOG_CHOOSE_AN_OPTION}${keyinput}"
-
-        #Get string w/o color
-        echomsg_wo_color=$(echo "${echomsg}" | sed "s,\x1B\[[0-9;]*m,,g")
-
-        #Update length
-        echomsg_wo_color_len="${#echomsg_wo_color}"
-
-        #Print message
-        echo -e "${echomsg}"
-
-        #Move up and then move to the end of 'echomsg'
-        tput cuu1 && tput cuf "${echomsg_wo_color_len}"
-        
-        #Execute read-dialog and wait for input
-        read -N1 -rs keyinput
-
-        case "${keyinput}" in
-            "${TB_OPTIONS_LARROW}")
-                #Backup variable
-                listpage_start_bck=${tb_listpage_start}
-
-                #Decrement variable
-                tb_listpage_start=$(( listpage_start_bck - TB_LISTPAGE_LEN))
-
-                #Final action
-                if [[ ${tb_listpage_start} -gt 0 ]]; then
-                    movedown_and_clean__func "${TB_NUMOFLINES_2}"
-
-                    break
-                else
-                    tb_listpage_start=${listpage_start_bck}
-                fi
-                ;;
-            "${TB_OPTIONS_RARROW}")
-                #Backup variable
-                listpage_start_bck=${tb_listpage_start}
-
-                #Incrementvariable
-                tb_listpage_start=$(( tb_listpage_start + TB_LISTPAGE_LEN))
-
-                #Final action
-                if [[ ${tb_listpage_start} -le ${tb_path_list_arrlen} ]]; then
-                    movedown_and_clean__func "${TB_NUMOFLINES_2}"
-
-                    break
-                else
-                    tb_listpage_start=${listpage_start_bck}
-                fi
-                ;;
-            "${TB_OPTIONS_B}")
-                if [[ "${flag_back_option_isenabled__input}" == true ]]; then
-                    #Move down and clean one line
-                    movedown_and_clean__func "${TB_NUMOFLINES_1}"
-
-                    #Set flags to true
-                    flag_backupmode_srcpath_select_exitloop=true
-                    flag_go_back_onestep=true
-
-                    break
-                fi
-                ;;
-            "${TB_OPTIONS_C}")
-                if [[ "${flag_outputtype_is_src_or_dst__input}" == "${TB_OUTPUT_SOURCE}" ]]; then
-                    tb_srcpath_set="${tb_selpath}"
-                else    #flag_outputtype_is_src_or_dst__input = TB_OUTPUT_DESTINATION
-                    tb_dstpath_set="${tb_selpath}"
-                fi
-
-                #Set flags to true
-                flag_backupmode_srcpath_select_exitloop=true
-
-                #Move down and clean one line
-                movedown_and_clean__func "${TB_NUMOFLINES_2}"
-
-                #Set flags to true
-                flag_backupmode_srcpath_select_exitloop=true
-                flag_go_back_onestep=true
-
-                break
-                ;;
-            "${TB_OPTIONS_H}")
-                #Move down and clean one line
-                movedown_and_clean__func "${TB_NUMOFLINES_1}"
-
-                #Set flags to true
-                flag_backupmode_srcpath_select_exitloop=true
-                flag_backupmode_restoremode_exitloop=true
-
-                break
-                ;;
-            "${TB_OPTIONS_M}")
-                #Move down and clean one line
-                movedown_and_clean__func "${TB_NUMOFLINES_1}"
-
-                #Set flags to true
-                flag_backupmode_restoremode_exitloop=true
-                flag_backupmode_srcpath_select_exitloop=true
-                flag_bootintomenu_exitloop=true
-
-                break
-                ;;
-            "${TB_OPTIONS_P}")
-                #Backup variable
-                dir_set_bck="${tb_dir_set}"
-
-                if [[ "${flag_dir_isfixed__input}" == false ]]; then
-                    #Update variable
-                    tb_dir_set=$(dirname ${dir_set_bck})
-
-                    if [[ "${tb_dir_set}" != "${dir_set_bck}" ]]; then
-                        #Reset variable
-                        tb_listpage_start=1
-
-                        #Update variable
-                        tb_selpath="${tb_dir_set}"
-
-                        #Move down and clean one line
-                        movedown_and_clean__func "${TB_NUMOFLINES_2}"
-
-                        break
-                    fi
-                fi
-                ;;
-            "${TB_OPTIONS_Q}")
-                #Move down and clean one line
-                movedown_and_clean__func "${TB_NUMOFLINES_1}"
-
-                #Exit script
-                exit__func "${TB_EXITCODE_99}" "${TB_NUMOFLINES_2}"
-                ;;
-            "${TB_OPTIONS_R}")
-                #Backup variable
-                dir_set_bck="${tb_dir_set}"
-
-                if [[ "${flag_dir_isfixed__input}" == false ]]; then
-                    #Update variable
-                    tb_dir_set="${TB_SLASH}"
-
-                    if [[ "${tb_dir_set}" != "${dir_set_bck}" ]]; then
-                        #Reset variable
-                        tb_listpage_start=1
-
-                        #Update variable
-                        tb_selpath="${tb_dir_set}"
-
-                        #Move down and clean one line
-                        movedown_and_clean__func "${TB_NUMOFLINES_2}"
-
-                        break
-                    fi
-                fi
-                ;;
-            "${TB_ESCAPEKEY}")
-                #Do nothing
-                ;;
-            *)
-                if [[ $(isNumeric__func "${keyinput}") == true ]]; then
-                    #Only calculate 'path_list_arr_selindex_max' if 'tb_path_list_arrlen > 0'
-                    if [[ ${tb_path_list_arrlen} -gt 0 ]]; then
-                        path_list_arr_selindex_max=$((tb_path_list_arrlen - 1))
-                    fi
-
-                    if [[ ${keyinput} -le ${path_list_arr_selindex_max} ]]; then
-                        #Get array-index
-                        path_list_arr_selindex=$((tb_listpage_start + keyinput - 1))
-
-                        #Update variable
-                        path_list_arr_selitem="${tb_path_list_arr[path_list_arr_selindex]}"
-
-                        #Strip off brackets (if present)
-                        path_list_arr_selitem_wo_brackets=$(echo "${path_list_arr_selitem}" | sed 's/\[//g' | sed 's/\]//g')
-
-                        #Update variable
-                        tb_selpath="${tb_dir_set}/${path_list_arr_selitem_wo_brackets}"
-
-                        #Remove double slashes
-                        tb_selpath=$(echo "${tb_selpath}" | sed 's/\/\//\//g')
-
-                        #Check if 'tb_selpath' is a file
-                        #   and exit immediate if true.
-                        if [[ -d "${tb_selpath}" ]]; then
-                            #Update 'tb_dir_set'
-                            tb_dir_set="${tb_selpath}"
-
-                            #Reset variable
-                            tb_listpage_start=1
-                        fi
-
-                        #Move down and clean one line
-                        movedown_and_clean__func "${TB_NUMOFLINES_2}"
-
-                        break
-                    fi
-                fi
-                ;;
-        esac
-
-        #Move up and clean one line
-        moveup_and_clean__func "${TB_NUMOFLINES_0}"
-
-        #Clean read-dialog buffer
-        readdialog_clean_buffer__func
-    done
-}
-bootintomenu__sub() {
+bootoptions__sub() {
     while [[ 1 ]]
     do
         #Initialize variables
-        flag_bootintomenu_exitloop=false
+        flag_bootoptions_exitloop=false
 
         #Print header
         tibbo_print_title__sub    
 
         #Print bootinto menutitle
-        bootintomenu_title_print__sub
+        bootoptions_title_print__sub
 
         #Print body
-        bootintomenu_body_print__sub
+        bootoptions_body_print__sub
 
         #Print remark
-        bootintomenu_remark_print__sub
+        bootoptions_remark_print__sub
 
         #Show read-dialog (loop)
-        #Note: result is passed to global variable 'tb_bootinto_mychoice'
-        bootintomenu_readdialog_choice__sub
+        #Note: result is passed to global variable 'tb_bootoptions_mychoice'
+        bootoptions_readdialog_choice__sub
 
         #Take action
-        bootintomenu_readdialog_action__sub
+        bootoptions_readdialog_action__sub
 
         #Check if a flag was given to exit loop
-        if [[ "${flag_bootintomenu_exitloop}" == true ]]; then
+        if [[ "${flag_bootoptions_exitloop}" == true ]]; then
             break
         fi
     done
 }
-bootintomenu_title_print__sub() {
+bootoptions_title_print__sub() {
     print_duplicate_char__func "${TB_DASH}" "${TB_TABLEWIDTH}" "${TB_NOCOLOR}"
     print_leading_trailing_strings_on_opposite_sides__func "${TB_TITLE_BOOTINTO}" \
             "${TB_EMPTYSTRING}" \
             "${TB_TABLEWIDTH}"
     print_duplicate_char__func "${TB_DASH}" "${TB_TABLEWIDTH}" "${TB_NOCOLOR}"
 }
-bootintomenu_body_print__sub() {
+bootoptions_body_print__sub() {
     #Define and initialize variables
     local print_safemode="${TB_MODE_SAFEMODE}"
     local print_backupmode="${TB_MODE_BACKUPMODE}"
@@ -1642,27 +2047,27 @@ bootintomenu_body_print__sub() {
     local print_disabled="${TB_MODE_DISABLED}"
 
     #Extract 'bootinto' information
-    extract_bootinto_info__func
+    extract_bootoptions_info__func
 
     #Update variables (if appliable)
-    if [[ "${tb_bootinto_set}" != "${TB_MODE_SAFEMODE}" ]]; then
+    if [[ "${tb_bootoptions_set}" != "${TB_MODE_SAFEMODE}" ]]; then
         print_safemode="${TB_FG_GREY_246}${print_safemode} (false)${TB_NOCOLOR}"
     else
         print_safemode="${print_safemode} (true)"
     fi
-    if [[ "${tb_bootinto_set}" != "${TB_MODE_BACKUPMODE}" ]]; then
+    if [[ "${tb_bootoptions_set}" != "${TB_MODE_BACKUPMODE}" ]]; then
         print_backupmode="${TB_FG_GREY_246}${print_backupmode} (false)${TB_NOCOLOR}"
     else
         print_backupmode="${print_backupmode} (true)"
     fi
-    if [[ "${tb_bootinto_set}" != "${TB_MODE_RESTOREMODE}" ]]; then
+    if [[ "${tb_bootoptions_set}" != "${TB_MODE_RESTOREMODE}" ]]; then
         print_restoremode="${TB_FG_GREY_246}${print_restoremode} (false)${TB_NOCOLOR}"
     else
         print_restoremode="${print_restoremode} (true)"
     fi
-    if [[ "${tb_bootinto_set}" == "${TB_MODE_SAFEMODE}" ]] || \
-            [[ "${tb_bootinto_set}" == "${TB_MODE_BACKUPMODE}" ]] || \
-            [[ "${tb_bootinto_set}" == "${TB_MODE_RESTOREMODE}" ]]; then
+    if [[ "${tb_bootoptions_set}" == "${TB_MODE_SAFEMODE}" ]] || \
+            [[ "${tb_bootoptions_set}" == "${TB_MODE_BACKUPMODE}" ]] || \
+            [[ "${tb_bootoptions_set}" == "${TB_MODE_RESTOREMODE}" ]]; then
         print_disabled="${TB_FG_GREY_246}${print_disabled}${TB_NOCOLOR}"
     fi
 
@@ -1676,12 +2081,12 @@ bootintomenu_body_print__sub() {
     print_menuitem__func "${TB_FOURSPACES}" "${TB_OPTIONS_Q}" "${TB_OPTIONS_QUIT_CTRL_C}" "${TB_EMPTYSTRING}"
     print_duplicate_char__func "${TB_DASH}" "${TB_TABLEWIDTH}" "${TB_NOCOLOR}"
 }
-bootintomenu_remark_print__sub() {
+bootoptions_remark_print__sub() {
     if [[ ! -s "${tb_init_bootargs_tmp_fpath}" ]]; then
         return 0;
     fi
 
-    if [[ "${tb_bootinto_set}" == "${TB_MODE_SAFEMODE}" ]]; then
+    if [[ "${tb_bootoptions_set}" == "${TB_MODE_SAFEMODE}" ]]; then
         return 0;
     fi
 
@@ -1690,23 +2095,23 @@ bootintomenu_remark_print__sub() {
 
     #Print
     print_menuitem__func "${TB_EMPTYSTRING}" "${TB_EMPTYSTRING}" "${TB_REMARKS}" "${TB_EMPTYSTRING}"
-    print_menuitem__func "${TB_EMPTYSTRING}" "${TB_EMPTYSTRING}" "${tb_bootinto_remarks}" "${TB_EMPTYSTRING}"
+    print_menuitem__func "${TB_EMPTYSTRING}" "${TB_EMPTYSTRING}" "${tb_bootoptions_remarks}" "${TB_EMPTYSTRING}"
     print_duplicate_char__func "${TB_DASH}" "${TB_TABLEWIDTH}" "${TB_NOCOLOR}"
 }
-bootintomenu_readdialog_choice__sub() {
+bootoptions_readdialog_choice__sub() {
     while [[ 1 ]]
     do
         #Select an option
-        read -N1 -r -p "${TB_READDIALOG_CHOOSE_AN_OPTION}" tb_bootinto_mychoice
+        read -N1 -r -p "${TB_READDIALOG_CHOOSE_AN_OPTION}" tb_bootoptions_mychoice
 
         #Only continue if a valid option is selected
-        if [[ ! -z ${tb_bootinto_mychoice} ]]; then
-            if [[ ${tb_bootinto_mychoice} =~ ${TB_BOOTINTO_MYCHOICE_REGEX} ]]; then
+        if [[ ! -z ${tb_bootoptions_mychoice} ]]; then
+            if [[ ${tb_bootoptions_mychoice} =~ ${TB_BOOTINTO_MYCHOICE_REGEX} ]]; then
                 movedown_and_clean__func "${TB_NUMOFLINES_1}"
 
                 break
             else
-                if [[ ${tb_bootinto_mychoice} == ${TB_ENTER} ]]; then
+                if [[ ${tb_bootoptions_mychoice} == ${TB_ENTER} ]]; then
                     moveup_and_clean__func "${TB_NUMOFLINES_1}"                    
                 else
                     moveup_and_clean__func "${TB_NUMOFLINES_0}"
@@ -1721,40 +2126,40 @@ bootintomenu_readdialog_choice__sub() {
         fi
     done
 }
-bootintomenu_readdialog_action__sub() {
+bootoptions_readdialog_action__sub() {
     #Goto the selected option
-    case ${tb_bootinto_mychoice} in
+    case ${tb_bootoptions_mychoice} in
         1)
-            bootintomenu_safemode__sub
+            bootoptions_safemode__sub
             ;;
         2)
-            bootintomenu_backupmode__sub
+            bootoptions_backupmode__sub
             ;;
         3)
-            echo -e "in progress (${tb_bootinto_mychoice})"
+            echo -e "in progress (${tb_bootoptions_mychoice})"
             ;;
         4)
-            bootintomenu_disable__sub
+            bootoptions_disable__sub
             ;;
         m)
-            flag_bootintomenu_exitloop=true;
+            flag_bootoptions_exitloop=true;
             ;;
         q)
             exit__func "${TB_EXITCODE_99}" "${TB_NUMOFLINES_2}"
             ;;
     esac
 }
-bootintomenu_safemode__sub() {
+bootoptions_safemode__sub() {
     #Remove file (if present)
     remove_file__func "${tb_init_bootargs_tmp_fpath}"
 
     #Update 'tb_rootfs_ro_set' based on 'tb_overlaymode_set' value.
-    tb_bootinto_set="${TB_NOBOOT_IS_TRUE}"
+    tb_bootoptions_set="${TB_NOBOOT_IS_TRUE}"
 
     #Write to file
-    echo "${tb_bootinto_set}" | tee "${tb_init_bootargs_tmp_fpath}" >/dev/null
+    echo "${tb_bootoptions_set}" | tee "${tb_init_bootargs_tmp_fpath}" >/dev/null
 }
-bootintomenu_backupmode__sub() {
+bootoptions_backupmode__sub() {
     #Define constants
     local PHASE_BOOTINTO_READDIALOG_BACKUPMODE_SRCPATH=10
     local PHASE_BOOTINTO_READDIALOG_BACKUPMODE_SRCSIZE=11
@@ -1776,7 +2181,7 @@ bootintomenu_backupmode__sub() {
     do
         case "${phase}" in
             "${PHASE_BOOTINTO_READDIALOG_BACKUPMODE_SRCPATH}")
-                bootintomenu_backupmode_srcpath_select__sub
+                bootoptions_backupmode_srcpath_select__sub
 
                 if [[ "${flag_backupmode_restoremode_exitloop}" == true ]]; then
                     phase="${PHASE_BOOTINTO_READDIALOG_BACKUPMODE_EXIT}"
@@ -1785,7 +2190,7 @@ bootintomenu_backupmode__sub() {
                 fi
                 ;;
             "${PHASE_BOOTINTO_READDIALOG_BACKUPMODE_SRCSIZE}")
-                bootintomenu_backupmode_srcsize_get__sub
+                bootoptions_backupmode_srcsize_get__sub
 
                 if [[ "${flag_backupmode_restoremode_exitloop}" == true ]]; then
                     phase="${PHASE_BOOTINTO_READDIALOG_BACKUPMODE_EXIT}"
@@ -1794,25 +2199,10 @@ bootintomenu_backupmode__sub() {
                 fi
                 ;;
             "${PHASE_BOOTINTO_READDIALOG_BACKUPMODE_DSTDIR}")
-                bootintomenu_backupmode_dstdir_select__sub
+                bootoptions_backupmode_dstdir_select__sub
 
                 if [[ "${flag_go_back_onestep}" == true ]]; then
                     phase="${PHASE_BOOTINTO_READDIALOG_BACKUPMODE_SRCPATH}"
-                else
-                    if [[ "${flag_backupmode_restoremode_exitloop}" == true ]]; then
-                        phase="${PHASE_BOOTINTO_READDIALOG_BACKUPMODE_EXIT}"
-                    else
-                        phase="${PHASE_BOOTINTO_READDIALOG_BACKUPMODE_DSTFILE}"
-                    fi
-                fi
-                ;;
-            "${PHASE_BOOTINTO_READDIALOG_BACKUPMODE_DSTFILE}")
-                bootintomenu_backupmode_dstfilename_input__sub
-
-echo "${tb_dstfilename_set}"
-
-                if [[ "${flag_go_back_onestep}" == true ]]; then
-                    phase="${PHASE_BOOTINTO_READDIALOG_BACKUPMODE_DSTDIR}"
                 else
                     if [[ "${flag_backupmode_restoremode_exitloop}" == true ]]; then
                         phase="${PHASE_BOOTINTO_READDIALOG_BACKUPMODE_EXIT}"
@@ -1822,7 +2212,7 @@ echo "${tb_dstfilename_set}"
                 fi
                 ;;
             "${PHASE_BOOTINTO_READDIALOG_BACKUPMODE_DSTSIZE}")
-                bootintomenu_backupmode_dstsize_get__sub
+                bootoptions_backupmode_dstsize_get__sub
 
                 if [[ "${flag_backupmode_restoremode_exitloop}" == true ]]; then
                     phase="${PHASE_BOOTINTO_READDIALOG_BACKUPMODE_EXIT}"
@@ -1831,9 +2221,27 @@ echo "${tb_dstfilename_set}"
                 fi
                 ;;
             "${PHASE_BOOTINTO_READDIALOG_BACKUPMODE_COMPARE_SIZES}")
-                echo "in progress: PHASE_BOOTINTO_READDIALOG_BACKUPMODE_COMPARE_SIZES"
+                bootoptions_backupmode_compare_disksize__sub
 
-                phase="${PHASE_BOOTINTO_READDIALOG_BACKUPMODE_EXIT}"
+                if [[ "${flag_backupmode_restoremode_exitloop}" == true ]]; then
+                    phase="${PHASE_BOOTINTO_READDIALOG_BACKUPMODE_EXIT}"
+                else
+                    phase="${PHASE_BOOTINTO_READDIALOG_BACKUPMODE_DSTFILE}"
+                fi
+                ;;
+            "${PHASE_BOOTINTO_READDIALOG_BACKUPMODE_DSTFILE}")
+echo "do NOT FORGET TO ADD the ENTER OPTION, but only use it when 'flag_itemnum_isshown=false'"
+echo "do NOT FORGET to check whether the file already exists or NOT when pressing ENTER"
+echo "if EXIST, then just set the 'flag_skip_this=true' and handle "
+                bootoptions_backupmode_dstfilename_input__sub
+
+echo "${tb_dstfilename_set}"
+
+                if [[ "${flag_go_back_onestep}" == true ]]; then
+                    phase="${PHASE_BOOTINTO_READDIALOG_BACKUPMODE_DSTDIR}"
+                else
+                    phase="${PHASE_BOOTINTO_READDIALOG_BACKUPMODE_EXIT}"
+                fi
                 ;;
             "${PHASE_BOOTINTO_READDIALOG_BACKUPMODE_EXIT}")
                 # echo "in progress: PHASE_BOOTINTO_READDIALOG_BACKUPMODE_EXIT"
@@ -1843,17 +2251,19 @@ echo "${tb_dstfilename_set}"
         esac
     done
 }
-bootintomenu_backupmode_srcpath_select__sub() {
+bootoptions_backupmode_srcpath_select__sub() {
     #Define and initialize variables
     local flag_back_option_isenabled=false
     local flag_dir_isfixed=true
+    local flag_dir_parent_isnot_tobe_used=true
+    local flag_itemnum_isshown=true
     local flag_type_isdir=false
     local flag_type_isfile=false
 
     #Initialize variables
     tb_listpage_start=1
-    tb_dir_set=${dev_dir}
-    tb_selpath=${tb_dir_set}
+    tb_path_set=${dev_dir}
+    tb_path_select=${tb_path_set}
     
     tb_path_list_arr=()
     tb_path_list_arrlen=0
@@ -1862,27 +2272,32 @@ bootintomenu_backupmode_srcpath_select__sub() {
     while [[ 1 ]]
     do
         #Print header, body, menu-options
-        dircontent_get_and_show__sub "${tb_dir_set}" \
-                "${tb_dir_set}" \
+        dircontent_get_and_show__sub "${tb_path_set}" \
+                "${dev_dir}" \
                 "${TB_PATTERN_MMCBLK0}" \
                 "${tb_listpage_start}" \
                 "${TB_OUTPUT_SOURCE}" \
                 "${flag_back_option_isenabled}" \
                 "${flag_dir_isfixed}" \
                 "${flag_type_isdir}" \
-                "${flag_type_isfile}"     
+                "${flag_type_isfile}" \
+                "${flag_itemnum_isshown}"
 
         #Take action
-        dircontent_handler__sub "${TB_OUTPUT_SOURCE}" \
+        dircontent_handler__sub "${tb_path_set}" \
+                "${dev_dir}" \
+                "${TB_OUTPUT_SOURCE}" \
                 "${flag_back_option_isenabled}" \
-                "${flag_dir_isfixed}"
+                "${flag_dir_isfixed}" \
+                "${flag_dir_parent_isnot_tobe_used}" \
+                "${flag_itemnum_isshown}"
 
         if [[ "${flag_backupmode_srcpath_select_exitloop}" == true ]]; then
             break
         fi
     done
 }
-bootintomenu_backupmode_srcsize_get__sub() {
+bootoptions_backupmode_srcsize_get__sub() {
     #Note: 'blockdev' should only be used to get the size of the partitions (e.g. /dev/mmcblk0, /dev/mmcblk0p8)
     tb_srcpath_size_B=$(sudo blockdev --getsize64 "${tb_srcpath_set}" 2>/dev/null); exitcode=$?
 
@@ -1903,17 +2318,19 @@ bootintomenu_backupmode_srcsize_get__sub() {
     fi
 
 }
-bootintomenu_backupmode_dstdir_select__sub() {
+bootoptions_backupmode_dstdir_select__sub() {
     #Define variables
     local flag_back_option_isenabled=true
     local flag_dir_isfixed=false
+    local flag_dir_parent_isnot_tobe_used=true
+    local flag_itemnum_isshown=true
     local flag_type_isdir=true
     local flag_type_isfile=false
 
     #Initialize variables
     tb_listpage_start=1
-    tb_dir_set=${media_dir}
-    tb_selpath=${tb_dir_set}
+    tb_path_set=${media_dir}
+    tb_path_select=${tb_path_set}
     
     tb_path_list_arr=()
     tb_path_list_arrlen=0
@@ -1922,73 +2339,32 @@ bootintomenu_backupmode_dstdir_select__sub() {
     while [[ 1 ]]
     do
         #Print header, body, menu-options
-        dircontent_get_and_show__sub "${tb_dir_set}" \
-                "${tb_dir_set}" \
+        dircontent_get_and_show__sub "${tb_path_set}" \
+                "${media_dir}" \
                 "${TB_EMPTYSTRING}" \
                 "${tb_listpage_start}" \
                 "${TB_OUTPUT_DESTINATION}" \
                 "${flag_back_option_isenabled}" \
                 "${flag_dir_isfixed}" \
                 "${flag_type_isdir}" \
-                "${flag_type_isfile}"
+                "${flag_type_isfile}" \
+                "${flag_itemnum_isshown}"
 
         #Take action
-        dircontent_handler__sub "${TB_OUTPUT_SOURCE}" \
+        dircontent_handler__sub "${tb_path_set}" \
+                "${media_dir}" \
+                "${TB_OUTPUT_DESTINATION}" \
                 "${flag_back_option_isenabled}" \
-                "${flag_dir_isfixed}"
+                "${flag_dir_isfixed}" \
+                "${flag_dir_parent_isnot_tobe_used}" \
+                "${flag_itemnum_isshown}"
 
         if [[ "${flag_backupmode_srcpath_select_exitloop}" == true ]]; then
             break
         fi
     done
 }
-bootintomenu_backupmode_dstfilename_input__sub() {
-    #Print body
-    bootintomenu_backupmode_dstfilename_body_print__sub
-
-    #Show read-dialog
-    #Note: this subroutine passes the result to the global variable 'tb_dstfilename_set'
-    bootintomenu_backupmode_dstfilename_choice_and_action__sub
-}
-bootintomenu_backupmode_dstfilename_body_print__sub() {
-    #Move-down one line
-    movedown_and_clean__func "${TB_NUMOFLINES_1}"
-
-    #Print title
-    print_duplicate_char__func "${TB_DASH}" "${TB_TABLEWIDTH}" "${TB_FG_GREY_243}"
-    print_leading_trailing_strings_on_opposite_sides__func "${TB_TITLE_BACKUP_PROVIDE_DESTINATION_IMAGE_FILENAME}" \
-            "${TB_EMPTYSTRING}" \
-            "${TB_TABLEWIDTH}"
-    print_duplicate_char__func "${TB_DASH}" "${TB_TABLEWIDTH}" "${TB_FG_GREY_243}"
-
-    #Leave an empty line for adding the read-dialog later on
-    movedown_and_clean__func "${TB_NUMOFLINES_1}"
-
-    #Show 'back'
-    print_duplicate_char__func "${TB_DASH}" "${TB_TABLEWIDTH}" "${TB_FG_GREY_243}"
-    print_menuitem__func "${TB_FOURSPACES}" "${TB_PRINT_OPTIONS_SEMICOLON_C}" "${TB_OPTIONS_CLEAR}" "${TB_EMPTYSTRING}"
-    print_menuitem__func "${TB_FOURSPACES}" "${TB_PRINT_OPTIONS_SEMICOLON_B}" "${TB_OPTIONS_BACK}" "${TB_EMPTYSTRING}"
-    print_menuitem__func "${TB_FOURSPACES}" "${TB_PRINT_OPTIONS_SEMICOLON_H}" "${TB_OPTIONS_HOME}" "${TB_EMPTYSTRING}"
-    print_menuitem__func "${TB_FOURSPACES}" "${TB_PRINT_OPTIONS_SEMICOLON_M}" "${TB_OPTIONS_MAIN}" "${TB_EMPTYSTRING}"
-    print_menuitem__func "${TB_FOURSPACES}" "${TB_PRINT_OPTIONS_SEMICOLON_Q}" "${TB_OPTIONS_QUIT_CTRL_C}" "${TB_EMPTYSTRING}"
-    print_duplicate_char__func "${TB_DASH}" "${TB_TABLEWIDTH}" "${TB_FG_GREY_243}"
-
-    #Move-up seven (7) lines
-    moveup__func "${TB_NUMOFLINES_8}"
-}
-bootintomenu_backupmode_dstfilename_choice_and_action__sub() {
-    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    # Note: this subroutine is similar to 
-    #       'dircontent_handler__sub'
-    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-    echo "in progress"
-    echo "Note: this subroutine is similar to "
-    echo "'dircontent_handler__sub'"
-}
-
-bootintomenu_backupmode_dstsize_get__sub() {
+bootoptions_backupmode_dstsize_get__sub() {
     if [[ -d "${tb_dstpath_set}" ]]; then   #directory exists
         #Note: 'blockdev' should only be used to get the size of the partitions (e.g. /dev/mmcblk0, /dev/mmcblk0p8)
         tb_dstpath_size_KB=$(df --output='avail' -k "${tb_dstpath_set}" | \
@@ -2013,8 +2389,66 @@ bootintomenu_backupmode_dstsize_get__sub() {
         print_menuitem__func "${TB_EMPTYSTRING}" "${TB_EMPTYSTRING}" "${printmsg}" "${TB_EMPTYSTRING}"
     fi
 }
+bootoptions_backupmode_compare_disksize__sub() {
+    #Note: this subroutine passes the result to the global variable 'flag_diskspace_isok'
+    diskspace_isok__func "${tb_srcpath_set}" "${tb_dstpath_set}" "${TB_TYPE_BACKUP}"
 
-bootintomenu_disable__sub() {
+    if [[ "${flag_diskspace_isok}" == true ]]; then
+        flag_backupmode_restoremode_exitloop=false
+    else
+        flag_backupmode_restoremode_exitloop=true
+    fi
+}
+bootoptions_backupmode_dstfilename_input__sub() {
+    #Define and initialize variables
+    local flag_back_option_isenabled=true
+    local flag_dir_isfixed=true
+    local flag_dir_parent_isnot_tobe_used=false
+    local flag_itemnum_isshown=false
+    local flag_type_isdir=false
+    local flag_type_isfile=true
+
+    #Initialize variables
+    tb_listpage_start=1
+    tb_path_set=${tb_dstpath_set}
+    tb_path_select=${tb_path_set}
+    
+    tb_path_list_arr=()
+    tb_path_list_arrlen=0
+
+    #Start loop
+    while [[ 1 ]]
+    do
+        #Print header, body, menu-options
+        dircontent_get_and_show__sub "${tb_path_set}" \
+                "${tb_dstpath_set}" \
+                "${TB_EMPTYSTRING}" \
+                "${tb_listpage_start}" \
+                "${TB_OUTPUT_FILE}" \
+                "${flag_back_option_isenabled}" \
+                "${flag_dir_isfixed}" \
+                "${flag_type_isdir}" \
+                "${flag_type_isfile}" \
+                "${flag_itemnum_isshown}"
+
+        #Take action
+        dircontent_handler__sub "${tb_path_set}" \
+                "${tb_dstpath_set}" \
+                "${TB_OUTPUT_FILE}" \
+                "${flag_back_option_isenabled}" \
+                "${flag_dir_isfixed}" \
+                "${flag_dir_parent_isnot_tobe_used}" \
+                "${flag_itemnum_isshown}"
+
+        if [[ "${flag_backupmode_srcpath_select_exitloop}" == true ]]; then
+            break
+        fi
+    done
+}
+
+
+
+bootoptions_disable__sub() {
     #Remove file (if present)
     remove_file__func "${tb_init_bootargs_tmp_fpath}"
 }
