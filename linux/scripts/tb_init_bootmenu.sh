@@ -287,6 +287,11 @@ tb_srcpath_set="${TB_EMPTYSTRING}"
 tb_dstpath_size_KB=0
 tb_listpage_start=0
 tb_numoflines_correction=${TB_NUMOFLINES_0}
+
+tb_keyinput_tot_len=0
+tb_keyinput_tot_len1=0
+tb_keyinput_tot_len2=0
+
 tb_srcpath_size_B=0
 tb_srcpath_size_KB=0
 
@@ -1031,6 +1036,20 @@ function functionKey_detection__func() {
     echo "${ret}"
 }
 
+function get_stringlen_wo_color__func() {
+    #Input args
+    local string__input=${1}
+    
+    #Get string w/o color
+    local string_wo_color=$(echo "${string__input}" | sed "s,\x1B\[[0-9;]*m,,g")
+
+    #Update length
+    local string_wo_color_len="${#string_wo_color}"
+
+    #Move-back with a specified number of chars
+    echo "${string_wo_color_len}"
+}
+
 function isNumeric__func() {
     #Input args
     local string__input=${1}
@@ -1077,27 +1096,40 @@ function movedown_and_clean__func() {
         while [[ ${tcounter} -le ${numoflines__input} ]]
         do
             #Move-down 1 line and clean
-            tput el1
             tput cud1
-            tput el
+            tput el1 && tput el
 
             #Increment tcounter by 1
             ((tcounter++))
         done
     else
-        tput el1
+        tput el1 && tput el
     fi
 
     #Show cursor
     cursor_show__func
 }
 
-function moveto_beginning__func() {
-    xpos_current=${TB_TERMWINDOW_WIDTH}
+function moveleft_basedon_echomsg__func() {
+    #Input args
+    local string__input=${1}
+    
+    #Update length
+    local string_wo_color_len=$(get_stringlen_wo_color__func "${string__input}")
 
-    #Move to the beginning of line
-    tput cub ${xpos_current}
-} 
+    #Move-back with a specified number of chars
+    tput cub ${string_wo_color_len}
+}
+function moveright_basedon_echomsg__func() {
+    #Input args
+    local string__input=${1}
+
+    #Update length
+    local string_wo_color_len=$(get_stringlen_wo_color__func "${string__input}")
+
+    #Move-back with a specified number of chars
+    tput cuf ${string_wo_color_len}
+}
 
 function moveup__func() {
     #Input args
@@ -1893,48 +1925,47 @@ dircontent_handler_dstfile_input__sub() {
     local path_list_arr_selindex=0
     local path_list_arr_selindex_max=0
 
+    local flag_print_tb_keyinput_tot_isenabled=false
+
+
+    #Select the read-dialog based on 'tb_editmode_set'
+    case "${tb_editmode_set}" in
+        "${TB_OFF}")
+            readdialog_msg="${readdialog_msg1__input}"
+            ;;
+        *)
+            readdialog_msg="${readdialog_msg2__input}"
+            ;;
+    esac
+
+    #Print the read-dialog
+    printf "%s" "${readdialog_msg}"
+
     while [[ 1 ]]
     do
-        # #Hide cursor & disable keyboard
-        # cursor_keyboard_termrefresh_disable__sub
+        if [[ ${flag_print_tb_keyinput_tot_isenabled} == false ]]; then
+            #Print every 'keyinput'
+            printf "%s" "${keyinput}"
+        else
+            #Clean current line
+            moveup_and_clean__func "${TB_NUMOFLINES_0}"
 
-        case "${tb_editmode_set}" in
-            "${TB_OFF}")
-                readdialog_msg="${readdialog_msg1__input}"
-                ;;
-            *)
-                readdialog_msg="${readdialog_msg2__input}"
-                ;;
-        esac
+            #Print the read-dialog
+            printf "%s" "${readdialog_msg}"
 
-        #Update 'echomsg'
-        echomsg="${readdialog_msg}${tb_keyinput_tot}"
+            #Print all the characters which have been keyed in so far
+            printf "%s" "${tb_keyinput_tot}"
 
-        #Print message
-        echo -e "${echomsg}"
-
-        #Get string w/o color
-        echomsg_wo_color=$(echo "${echomsg}" | sed "s,\x1B\[[0-9;]*m,,g")
-
-        #Update length
-        echomsg_wo_color_len="${#echomsg_wo_color}"
-
-        #1. Move-up one line
-        #2. Move forward with length 'echomsg_wo_color_len' 
-        tput cuu1 && tput cuf "${echomsg_wo_color_len}"
+            #Set flag back to 'false'
+            flag_print_tb_keyinput_tot_isenabled=false
+        fi
 
         #Reset variable
         funckey="${TB_EMPTYSTRING}"
         keyinput="${TB_EMPTYSTRING}"
 
-        # #Show cursor & enable keyboard
-        # cursor_keyboard_termrefresh_enable__sub
-
         #Execute read-dialog and wait for input
         read -N1 -rs keyinput
-
-        # #Hide cursor & disable keyboard
-        # cursor_keyboard_termrefresh_disable__sub
 
         case "${keyinput}" in
             "${TB_OPTIONS_LARROW}")
@@ -1978,105 +2009,123 @@ dircontent_handler_dstfile_input__sub() {
                 fi
                 ;;
             "${TB_OPTIONS_B}")
-                if [[ "${tb_editmode_set}" == "${TB_ON}" ]]; then
-                    #Append 'keyinput' to 'tb_keyinput_tot'
-                    tb_keyinput_tot+="${keyinput}"
+                case "${tb_editmode_set}" in
+                    "${TB_ON}")
+                        #Append 'keyinput' to 'tb_keyinput_tot'
+                        tb_keyinput_tot+="${keyinput}"
+                        ;;
+                    *)
+                        #Move down and clean one line
+                        movedown_and_clean__func "${TB_NUMOFLINES_2}"
 
-                    break
-                fi
+                        #Set flags to true
+                        flag_dircontent_handler_exitloop=true
+                        flag_backupmode_child_exitloop=true
+                        flag_go_back_onestep=true
 
-                if [[ "${flag_back_option_isenabled__input}" == true ]]; then
-                    #Move down and clean one line
-                    movedown_and_clean__func "${TB_NUMOFLINES_1}"
-
-                    #Set flags to true
-                    flag_dircontent_handler_exitloop=true
-                    flag_backupmode_child_exitloop=true
-                    flag_go_back_onestep=true
-
-                    break
-                fi
+                        break
+                        ;;
+                esac
                 ;;
             "${TB_OPTIONS_H}")
-                if [[ "${tb_editmode_set}" == "${TB_ON}" ]]; then
-                    #Append 'keyinput' to 'tb_keyinput_tot'
-                    tb_keyinput_tot+="${keyinput}"
+                case "${tb_editmode_set}" in
+                    "${TB_ON}")
+                        #Append 'keyinput' to 'tb_keyinput_tot'
+                        tb_keyinput_tot+="${keyinput}"
+                        ;;
+                    *)
+                        #Move down and clean one line
+                        movedown_and_clean__func "${TB_NUMOFLINES_1}"
 
-                    break
-                fi
+                        #Set flags to true
+                        flag_dircontent_handler_exitloop=true
+                        flag_backupmode_child_exitloop=true
+                        flag_backupmode_exitloop=true
 
-                #Move down and clean one line
-                movedown_and_clean__func "${TB_NUMOFLINES_1}"
-
-                #Set flags to true
-                flag_dircontent_handler_exitloop=true
-                flag_backupmode_child_exitloop=true
-                flag_backupmode_exitloop=true
-
-                break
+                        break
+                        ;;
+                esac
                 ;;
             "${TB_OPTIONS_M}")
-                if [[ "${tb_editmode_set}" == "${TB_ON}" ]]; then
-                    #Append 'keyinput' to 'tb_keyinput_tot'
-                    tb_keyinput_tot+="${keyinput}"
+                case "${tb_editmode_set}" in
+                    "${TB_ON}")
+                        #Append 'keyinput' to 'tb_keyinput_tot'
+                        tb_keyinput_tot+="${keyinput}"
+                        ;;
+                    *)
+                        #Move down and clean one line
+                        movedown_and_clean__func "${TB_NUMOFLINES_1}"
 
-                    break
-                fi
+                        #Set flags to true
+                        flag_dircontent_handler_exitloop=true
+                        flag_backupmode_child_exitloop=true
+                        flag_backupmode_exitloop=true
+                        flag_bootoptions_exitloop=true
 
-                #Move down and clean one line
-                movedown_and_clean__func "${TB_NUMOFLINES_1}"
-
-                #Set flags to true
-                flag_dircontent_handler_exitloop=true
-                flag_backupmode_child_exitloop=true
-                flag_backupmode_exitloop=true
-                flag_bootoptions_exitloop=true
-
-                break
+                        break
+                        ;;
+                esac
                 ;;
             "${TB_OPTIONS_Q}")
-                if [[ "${tb_editmode_set}" == "${TB_ON}" ]]; then
-                    #Append 'keyinput' to 'tb_keyinput_tot'
-                    tb_keyinput_tot+="${keyinput}"
+                case "${tb_editmode_set}" in
+                    "${TB_ON}")
+                        #Append 'keyinput' to 'tb_keyinput_tot'
+                        tb_keyinput_tot+="${keyinput}"
+                        ;;
+                    *)
+                        #Move down and clean one line
+                        movedown_and_clean__func "${TB_NUMOFLINES_1}"
 
-                    break
-                fi
+                        #Exit script
+                        exit__func "${TB_EXITCODE_99}" "${TB_NUMOFLINES_2}"
 
-                #Move down and clean one line
-                movedown_and_clean__func "${TB_NUMOFLINES_1}"
-
-                #Exit script
-                exit__func "${TB_EXITCODE_99}" "${TB_NUMOFLINES_2}"
+                        break
+                        ;;
+                esac
                 ;;
             "${TB_BACKSPACE}")
-                if [[ "${tb_editmode_set}" == "${TB_OFF}" ]]; then
-                    break
-                fi
+                case "${tb_editmode_set}" in
+                    "${TB_OFF}")
+                        break
+                        ;;
+                    *)
+                        #Get the length of 'tb_keyinput_tot'
+                        tb_keyinput_tot_len=${#tb_keyinput_tot}
+                        if [[ ${tb_keyinput_tot_len} -gt 0 ]]; then #length > 0                    
+                            #Remove one character from 'tb_keyinput_tot'
+                            tb_keyinput_tot=$(backspace__func "${tb_keyinput_tot}")
 
-                #Initialize variable
-                keyinput_backspace_tmp="${TB_BACKSPACE}"
+                            #Initialize variable
+                            keyinput_backspace_tmp="${TB_BACKSPACE}"
 
-                #Stay in the loop as long as the <BACKSPACE> press is being detected
-                #Remark:
-                #   This loop has been implement to make multiple BACKSPACE press smoother.
-                while [[ "${keyinput_backspace_tmp}" == "${TB_BACKSPACE}" ]]
-                do
-                    #Update variable after ONE backspace press
-                    tb_keyinput_tot=$(backspace__func "${tb_keyinput_tot}")
+                            #Start and stay in the loop as long as 'keyinput_paste_tmp' is NOT an Empty String.
+                            #Remarks:
+                            #   In other words, for as long as BACKSPACE is being pressed within 0.05 seconds.
+                            #   Also remove one character from 'tb_keyinput_tot'.
+                            #   This loop is implemented to prevent (^H) from showing when pressing and holding BACKSPACE.
+                            while [[ -n "${keyinput_backspace_tmp}" ]]
+                            do
+                                #Execute read-dialog and wait for input
+                                #Remark:
+                                #   This  has been implement to make PASTE of chars smoother.
+                                read -N1 -t0.05 -rs keyinput_backspace_tmp
 
-                    #Check if there is another backspace press within 0.05 seconds
-                    #Note: if false, then exit this loop
-                    read -N1 -t0.001 -rs keyinput_backspace_tmp
-                done
+                                #Check if a BACKSPACE was pressed                                
+                                if [[ "${keyinput_backspace_tmp}" == "${TB_BACKSPACE}" ]]; then #BACKSPACE was pressed
+                                    #Remove one character from 'tb_keyinput_tot'
+                                    tb_keyinput_tot=$(backspace__func "${tb_keyinput_tot}")
+                                fi
+                            done
 
-                #Move-down and clean one line
-                movedown_and_clean__func "${TB_NUMOFLINES_1}"
-
-                #Move-up one line
-                moveup_and_clean__func "${TB_NUMOFLINES_1}"
-                
-                break
-                 ;;
+                            #Set flag to 'true'
+                            flag_print_tb_keyinput_tot_isenabled=true
+                        else    #length = 0
+                            #Move-right with 1 character
+                            tput cuf 1
+                        fi
+                        ;;
+                esac
+                ;;
             "${TB_ESCAPEKEY}")
                 #Get the function-key which was pressed
                 funckey=$(functionKey_detection__func)
@@ -2131,22 +2180,19 @@ dircontent_handler_dstfile_input__sub() {
                                 confirmation__func "${TB_READDIALOG_ACCEPT_AND_CONTINUE}" \
                                         "${TB_YN_REGEX}" \
                                         "${printmsg}"
-                                if [[ "${tb_confirm_keyinput}" == "${TB_OPTIONS_Y}" ]]; then
-                                    #Update global variable
-                                    tb_dstfilename_set="${fpath_new}"
+                                case "${tb_confirm_keyinput}" in
+                                    "${TB_OPTIONS_Y}")
+                                            #Update global variable
+                                            tb_dstfilename_set="${fpath_new}"
 
-                                    #Set flags to true
-                                    flag_dircontent_handler_exitloop=true
-                                    flag_backupmode_child_exitloop=true
-
-                                    #Move down and clean two lines
-                                    # movedown_and_clean__func "${TB_NUMOFLINES_2}"
-                                else    #tb_confirm_keyinput = N
-                                    flag_dircontent_handler_exitloop=true
-
-                                    #Move down and clean one line
-                                    # moveup_and_clean__func "${TB_NUMOFLINES_1}"
-                                fi
+                                            #Set flags to true
+                                            flag_dircontent_handler_exitloop=true
+                                            flag_backupmode_child_exitloop=true                                        
+                                        ;;
+                                    *)
+                                        flag_dircontent_handler_exitloop=true
+                                        ;;                                        
+                                esac
                             else    #fpath does not exist
                                 #Update global variable
                                 tb_dstfilename_set="${fpath}"
@@ -2156,8 +2202,7 @@ dircontent_handler_dstfile_input__sub() {
                                 flag_backupmode_child_exitloop=true
 
                                 #Print confirmed message
-                                dircontent_print_confirmed_input__sub "${readdialog_msg}" \
-                                        "${tb_keyinput_bck}"
+                                dircontent_print_confirmed_input__sub "${readdialog_msg}" "${tb_keyinput_bck}"
 
                                 #Move down and clean two lines
                                 movedown_and_clean__func "${TB_NUMOFLINES_1}"
@@ -2174,27 +2219,48 @@ dircontent_handler_dstfile_input__sub() {
                     #Append 'keyinput' to 'tb_keyinput_tot'
                     tb_keyinput_tot+="${keyinput}"
 
-                    #Execute read-dialog and wait for input
-                    #Remark:
-                    #   This  has been implement to make the PASTING of strings smoother.
-                    read -t0.05 -rs keyinput_paste_tmp
+                    #Get the length of 'tb_keyinput_tot' after appending the 1st character.
+                    tb_keyinput_tot_len1=${#tb_keyinput_tot}
 
-                    #Append 'keyinput' to 'tb_keyinput_tot'
-                    tb_keyinput_tot+="${keyinput_paste_tmp}"
+                    #Start and stay in the loop as long as 'keyinput_paste_tmp' is NOT an Empty String
+                    #Remark:
+                    #   The implementation of this loop make PASTING of a string with multiple characters smoother.
+                    #   Remarks:
+                    #       the choice of (-t) value has impact on the BACKSPACE.
+                    keyinput_paste_tmp="${keyinput}"
+                    while [[ -n "${keyinput_paste_tmp}" ]]
+                    do
+                        #Execute read-dialog and wait for input
+                        #Remark:
+                        #   This  has been implement to make PASTE of chars smoother.
+                        read -N1 -t0.02 -rs keyinput_paste_tmp
+
+                        #Append 'keyinput_paste_tmp' to 'tb_keyinput_tot'
+                        tb_keyinput_tot+="${keyinput_paste_tmp}"
+                    done
+                    
+                    #Get the length of 'tb_keyinput_tot' after appending the last character, which
+                    #   was pasted within 0.02 seconds
+                    tb_keyinput_tot_len2=${#tb_keyinput_tot}
+
+                    #Check if 'tb_keyinput_tot' length has changed
+                    #Remark:
+                    #   In case characters were keyed in, and
+                    #   1. the time difference between each character input was > 0.02 seconds,
+                    #       then 'tb_keyinput_tot_len2 = tb_keyinput_tot_len1'.
+                    #   1. the time difference between each character input was < 0.02 seconds,
+                    #       this is usually what happens when PASTING a string,
+                    #       then 'tb_keyinput_tot_len2 = tb_keyinput_tot_len1'.
+                    if [[ ${tb_keyinput_tot_len2} -gt ${tb_keyinput_tot_len1} ]]; then
+                        flag_print_tb_keyinput_tot_isenabled=true
+                    else
+                        flag_print_tb_keyinput_tot_isenabled=false
+                    fi
                 else    #tb_editmode_set = TB_OFF
                     break
                 fi
                 ;;
         esac
-
-        #Clean read-dialog buffer
-        # readdialog_clean_buffer__func
-
-        #Clean line
-        moveup_and_clean__func "${TB_NUMOFCOLUMNS_0}"  
-
-        # #Show cursor & enable keyboard
-        # cursor_keyboard_termrefresh_enable__sub
     done
 }
 dircontent_handler_srcpath_dstpath_select__sub() {
@@ -2224,26 +2290,26 @@ dircontent_handler_srcpath_dstpath_select__sub() {
     local path_list_arr_selindex=0
     local path_list_arr_selindex_max=0
 
+    #Print the read-dialog
+    printf "%s" "${readdialog_msg1__input}"
+
+
     while [[ 1 ]]
     do
-        # #Hide cursor & disable keyboard
-        # cursor_keyboard_termrefresh_disable__sub
+        if [[ -n "${keyinput}" ]]; then
+            tput cub 1
+        fi
 
-        #Update variables
-        echomsg="${readdialog_msg1__input}${keyinput}"
-
-        #Print message
-        echo -e "${echomsg}"
-
-        #Get string w/o color
-        echomsg_wo_color=$(echo "${echomsg}" | sed "s,\x1B\[[0-9;]*m,,g")
-
-        #Update length
-        echomsg_wo_color_len="${#echomsg_wo_color}"
-
-        #1. Move-up one line.
-        #2. Move forward with length 'echomsg_wo_color_len'.
-        tput cuu1 && tput cuf "${echomsg_wo_color_len}"
+        #Print every 'keyinput'
+        #Remark:
+        #   'TB_ONESPACE' is appended behind 'keyinput'.
+        #   This is some kind of a trick to make sure that the cursor
+        #       return back to its position after a number is keyed in.
+        printf "%s" "${keyinput}${TB_ONESPACE}"
+    
+        if [[ -n "${keyinput}" ]]; then
+            tput cub 1
+        fi
 
         #Reset variable
         keyinput="${TB_EMPTYSTRING}"
@@ -2253,9 +2319,6 @@ dircontent_handler_srcpath_dstpath_select__sub() {
 
         #Execute read-dialog and wait for input
         read -N1 -rs keyinput
-
-        # #Hide cursor & disable keyboard
-        # cursor_keyboard_termrefresh_disable__sub
 
         case "${keyinput}" in
             "${TB_OPTIONS_LARROW}")
@@ -2301,7 +2364,7 @@ dircontent_handler_srcpath_dstpath_select__sub() {
             "${TB_OPTIONS_B}")
                 if [[ "${flag_back_option_isenabled__input}" == true ]]; then
                     #Move down and clean one line
-                    movedown_and_clean__func "${TB_NUMOFLINES_1}"
+                    movedown_and_clean__func "${TB_NUMOFLINES_2}"
 
                     #Set flags to true
                     flag_dircontent_handler_exitloop=true
@@ -2328,11 +2391,10 @@ dircontent_handler_srcpath_dstpath_select__sub() {
                 flag_backupmode_child_exitloop=true
 
                 #Print confirmed message
-                dircontent_print_confirmed_input__sub "${readdialog_msg1__input}" \
-                        "${tb_keyinput_bck}"
+                dircontent_print_confirmed_input__sub "${readdialog_msg1__input}" "${tb_keyinput_bck}"
 
                 #Move down and clean two lines
-                movedown_and_clean__func "${TB_NUMOFLINES_1}"
+                movedown_and_clean__func "${TB_NUMOFLINES_2}"
 
                 break
                 ;;
@@ -2492,7 +2554,7 @@ dircontent_handler_srcpath_dstpath_select__sub() {
                         fi
 
                         #Check if 'path_new' is a directory
-                        if [[ -d "${path_new}" ]]; then
+                        if [[ -d "${path_new}" ]]; then #is a directory
                             #Check if flag is set to NOT allow a directory change
                             if [[ "${flag_dir_isfixed__input}" == true ]]; then #not allowed to be changed
                                 #Set values back to 'path_bck'
@@ -2502,24 +2564,19 @@ dircontent_handler_srcpath_dstpath_select__sub() {
                                 break
                             fi
 
-                            #Set flags to true
-                            flag_dircontent_handler_exitloop=true
-                            
-                            #Reset variable
-                            tb_listpage_start=1
-
-                            #Print confirmed message
-                            dircontent_print_confirmed_input__sub "${readdialog_msg1__input}" "${keyinput}"
-
-                            #Move down and clean one line
-                            movedown_and_clean__func "${TB_NUMOFLINES_2}"
-                        else
                             #Reprint selected path and menu-options
                             dircontent_reprint_selectedpath__sub "${path_new}" \
                                     "${outputtype__input}" \
 
                             #Print confirmed message
-                            dircontent_print_confirmed_input__sub "${readdialog_msg1__input}" "${keyinput}"
+                            # dircontent_print_confirmed_input__sub "${readdialog_msg1__input}" "${keyinput}"
+                        else    #is a file
+                            #Reprint selected path and menu-options
+                            dircontent_reprint_selectedpath__sub "${path_new}" \
+                                    "${outputtype__input}" \
+
+                            #Print confirmed message
+                            # dircontent_print_confirmed_input__sub "${readdialog_msg1__input}" "${keyinput}"
                         fi
 
                         #Update global variables
@@ -2531,8 +2588,6 @@ dircontent_handler_srcpath_dstpath_select__sub() {
 
                         # #Move down and clean one line
                         # movedown_and_clean__func "${TB_NUMOFLINES_2}"
-
-                        break
                     fi
                 else
                     break
@@ -2541,10 +2596,10 @@ dircontent_handler_srcpath_dstpath_select__sub() {
         esac
 
         #Clean read-dialog buffer
-        readdialog_clean_buffer__func
+        # readdialog_clean_buffer__func
 
         #Clean line
-        moveup_and_clean__func "${TB_NUMOFCOLUMNS_0}"
+        # moveup_and_clean__func "${TB_NUMOFCOLUMNS_0}"
 
         # #Show cursor & enable keyboard
         # cursor_keyboard_termrefresh_enable__sub
@@ -2563,16 +2618,19 @@ dircontent_reprint_selectedpath__sub() {
 
 	#Move-up to the grey horizontal line ABOVE the selected path info
     if [[ "${outputtype__input}" == "${TB_OUTPUT_SOURCE}" ]]; then
-	    tput cuu ${TB_NUMOFLINES_10}
+	    tput cuu ${TB_NUMOFLINES_9}
     else    #outputtype__input = {TB_OUTPUT_DESTINATION|TB_OUTPUT_FILE}
-        tput cuu ${TB_NUMOFLINES_11}
+        tput cuu ${TB_NUMOFLINES_10}
     fi
 
-    #Move to the beginning of line
-    moveto_beginning__func
+    #Get current cursor position and convert directly to an array
+    local cols_tot=$(tput cols)
+
+    #Move-left with length 'cols_tot'
+    tput cub "${cols_tot}"
 
     #Reprint selected path
-    dircontent_show_selectedpath__sub "${path_sel__input}"
+    printf "%s" "${TB_FOURSPACES}${TB_FG_BLUE_45}${path_sel__input}${TB_NOCOLOR}" 
 
     #Restore cursor position and clean until end of line
     tput rc
@@ -2581,64 +2639,39 @@ dircontent_reprint_selectedpath__sub() {
     cursor_keyboard_termrefresh_enable__sub
 }
 
-dircontent_reprint_selectedpath_and_menuoptions__sub() {
-    #Input args
-    local path_sel__input=${1}
-    local outputtype__input=${2}
-    local flag_backupmode_file_handler_isenabled__input=${3}
-
-    #Hide cursor & disable keyboard
-    cursor_keyboard_termrefresh_disable__sub
-
-	#Save cursor position
-	tput sc
-
-	#Move-up to the grey horizontal line ABOVE the selected path info
-    if [[ "${outputtype__input}" == "${TB_OUTPUT_SOURCE}" ]]; then
-	    tput cuu ${TB_NUMOFLINES_10}
-    else    #outputtype__input = {TB_OUTPUT_DESTINATION|TB_OUTPUT_FILE}
-        tput cuu ${TB_NUMOFLINES_11}
-    fi
-
-    #Move to the beginning of line
-    moveto_beginning__func
-    
-
-    #Reprint selected path
-    dircontent_show_selectedpath__sub "${path_sel__input}"
-
-	#Reprint menu-option
-	dircontent_show_menuoptions__sub "${flag_backupmode_file_handler_isenabled__input}"
-
-    #Restore cursor position and clean until end of line
-    tput rc
-
-    #Show cursor & enable keyboard
-    cursor_keyboard_termrefresh_enable__sub
-}
 dircontent_print_confirmed_input__sub() {
     #Input args
     local readdialog_msg__input=${1}
-    local msg__input=${2}
+    local keyinput__input=${2}
 
     #Hide cursor & disable keyboard
-    cursor_keyboard_termrefresh_disable__sub
+    # cursor_keyboard_termrefresh_disable__sub
 
-    #Update message
-    local echomsg="${readdialog_msg__input}${msg__input}"
-    
-    #Clean until the beginning of the line
-    moveup_and_clean__func "${TB_NUMOFLINES_0}"
+    #Get lengths
+    local readdialog_msg_len=$(get_stringlen_wo_color__func "${readdialog_msg__input}")
+    local keyinput_len=${#keyinput__input}
 
-    #Print message
-    echo -e "${echomsg}"
+    #Go to the expected cursor position
+    tput cub 1
 
-    #Move-up one line
-    moveup__func "${TB_NUMOFLINES_1}"
+    #Print 'keyinput__input'
+    printf "%s" "${keyinput__input}"
 
 	#Show cursor & enable keyboard
-	cursor_keyboard_termrefresh_enable__sub
+	# cursor_keyboard_termrefresh_enable__sub
 }
+
+tb_init_bootargs_tmp_write__sub() {
+    #Input args
+    local string__input=${1}
+
+    #Remove file (if present)
+    remove_file__func "${tb_init_bootargs_tmp_fpath}"
+
+    #Write to file
+    echo "${string__input}" | tee "${tb_init_bootargs_tmp_fpath}"
+}
+
 
 
 #---SECTION MAIN-MENU
@@ -2964,15 +2997,24 @@ bootoptions_readdialog_action__sub() {
     esac
 }
 bootoptions_safemode__sub() {
-    #Remove file (if present)
-    remove_file__func "${tb_init_bootargs_tmp_fpath}"
-
-    #Update 'tb_rootfs_ro_set' based on 'tb_overlaymode_set' value.
+    #Update GLOBEL variable
     tb_bootoptions_set="${TB_NOBOOT_IS_TRUE}"
 
-    #Write to file
-    echo "${tb_bootoptions_set}" | tee "${tb_init_bootargs_tmp_fpath}" >/dev/null
+    tb_init_bootargs_tmp_write__sub "${tb_bootoptions_set}"
+
+    # #Remove file (if present)
+    # remove_file__func "${tb_init_bootargs_tmp_fpath}"
+
+    # #Update 'tb_rootfs_ro_set' based on 'tb_overlaymode_set' value.
+    # tb_bootoptions_set="${TB_NOBOOT_IS_TRUE}"
+
+    # #Write to file
+    # echo "${tb_bootoptions_set}" | tee "${tb_init_bootargs_tmp_fpath}" >/dev/null
 }
+
+
+
+#---SECTION: BACKUP-MODE
 bootoptions_backupmode__sub() {
     #Define constants
     local PHASE_BOOTINTO_READDIALOG_BACKUPMODE_SRCPATH=10
@@ -3070,8 +3112,12 @@ bootoptions_backupmode__sub() {
                     echo "tb_srcpath_set: ${tb_srcpath_set}"
                     echo "tb_dstpath_set: ${tb_dstpath_set}"
                     echo "tb_dstfilename_set: ${tb_dstfilename_set}"
-                else
-                    echo "---FAIL---"
+
+                    #Update GLOBEL variable
+                    tb_bootoptions_set="tb_backup=${tb_srcpath_set};${tb_dstfilename_set}"
+
+                    #Write 'bootoptions_set' to file
+                    tb_init_bootargs_tmp_write__sub "${tb_bootoptions_set}"
                 fi
 
                 break
