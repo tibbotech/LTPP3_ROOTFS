@@ -730,6 +730,9 @@ function exit__func() {
     local exitcode__input=${1}
     local numoflines__input=${2}
 
+    #Show cursor, enable keyboard-input, enable terminal refresh
+    cursor_keyboard_termrefresh_enable__sub
+
     #Move-down cursor
     movedown_and_clean__func "${numoflines__input}"
 
@@ -1448,9 +1451,6 @@ function substring_isfound_in_string__func() {
 #---SUBROUTINES
 trap tb_ctrl_c__sub SIGINT
 tb_ctrl_c__sub() {
-	#Show cursor & enable keyboard
-	cursor_keyboard_termrefresh_enable__sub
-
     #Remarks:
     #   'tb_numoflines_correction' has been implemented due to 
     #       subroutine 'bootoptions_backupmode_dstfilename_choice_and_action__sub'
@@ -1492,7 +1492,7 @@ dircontent_get_and_show_handler__sub() {
     local flag_show_menuitem_index_isenabled__input=${11}
 
 
-    #Hide cursor & disable keyboard
+    #Hide cursor, disable keyboard-input, disable terminal refresh
     cursor_keyboard_termrefresh_disable__sub
 
 
@@ -1540,7 +1540,7 @@ dircontent_get_and_show_handler__sub() {
     dircontent_show_menuoptions__sub "${flag_show_menuitem_index_isenabled__input}"
 
 
-	#Show cursor & enable keyboard
+	#Show cursor, enable keyboard-input, enable terminal refresh
 	cursor_keyboard_termrefresh_enable__sub
 }
 dircontent_get_data__sub() {
@@ -1643,7 +1643,7 @@ dircontent_show_title__sub() {
     #Input args
     local outputtype__input=${1}
 
-    #Hide cursor & disable keyboard
+    #Hide cursor, disable keyboard-input, disable terminal refresh
     cursor_keyboard_termrefresh_disable__sub
 
     case "${outputtype__input}" in
@@ -1668,7 +1668,7 @@ dircontent_show_title__sub() {
             "${TB_TABLEWIDTH}"
     print_duplicate_char__func "${TB_DASH}" "${TB_TABLEWIDTH}" "${TB_FG_GREY_243}"
 
-	#Show cursor & enable keyboard
+	#Show cursor, enable keyboard-input, enable terminal refresh
 	cursor_keyboard_termrefresh_enable__sub
 }
 dircontent_show_arraycontent__sub() {
@@ -2727,6 +2727,7 @@ dircontent_reprint_selectedpath__sub() {
 	#Save cursor position
 	tput sc
 
+    #Hide cursor, disable keyboard-input, disable terminal refresh
     cursor_keyboard_termrefresh_disable__sub
 
 	#Move-up to the grey horizontal line ABOVE the selected path info
@@ -2745,6 +2746,7 @@ dircontent_reprint_selectedpath__sub() {
     #Reprint selected path
     printf "%s" "${TB_FOURSPACES}${TB_FG_BLUE_45}${path_sel__input}${TB_NOCOLOR}" 
 
+    #Show cursor, enable keyboard-input, enable terminal refresh
     cursor_keyboard_termrefresh_enable__sub
 
     #Restore cursor position and clean until end of line
@@ -3363,6 +3365,9 @@ bootoptions_backupmode_exit__sub() {
         #Write 'bootoptions_set' to file
         tb_init_bootargs_tmp_write__sub "${tb_bootoptions_set}"
     fi
+
+    #Show cursor, enable keyboard-input, enable terminal refresh
+    cursor_keyboard_termrefresh_enable__sub
 }
 
 
