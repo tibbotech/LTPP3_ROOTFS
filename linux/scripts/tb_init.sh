@@ -881,58 +881,6 @@ fi
 
 
 #---ADDITIONAL PARTITIONS
-if [[ ! -d /mydata1 ]]; then
-  if [[ ${flag_root_is_remounted} == false ]]; then
-    echo "---:STATUS: remounting /"
-    mount -o remount,rw / #remounting root in emmc as writeable
-  fi
-
-  echo "---:STATUS: create directory /mydata1"
-  mkdir /mydata1
-
-  echo "---:STATUS: creating /dev/mmcblk0p11"
-  ${usr_sbin_mkfsext4} /dev/mmcblk0p11
-fi
-
-if [[ ! -d /mydata2 ]]; then
-  if [[ ${flag_root_is_remounted} == false ]]; then
-    echo "---:STATUS: remounting /"
-    mount -o remount,rw / #remounting root in emmc as writeable
-  fi
-
-  echo "---:STATUS: create directory /mydata2"
-  mkdir /mydata2
-
-  echo "---:STATUS: creating /dev/mmcblk0p12"
-  ${usr_sbin_mkfsext4} /dev/mmcblk0p12
-fi
-
-if [[ ! -d /mydata1 ]]; then
-  if [[ ${flag_root_is_remounted} == false ]]; then
-    echo "---:STATUS: remounting /"
-    mount -o remount,rw / #remounting root in emmc as writeable
-  fi
-
-  echo "---:STATUS: create directory /mydata1"
-  mkdir /mydata1
-
-  echo "---:STATUS: creating /dev/mmcblk0p11"
-  ${usr_sbin_mkfsext4} /dev/mmcblk0p11
-fi
-
-if [[ ! -d /mydata2 ]]; then
-  if [[ ${flag_root_is_remounted} == false ]]; then
-    echo "---:STATUS: remounting /"
-    mount -o remount,rw / #remounting root in emmc as writeable
-  fi
-
-  echo "---:STATUS: create directory /mydata2"
-  mkdir /mydata2
-
-  echo "---:STATUS: creating /dev/mmcblk0p12"
-  ${usr_sbin_mkfsext4} /dev/mmcblk0p12
-fi
-
 
 
 #---MOUNT /TB_RESERVE (to check if /tb_reserve/.tb_init_bootargs.tmp is present)
@@ -1145,23 +1093,23 @@ if [ ! -z ${tb_overlay} ]; then
 
     #create /overlay if it doesn't exist
     if [ ! -d ${overlay_dir} ]; then    
-            if [[ ${flag_rootfs_is_remounted} == false ]]; then
-                echo -e "------:TB_INIT:-:REMOUNT: ${rootfs_dir}"
-                mount -o remount,rw ${rootfs_dir} #remounting root in emmc as writeable
+        if [[ ${flag_rootfs_is_remounted} == false ]]; then
+            echo -e "------:TB_INIT:-:REMOUNT: ${rootfs_dir}"
+            mount -o remount,rw ${rootfs_dir} #remounting root in emmc as writeable
 
-                #Create dir
-                if [[ ! -d ${rootfs_etc_tibbo_uboot_dir} ]]; then
-                    echo -e "------:TB_INIT:-:CREATE: ${rootfs_etc_tibbo_uboot_dir}"
-                    mkdir -p ${rootfs_etc_tibbo_uboot_dir}
-                fi
+            #Create dir
+            if [[ ! -d ${rootfs_etc_tibbo_uboot_dir} ]]; then
+                echo -e "------:TB_INIT:-:CREATE: ${rootfs_etc_tibbo_uboot_dir}"
+                mkdir -p ${rootfs_etc_tibbo_uboot_dir}
             fi
+        fi
 
-            echo -e "------:TB_INIT:-:CREATE: ${overlay_dir}"
-            mkdir ${overlay_dir}
+        echo -e "------:TB_INIT:-:CREATE: ${overlay_dir}"
+        mkdir ${overlay_dir}
 
-            #Create an 'ext4' partition '/dev/mmcblk0p9'
-            echo -e "------:TB_INIT:-:CREATE: ext4-partition ${tb_overlay}"
-            ${usr_sbin_mkfsext4} ${tb_overlay}
+        #Create an 'ext4' partition '/dev/mmcblk0p9'
+        echo -e "------:TB_INIT:-:CREATE: ext4-partition ${tb_overlay}"
+        ${usr_sbin_mkfsext4} ${tb_overlay}
     fi
 
 #---UNMOUNT /TB_RESERVE
