@@ -914,8 +914,8 @@ else
         echo -e "---:TB-INIT:-:READ: ${tb_init_bootargs_cfg_fpath}"
         tb_init_bootargs_cfg_result=$(cat ${tb_init_bootargs_cfg_fpath})
 
-        if [[ ${tb_init_bootargs_cfg_result} == *"tb_rootfs_ro=true"* ]]; then  #pattern 'tb_rootfs_ro=true' is found
-            if [[ ${proc_cmdline_result} != *"tb_rootfs_ro"* ]]; then
+        if [[ ${tb_init_bootargs_cfg_result} == *"tb_rootfs_ro=true"* ]]; then  #'tb_rootfs_ro=true' is found in 'tb_init_bootargs.cfg'
+            if [[ ${proc_cmdline_result} != *"tb_rootfs_ro"* ]]; then   #'tb_rootfs_ro=true' is NOT found
                 echo -e "---:TB-INIT:-:INCLUDE: ${PATTERN_TB_ROOTFS_RO_IS_TRUE}"
                 cmdline_output="${proc_cmdline_result} ${PATTERN_TB_ROOTFS_RO_IS_TRUE}"
             else
@@ -926,7 +926,7 @@ else
                         "${DEV_MMCBLK0P9}" \
                         "${tb_reserve_dir}"
             fi
-        else    #pattern 'tb_rootfs_ro=true' is NOT found
+        else    #'tb_rootfs_ro=true' is NOT found in 'tb_init_bootargs.cfg'
             if [[ ${proc_cmdline_result} == *"tb_rootfs_ro"* ]]; then
                 echo -e "---:TB-INIT:-:EXCLUDE: ${PATTERN_TB_ROOTFS_RO_IS_TRUE}"
                 cmdline_output=$(sed "s/${PATTERN_TB_ROOTFS_RO_IS_TRUE}//g" "${proc_cmdline_fpath}")
@@ -993,6 +993,15 @@ if [[ ${cmdline_output} == *"tb_noboot"* ]]; then
     echo -e "---:TB-INIT:-:RESULT: tb_noboot=${tb_noboot}"
 else
     tb_noboot=""
+fi
+
+#if cmdline_output contains the string "tb_normalboot"
+if [[ ${cmdline_output} == *"tb_normalboot"* ]]; then
+    tb_normalboot=$(echo ${cmdline_output} | grep -oP 'tb_normalboot=\K[^ ]*')
+
+    echo -e "---:TB-INIT:-:RESULT: tb_normalboot=${tb_normalboot}"
+else
+    tb_normalboot=""
 fi
 
 
@@ -1071,14 +1080,22 @@ fi
 
 
 
-#---SAFEMODE SECTION
+#---CLEAN-BOOT SECTION
 #if tb_noboot is set, then boot to minimal system
 if [ ! -z ${tb_noboot} ]; then
+    echo -e "---:TB_INIT:-:BOOT-MODE: clean (without overlay)"
+
     while [ 1 ]; do
         bin_bash_handler__func
     done
 fi
 
+
+
+#---NORMAL-BOOT SECTION
+if [ ! -z ${tb_normalboot} ]; then
+    echo -e "---:TB_INIT:-:BOOT-MODE: normal (without overlay)"
+fi 
 
 
 #---OVERLAY SECTION

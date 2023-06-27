@@ -106,9 +106,9 @@ TB_MODE_ISPBOOOTBIN_BOOTSEQ_USB0USB1SD="USB0>USB1>SD"
 TB_MODE_ISPBOOOTBIN_BOOTSEQ_USB1SDUSB0="USB1>SD>USB0"
 TB_MODE_ISPBOOOTBIN_BOOTSEQ_USB1USB0SD="USB1>USB0>SD"
 TB_MODE_BACKUPMODE="backup-mode"
-TB_MODE_CLEAN_BOOT="clean-boot"
+TB_MODE_CLEANBOOT="clean-boot"
 TB_MODE_DISABLED="disabled"
-TB_MODE_NORMAL_BOOT="normal-boot"
+TB_MODE_NORMALBOOT="normal-boot"
 TB_MODE_RESTOREMODE="restore-mode"
 # TB_MODE_SAFEMODE="safe-mode"
 TB_MODE_NONPERSISTENT="non-persistent"
@@ -196,10 +196,13 @@ TB_ROOTFS_RO_IS_NULL="tb_rootfs_ro=null"
 TB_ROOTFS_RO_IS_TRUE="tb_rootfs_ro=true"
 
 #---PATTERN CONSTANTS
+TB_PATTERN_INIT="init"
 TB_PATTERN_LBRACKET_D_RBRACKET="[d]"
+TB_PATTERN_LRWXRWXRWX="lrwxrwxrwx"
 TB_PATTERN_MMCBLK0="mmcblk0"
 TB_PATTERN_TB_BACKUP="tb_backup"
 TB_PATTERN_TB_NOBOOT="tb_noboot"
+TB_PATTERN_TB_NORMALBOOT="tb_normalboot"
 TB_PATTERN_TB_OVERLAY="tb_overlay"
 TB_PATTERN_TB_RESTORE="tb_restore"
 TB_PATTERN_TB_ROOTFS_RO="tb_rootfs_ro"
@@ -259,6 +262,10 @@ tb_proc_dir="/proc"
 tb_rootfs_dir="/"
 tb_tb_reserve_dir="/tb_reserve"
 tb_tmp_dir="/tmp"
+tb_sbin_dir="/sbin"
+tb_usr_sbin_dir="/usr/sbin"
+
+tb_tb_init_sh="tb_init.sh"
 
 tb_init_backup_lst_fpath=${tb_tb_reserve_dir}/.tb_init_backup.lst
 tb_init_bootargs_cfg_fpath=${tb_tb_reserve_dir}/.tb_init_bootargs.cfg
@@ -271,6 +278,8 @@ tb_init_bootseq_usb1sdusb0_fpath=${tb_tb_reserve_dir}/.tb_init_bootseq_usb1sdusb
 tb_init_bootseq_usb1usb0sd_fpath=${tb_tb_reserve_dir}/.tb_init_bootseq_usb1usb0sd
 tb_overlay_current_cfg_fpath=${tb_tb_reserve_dir}/.tb_overlay_current.cfg
 tb_proc_cmdline_fpath=${tb_proc_dir}/cmdline
+tb_sbin_tb_init_sh_fpath=${tb_usr_sbin_dir}/${tb_tb_init_sh}
+tb_usr_sbin_tb_init_sh_fpath=${tb_sbin_dir}/${tb_tb_init_sh}
 
 
 
@@ -299,8 +308,6 @@ tb_mainmenu_mychoice="${TB_EMPTYSTRING}"
 tb_overlaymode_set="${TB_EMPTYSTRING}"
 tb_overlaymode_set_printable="${TB_EMPTYSTRING}"
 tb_overlaymode_tag="${TB_EMPTYSTRING}"
-
-tb_proc_cmdline_tb_overlay_get="${TB_EMPTYSTRING}"
 tb_proc_cmdline_tb_rootfs_ro_get="${TB_EMPTYSTRING}"
 tb_remark="${TB_EMPTYSTRING}"
 
@@ -1005,12 +1012,6 @@ function extract_if_and_of_from_string__func() {
 }
 
 function extract_overlaymode_info__func() {
-    #Get 'tb_overlay' value (if present)
-    tb_proc_cmdline_tb_overlay_get="${TB_EMPTYSTRING}"
-    if [[ -f "${tb_proc_cmdline_fpath}" ]]; then
-        tb_proc_cmdline_tb_overlay_get=$(grep -o "${TB_PATTERN_TB_OVERLAY}.*" "${tb_proc_cmdline_fpath}")
-    fi
-
     #Get 'tb_rootfs_ro' values from 2 files (if present)
     tb_proc_cmdline_tb_rootfs_ro_get="${TB_EMPTYSTRING}"
     if [[ -f "${tb_proc_cmdline_fpath}" ]]; then
@@ -1061,47 +1062,45 @@ function extract_overlaymode_info__tb_overlaymode_set_and_tag____func() {
     tb_overlaymode_set="${TB_MODE_DISABLED}"
 
     #Validate overlay-mode (persistent or non-persistent)
-    if [[ -n "${tb_proc_cmdline_tb_overlay_get}" ]]; then
-        #Determine the 'tb_overlaymode_set'
-        if [[ -z ${tb_init_bootargs_cfg_tb_rootfs_ro_get} ]]; then  #tb_rootfs_ro is NOT set in '/tb_reserve/tb_init_bootargs.cfg'
-            if [[ -z ${tb_proc_cmdline_tb_rootfs_ro_get} ]]; then  #tb_rootfs_ro is NOT set in '/proc/cmdline'
-                tb_overlaymode_set="${TB_MODE_PERSISTENT}"
-            else    #tb_rootfs_ro is set in '/proc/cmdline'
-                tb_overlaymode_set="${TB_MODE_NONPERSISTENT}"
+    #Determine the 'tb_overlaymode_set'
+    if [[ -z ${tb_init_bootargs_cfg_tb_rootfs_ro_get} ]]; then  #tb_rootfs_ro is NOT set in '/tb_reserve/tb_init_bootargs.cfg'
+        if [[ -z ${tb_proc_cmdline_tb_rootfs_ro_get} ]]; then  #tb_rootfs_ro is NOT set in '/proc/cmdline'
+            tb_overlaymode_set="${TB_MODE_PERSISTENT}"
+        else    #tb_rootfs_ro is set in '/proc/cmdline'
+            tb_overlaymode_set="${TB_MODE_NONPERSISTENT}"
+        fi
+    else    #tb_rootfs_ro is set in '/tb_reserve/tb_init_bootargs.cfg'
+        if [[ "${tb_init_bootargs_cfg_tb_rootfs_ro_get}" == "${TB_ROOTFS_RO_IS_NULL}" ]]; then
+            tb_overlaymode_set="${TB_MODE_PERSISTENT}"
+
+            if [[ -z "${tb_proc_cmdline_tb_rootfs_ro_get}" ]]; then  #tb_rootfs_ro is NOT set in '/proc/cmdline'
+                flag_file_can_be_removed=true
+            else    #tb_rootfs_ro is already set in '/proc/cmdline'
+                flag_file_can_be_removed=false
             fi
-        else    #tb_rootfs_ro is set in '/tb_reserve/tb_init_bootargs.cfg'
-            if [[ "${tb_init_bootargs_cfg_tb_rootfs_ro_get}" == "${TB_ROOTFS_RO_IS_NULL}" ]]; then
-                tb_overlaymode_set="${TB_MODE_PERSISTENT}"
+        else    #tb_init_bootargs_cfg_tb_rootfs_ro_get = true
+            tb_overlaymode_set="${TB_MODE_NONPERSISTENT}"
 
-                if [[ -z "${tb_proc_cmdline_tb_rootfs_ro_get}" ]]; then  #tb_rootfs_ro is NOT set in '/proc/cmdline'
-                    flag_file_can_be_removed=true
-                else    #tb_rootfs_ro is already set in '/proc/cmdline'
-                    flag_file_can_be_removed=false
-                fi
-            else    #tb_init_bootargs_cfg_tb_rootfs_ro_get = true
-                tb_overlaymode_set="${TB_MODE_NONPERSISTENT}"
-
-                if [[ "${tb_proc_cmdline_tb_rootfs_ro_get}" == "${TB_ROOTFS_RO_IS_TRUE}" ]]; then  #tb_rootfs_ro is already set in '/proc/cmdline'
-                    flag_file_can_be_removed=true
-                else    #tb_rootfs_ro is NOT set in '/proc/cmdline'
-                    flag_file_can_be_removed=false
-                fi
+            if [[ "${tb_proc_cmdline_tb_rootfs_ro_get}" == "${TB_ROOTFS_RO_IS_TRUE}" ]]; then  #tb_rootfs_ro is already set in '/proc/cmdline'
+                flag_file_can_be_removed=true
+            else    #tb_rootfs_ro is NOT set in '/proc/cmdline'
+                flag_file_can_be_removed=false
             fi
         fi
+    fi
 
-        #Determine the 'tb_overlaymode_tag'
-        if [[ "${tb_overlaymode_set}" == "${TB_MODE_PERSISTENT}" ]]; then
-            if [[ "${tb_overlay_current_cfg_tb_rootfs_ro_get}" == "${TB_ROOTFS_RO_IS_EMPTYSTRING}" ]]; then
-                tb_overlaymode_tag="${TB_LEGEND_SAME}"
-            else    #tb_overlay_current_cfg_tb_rootfs_ro_get = TB_ROOTFS_RO_IS_TRUE
-                tb_overlaymode_tag="${TB_LEGEND_NEW}"
-            fi
-        else    #tb_overlaymode_set = TB_MODE_NONPERSISTENT
-            if [[ "${tb_overlay_current_cfg_tb_rootfs_ro_get}" == "${TB_ROOTFS_RO_IS_TRUE}" ]]; then
-                tb_overlaymode_tag="${TB_LEGEND_SAME}"
-            else    #tb_overlay_current_cfg_tb_rootfs_ro_get = TB_ROOTFS_RO_IS_EMPTYSTRING
-                tb_overlaymode_tag="${TB_LEGEND_NEW}"
-            fi
+    #Determine the 'tb_overlaymode_tag'
+    if [[ "${tb_overlaymode_set}" == "${TB_MODE_PERSISTENT}" ]]; then
+        if [[ "${tb_overlay_current_cfg_tb_rootfs_ro_get}" == "${TB_ROOTFS_RO_IS_EMPTYSTRING}" ]]; then
+            tb_overlaymode_tag="${TB_LEGEND_SAME}"
+        else    #tb_overlay_current_cfg_tb_rootfs_ro_get = TB_ROOTFS_RO_IS_TRUE
+            tb_overlaymode_tag="${TB_LEGEND_NEW}"
+        fi
+    else    #tb_overlaymode_set = TB_MODE_NONPERSISTENT
+        if [[ "${tb_overlay_current_cfg_tb_rootfs_ro_get}" == "${TB_ROOTFS_RO_IS_TRUE}" ]]; then
+            tb_overlaymode_tag="${TB_LEGEND_SAME}"
+        else    #tb_overlay_current_cfg_tb_rootfs_ro_get = TB_ROOTFS_RO_IS_EMPTYSTRING
+            tb_overlaymode_tag="${TB_LEGEND_NEW}"
         fi
     fi
 }
@@ -1118,6 +1117,7 @@ function extract_bootoptions_info__func() {
     local bootoptions_get_if="${TB_EMPTYSTRING}"
     local bootoptions_get_of="${TB_EMPTYSTRING}"
     local noboot_result="${TB_EMPTYSTRING}"
+    local normalboot_result="${TB_EMPTYSTRING}"
     local restore_result="${TB_EMPTYSTRING}"
 
     #Get 'tb_backup', 'tb_noboot', tb_restore' values (if present)
@@ -1125,6 +1125,7 @@ function extract_bootoptions_info__func() {
         backup_result=$(grep -o "${TB_PATTERN_TB_BACKUP}.*" "${tb_init_bootargs_tmp_fpath}")
         restore_result=$(grep -o "${TB_PATTERN_TB_RESTORE}.*" "${tb_init_bootargs_tmp_fpath}")
         noboot_result=$(grep -o "${TB_PATTERN_TB_NOBOOT}.*" "${tb_init_bootargs_tmp_fpath}")
+        normalboot_result=$(grep -o "${TB_PATTERN_TB_NORMALBOOT}.*" "${tb_init_bootargs_tmp_fpath}")
     fi
    
     #Initialize global variables
@@ -1137,13 +1138,6 @@ function extract_bootoptions_info__func() {
     #Remarks:
     #   sed 's/\s+//g': remove whitespaces
     #   tr -d '\r': remove carriage return
-    if [[ -n "${noboot_result}" ]]; then
-        tb_bootoptions_get=$(echo "${noboot_result}" | cut -d"=" -f2 | sed 's/\s+//g' | tr -d '\r')
-
-        tb_bootoptions_set="${TB_MODE_CLEAN_BOOT}"
-
-        tb_bootoptions_status="${TB_LEGEND_NEW_PRIORITY}"
-    fi
     if [[ -n "${backup_result}" ]]; then
         tb_bootoptions_get=$(echo "${backup_result}" | cut -d"=" -f2 | sed 's/\s+//g' | tr -d '\r')
 
@@ -1155,6 +1149,20 @@ function extract_bootoptions_info__func() {
         tb_bootoptions_get=$(echo "${restore_result}" | cut -d"=" -f2 | sed 's/\s+//g' | tr -d '\r')
 
         tb_bootoptions_set="${TB_MODE_RESTOREMODE}"
+
+        tb_bootoptions_status="${TB_LEGEND_NEW_PRIORITY}"
+    fi
+    if [[ -n "${noboot_result}" ]]; then
+        tb_bootoptions_get=$(echo "${noboot_result}" | cut -d"=" -f2 | sed 's/\s+//g' | tr -d '\r')
+
+        tb_bootoptions_set="${TB_MODE_CLEANBOOT}"
+
+        tb_bootoptions_status="${TB_LEGEND_NEW_PRIORITY}"
+    fi
+    if [[ -n "${normalboot_result}" ]]; then
+        tb_bootoptions_get=$(echo "${normalboot_result}" | cut -d"=" -f2 | sed 's/\s+//g' | tr -d '\r')
+
+        tb_bootoptions_set="${TB_MODE_NORMALBOOT}"
 
         tb_bootoptions_status="${TB_LEGEND_NEW_PRIORITY}"
     fi
@@ -3328,18 +3336,85 @@ tb_init_bootargs_tmp_write__sub() {
 
 
 #---SECTION MAIN-MENU
-mainmenu_checkif_user_is_root__func() {
+mainmenu_precheck_handler__sub() {
+    mainmenu_precheck_user_isvalid__sub
+    mainmenu_precheck_softlink_init_isvalid__sub
+    mainmenu_precheck_overlay_isvalid__sub
+}
+mainmenu_precheck_user_isvalid__sub() {
     #Define variables
-    local errormsg="${TB_PRINT_ERROR}: Please run as 'sudoer' or 'root'\n"
+    local errormsg="${TB_PRINT_ERROR}: Please run as 'sudoer' or 'root'.\n"
+    errormsg+="${TB_PRINT_ERROR}: Exiting now..."
 
     if [[ $EUID != 0 ]]; then
         movedown_and_clean__func "${TB_NUMOFLINES_2}"
         echo -e "${errormsg}"
-        movedown_and_clean__func "${TB_NUMOFLINES_1}"
+        movedown_and_clean__func "${TB_NUMOFLINES_2}"
 
         exit "${TB_EXITCODE_99}"
     fi
 }
+mainmenu_precheck_softlink_init_isvalid__sub() {
+    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    # This subroutine checks whether '/sbin/init' is linked to:
+    #   '/sbin/tb_init.sh'
+    # or
+    #   '/usr/sbin/tb_init.sh'
+    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    #Check if 'init' is linked to /sbin/tb_init.sh
+    local islinkedto=$(ls -l "${tb_sbin_dir}${TB_SLASH}" | \
+            grep -w "${TB_PATTERN_INIT}" | \
+            grep "${TB_PATTERN_LRWXRWXRWX}" | \
+            grep "${tb_sbin_tb_init_sh_fpath}")
+
+    if [[ -z "${islinkedto}" ]]; then   #is NOT linked to '/sbin/tb_init.sh'
+        #Check if 'init' is linked to /usr/sbin/tb_init.sh
+        islinkedto=$(ls -l "${tb_usr_sbin_dir}${TB_SLASH}" | \
+                    grep -w "${TB_PATTERN_INIT}" | \
+                    grep "${TB_PATTERN_LRWXRWXRWX}" | \
+                    grep "${tb_usr_sbin_tb_init_sh_fpath}")
+    fi
+
+    if [[ -z "${islinkedto}" ]]; then   #is NOT linked to '/usr/sbin/tb_init.sh'
+         islinkedto=$(ls -l "${tb_usr_sbin_dir}${TB_SLASH}" | \
+                    grep -w "${TB_PATTERN_INIT}" | \
+                    grep "${TB_PATTERN_LRWXRWXRWX}" | \
+                    cut -d'>' -f2 | \
+                    sed 's/^ *//g')
+
+        local errormsg="${TB_PRINT_ERROR}: ${TB_FG_GREY_246}init${TB_NOCOLOR} is *NOT* linked to ${TB_FG_GREY_246}${tb_tb_init_sh}${TB_NOCOLOR}.\n"
+        errormsg+="${TB_PRINT_ERROR}: But ${TB_FG_GREY_246}init${TB_NOCOLOR} is linked to ${TB_FG_GREY_246}${islinkedto}${TB_NOCOLOR}.\n"
+        errormsg+="${TB_PRINT_ERROR}: Exiting now..."
+        movedown_and_clean__func "${TB_NUMOFLINES_2}"
+        echo -e "${errormsg}"
+        movedown_and_clean__func "${TB_NUMOFLINES_2}"
+
+        exit "${TB_EXITCODE_99}"
+    fi
+}
+mainmenu_precheck_overlay_isvalid__sub() {
+    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    # This subroutine checks whether pattern 'tb_overlay' 
+    #   is present in file '/proc/cmdline.
+    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    #Check if 'tb_overlay' is present in '/proc/cmdline'
+    local ispresent="${TB_EMPTYSTRING}"
+    if [[ -f "${tb_proc_cmdline_fpath}" ]]; then
+        ispresent=$(grep -o "${TB_PATTERN_TB_OVERLAY}.*" "${tb_proc_cmdline_fpath}")
+    fi
+
+    if [[ -z "${ispresent}" ]]; then   #is NOT present
+        local errormsg="${TB_PRINT_ERROR}: ${TB_FG_GREY_246}tb_overlay${TB_NOCOLOR} is *NOT* found in ${TB_FG_GREY_246}${tb_proc_cmdline_fpath}${TB_NOCOLOR}.\n"
+        errormsg+="${TB_PRINT_ERROR}: This may be the case if ${TB_FG_GREY_246}overlay${TB_NOCOLOR} is *NOT* enabled.\n"
+        errormsg+="${TB_PRINT_ERROR}: Exiting now..."
+        movedown_and_clean__func "${TB_NUMOFLINES_2}"
+        echo -e "${errormsg}"
+        movedown_and_clean__func "${TB_NUMOFLINES_2}"
+
+        exit "${TB_EXITCODE_99}"
+    fi
+}
+
 mainmenu_extract_info__func() {
     #Remark:
     #   This function will pass values to global variables 'tb_overlaymode_set' and 'tb_overlaymode_set_printable'
@@ -3361,43 +3436,18 @@ mainmenu_print_title__sub() {
     print_duplicate_char__func "${TB_DASH}" "${TB_TABLEWIDTH}" "${TB_NOCOLOR}"
 }
 mainmenu_print_body__sub() {
-    #Update 'print_menuitem_1', 'print_menuitem_2, 'print_menuitem_3' based on
-    #   whether 'tb_proc_cmdline_tb_overlay_get' is an Empty String or Not.
-    #In other words, whether 'tb_overlay' is found in '/proc/cmdline' or not.
+    #Update 'print_menuitem_1', 'print_menuitem_2, 'print_menuitem_3'
     local print_menuitem_1="${TB_EMPTYSTRING}"
     local print_menuitem_2="${TB_EMPTYSTRING}"
     local print_menuitem_3="${TB_EMPTYSTRING}"
 
-    if [[ -z "${tb_proc_cmdline_tb_overlay_get}" ]]; then
-        print_menuitem_1="${TB_FG_GREY_246}"
-        print_menuitem_2="${TB_FG_GREY_246}"
-        print_menuitem_3="${TB_FG_GREY_246}"
-    fi
-    
     print_menuitem_1+="${TB_ITEMNUM_1}. ${TB_MENUITEM_OVERLAYMODE} "
-    if [[ -z "${tb_proc_cmdline_tb_overlay_get}" ]]; then
-        print_menuitem_2+="${TB_ITEMNUM_2}. ${TB_MENU_WO_NOCOLOR}"
-        print_menuitem_3+="${TB_ITEMNUM_3}. ${TB_MENU_WO_NOCOLOR}"
-    else
-        print_menuitem_2+="${TB_ITEMNUM_2}. ${TB_MENU}"
-        print_menuitem_3+="${TB_ITEMNUM_3}. ${TB_MENU}"
-    fi
-
-    if [[ -z "${tb_proc_cmdline_tb_overlay_get}" ]]; then
-        tb_overlaymode_set_printable="${TB_MODE_DISABLED}"
-        tb_bootoptions_set_printable="${TB_MODE_DISABLED}"
-        tb_ispboootbin_bootseq_printable="${TB_MODE_ISPBOOOTBIN_BOOTSEQ_SDUSB0USB1}"
-    fi
+    print_menuitem_2+="${TB_ITEMNUM_2}. ${TB_MENU}"
+    print_menuitem_3+="${TB_ITEMNUM_3}. ${TB_MENU}"
 
     print_menuitem_1+="(${tb_overlaymode_set_printable})"
     print_menuitem_2+="${TB_MENUITEM_BOOTOPTIONS} (${tb_bootoptions_set_printable})"
     print_menuitem_3+="${TB_MENUITEM_ISPBOOOTBIN_BOOTSEQ} (${tb_ispboootbin_bootseq_printable})"
-
-    if [[ -z "${tb_proc_cmdline_tb_overlay_get}" ]]; then
-        print_menuitem_1+="${TB_NOCOLOR}"
-        print_menuitem_2+="${TB_NOCOLOR}"
-        print_menuitem_3+="${TB_NOCOLOR}"
-    fi
 
     #Print body
     print_menuitem__func "${TB_FOURSPACES}" \
@@ -3460,15 +3510,6 @@ mainmenu_print_remark__sub() {
     print_duplicate_char__func "${TB_DASH}" "${TB_TABLEWIDTH}" "${TB_NOCOLOR}"
 }
 mainmenu_readdialog_choice__sub() {
-    #Define and initialize variables
-    local regex="${TB_MAINMENU_MYCHOICE_REGEX}"
-
-    #Update 'regex' based on whether 'tb_proc_cmdline_tb_overlay_get' is an Empty String or Not.
-    #In other words, whether 'tb_overlay' is found in '/proc/cmdline' or not.
-    if [[ -z "${tb_proc_cmdline_tb_overlay_get}" ]]; then
-        regex="${TB_RQ_REGEX}"
-    fi
-    
     while [[ 1 ]]
     do
         #Select an option
@@ -3477,7 +3518,7 @@ mainmenu_readdialog_choice__sub() {
 
         #Only continue if a valid option is selected
         if [[ ! -z ${tb_mainmenu_mychoice} ]]; then
-            if [[ ${tb_mainmenu_mychoice} =~ ${regex} ]]; then
+            if [[ ${tb_mainmenu_mychoice} =~ ${TB_MAINMENU_MYCHOICE_REGEX} ]]; then
                 movedown_and_clean__func "${TB_NUMOFLINES_1}"
 
                 break
@@ -3580,7 +3621,7 @@ bootoptions_title_print__sub() {
 }
 bootoptions_body_print__sub() {
     #Define and initialize variables
-    local print_cleanboot="${TB_MODE_CLEAN_BOOT}"
+    local print_cleanboot="${TB_MODE_CLEANBOOT}"
     local print_backupmode="${TB_MODE_BACKUPMODE}"
     local print_restoremode="${TB_MODE_RESTOREMODE}"
     local print_disabled="${TB_MODE_DISABLED}"
@@ -3589,7 +3630,7 @@ bootoptions_body_print__sub() {
     extract_bootoptions_info__func
 
     #Update variables (if appliable)
-    if [[ "${tb_bootoptions_set}" != "${TB_MODE_CLEAN_BOOT}" ]]; then
+    if [[ "${tb_bootoptions_set}" != "${TB_MODE_CLEANBOOT}" ]]; then
         print_cleanboot="${TB_FG_GREY_246}${print_cleanboot} (false)${TB_NOCOLOR}"
     else
         print_cleanboot="${print_cleanboot} (true)"
@@ -3604,7 +3645,7 @@ bootoptions_body_print__sub() {
     else
         print_restoremode="${print_restoremode} (true)"
     fi
-    if [[ "${tb_bootoptions_set}" == "${TB_MODE_CLEAN_BOOT}" ]] || \
+    if [[ "${tb_bootoptions_set}" == "${TB_MODE_CLEANBOOT}" ]] || \
             [[ "${tb_bootoptions_set}" == "${TB_MODE_BACKUPMODE}" ]] || \
             [[ "${tb_bootoptions_set}" == "${TB_MODE_RESTOREMODE}" ]]; then
         print_disabled="${TB_FG_GREY_246}${print_disabled}${TB_NOCOLOR}"
@@ -3643,7 +3684,7 @@ bootoptions_remark_print__sub() {
         return 0;
     fi
 
-    if [[ "${tb_bootoptions_set}" == "${TB_MODE_CLEAN_BOOT}" ]]; then
+    if [[ "${tb_bootoptions_set}" == "${TB_MODE_CLEANBOOT}" ]]; then
         return 0;
     fi
 
@@ -4386,7 +4427,7 @@ reboot__sub() {
 
 #---MAIN SUBROUTINE
 main__sub() {
-    mainmenu_checkif_user_is_root__func
+    mainmenu_precheck_handler__sub
 
     while [[ 1 ]]
     do
