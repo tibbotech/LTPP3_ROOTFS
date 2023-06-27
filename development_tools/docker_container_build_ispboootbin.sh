@@ -542,9 +542,10 @@ docker__overlay__sub() {
                 #   'docker__overlaysetting_set' is retrieved in this subroutine
                 docker__overlay_docker_fs_partition_conf_check_handler__sub
 
-                if [[ "${docker__overlaysetting_set}" == "${DOCKER__OVERLAYFS_DISABLED}" ]]; then
+                #Check if 'docker__overlaysetting_set = DOCKER__OVERLAYFS_DISABLED'
+                if [[ "${docker__overlaysetting_set}" == "${DOCKER__OVERLAYFS_DISABLED}" ]]; then   #is disabled
                     phase="${PHASE_OVERLAY_RESTORE_ORG_FILES}"
-                else
+                else    #is NOT disabled
                     phase="${PHASE_OVERLAY_DOCKER_FS_PARTITION_DISKPARTSIZE_CHECK_AND_CONVERT}"
                 fi
                 ;;
@@ -1860,6 +1861,8 @@ docker__overlay_restore_original_state__sub() {
     remove_file__func "${docker__containerid}" \
             "${docker__SP7021_linux_rootfs_initramfs_disk_sbin_tb_init_sh__fpath}" \
             "${DOCKER__SEVENDASHES_COLON}"
+
+    #/usr/sbin/tb_init_bootmenu has to be removed here
 }
 
 docker__run_script__sub() {

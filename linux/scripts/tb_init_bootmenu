@@ -110,7 +110,6 @@ TB_MODE_CLEANBOOT="clean-boot"
 TB_MODE_DISABLED="disabled"
 TB_MODE_NORMALBOOT="normal-boot"
 TB_MODE_RESTOREMODE="restore-mode"
-# TB_MODE_SAFEMODE="safe-mode"
 TB_MODE_NONPERSISTENT="non-persistent"
 TB_MODE_PERSISTENT="persistent"
 
@@ -190,7 +189,9 @@ TB_NUMOFLINES_12=12
 TB_TRAPNUM_2=2
 
 #---OPTION CONSTANTS
+#Please note: 'tb_noboot' corresponds with 'clean-boot'
 TB_NOBOOT_IS_TRUE="tb_noboot=true"
+TV_NORMALBOOT_IS_TRUE="tb_normalboot=true"
 TB_ROOTFS_RO_IS_EMPTYSTRING="tb_rootfs_ro="
 TB_ROOTFS_RO_IS_NULL="tb_rootfs_ro=null"
 TB_ROOTFS_RO_IS_TRUE="tb_rootfs_ro=true"
@@ -201,6 +202,7 @@ TB_PATTERN_LBRACKET_D_RBRACKET="[d]"
 TB_PATTERN_LRWXRWXRWX="lrwxrwxrwx"
 TB_PATTERN_MMCBLK0="mmcblk0"
 TB_PATTERN_TB_BACKUP="tb_backup"
+#Please note: 'tb_noboot' corresponds with 'clean-boot'
 TB_PATTERN_TB_NOBOOT="tb_noboot"
 TB_PATTERN_TB_NORMALBOOT="tb_normalboot"
 TB_PATTERN_TB_OVERLAY="tb_overlay"
@@ -232,7 +234,7 @@ TB_PRINT_OPTIONS_SEMICOLON_Q="${TB_FG_YELLOW_33};${TB_NOCOLOR}q"
 TB_PRINT_UPDATE="---:${TB_FG_BLUE_45}UPDATE${TB_NOCOLOR}"
 
 #---REGEX CONSTANTS
-TB_BOOTINTO_MYCHOICE_REGEX="[1234mq]"
+TB_BOOTINTO_MYCHOICE_REGEX="[12345mq]"
 TB_ISPBOOOTBIN_BOOTSEQ_MYCHOICE_REGEX="[123456mq]"
 TB_MAINMENU_MYCHOICE_REGEX="[123rq]"
 TB_RQ_REGEX="[rq]"
@@ -1007,8 +1009,8 @@ function extract_if_and_of_from_string__func() {
     local of_compact=$(compact_string__func "${of}" "${TB_TABLEWIDTH}" "${TB_BASENAME_COMPACT_LEN_MIN}")
 
     #Update variables which are made ready for printing
-    tb_bootoptions_remarks="${TB_FOURSPACES}${TB_FG_BLUE_33}if${TB_NOCOLOR}:${TB_FG_BLUE_45}${if_compact}${TB_NOCOLOR}\n"
-    tb_bootoptions_remarks+="${TB_FOURSPACES}${TB_FG_BLUE_33}of${TB_NOCOLOR}:${TB_FG_BLUE_45}${of_compact}${TB_NOCOLOR}\n"
+    tb_bootoptions_remarks="${TB_FOURSPACES}${TB_FG_BLUE_45}if${TB_NOCOLOR} -> ${TB_FG_BLUE_33}${if_compact}${TB_NOCOLOR}\n"
+    tb_bootoptions_remarks+="${TB_FOURSPACES}${TB_FG_BLUE_45}of${TB_NOCOLOR} -> ${TB_FG_BLUE_33}${of_compact}${TB_NOCOLOR}"
 }
 
 function extract_overlaymode_info__func() {
@@ -1113,14 +1115,15 @@ function extract_overlaymode_info__remove_tb_init_bootargs_cfg____func() {
 function extract_bootoptions_info__func() {
     #Define and initialize variables
     local backup_result="${TB_EMPTYSTRING}"
-    local bootoptions_get_raw="${TB_EMPTYSTRING}"
-    local bootoptions_get_if="${TB_EMPTYSTRING}"
-    local bootoptions_get_of="${TB_EMPTYSTRING}"
     local noboot_result="${TB_EMPTYSTRING}"
     local normalboot_result="${TB_EMPTYSTRING}"
     local restore_result="${TB_EMPTYSTRING}"
+    local bootoptions_get_raw="${TB_EMPTYSTRING}"
+    local bootoptions_get_if="${TB_EMPTYSTRING}"
+    local bootoptions_get_of="${TB_EMPTYSTRING}"
 
     #Get 'tb_backup', 'tb_noboot', tb_restore' values (if present)
+    #Please note: 'tb_noboot' corresponds with 'clean-boot'
     if [[ -f "${tb_init_bootargs_tmp_fpath}" ]]; then
         backup_result=$(grep -o "${TB_PATTERN_TB_BACKUP}.*" "${tb_init_bootargs_tmp_fpath}")
         restore_result=$(grep -o "${TB_PATTERN_TB_RESTORE}.*" "${tb_init_bootargs_tmp_fpath}")
@@ -1138,6 +1141,20 @@ function extract_bootoptions_info__func() {
     #Remarks:
     #   sed 's/\s+//g': remove whitespaces
     #   tr -d '\r': remove carriage return
+    if [[ -n "${noboot_result}" ]]; then
+        tb_bootoptions_get=$(echo "${noboot_result}" | cut -d"=" -f2 | sed 's/\s+//g' | tr -d '\r')
+    
+        tb_bootoptions_set="${TB_MODE_CLEANBOOT}"
+
+        tb_bootoptions_status="${TB_LEGEND_NEW_PRIORITY}"
+    fi
+    if [[ -n "${normalboot_result}" ]]; then
+        tb_bootoptions_get=$(echo "${normalboot_result}" | cut -d"=" -f2 | sed 's/\s+//g' | tr -d '\r')
+
+        tb_bootoptions_set="${TB_MODE_NORMALBOOT}"
+
+        tb_bootoptions_status="${TB_LEGEND_NEW_PRIORITY}"
+    fi
     if [[ -n "${backup_result}" ]]; then
         tb_bootoptions_get=$(echo "${backup_result}" | cut -d"=" -f2 | sed 's/\s+//g' | tr -d '\r')
 
@@ -1149,20 +1166,6 @@ function extract_bootoptions_info__func() {
         tb_bootoptions_get=$(echo "${restore_result}" | cut -d"=" -f2 | sed 's/\s+//g' | tr -d '\r')
 
         tb_bootoptions_set="${TB_MODE_RESTOREMODE}"
-
-        tb_bootoptions_status="${TB_LEGEND_NEW_PRIORITY}"
-    fi
-    if [[ -n "${noboot_result}" ]]; then
-        tb_bootoptions_get=$(echo "${noboot_result}" | cut -d"=" -f2 | sed 's/\s+//g' | tr -d '\r')
-
-        tb_bootoptions_set="${TB_MODE_CLEANBOOT}"
-
-        tb_bootoptions_status="${TB_LEGEND_NEW_PRIORITY}"
-    fi
-    if [[ -n "${normalboot_result}" ]]; then
-        tb_bootoptions_get=$(echo "${normalboot_result}" | cut -d"=" -f2 | sed 's/\s+//g' | tr -d '\r')
-
-        tb_bootoptions_set="${TB_MODE_NORMALBOOT}"
 
         tb_bootoptions_status="${TB_LEGEND_NEW_PRIORITY}"
     fi
@@ -2057,14 +2060,18 @@ dircontent_data_show__sub() {
                     #Remark:
                     #   The extraction is done here, and not later on within the while-loop,
                     #       because this value needs to be retrieved only once for this session.
-                    restoremode_dstdir_devpart_fpath=$(extract_string_based_on_specified_substring_from_file__func \
-                            "${tb_data_srcpath_set}" \
-                            "${TB_SEMICOLON}" \
-                            "${TB_FIELDNUM_1}" \
-                            "${tb_init_backup_lst_fpath}")
 
-                    #Get basename of 'restoremode_srcfile_devpart_fpath'
-                    restoremode_dstdir_devpart_basename=$(basename "${restoremode_dstdir_devpart_fpath}")
+                    #Check if file '/tb_reserve/.tb_init_backup.lst' exists
+                    if [[ -f "${tb_init_backup_lst_fpath}" ]]; then #file exists
+                        restoremode_dstdir_devpart_fpath=$(extract_string_based_on_specified_substring_from_file__func \
+                                "${tb_data_srcpath_set}" \
+                                "${TB_SEMICOLON}" \
+                                "${TB_FIELDNUM_1}" \
+                                "${tb_init_backup_lst_fpath}")
+
+                        #Get basename of 'restoremode_srcfile_devpart_fpath'
+                        restoremode_dstdir_devpart_basename=$(basename "${restoremode_dstdir_devpart_fpath}")
+                    fi
                 fi
             fi  #end of: if [[ "${outputtype__input}" == "${TB_BACKUPMODE_DSTDIR}" ]] || [[ "${outputtype__input}" == "${TB_RESTOREMODE_DSTPATH}" ]]
 
@@ -2114,18 +2121,21 @@ dircontent_data_show__sub() {
                         #Check if filename, which is the value of 'array_item_stripped', is found in '/tb_reserve/.tb_init_backup.lst'
                         case "${outputtype__input}" in
                             "${TB_RESTOREMODE_SRCFILE}")
-                                #Get the fullpath
-                                array_item_stripped_path="${dir_clean}/${array_item_stripped}"
+                                #Check if file '/tb_reserve/.tb_init_backup.lst' exists
+                                if [[ -f "${tb_init_backup_lst_fpath}" ]]; then #file exists
+                                    #Get the fullpath
+                                    array_item_stripped_path="${dir_clean}/${array_item_stripped}"
 
-                                #Extract the fullpath of dev-partition (e.g. /dev/mmcblk0) within 
-                                #   file 'tb_init_backup_lst_fpath' which matches the value stored in 'array_item_stripped'.
-                                restoremode_srcfile_devpart_fpath=$(extract_string_based_on_specified_substring_from_file__func "${array_item_stripped_path}" \
-                                        "${TB_SEMICOLON}" \
-                                        "${TB_FIELDNUM_1}" \
-                                        "${tb_init_backup_lst_fpath}")
+                                    #Extract the fullpath of dev-partition (e.g. /dev/mmcblk0) within 
+                                    #   file 'tb_init_backup_lst_fpath' which matches the value stored in 'array_item_stripped'.
+                                    restoremode_srcfile_devpart_fpath=$(extract_string_based_on_specified_substring_from_file__func "${array_item_stripped_path}" \
+                                            "${TB_SEMICOLON}" \
+                                            "${TB_FIELDNUM_1}" \
+                                            "${tb_init_backup_lst_fpath}")
 
-                                #Get basename of 'restoremode_srcfile_devpart_fpath'
-                                restoremode_srcfile_devpart_basename=$(basename "${restoremode_srcfile_devpart_fpath}")
+                                    #Get basename of 'restoremode_srcfile_devpart_fpath'
+                                    restoremode_srcfile_devpart_basename=$(basename "${restoremode_srcfile_devpart_fpath}")
+                                fi
 
                                 #Append 'restoremode_srcfile_devpart_basename' to 'array_item_stripped'
                                 if [[ -n "${restoremode_srcfile_devpart_basename}" ]]; then
@@ -3621,8 +3631,9 @@ bootoptions_title_print__sub() {
 }
 bootoptions_body_print__sub() {
     #Define and initialize variables
-    local print_cleanboot="${TB_MODE_CLEANBOOT}"
     local print_backupmode="${TB_MODE_BACKUPMODE}"
+    local print_cleanboot="${TB_MODE_CLEANBOOT}"
+    local print_normalboot="${TB_MODE_NORMALBOOT}"
     local print_restoremode="${TB_MODE_RESTOREMODE}"
     local print_disabled="${TB_MODE_DISABLED}"
 
@@ -3633,19 +3644,25 @@ bootoptions_body_print__sub() {
     if [[ "${tb_bootoptions_set}" != "${TB_MODE_CLEANBOOT}" ]]; then
         print_cleanboot="${TB_FG_GREY_246}${print_cleanboot} (false)${TB_NOCOLOR}"
     else
-        print_cleanboot="${print_cleanboot} (true)"
+        print_cleanboot+=" (true)"
+    fi
+    if [[ "${tb_bootoptions_set}" != "${TB_MODE_NORMALBOOT}" ]]; then
+        print_normalboot="${TB_FG_GREY_246}${print_normalboot} (false)${TB_NOCOLOR}"
+    else
+        print_normalboot+=" (true)"
     fi
     if [[ "${tb_bootoptions_set}" != "${TB_MODE_BACKUPMODE}" ]]; then
         print_backupmode="${TB_FG_GREY_246}${print_backupmode} (false)${TB_NOCOLOR}"
     else
-        print_backupmode="${print_backupmode} (true)"
+        print_backupmode+=" (true)"
     fi
     if [[ "${tb_bootoptions_set}" != "${TB_MODE_RESTOREMODE}" ]]; then
         print_restoremode="${TB_FG_GREY_246}${print_restoremode} (false)${TB_NOCOLOR}"
     else
-        print_restoremode="${print_restoremode} (true)"
+        print_restoremode+=" (true)"
     fi
     if [[ "${tb_bootoptions_set}" == "${TB_MODE_CLEANBOOT}" ]] || \
+            [[ "${tb_bootoptions_set}" == "${TB_MODE_NORMALBOOT}" ]] || \
             [[ "${tb_bootoptions_set}" == "${TB_MODE_BACKUPMODE}" ]] || \
             [[ "${tb_bootoptions_set}" == "${TB_MODE_RESTOREMODE}" ]]; then
         print_disabled="${TB_FG_GREY_246}${print_disabled}${TB_NOCOLOR}"
@@ -3658,14 +3675,18 @@ bootoptions_body_print__sub() {
             "${TB_EMPTYSTRING}"
     print_menuitem__func "${TB_FOURSPACES}" \
             "${TB_ITEMNUM_2}" \
-            "${print_backupmode}" \
+            "${print_normalboot}" \
             "${TB_EMPTYSTRING}"
     print_menuitem__func "${TB_FOURSPACES}" \
             "${TB_ITEMNUM_3}" \
-            "${print_restoremode}" \
+            "${print_backupmode}" \
             "${TB_EMPTYSTRING}"
     print_menuitem__func "${TB_FOURSPACES}" \
             "${TB_ITEMNUM_4}" \
+            "${print_restoremode}" \
+            "${TB_EMPTYSTRING}"
+    print_menuitem__func "${TB_FOURSPACES}" \
+            "${TB_ITEMNUM_5}" \
             "${print_disabled}" \
             "${TB_EMPTYSTRING}"
     print_duplicate_char__func "${TB_DASH}" "${TB_TABLEWIDTH}" "${TB_NOCOLOR}"
@@ -3680,11 +3701,15 @@ bootoptions_body_print__sub() {
     print_duplicate_char__func "${TB_DASH}" "${TB_TABLEWIDTH}" "${TB_NOCOLOR}"
 }
 bootoptions_remark_print__sub() {
+    #Exit function if '/tb_reserve/.tb_init_bootargs.tmp' does not exist
     if [[ ! -s "${tb_init_bootargs_tmp_fpath}" ]]; then
         return 0;
     fi
 
-    if [[ "${tb_bootoptions_set}" == "${TB_MODE_CLEANBOOT}" ]]; then
+    #Exit function if 'tb_bootoptions_set' is set to
+    #   'TB_MODE_CLEANBOOT' or 'TB_MODE_NORMALBOOT'.
+    if [[ "${tb_bootoptions_set}" == "${TB_MODE_CLEANBOOT}" ]] || \
+            [[ "${tb_bootoptions_set}" == "${TB_MODE_NORMALBOOT}" ]]; then
         return 0;
     fi
 
@@ -3692,9 +3717,10 @@ bootoptions_remark_print__sub() {
     extract_if_and_of_from_string__func
 
     #Print
+    local bootoptions_set_printable="${TB_FG_BLUE_45}${tb_bootoptions_set} ${TB_FG_BLUE_33}set:${TB_NOCOLOR}"
     print_menuitem__func "${TB_EMPTYSTRING}" \
             "${TB_EMPTYSTRING}" \
-            "${TB_REMARKS}" \
+            "${bootoptions_set_printable}" \
             "${TB_EMPTYSTRING}"
     print_menuitem__func "${TB_EMPTYSTRING}" \
             "${TB_EMPTYSTRING}" \
@@ -3734,15 +3760,18 @@ bootoptions_readdialog_action__sub() {
     #Goto the selected option
     case ${tb_bootoptions_mychoice} in
         1)
-            bootoptions_safemode__sub
+            bootoptions_cleanboot__sub
             ;;
         2)
-            bootoptions_backupmode__sub
+            bootoptions_normalboot__sub
             ;;
         3)
-            bootoptions_restoremode__sub
+            bootoptions_backupmode__sub
             ;;
         4)
+            bootoptions_restoremode__sub
+            ;;
+        5)
             bootoptions_disable__sub
             ;;
         m)
@@ -3753,20 +3782,17 @@ bootoptions_readdialog_action__sub() {
             ;;
     esac
 }
-bootoptions_safemode__sub() {
+bootoptions_cleanboot__sub() {
     #Update GLOBEL variable
     tb_bootoptions_set="${TB_NOBOOT_IS_TRUE}"
 
     tb_init_bootargs_tmp_write__sub "${tb_bootoptions_set}"
+}
+bootoptions_normalboot__sub() {
+    #Update GLOBEL variable
+    tb_bootoptions_set="${TV_NORMALBOOT_IS_TRUE}"
 
-    # #Remove file (if present)
-    # remove_file__func "${tb_init_bootargs_tmp_fpath}"
-
-    # #Update 'tb_rootfs_ro_set' based on 'tb_overlaymode_set' value.
-    # tb_bootoptions_set="${TB_NOBOOT_IS_TRUE}"
-
-    # #Write to file
-    # echo "${tb_bootoptions_set}" | tee "${tb_init_bootargs_tmp_fpath}" 2>/dev/null
+    tb_init_bootargs_tmp_write__sub "${tb_bootoptions_set}"
 }
 
 
