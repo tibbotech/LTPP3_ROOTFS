@@ -629,6 +629,8 @@ docker__overlay_files_check_handler__sub() {
             "${docker__LTPP3_ROOTFS_linux_scripts_tb_init_sh__fpath}" "false"
     docker__overlay_checkif_file_ispresent__sub "${DOCKER__EMPTYSTRING}" \
             "${docker__LTPP3_ROOTFS_linux_scripts_tb_init_bootmenu__fpath}" "false"
+    docker__overlay_checkif_file_ispresent__sub "${DOCKER__EMPTYSTRING}" \
+            "${docker__LTPP3_ROOTFS_motd_update_motd_99_tb_init_bootmenu_notice__fpath}" "false"
 
     docker__overlay_checkif_file_ispresent__sub "${docker__containerid}" \
             "${docker__SP7021_linux_rootfs_initramfs_disk_etc_fstab_overlaybck__fpath}" "true"
@@ -1092,6 +1094,11 @@ docker__overlay_copy_files_from_src_to_tmp_handler__sub() {
             "${docker__LTPP3_ROOTFS_linux_scripts_tb_init_bootmenu__fpath}" \
             "${DOCKER__EMPTYSTRING}" \
             "${docker__docker_overlayfs_tb_init_bootmenu__fpath}"
+
+    docker__overlay_copy_file__sub "${DOCKER__EMPTYSTRING}" \
+            "${docker__LTPP3_ROOTFS_motd_update_motd_99_tb_init_bootmenu_notice__fpath}" \
+            "${DOCKER__EMPTYSTRING}" \
+            "${docker__docker_overlayfs_99_tb_init_bootmenu_notice__fpath}"
 
     #Show error message and exit (if applicable)
     if [[ ${docker__numof_errors_found_ctr} -gt 0 ]]; then
@@ -1742,6 +1749,11 @@ docker__overlay_copy_files_from_tmp_to_dst_handler__sub() {
             "${docker__containerid}" \
             "${docker__SP7021_linux_rootfs_initramfs_disk_sbin_tb_init_bootmenu__fpath}"
 
+    docker__overlay_copy_file__sub "${DOCKER__EMPTYSTRING}" \
+            "${docker__docker_overlayfs_99_tb_init_bootmenu_notice__fpath}" \
+            "${docker__containerid}" \
+            "${docker__SP7021_linux_rootfs_initramfs_disk_etc_update_motd_d_99_tb_init_bootmenu_notice__fpath}"
+
     #Show error message and exit (if applicable)
     if [[ ${docker__numof_errors_found_ctr} -gt 0 ]]; then
         show_errMsg_wo_menuTitle_and_exit_func "${DOCKER__ERRMSG_ONE_OR_MORE_CHECKITEMS_FAILED}" \
@@ -1764,6 +1776,7 @@ docker__overlay_dst_exec_files_change_permission_handler__sub() {
     docker__overlay_dst_exec_file_change_permission__sub "${docker__SP7021_build_isp_sh__fpath}"
     docker__overlay_dst_exec_file_change_permission__sub "${docker__SP7021_linux_rootfs_initramfs_disk_sbin_tb_init_sh__fpath}"
     docker__overlay_dst_exec_file_change_permission__sub "${docker__SP7021_linux_rootfs_initramfs_disk_sbin_tb_init_bootmenu__fpath}"
+    docker__overlay_dst_exec_file_change_permission__sub "${docker__SP7021_linux_rootfs_initramfs_disk_etc_update_motd_d_99_tb_init_bootmenu_notice__fpath}"
 
     #Show error message and exit (if applicable)
     if [[ ${docker__numof_errors_found_ctr} -gt 0 ]]; then
@@ -1909,7 +1922,9 @@ docker__overlay_restore_original_state__sub() {
             "${docker__SP7021_linux_rootfs_initramfs_disk_sbin_tb_init_bootmenu__fpath}" \
             "${DOCKER__SIXDASHES_COLON}"
 
-    #/usr/sbin/tb_init_bootmenu has to be removed here
+    remove_file__func "${docker__containerid}" \
+            "${docker__SP7021_linux_rootfs_initramfs_disk_etc_update_motd_d_99_tb_init_bootmenu_notice__fpath}" \
+            "${DOCKER__SIXDASHES_COLON}"
 }
 
 docker__run_script__sub() {
@@ -1921,12 +1936,12 @@ docker__run_script__sub() {
     local printmsg="${DOCKER__EMPTYSTRING}"
 
     #Execute script 'docker__build_ispboootbin_fpath'
-    # printmsg="---:${DOCKER__START}: build ${DOCKER__FG_LIGHTGREY}ISPBOOOT.BIN${DOCKER__NOCOLOR}"
-    # if [[ ${docker__isRunning_inside_container} == true ]]; then   #currently in a container
-    #     ${cmd_outside_container}
-    # else    #currently outside of a container
-    #     ${docker_exec_cmd} "${cmd_inside_container}"
-    # fi
+    printmsg="---:${DOCKER__START}: build ${DOCKER__FG_LIGHTGREY}ISPBOOOT.BIN${DOCKER__NOCOLOR}"
+    if [[ ${docker__isRunning_inside_container} == true ]]; then   #currently in a container
+        ${cmd_outside_container}
+    else    #currently outside of a container
+        ${docker_exec_cmd} "${cmd_inside_container}"
+    fi
 
     #Check if there are any errors
     docker__exitcode=$?
@@ -1944,9 +1959,8 @@ docker__run_script__sub() {
             printmsg+="\n"
             printmsg+="${DOCKER__NINEDASHES_COLON}${DOCKER__NOTICE}: After reimaging the TPS with the new ${DOCKER__FG_LIGHTGREY}ISPBOOOT.BIN${DOCKER__NOCOLOR} image...\n"
             printmsg+="${DOCKER__NINEDASHES_COLON}${DOCKER__NOTICE}: ...executable ${DOCKER__FG_LIGHTGREY}tb_init_bootmenu${DOCKER__NOCOLOR} will become available.\n"
-            printmsg+="${DOCKER__NINEDASHES_COLON}${DOCKER__NOTICE}: With this tool, overlay ${DOCKER__FG_LIGHTGREY}mode/options${DOCKER__NOCOLOR} can configured ${DOCKER__FG_LIGHTGREY}within${DOCKER__NOCOLOR} Linux."
+            printmsg+="${DOCKER__NINEDASHES_COLON}${DOCKER__NOTICE}: With this tool, overlay ${DOCKER__FG_LIGHTGREY}mode/options${DOCKER__NOCOLOR} can be configured ${DOCKER__FG_LIGHTGREY}within${DOCKER__NOCOLOR} Linux."
         fi
-        # moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
     fi
 
     #Print message

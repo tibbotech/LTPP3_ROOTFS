@@ -6126,6 +6126,9 @@ docker__get_source_fullpath__sub() {
     docker__LTPP3_ROOTFS_docker_list__dir=${docker__LTPP3_ROOTFS_docker__dir}/list
     docker__LTPP3_ROOTFS_linux__dir=${docker__LTPP3_ROOTFS__dir}/linux
     docker__LTPP3_ROOTFS_linux_scripts__dir=${docker__LTPP3_ROOTFS_linux__dir}/scripts
+    docker__LTPP3_ROOTFS_motd__dir=${docker__LTPP3_ROOTFS__dir}/motd
+    docker__LTPP3_ROOTFS_motd_update_motd__dir=${docker__LTPP3_ROOTFS_motd__dir}/update-motd.d
+
 
 
 #---filenames used at multiple places
@@ -6142,6 +6145,7 @@ docker__get_source_fullpath__sub() {
     docker__pentagram_common_h_overlaybck__filename="pentagram_common.h.overlaybck"
     docker__tb_init_sh__filename="tb_init.sh"
     docker__tb_init_bootmenu__filename="tb_init_bootmenu"
+    docker__99_tb_init_bootmenu_notice__filename="99-tb_init_bootmenu-notice"
 
 
 #---docker__docker__dir - contents
@@ -6160,7 +6164,7 @@ docker__get_source_fullpath__sub() {
     docker__docker_overlayfs_pentagram_common_h__fpath=${docker__docker_overlayfs__dir}/${docker__pentagram_common_h__filename}
     docker__docker_overlayfs_tb_init_sh__fpath=${docker__docker_overlayfs__dir}/${docker__tb_init_sh__filename}
     docker__docker_overlayfs_tb_init_bootmenu__fpath=${docker__docker_overlayfs__dir}/${docker__tb_init_bootmenu__filename}
-
+    docker__docker_overlayfs_99_tb_init_bootmenu_notice__fpath=${docker__docker_overlayfs__dir}/${docker__99_tb_init_bootmenu_notice__filename}
 
 #---docker__docker_config__dir - contents
     docker__export_env_var_menu_cfg__filename="docker_export_env_var_menu.cfg"
@@ -6348,9 +6352,13 @@ docker__get_source_fullpath__sub() {
     docker__LTPP3_ROOTFS_boot_configs_pentagram_common_h__fpath=${docker__LTPP3_ROOTFS_boot_configs__dir}/${docker__pentagram_common_h__filename}
 
 
-#---docker__LTPP3_ROTFS_linux_scripts__dir
+#---docker__LTPP3_ROTFS_linux_scripts__dir - contents
     docker__LTPP3_ROOTFS_linux_scripts_tb_init_sh__fpath=${docker__LTPP3_ROOTFS_linux_scripts__dir}/${docker__tb_init_sh__filename}
     docker__LTPP3_ROOTFS_linux_scripts_tb_init_bootmenu__fpath=${docker__LTPP3_ROOTFS_linux_scripts__dir}/${docker__tb_init_bootmenu__filename}
+
+
+#---docker__LTPP3_ROOTFS_motd__dir - contents
+    docker__LTPP3_ROOTFS_motd_update_motd_99_tb_init_bootmenu_notice__fpath=${docker__LTPP3_ROOTFS_motd_update_motd__dir}/${docker__99_tb_init_bootmenu_notice__filename}
 
 
 #---docker__SP7021__dir - contents
@@ -6363,6 +6371,7 @@ docker__get_source_fullpath__sub() {
     docker__SP7021_linux_rootfs_initramfs_disk_dir=${docker__SP7021__dir}/linux/rootfs/initramfs/disk
     docker__SP7021_linux_rootfs_initramfs_disk_sbin__dir=${docker__SP7021_linux_rootfs_initramfs_disk_dir}/sbin
     docker__SP7021_linux_rootfs_initramfs_disk_etc__dir=${docker__SP7021_linux_rootfs_initramfs_disk_dir}/etc
+    docker__SP7021_linux_rootfs_initramfs_disk_etc_update_motd_d__dir=${docker__SP7021_linux_rootfs_initramfs_disk_etc__dir}/update-motd.d
 
     docker__SP7021_build_tools_isp_isp_c__fpath=${docker__SP7021_build_tools_isp__dir}/${docker__isp_c__filename}
     docker__SP7021_build_tools_isp_isp_c_overlaybck__fpath=${docker__SP7021_build_tools_isp__dir}/${docker__isp_c_overlaybck__filename}
@@ -6373,8 +6382,9 @@ docker__get_source_fullpath__sub() {
     docker__SP7021_linux_rootfs_initramfs_disk_etc_fstab__fpath=${docker__SP7021_linux_rootfs_initramfs_disk_etc__dir}/${docker__fstab__filename}
     docker__SP7021_linux_rootfs_initramfs_disk_etc_fstab_overlaybck__fpath=${docker__SP7021_linux_rootfs_initramfs_disk_etc__dir}/${docker__fstab_overlaybck__filename}
     docker__SP7021_linux_rootfs_initramfs_disk_sbin_init__fpath=${docker__SP7021_linux_rootfs_initramfs_disk_sbin__dir}/${docker__init__filename}
-    docker__SP7021_linux_rootfs_initramfs_disk_sbin_tb_init_sh__fpath=${docker__SP7021_linux_rootfs_initramfs_disk_sbin__dir}/${docker__tb_init_sh__filename}
-    docker__SP7021_linux_rootfs_initramfs_disk_sbin_tb_init_bootmenu__fpath=${docker__SP7021_linux_rootfs_initramfs_disk_sbin__dir}/${docker__tb_init_bootmenu__filename}
+    docker__SP7021_linux_rootfs_initramfs_disk_sbin_tb_init_sh__fpath="${docker__SP7021_linux_rootfs_initramfs_disk_sbin__dir}/${docker__tb_init_sh__filename}"
+    docker__SP7021_linux_rootfs_initramfs_disk_sbin_tb_init_bootmenu__fpath="${docker__SP7021_linux_rootfs_initramfs_disk_sbin__dir}/${docker__tb_init_bootmenu__filename}"
+    docker__SP7021_linux_rootfs_initramfs_disk_etc_update_motd_d_99_tb_init_bootmenu_notice__fpath="${docker__SP7021_linux_rootfs_initramfs_disk_etc_update_motd_d__dir}/${docker__99_tb_init_bootmenu_notice__filename}"
 
 #---docker__tmp__dir - contents
     compgen__query_w_autocomplete_out__filename="compgen_query_w_autocomplete.out"
