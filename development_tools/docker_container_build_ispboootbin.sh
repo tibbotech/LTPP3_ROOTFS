@@ -310,15 +310,15 @@ docker__load_constants__sub() {
     DOCKER__SUBJECT_START_TB_INIT_SH_CREATE_SOFTLINK="---:${DOCKER__START}: TB_INIT.SH > CREATE SOFT-LINK"
     DOCKER__SUBJECT_COMPLETED_TB_INIT_SH_CREATE_SOFTLINK="---:${DOCKER__COMPLETED}: TB_INIT.SH > CREATE SOFT-LINK"
 
-    DOCKER__INFOMSG_OVERLAYFS_SETTING_IS_DISABLED="-----------:${DOCKER__INFO}: ${DOCKER__FG_LIGHTGREY}overlay${DOCKER__NOCOLOR} setting is disabled...\n"
-    DOCKER__INFOMSG_OVERLAYFS_SETTING_IS_DISABLED+="-----------:${DOCKER__INFO}: ignoring overlay..."
-    DOCKER__INFOMSG_OVERLAYFS_PARTITION_IS_NOT_PRESENT="-----------:${DOCKER__INFO}: partition ${DOCKER__FG_LIGHTGREY}overlay${DOCKER__NOCOLOR} is not present...\n"
-    DOCKER__INFOMSG_OVERLAYFS_PARTITION_IS_NOT_PRESENT+="-----------:${DOCKER__INFO}: ignoring overlay..."
-    DOCKER__INFOMSG_PATTERN_ISP_C_1_MISSING="-----------:${DOCKER__INFO}: pattern ${DOCKER__FG_LIGHTGREY}${DOCKER__PATTERN_ISP_C_1}${DOCKER__NOCOLOR}: ${DOCKER__STATUS_MISSING}"
-    DOCKER__INFOMSG_PATTERN_ISP_C_2_MISSING="-----------:${DOCKER__INFO}: pattern ${DOCKER__FG_LIGHTGREY}${DOCKER__PATTERN_ISP_C_2}${DOCKER__NOCOLOR}: ${DOCKER__STATUS_MISSING}"
-    DOCKER__INFOMSG_PATTERN_ISP_C_3_MISSING="-----------:${DOCKER__INFO}: pattern ${DOCKER__FG_LIGHTGREY}${DOCKER__PATTERN_ISP_C_3}${DOCKER__NOCOLOR}: ${DOCKER__STATUS_MISSING}"
-    DOCKER__INFOMSG_PATTERN_ISP_C_2_OUTOFBOUND="-----------:${DOCKER__INFO}: pattern ${DOCKER__FG_LIGHTGREY}${DOCKER__PATTERN_ISP_C_2}${DOCKER__NOCOLOR}: ${DOCKER__STATUS_OUTOFBOUND}"
-    DOCKER__INFOMSG_PATTERN_PENTAGRAM_COMMON_H_MISSING="-----------:${DOCKER__INFO}: pattern ${DOCKER__FG_LIGHTGREY}${DOCKER__PATTERN_PENTAGRAM_COMMON_H}${DOCKER__NOCOLOR}: ${DOCKER__STATUS_MISSING}"
+    DOCKER__INFOMSG_OVERLAYFS_SETTING_IS_DISABLED="${DOCKER__NINEDASHES_COLON}${DOCKER__INFO}: ${DOCKER__FG_LIGHTGREY}overlay${DOCKER__NOCOLOR} setting is disabled...\n"
+    DOCKER__INFOMSG_OVERLAYFS_SETTING_IS_DISABLED+="${DOCKER__NINEDASHES_COLON}${DOCKER__INFO}: ignoring overlay..."
+    DOCKER__INFOMSG_OVERLAYFS_PARTITION_IS_NOT_PRESENT="${DOCKER__NINEDASHES_COLON}${DOCKER__INFO}: partition ${DOCKER__FG_LIGHTGREY}overlay${DOCKER__NOCOLOR} is not present...\n"
+    DOCKER__INFOMSG_OVERLAYFS_PARTITION_IS_NOT_PRESENT+="${DOCKER__NINEDASHES_COLON}${DOCKER__INFO}: ignoring overlay..."
+    DOCKER__INFOMSG_PATTERN_ISP_C_1_MISSING="${DOCKER__NINEDASHES_COLON}${DOCKER__INFO}: pattern ${DOCKER__FG_LIGHTGREY}${DOCKER__PATTERN_ISP_C_1}${DOCKER__NOCOLOR}: ${DOCKER__STATUS_MISSING}"
+    DOCKER__INFOMSG_PATTERN_ISP_C_2_MISSING="${DOCKER__NINEDASHES_COLON}${DOCKER__INFO}: pattern ${DOCKER__FG_LIGHTGREY}${DOCKER__PATTERN_ISP_C_2}${DOCKER__NOCOLOR}: ${DOCKER__STATUS_MISSING}"
+    DOCKER__INFOMSG_PATTERN_ISP_C_3_MISSING="${DOCKER__NINEDASHES_COLON}${DOCKER__INFO}: pattern ${DOCKER__FG_LIGHTGREY}${DOCKER__PATTERN_ISP_C_3}${DOCKER__NOCOLOR}: ${DOCKER__STATUS_MISSING}"
+    DOCKER__INFOMSG_PATTERN_ISP_C_2_OUTOFBOUND="${DOCKER__NINEDASHES_COLON}${DOCKER__INFO}: pattern ${DOCKER__FG_LIGHTGREY}${DOCKER__PATTERN_ISP_C_2}${DOCKER__NOCOLOR}: ${DOCKER__STATUS_OUTOFBOUND}"
+    DOCKER__INFOMSG_PATTERN_PENTAGRAM_COMMON_H_MISSING="--${DOCKER__NINEDASHES_COLON}${DOCKER__INFO}: pattern ${DOCKER__FG_LIGHTGREY}${DOCKER__PATTERN_PENTAGRAM_COMMON_H}${DOCKER__NOCOLOR}: ${DOCKER__STATUS_MISSING}"
 
     DOCKER__ERRMSG_NO_IF_CONDITIONS_FOUND="${DOCKER__ERROR}: no if conditions found!"
     DOCKER__ERRMSG_ONE_OR_MORE_CHECKITEMS_FAILED="${DOCKER__ERROR}: one or more precheck items failed to pass!"
@@ -333,7 +333,7 @@ docker__load_constants__sub() {
     DOCKER__ERRMSG_COULD_NOT_CHANGE_FILE_PERMISSION_TO_RWXRXRX="${DOCKER__ERROR}: could NOT change file permission to rwxr-xr-x!"
     DOCKER__ERRMSG_COULD_NOT_CREATE_SOFTLINK="${DOCKER__ERROR}: could NOT create soft-link"
 
-    DOCKER__SEVENDASHES_COLON="-------:"
+    # DOCKER__SIXDASHES_COLON="------:"
 
     DOCKER__EXEC_IT="docker exec -it"
 }
@@ -349,7 +349,7 @@ docker__init_variables__sub() {
     docker__isp_partition_arraylen=0
     docker__isp_partition_name_last="${DOCKER__EMPTYSTRING}"
     docker__containerid="${DOCKER__EMPTYSTRING}"
-    docker__numOf_errors_found=0
+    docker__numof_errors_found_ctr=0
     docker__overlay_isfound=false
     docker__overlaymode_set="${DOCKER__OVERLAYMODE_PERSISTENT}"
     docker__overlaysetting_set="${DOCKER__OVERLAYFS_DISABLED}"
@@ -418,7 +418,7 @@ docker__preCheck__sub() {
     local printmsg="${DOCKER__EMPTYSTRING}"
 
     #Reset variables
-    docker__numOf_errors_found=0
+    docker__numof_errors_found_ctr=0
 
     #Print Tibbo-title
     load_tibbo_title__func "${DOCKER__NUMOFLINES_2}"
@@ -428,26 +428,26 @@ docker__preCheck__sub() {
 
     #Check if running inside docker container
     if [[ ${docker__isRunning_inside_container} == true ]]; then   #running in docker container
-        printmsg="-------:${DOCKER__STATUS}: (${DOCKER__FG_LIGHTGREY}${DOCKER__LOCATION_LLOCAL}${DOCKER__NOCOLOR}) Inside Container: true"
+        printmsg="${DOCKER__SIXDASHES_COLON}${DOCKER__STATUS}: (${DOCKER__FG_LIGHTGREY}${DOCKER__LOCATION_LLOCAL}${DOCKER__NOCOLOR}) Inside Container: true"
 
-        docker__numOf_errors_found=0
+        docker__numof_errors_found_ctr=0
     else    #NOT running in docker container
-        printmsg="-------:${DOCKER__STATUS}: (${DOCKER__FG_LIGHTGREY}${DOCKER__LOCATION_LLOCAL}${DOCKER__NOCOLOR}) Inside Container: false"
+        printmsg="${DOCKER__SIXDASHES_COLON}${DOCKER__STATUS}: (${DOCKER__FG_LIGHTGREY}${DOCKER__LOCATION_LLOCAL}${DOCKER__NOCOLOR}) Inside Container: false"
 
         #Check if docker.io is installed
-        #Output: docker__numOf_errors_found
+        #Output: docker__numof_errors_found_ctr
         docker__preCheck_app_isInstalled__sub "${DOCKER__PATTERN_DOCKER_IO}"
 
         #Check if '/usr/bin/bash' is present
-        #Output: docker__numOf_errors_found
+        #Output: docker__numof_errors_found_ctr
         docker__preCheck_app_isPresent__sub "${docker__containerid}" "${docker__bash_fpath}"
 
         #Check if '~/SP7021/linux/rootfs/initramfs/disk' is present
-        #Output: docker__numOf_errors_found
+        #Output: docker__numof_errors_found_ctr
         docker__preCheck_app_isPresent__sub "${docker__containerid}" "${docker__sp7021_dir}"
 
         #Check if '~/LTPP3_ROOTFS/development_tools/docker_build_ispboootbin.sh' is present
-        #Output: docker__numOf_errors_found
+        #Output: docker__numof_errors_found_ctr
         docker__preCheck_app_isPresent__sub "${docker__containerid}" "${docker__docker__build_ispboootbin_fpath}"
     fi
 
@@ -455,7 +455,7 @@ docker__preCheck__sub() {
     show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
 
     #In case one or more failed check-items were found
-    if [[ ${docker__numOf_errors_found} -gt ${DOCKER__NUMOFMATCH_0} ]]; then
+    if [[ ${docker__numof_errors_found_ctr} -gt ${DOCKER__NUMOFMATCH_0} ]]; then
         show_errMsg_wo_menuTitle_and_exit_func "${DOCKER__ERRMSG_ONE_OR_MORE_CHECKITEMS_FAILED}" \
                         ${DOCKER__NUMOFLINES_1} \
                         ${DOCKER__NUMOFLINES_0}
@@ -471,11 +471,11 @@ docker__preCheck_app_isInstalled__sub() {
     #Check
     local docker_isInstalled=`checkif_software_isinstalled__func "${appName__input}"`
     if [[ ${docker_isInstalled} == true ]]; then
-        printmsg="-------:${DOCKER__STATUS}: ${appName__input}: ${DOCKER__STATUS_LINSTALLED}"
+        printmsg="${DOCKER__SIXDASHES_COLON}${DOCKER__STATUS}: ${appName__input}: ${DOCKER__STATUS_LINSTALLED}"
     else    #NOT running in docker container
-        printmsg="-------:${DOCKER__STATUS}: ${appName__input}: ${DOCKER__STATUS_LNOTINSTALLED}"
+        printmsg="${DOCKER__SIXDASHES_COLON}${DOCKER__STATUS}: ${appName__input}: ${DOCKER__STATUS_LNOTINSTALLED}"
 
-        ((docker__numOf_errors_found++))
+        ((docker__numof_errors_found_ctr++))
     fi
 
     #Print
@@ -494,16 +494,16 @@ docker__preCheck_app_isPresent__sub() {
     #First check if it's a directory
     isFound=`checkIf_dir_exists__func "${containerid__input}" "${path__input}"`
     if [[ ${isFound} == true ]]; then
-        printmsg="-------:${DOCKER__STATUS}: ${path__input}: ${DOCKER__STATUS_LPRESENT}"
+        printmsg="${DOCKER__SIXDASHES_COLON}${DOCKER__STATUS}: ${path__input}: ${DOCKER__STATUS_LPRESENT}"
     else
         #Second: if not a directory, then check if it's a file
         isFound=`checkIf_file_exists__func "${containerid__input}" "${path__input}"`
         if [[ ${isFound} == true ]]; then
-            printmsg="-------:${DOCKER__STATUS}: ${path__input}: ${DOCKER__STATUS_LPRESENT}"
+            printmsg="${DOCKER__SIXDASHES_COLON}${DOCKER__STATUS}: ${path__input}: ${DOCKER__STATUS_LPRESENT}"
         else
-            printmsg="-------:${DOCKER__STATUS}: ${path__input}: ${DOCKER__STATUS_LNOTPRESENT}"
+            printmsg="${DOCKER__SIXDASHES_COLON}${DOCKER__STATUS}: ${path__input}: ${DOCKER__STATUS_LNOTPRESENT}"
 
-            ((docker__numOf_errors_found++))
+            ((docker__numof_errors_found_ctr++))
         fi
     fi
 
@@ -535,7 +535,12 @@ docker__overlay__sub() {
             "${PHASE_OVERLAY_FILES_CHECK}")
                 docker__overlay_files_check_handler__sub
 
-                phase="${PHASE_OVERLAY_DOCKER_FS_PARTITION_CONF_CHECK}"
+                #Choose 'phase' based on 'docker__numof_errors_found_ctr'
+                if [[ ${docker__numof_errors_found_ctr} -gt 0 ]]; then  #errors were found
+                    phase="${PHASE_OVERLAY_EXIT}"
+                else    #NO errors found
+                    phase="${PHASE_OVERLAY_DOCKER_FS_PARTITION_CONF_CHECK}"
+                fi
                 ;;
             "${PHASE_OVERLAY_DOCKER_FS_PARTITION_CONF_CHECK}")
                 #Remark:
@@ -599,13 +604,13 @@ docker__overlay__sub() {
 
 docker__overlay_files_check_handler__sub() {
     #Reset variables
-    docker__numOf_errors_found=0
+    docker__numof_errors_found_ctr=0
 
     #Print
     show_msg_only__func "${DOCKER__SUBJECT_OVERLAY_RELATED_FILES}" "${DOCKER__NUMOFLINES_1}" "${DOCKER__NUMOFLINES_0}"
 
     #Initialize variables
-    docker__numOf_errors_found=0
+    docker__numof_errors_found_ctr=0
     docker__fstab_isfound=true
     docker__isp_c_overlaybck_isfound=true
     docker__isp_sh_overlaybck_isfound=true
@@ -622,6 +627,8 @@ docker__overlay_files_check_handler__sub() {
             "${docker__LTPP3_ROOTFS_boot_configs_pentagram_common_h__fpath}" "false"
     docker__overlay_checkif_file_ispresent__sub "${DOCKER__EMPTYSTRING}" \
             "${docker__LTPP3_ROOTFS_linux_scripts_tb_init_sh__fpath}" "false"
+    docker__overlay_checkif_file_ispresent__sub "${DOCKER__EMPTYSTRING}" \
+            "${docker__LTPP3_ROOTFS_linux_scripts_tb_init_bootmenu__fpath}" "false"
 
     docker__overlay_checkif_file_ispresent__sub "${docker__containerid}" \
             "${docker__SP7021_linux_rootfs_initramfs_disk_etc_fstab_overlaybck__fpath}" "true"
@@ -681,7 +688,7 @@ docker__overlay_files_check_handler__sub() {
     fi
 
     #Show error message and exit (if applicable)
-    if [[ ${docker__numOf_errors_found} -gt 0 ]]; then
+    if [[ ${docker__numof_errors_found_ctr} -gt 0 ]]; then
         show_errMsg_wo_menuTitle_and_exit_func "${DOCKER__ERRMSG_ONE_OR_MORE_CHECKITEMS_FAILED}" \
                 ${DOCKER__NUMOFLINES_1} \
                 ${DOCKER__NUMOFLINES_0}
@@ -689,9 +696,9 @@ docker__overlay_files_check_handler__sub() {
 }
 docker__overlay_checkif_file_ispresent__sub() {
     #Remark:
-    #   This subroutine implicitely outputs the variables:
+    # This subroutine passes the result(s) to the following global variable(s):
     #       docker__isp_c_overlaybck_isfound (bool)
-    #       docker__numOf_errors_found (integer)
+    #       docker__numof_errors_found_ctr (integer)
     #Input args
     local containerid__input=${1}
     local path__input=${2}
@@ -699,9 +706,9 @@ docker__overlay_checkif_file_ispresent__sub() {
     #Update 'printmsg'
     local printmsg="${DOCKER__EMPTYSTRING}"
     if [[ -z "${containerid__input}" ]]; then
-        printmsg="-------:${DOCKER__STATUS}: (${DOCKER__FG_LIGHTGREY}${DOCKER__LOCATION_LLOCAL}${DOCKER__NOCOLOR})"
+        printmsg="${DOCKER__SIXDASHES_COLON}${DOCKER__STATUS}: (${DOCKER__FG_LIGHTGREY}${DOCKER__LOCATION_LLOCAL}${DOCKER__NOCOLOR})"
     else
-        printmsg="-------:${DOCKER__STATUS}: (${DOCKER__FG_LIGHTGREY}${containerid__input}${DOCKER__NOCOLOR})"
+        printmsg="${DOCKER__SIXDASHES_COLON}${DOCKER__STATUS}: (${DOCKER__FG_LIGHTGREY}${containerid__input}${DOCKER__NOCOLOR})"
     fi
 
     #Check if 'path__input' exists and update 'printmsg'
@@ -734,7 +741,7 @@ docker__overlay_checkif_file_ispresent__sub() {
             *)
                 printmsg+=" ${path__input}: ${DOCKER__STATUS_LNOTPRESENT}"
 
-                ((docker__numOf_errors_found++))
+                ((docker__numof_errors_found_ctr++))
                 ;;       
         esac
     fi
@@ -744,8 +751,12 @@ docker__overlay_checkif_file_ispresent__sub() {
 }
 
 docker__overlay_docker_fs_partition_conf_check_handler__sub() {
+    #Remark:
+    # This subroutine passes the result(s) to the following global variable(s):
+    #       docker__numof_errors_found_ctr (integer)
+
     #Reset variables
-    docker__numOf_errors_found=0
+    docker__numof_errors_found_ctr=0
 
     #Print
     show_msg_only__func "${DOCKER__SUBJECT_DOCKER_FS_PARTITION_CONF_FILECONTENT}" "${DOCKER__NUMOFLINES_1}" "${DOCKER__NUMOFLINES_0}"
@@ -756,13 +767,17 @@ docker__overlay_docker_fs_partition_conf_check_handler__sub() {
     docker__overlay_overlayfs_check__sub
 
     #Show error message and exit (if applicable)
-    if [[ ${docker__numOf_errors_found} -gt 0 ]]; then
+    if [[ ${docker__numof_errors_found_ctr} -gt 0 ]]; then
         show_errMsg_wo_menuTitle_and_exit_func "${DOCKER__ERRMSG_ONE_OR_MORE_ENTRIES_ARE_INVALID}" \
                 ${DOCKER__NUMOFLINES_1} \
                 ${DOCKER__NUMOFLINES_0}
     fi
 }
 docker__overlay_disksizeset_check__sub() {
+    #Remark:
+    # This subroutine passes the result(s) to the following global variable(s):
+    #       docker__numof_errors_found_ctr (integer)
+
     #Define variables
     local printmsg="${DOCKER__EMPTYSTRING}"
 
@@ -777,16 +792,16 @@ docker__overlay_disksizeset_check__sub() {
             "${DOCKER__ONESPACE}")
 
     #Update 'printmsg'
-    printmsg="-------:${DOCKER__STATUS}: ${DOCKER__DISKSIZESETTING}: ${DOCKER__FG_LIGHTGREY}${docker__disksize_set}${DOCKER__NOCOLOR} " 
+    printmsg="${DOCKER__SIXDASHES_COLON}${DOCKER__STATUS}: ${DOCKER__DISKSIZESETTING}: ${DOCKER__FG_LIGHTGREY}${docker__disksize_set}${DOCKER__NOCOLOR} " 
     if [[ $(isNumeric__func "${docker__disksize_set}") == false ]]; then  #is not numeric
         printmsg+="(${DOCKER__STATUS_LINVALID})"
 
-        ((docker__numOf_errors_found++))
+        ((docker__numof_errors_found_ctr++))
     else    #is numeric
         if [[ ${docker__disksize_set} -le 0 ]]; then  #less or equal to 0
             printmsg+="(${DOCKER__STATUS_LINVALID})"
 
-            ((docker__numOf_errors_found++))
+            ((docker__numof_errors_found_ctr++))
         else    #greater than 0
             printmsg+="(${DOCKER__STATUS_LVALID})"
         fi
@@ -796,6 +811,10 @@ docker__overlay_disksizeset_check__sub() {
     show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
 }
 docker__overlay_overlaymode_check__sub() {
+    #Remark:
+    # This subroutine passes the result(s) to the following global variable(s):
+    #       docker__numof_errors_found_ctr (integer)
+
     #Define variables
     local printmsg="${DOCKER__EMPTYSTRING}"
 
@@ -810,12 +829,12 @@ docker__overlay_overlaymode_check__sub() {
             "${DOCKER__ONESPACE}")
 
     #Update 'printmsg'
-    printmsg="-------:${DOCKER__STATUS}: ${DOCKER__OVERLAYMODE}: ${DOCKER__FG_LIGHTGREY}${docker__overlaymode_set}${DOCKER__NOCOLOR} " 
+    printmsg="${DOCKER__SIXDASHES_COLON}${DOCKER__STATUS}: ${DOCKER__OVERLAYMODE}: ${DOCKER__FG_LIGHTGREY}${docker__overlaymode_set}${DOCKER__NOCOLOR} " 
     if [[ "${docker__overlaymode_set}" != "${DOCKER__OVERLAYMODE_PERSISTENT}" ]] && \
             [[ "${docker__overlaymode_set}" != "${DOCKER__OVERLAYMODE_NONPERSISTENT}" ]]; then
         printmsg+="(${DOCKER__STATUS_LINVALID})"
 
-        ((docker__numOf_errors_found++))
+        ((docker__numof_errors_found_ctr++))
     else
         printmsg+="(${DOCKER__STATUS_LVALID})"
     fi
@@ -824,6 +843,9 @@ docker__overlay_overlaymode_check__sub() {
     show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
 }
 docker__overlay_overlayfs_check__sub() {
+    #Remark:
+    # This subroutine passes the result(s) to the following global variable(s):
+    #       docker__numof_errors_found_ctr (integer)
     #Define variables
     local printmsg="${DOCKER__EMPTYSTRING}"
 
@@ -838,12 +860,12 @@ docker__overlay_overlayfs_check__sub() {
             "${DOCKER__ONESPACE}")
 
     #Update 'printmsg'
-    printmsg="-------:${DOCKER__STATUS}: ${DOCKER__OVERLAYSETTING}: ${DOCKER__FG_LIGHTGREY}${docker__overlaysetting_set}${DOCKER__NOCOLOR} " 
+    printmsg="${DOCKER__SIXDASHES_COLON}${DOCKER__STATUS}: ${DOCKER__OVERLAYSETTING}: ${DOCKER__FG_LIGHTGREY}${docker__overlaysetting_set}${DOCKER__NOCOLOR} " 
     if [[ "${docker__overlaysetting_set}" != "${DOCKER__OVERLAYFS_ENABLED}" ]] && \
             [[ "${docker__overlaysetting_set}" != "${DOCKER__OVERLAYFS_DISABLED}" ]]; then
         printmsg+="(${DOCKER__STATUS_LINVALID})"
 
-        ((docker__numOf_errors_found++))
+        ((docker__numof_errors_found_ctr++))
     else
         printmsg+="(${DOCKER__STATUS_LVALID})"
     fi
@@ -852,6 +874,10 @@ docker__overlay_overlayfs_check__sub() {
     show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
 
     #In case 'docker__overlaysetting_set = disabled', show message and exit this subroutine
+    #Remark:
+    #   Counter 'docker__numof_errors_found_ctr' is NOT incremented here, because
+    #       even if 'docker__overlaysetting_set = DOCKER__OVERLAYFS_DISABLED', we
+    #       still should be able to build w/o overlay.
     if [[ "${docker__overlaysetting_set}" == "${DOCKER__OVERLAYFS_DISABLED}" ]]; then
         show_msg_only__func "${DOCKER__INFOMSG_OVERLAYFS_SETTING_IS_DISABLED}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
     fi
@@ -859,7 +885,7 @@ docker__overlay_overlayfs_check__sub() {
 
 docker__overlay_docker_fs_partition_diskpartsize_check_and_convert_handler__sub() {
     #Reset variables
-    docker__numOf_errors_found=0
+    docker__numof_errors_found_ctr=0
 
     #Print
     show_msg_only__func "${DOCKER__SUBJECT_DOCKER_FS_PARTITION_DISKPARTSIZE_DAT_FILECONTENT}" "${DOCKER__NUMOFLINES_1}" "${DOCKER__NUMOFLINES_0}"
@@ -868,7 +894,7 @@ docker__overlay_docker_fs_partition_diskpartsize_check_and_convert_handler__sub(
     docker__overlay_diskpartsize_check_and_convert__sub
 
     #Show error message and exit (if applicable)
-    if [[ ${docker__numOf_errors_found} -gt 0 ]]; then
+    if [[ ${docker__numof_errors_found_ctr} -gt 0 ]]; then
         show_errMsg_wo_menuTitle_and_exit_func "${DOCKER__ERRMSG_ONE_OR_MORE_ENTRIES_ARE_INVALID}" \
                 ${DOCKER__NUMOFLINES_1} \
                 ${DOCKER__NUMOFLINES_0}
@@ -898,7 +924,7 @@ docker__overlay_diskpartsize_check_and_convert__sub() {
         diskpartsize_M=$(echo "${line}" | awk '{print $2}')
 
         #Update 'printmsg'
-        printmsg="-------:${DOCKER__STATUS}: ${diskpartname}: ${DOCKER__FG_LIGHTGREY}${diskpartsize_M}${DOCKER__NOCOLOR} " 
+        printmsg="${DOCKER__SIXDASHES_COLON}${DOCKER__STATUS}: ${diskpartname}: ${DOCKER__FG_LIGHTGREY}${diskpartsize_M}${DOCKER__NOCOLOR} " 
 
         #Check if 'rootfs' is found
         if [[ "${diskpartname}" == "${DOCKER__DISKPARTNAME_ROOTFS}" ]]; then
@@ -924,12 +950,12 @@ docker__overlay_diskpartsize_check_and_convert__sub() {
         if [[ $(isNumeric__func "${diskpartsize_M}") == false ]]; then  #is not numeric
             printmsg+="(${DOCKER__STATUS_LINVALID})"
 
-            ((docker__numOf_errors_found++))
+            ((docker__numof_errors_found_ctr++))
         else    #is numeric
             if [[ ${diskpartsize_M} -le 0 ]] && [[ "${diskpartname}" != "${DOCKER__DISKPARTNAME_REMAINING}" ]]; then  #less or equal to 0
                 printmsg+="(${DOCKER__STATUS_LINVALID})"
 
-                ((docker__numOf_errors_found++))
+                ((docker__numof_errors_found_ctr++))
             else    #greater than 0
                 if [[ "${diskpartname}" != "${DOCKER__DISKPARTNAME_REMAINING}" ]]; then
                     #Update index 'i' only if array 'docker__isp_partition_array' contains data
@@ -978,7 +1004,7 @@ docker__overlay_diskpartsize_check_and_convert__sub() {
         docker__isp_partition_arraylen=0
 
         #Update 'printmsg'
-        printmsg="-------:${DOCKER__STATUS}: ${DOCKER__DISKPARTNAME_OVERLAY}: ${DOCKER__FG_LIGHTGREY}${DOCKER__DASH}${DOCKER__NOCOLOR} "
+        printmsg="${DOCKER__SIXDASHES_COLON}${DOCKER__STATUS}: ${DOCKER__DISKPARTNAME_OVERLAY}: ${DOCKER__FG_LIGHTGREY}${DOCKER__DASH}${DOCKER__NOCOLOR} "
         printmsg+="(${DOCKER__STATUS_LINVALID})"
         #Print
         show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
@@ -991,7 +1017,7 @@ docker__overlay_diskpartsize_check_and_convert__sub() {
 
     #Check if 'rootfs' partition is configured
     if [[ ${rootfs_isfound} == false ]]; then
-        printmsg="-------:${DOCKER__STATUS}: (${DOCKER__FG_LIGHTGREY}${DOCKER__LOCATION_LLOCAL}${DOCKER__NOCOLOR}) " 
+        printmsg="${DOCKER__SIXDASHES_COLON}${DOCKER__STATUS}: (${DOCKER__FG_LIGHTGREY}${DOCKER__LOCATION_LLOCAL}${DOCKER__NOCOLOR}) " 
         printmsg+="${DOCKER__FG_LIGHTGREY}...${DOCKER__NOCOLOR}/${docker__docker_fs_partition_conf__filename} "
         printmsg+="(${DOCKER__FG_YELLOW}${DOCKER__DISKPARTNAME_ROOTFS}${DOCKER__NOCOLOR} "
         printmsg+="${DOCKER__FG_LIGHTRED}not${DOCKER__NOCOLOR} present)"
@@ -999,12 +1025,12 @@ docker__overlay_diskpartsize_check_and_convert__sub() {
         #Print
         show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
 
-        ((docker__numOf_errors_found++))
+        ((docker__numof_errors_found_ctr++))
     fi
 
     #Check if 'tb_reserve' partition is configured
     if [[ ${tb_reserve_isfound} == false ]]; then
-        printmsg="-------:${DOCKER__STATUS}: (${DOCKER__FG_LIGHTGREY}${DOCKER__LOCATION_LLOCAL}${DOCKER__NOCOLOR}) " 
+        printmsg="${DOCKER__SIXDASHES_COLON}${DOCKER__STATUS}: (${DOCKER__FG_LIGHTGREY}${DOCKER__LOCATION_LLOCAL}${DOCKER__NOCOLOR}) " 
         printmsg+="${DOCKER__FG_LIGHTGREY}...${DOCKER__NOCOLOR}/${docker__docker_fs_partition_conf__filename} "
         printmsg+="(${DOCKER__FG_YELLOW}${DOCKER__DISKPARTNAME_TB_RESERVE}${DOCKER__NOCOLOR} "
         printmsg+="${DOCKER__FG_LIGHTRED}not${DOCKER__NOCOLOR} present)"
@@ -1012,12 +1038,12 @@ docker__overlay_diskpartsize_check_and_convert__sub() {
         #Print
         show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
 
-        ((docker__numOf_errors_found++))
+        ((docker__numof_errors_found_ctr++))
     fi
 
     #Check if 'tb_reserve' partition is configured
     if [[ ${remaining_isfound} == false ]]; then
-        printmsg="-------:${DOCKER__STATUS}: (${DOCKER__FG_LIGHTGREY}${DOCKER__LOCATION_LLOCAL}${DOCKER__NOCOLOR}) " 
+        printmsg="${DOCKER__SIXDASHES_COLON}${DOCKER__STATUS}: (${DOCKER__FG_LIGHTGREY}${DOCKER__LOCATION_LLOCAL}${DOCKER__NOCOLOR}) " 
         printmsg+="${DOCKER__FG_LIGHTGREY}...${DOCKER__NOCOLOR}/${docker__docker_fs_partition_conf__filename} "
         printmsg+="(${DOCKER__FG_YELLOW}${DOCKER__DISKPARTNAME_REMAINING}${DOCKER__NOCOLOR} "
         printmsg+="${DOCKER__FG_LIGHTRED}not${DOCKER__NOCOLOR} present)"
@@ -1025,13 +1051,13 @@ docker__overlay_diskpartsize_check_and_convert__sub() {
         #Print
         show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
 
-        ((docker__numOf_errors_found++))
+        ((docker__numof_errors_found_ctr++))
     fi
 }
 
 docker__overlay_copy_files_from_src_to_tmp_handler__sub() {
     #Reset variables
-    docker__numOf_errors_found=0
+    docker__numof_errors_found_ctr=0
 
     #Print
     show_msg_only__func "${DOCKER__SUBJECT_START_COPY_FILES_FROM_SRC_TO_TMP_LOCATION}" "${DOCKER__NUMOFLINES_1}" "${DOCKER__NUMOFLINES_0}"
@@ -1062,8 +1088,13 @@ docker__overlay_copy_files_from_src_to_tmp_handler__sub() {
             "${DOCKER__EMPTYSTRING}" \
             "${docker__docker_overlayfs_tb_init_sh__fpath}"
 
+    docker__overlay_copy_file__sub "${DOCKER__EMPTYSTRING}" \
+            "${docker__LTPP3_ROOTFS_linux_scripts_tb_init_bootmenu__fpath}" \
+            "${DOCKER__EMPTYSTRING}" \
+            "${docker__docker_overlayfs_tb_init_bootmenu__fpath}"
+
     #Show error message and exit (if applicable)
-    if [[ ${docker__numOf_errors_found} -gt 0 ]]; then
+    if [[ ${docker__numof_errors_found_ctr} -gt 0 ]]; then
         show_errMsg_wo_menuTitle_and_exit_func "${DOCKER__ERRMSG_ONE_OR_MORE_CHECKITEMS_FAILED}" \
                 ${DOCKER__NUMOFLINES_1} \
                 ${DOCKER__NUMOFLINES_0}
@@ -1075,7 +1106,7 @@ docker__overlay_copy_files_from_src_to_tmp_handler__sub() {
 docker__overlay_copy_file__sub() {
     #Remark:
     #   This subroutine implicitely outputs the variable:
-    #       docker__numOf_errors_found (integer)
+    #       docker__numof_errors_found_ctr (integer)
     #Input args
     local src_cid__input=${1}
     local srcfpath__input=${2}
@@ -1092,7 +1123,7 @@ docker__overlay_copy_file__sub() {
     local printmsg="${DOCKER__EMPTYSTRING}"
 
     #Remove destination file
-    remove_file__func "${dst_cid__input}" "${dstfpath__input}" "${DOCKER__SEVENDASHES_COLON}"
+    remove_file__func "${dst_cid__input}" "${dstfpath__input}" "${DOCKER__SIXDASHES_COLON}"
 
     #Copy file
     if [[ -z "${src_cid__input}" ]] && [[ -z ${dst_cid__input} ]]; then
@@ -1112,21 +1143,21 @@ docker__overlay_copy_file__sub() {
     fi
 
     #Check 'exitcode' and update 'printmsg'
-    printmsg="-------:${DOCKER__STATUS}: copy file ${DOCKER__FG_LIGHTGREY}${srcfilename}${DOCKER__NOCOLOR}: "
+    printmsg="${DOCKER__SIXDASHES_COLON}${DOCKER__STATUS}: copy file ${DOCKER__FG_LIGHTGREY}${srcfilename}${DOCKER__NOCOLOR}: "
     if [[ ${exitcode} -eq 0 ]]; then
         printmsg+="${DOCKER__STATUS_SUCCESSFUL}\n"
     else
         printmsg="${DOCKER__STATUS_FAILED}\n"
 
-        ((docker__numOf_errors_found++))
+        ((docker__numof_errors_found_ctr++))
     fi
 
     #Update 'printmsg' with 'as'
-    printmsg+="-----------:${DOCKER__AS}: "
+    printmsg+="${DOCKER__SIXDASHES_COLON}${DOCKER__AS}: "
     printmsg+="${DOCKER__FG_LIGHTGREY}${dstfilename}${DOCKER__NOCOLOR}\n"
 
     #Update 'printmsg' with 'from'
-    printmsg+="-----------:${DOCKER__FROM} "
+    printmsg+="${DOCKER__SIXDASHES_COLON}${DOCKER__FROM} "
     if [[ -z "${src_cid__input}" ]]; then
         printmsg+="(${DOCKER__FG_LIGHTGREY}${DOCKER__LOCATION_LLOCAL}${DOCKER__NOCOLOR}): "
     else
@@ -1135,7 +1166,7 @@ docker__overlay_copy_file__sub() {
     printmsg+="${DOCKER__FG_LIGHTGREY}${srcdir}${DOCKER__NOCOLOR}\n"
 
     #Update 'printmsg' with 'to'
-    printmsg+="-----------:${DOCKER__TO} "
+    printmsg+="${DOCKER__SIXDASHES_COLON}${DOCKER__TO} "
     if [[ -z "${dst_cid__input}" ]]; then
         printmsg+="(${DOCKER__FG_LIGHTGREY}${DOCKER__LOCATION_LLOCAL}${DOCKER__NOCOLOR}): "
     else
@@ -1149,7 +1180,7 @@ docker__overlay_copy_file__sub() {
 
 docker__overlay_tempfiles_patch_handler__sub() {
     #Reset variables
-    docker__numOf_errors_found=0
+    docker__numof_errors_found_ctr=0
 
     #Print
     show_msg_only__func "${DOCKER__SUBJECT_START_PATCH_OVERLAY_TEMPFILES}" "${DOCKER__NUMOFLINES_1}" "${DOCKER__NUMOFLINES_0}"
@@ -1161,7 +1192,7 @@ docker__overlay_tempfiles_patch_handler__sub() {
     docker__overlay_tempfile_tb_init_sh_and_fstab_patch__sub
 
     #Show error message and exit (if applicable)
-    if [[ ${docker__numOf_errors_found} -gt 0 ]]; then
+    if [[ ${docker__numof_errors_found_ctr} -gt 0 ]]; then
         show_errMsg_wo_menuTitle_and_exit_func "${DOCKER__ERRMSG_FILECONTENT_IS_NOT_CONSISTENT_OR_CORRUPT}" \
                 ${DOCKER__NUMOFLINES_1} \
                 ${DOCKER__NUMOFLINES_0}
@@ -1188,7 +1219,7 @@ docker__overlay_tempfile_isp_sh_patch__sub() {
 
 
     #Start generating 'printmsg'
-    printmsg="-------:${DOCKER__STATUS}: patch ${DOCKER__FG_LIGHTGREY}${docker__docker_overlayfs_isp_sh__fpath}: " 
+    printmsg="${DOCKER__SIXDASHES_COLON}${DOCKER__STATUS}: patch ${DOCKER__FG_LIGHTGREY}${docker__docker_overlayfs_isp_sh__fpath}: " 
 
     #Get the 'linenum' of each 'if' and 'elif' condition
     #   if [[ ... ]]; then      <--+    linenum_1
@@ -1209,7 +1240,7 @@ docker__overlay_tempfile_isp_sh_patch__sub() {
     #Check if 'if_linenum_arrlen = 0'
     if [[ ${if_linenum_arrlen} -eq 0 ]]; then
         #Increment index
-        ((docker__numOf_errors_found++))
+        ((docker__numof_errors_found_ctr++))
 
         #Update 'printmsg'
         printmsg+="${DOCKER__STATUS_FAILED}\n"
@@ -1235,7 +1266,7 @@ docker__overlay_tempfile_isp_sh_patch__sub() {
     #Check if 'emmc_linenum = 0'
     if [[ ${emmc_linenum} -eq 0 ]]; then
         #Increment index
-        ((docker__numOf_errors_found++))
+        ((docker__numof_errors_found_ctr++))
 
         #Update 'printmsg'
         printmsg+="${DOCKER__STATUS_FAILED}\n"
@@ -1265,7 +1296,7 @@ docker__overlay_tempfile_isp_sh_patch__sub() {
 
     if [[ ${emmc_linenumend} -eq 0 ]]; then
         #Increment index
-        ((docker__numOf_errors_found++))
+        ((docker__numof_errors_found_ctr++))
 
         #Update 'printmsg'
         printmsg+="${DOCKER__STATUS_FAILED}\n"
@@ -1291,7 +1322,7 @@ docker__overlay_tempfile_isp_sh_patch__sub() {
     if [[ ${linenum_containing_rootfs_0x1e0000000} -lt ${emmc_linenumstart} ]] || \
             [[ ${linenum_containing_rootfs_0x1e0000000} -gt ${emmc_linenumend} ]]; then
         #Increment index
-        ((docker__numOf_errors_found++))
+        ((docker__numof_errors_found_ctr++))
 
         #Update 'printmsg'
         printmsg+="${DOCKER__STATUS_FAILED}\n"
@@ -1349,7 +1380,7 @@ docker__overlay_tempfile_isp_sh_patch__sub() {
     docker__exitcode=$?
     if [[ ${docker__exitcode} -ne 0 ]]; then #error found
         #Increment index
-        ((docker__numOf_errors_found++))
+        ((docker__numof_errors_found_ctr++))
 
         #Update 'printmsg'
         printmsg+="${DOCKER__STATUS_FAILED}"
@@ -1369,7 +1400,7 @@ docker__overlay_tempfile_isp_c_patch__sub() {
     local sed_newstring="${DOCKER__EMPTYSTRING}"
 
     #Start generating 'printmsg'
-    printmsg="-------:${DOCKER__STATUS}: patch ${DOCKER__FG_LIGHTGREY}${docker__docker_overlayfs_isp_c__fpath}: " 
+    printmsg="${DOCKER__SIXDASHES_COLON}${DOCKER__STATUS}: patch ${DOCKER__FG_LIGHTGREY}${docker__docker_overlayfs_isp_c__fpath}: " 
 
     #Find and get linenum of pattern-parameter 'DOCKER__PATTERN_ISP_C_1'
     linenum_pattern1=$(retrieve_linenum_based_on_specified_pattern_colnum_delimiterchar_from_file__func \
@@ -1379,7 +1410,7 @@ docker__overlay_tempfile_isp_c_patch__sub() {
             "${DOCKER__COLON}")
     if [[ ${linenum_pattern1} -eq 0 ]]; then
         #Increment index
-        ((docker__numOf_errors_found++))
+        ((docker__numof_errors_found_ctr++))
 
         #Update 'printmsg'
         printmsg+="${DOCKER__STATUS_FAILED}\n"
@@ -1397,7 +1428,7 @@ docker__overlay_tempfile_isp_c_patch__sub() {
             "${DOCKER__PATTERN_ISP_C_2}" "${DOCKER__COLNUM_1}" "${DOCKER__COLON}")
     if [[ ${linenum_pattern2} -eq 0 ]]; then
         #Increment index
-        ((docker__numOf_errors_found++))
+        ((docker__numof_errors_found_ctr++))
 
         #Update 'printmsg'
         printmsg+="${DOCKER__STATUS_FAILED}\n"
@@ -1415,7 +1446,7 @@ docker__overlay_tempfile_isp_c_patch__sub() {
             "${DOCKER__PATTERN_ISP_C_3}" "${DOCKER__COLNUM_1}" "${DOCKER__COLON}")
     if [[ ${linenum_pattern3} -eq 0 ]]; then
         #Increment index
-        ((docker__numOf_errors_found++))
+        ((docker__numof_errors_found_ctr++))
 
         #Update 'printmsg'
         printmsg+="${DOCKER__STATUS_FAILED}\n"
@@ -1431,7 +1462,7 @@ docker__overlay_tempfile_isp_c_patch__sub() {
     if [[ ${linenum_pattern2} -lt ${linenum_pattern1} ]] || \
             [[ ${linenum_pattern2} -gt ${linenum_pattern3} ]]; then
         #Increment index
-        ((docker__numOf_errors_found++))
+        ((docker__numof_errors_found_ctr++))
 
         #Update 'printmsg'
         printmsg+="${DOCKER__STATUS_FAILED}\n"
@@ -1457,7 +1488,7 @@ docker__overlay_tempfile_isp_c_patch__sub() {
     #Check exit-code ($?)
     if [[ "$?" -ne 0 ]]; then
         #Increment index
-        ((docker__numOf_errors_found++))
+        ((docker__numof_errors_found_ctr++))
 
         #Update 'printmsg'
         printmsg+="${DOCKER__STATUS_FAILED}"
@@ -1476,7 +1507,7 @@ docker__overlay_tempfile_pentagram_common_h_patch__sub() {
     local sed_newstring="${DOCKER__EMPTYSTRING}"
 
     #Start generating 'printmsg'
-    printmsg="-------:${DOCKER__STATUS}: patch ${DOCKER__FG_LIGHTGREY}${docker__docker_overlayfs_pentagram_common_h__fpath}: " 
+    printmsg="${DOCKER__SIXDASHES_COLON}${DOCKER__STATUS}: patch ${DOCKER__FG_LIGHTGREY}${docker__docker_overlayfs_pentagram_common_h__fpath}: " 
 
     #Find and get linenum of pattern-parameter 'DOCKER__PATTERN_ISP_C_3'
     linenum_pattern=$(retrieve_linenum_based_on_specified_pattern_colnum_delimiterchar_from_file__func \
@@ -1485,7 +1516,7 @@ docker__overlay_tempfile_pentagram_common_h_patch__sub() {
 
     if [[ ${linenum_pattern} -eq 0 ]]; then
         #Increment index
-        ((docker__numOf_errors_found++))
+        ((docker__numof_errors_found_ctr++))
 
         #Update 'printmsg'
         printmsg+="${DOCKER__STATUS_FAILED}\n"
@@ -1518,7 +1549,7 @@ docker__overlay_tempfile_pentagram_common_h_patch__sub() {
     docker__exitcode=$?
     if [[ ${docker__exitcode} -ne 0 ]]; then #error found
         #Increment index
-        ((docker__numOf_errors_found++))
+        ((docker__numof_errors_found_ctr++))
 
         #Update 'printmsg'
         printmsg+="${DOCKER__STATUS_FAILED}"
@@ -1531,7 +1562,12 @@ docker__overlay_tempfile_pentagram_common_h_patch__sub() {
 }
 docker__overlay_tempfile_tb_init_sh_and_fstab_patch__sub() {
     #Define constants
-    local OVERLAY_PARTITION_NUMBER=10
+    local OVERLAy_PARTITION_NUM=10
+    local ADDITIONAL_PARTITION_NUM_START=$((OVERLAy_PARTITION_NUM + 1))
+    #array-index = 0: rootfs (/): mmcblk0p8
+    #array-index = 1: tb_reserve: mmcblk0p9
+    #array-index = 2: overlay: mmcblk0p10
+    local ADDITIONAL_PARTITION_ARRAY_INDEX_START=3
 
     #Define variables
     local dev_mmcblk0pp="${DOCKER__EMPTYSTRING}"
@@ -1557,17 +1593,18 @@ docker__overlay_tempfile_tb_init_sh_and_fstab_patch__sub() {
 
     #Remark:
     #   Should there be any ADDITIONAL partitions (excluding 'overlay')
-    #   ...then this subroutine will add extra command lines to 'tb_init.sh'
-    #   ...which will make sure that those additional partitions will be
-    #   ...mounted automatically at boot.
+    #       then this subroutine will add extra command lines to 'tb_init.sh'
+    #       directly under the field '#---ADDITIONAL PARTITIONS'.
+    #       which will make sure that those additional partitions will be
+    #       mounted automatically at boot.
     #   
     #   'docker__isp_partition_arraylen' is calculated in 'docker__overlay_tempfile_isp_sh_patch__sub'
     if [[ ${docker__isp_partition_arraylen} -gt 3 ]]; then
         i_last=$((docker__isp_partition_arraylen - 1))
-        p=11
+        p=${ADDITIONAL_PARTITION_NUM_START}
 
         #Note: 'i' is array-index, which starts with '0'
-        for (( i=3; i<${docker__isp_partition_arraylen}; i++ ));
+        for (( i=${ADDITIONAL_PARTITION_ARRAY_INDEX_START}; i<${docker__isp_partition_arraylen}; i++ ));
         do
             #Get array-item
             isp_partition_arrayitem="${docker__isp_partition_array[i]}"
@@ -1619,7 +1656,7 @@ docker__overlay_tempfile_tb_init_sh_and_fstab_patch__sub() {
 
 
         #Start generating 'printmsg'
-        printmsg="-------:${DOCKER__STATUS}: patch ${DOCKER__FG_LIGHTGREY}${docker__docker_overlayfs_tb_init_sh__fpath}: " 
+        printmsg="${DOCKER__SIXDASHES_COLON}${DOCKER__STATUS}: patch ${DOCKER__FG_LIGHTGREY}${docker__docker_overlayfs_tb_init_sh__fpath}: " 
 
         #Insert 'tb_init_filecontent' into 'tb_init.sh' after line '#---ADDITIONAL PARTITIONS'
         tb_init_linenum_match=$(grep -nF "${DOCKER__PATTERN_TB_INIT_ADDITIONAL_PARTITIONS}" \
@@ -1635,7 +1672,7 @@ docker__overlay_tempfile_tb_init_sh_and_fstab_patch__sub() {
         docker__exitcode=$?
         if [[ ${docker__exitcode} -ne 0 ]]; then #error found
             #Increment index
-            ((docker__numOf_errors_found++))
+            ((docker__numof_errors_found_ctr++))
 
             #Update 'printmsg'
             printmsg+="${DOCKER__STATUS_FAILED}\n"
@@ -1647,7 +1684,7 @@ docker__overlay_tempfile_tb_init_sh_and_fstab_patch__sub() {
         docker__exitcode=$?
         if [[ ${docker__exitcode} -ne 0 ]]; then #error found
             #Increment index
-            ((docker__numOf_errors_found++))
+            ((docker__numof_errors_found_ctr++))
 
             #Update 'printmsg'
             printmsg+="${DOCKER__STATUS_FAILED}"
@@ -1661,7 +1698,7 @@ docker__overlay_tempfile_tb_init_sh_and_fstab_patch__sub() {
 
 
     #Start generating 'printmsg'
-    printmsg+="-------:${DOCKER__STATUS}: patch ${DOCKER__FG_LIGHTGREY}${docker__docker_overlayfs_fstab__fpath}: " 
+    printmsg+="${DOCKER__SIXDASHES_COLON}${DOCKER__STATUS}: patch ${DOCKER__FG_LIGHTGREY}${docker__docker_overlayfs_fstab__fpath}: " 
 
     #Add 'fstab_filecontent' to file 'docker__docker_overlayfs_fstab__fpath'
     echo -e "${fstab_filecontent}" | tee -a ${docker__docker_overlayfs_fstab__fpath} >/dev/null
@@ -1669,7 +1706,7 @@ docker__overlay_tempfile_tb_init_sh_and_fstab_patch__sub() {
 
 docker__overlay_copy_files_from_tmp_to_dst_handler__sub() {
     #Reset variables
-    docker__numOf_errors_found=0
+    docker__numof_errors_found_ctr=0
 
     #Print
     show_msg_only__func "${DOCKER__SUBJECT_START_COPY_FILES_FROM_TMP_TO_DST_LOCATION}" "${DOCKER__NUMOFLINES_1}" "${DOCKER__NUMOFLINES_0}"
@@ -1700,8 +1737,13 @@ docker__overlay_copy_files_from_tmp_to_dst_handler__sub() {
             "${docker__containerid}" \
             "${docker__SP7021_linux_rootfs_initramfs_disk_sbin_tb_init_sh__fpath}"
 
+    docker__overlay_copy_file__sub "${DOCKER__EMPTYSTRING}" \
+            "${docker__docker_overlayfs_tb_init_bootmenu__fpath}" \
+            "${docker__containerid}" \
+            "${docker__SP7021_linux_rootfs_initramfs_disk_sbin_tb_init_bootmenu__fpath}"
+
     #Show error message and exit (if applicable)
-    if [[ ${docker__numOf_errors_found} -gt 0 ]]; then
+    if [[ ${docker__numof_errors_found_ctr} -gt 0 ]]; then
         show_errMsg_wo_menuTitle_and_exit_func "${DOCKER__ERRMSG_ONE_OR_MORE_CHECKITEMS_FAILED}" \
                 ${DOCKER__NUMOFLINES_1} \
                 ${DOCKER__NUMOFLINES_0}
@@ -1713,7 +1755,7 @@ docker__overlay_copy_files_from_tmp_to_dst_handler__sub() {
 
 docker__overlay_dst_exec_files_change_permission_handler__sub() {
     #Reset variables
-    docker__numOf_errors_found=0
+    docker__numof_errors_found_ctr=0
 
     #Print
     show_msg_only__func "${DOCKER__SUBJECT_START_DST_EXECFILES_CHANGE_PERMISSION_TO_RWXRXRX}" "${DOCKER__NUMOFLINES_1}" "${DOCKER__NUMOFLINES_0}"
@@ -1721,9 +1763,10 @@ docker__overlay_dst_exec_files_change_permission_handler__sub() {
     #Change permission
     docker__overlay_dst_exec_file_change_permission__sub "${docker__SP7021_build_isp_sh__fpath}"
     docker__overlay_dst_exec_file_change_permission__sub "${docker__SP7021_linux_rootfs_initramfs_disk_sbin_tb_init_sh__fpath}"
+    docker__overlay_dst_exec_file_change_permission__sub "${docker__SP7021_linux_rootfs_initramfs_disk_sbin_tb_init_bootmenu__fpath}"
 
     #Show error message and exit (if applicable)
-    if [[ ${docker__numOf_errors_found} -gt 0 ]]; then
+    if [[ ${docker__numof_errors_found_ctr} -gt 0 ]]; then
         show_errMsg_wo_menuTitle_and_exit_func "${DOCKER__ERRMSG_COULD_NOT_CHANGE_FILE_PERMISSION_TO_RWXRXRX}" \
                 ${DOCKER__NUMOFLINES_1} \
                 ${DOCKER__NUMOFLINES_0}
@@ -1742,7 +1785,7 @@ docker__overlay_dst_exec_file_change_permission__sub() {
     local printmsg="${DOCKER__EMPTYSTRING}"
 
     #Start generating 'printmsg'
-    printmsg="-------:${DOCKER__STATUS}: chmod ${DOCKER__CHMOD_755}${DOCKER__FG_LIGHTGREY}${targetfpath__input}: " 
+    printmsg="${DOCKER__SIXDASHES_COLON}${DOCKER__STATUS}: chmod ${DOCKER__CHMOD_755}${DOCKER__FG_LIGHTGREY}${targetfpath__input}: " 
 
     #Update variables
     docker_exec_cmd="${DOCKER__EXEC_IT} ${docker__containerid} ${docker__bash_fpath} -c"
@@ -1759,7 +1802,7 @@ docker__overlay_dst_exec_file_change_permission__sub() {
     docker__exitcode=$?
     if [[ ${docker__exitcode} -ne 0 ]]; then #error found
         #Increment index
-        ((docker__numOf_errors_found++))
+        ((docker__numof_errors_found_ctr++))
 
         #Update 'printmsg'
         printmsg+="${DOCKER__STATUS_FAILED}"
@@ -1773,7 +1816,7 @@ docker__overlay_dst_exec_file_change_permission__sub() {
 
 docker__overlay_tb_init_softlink_handler__sub() {
     #Reset variables
-    docker__numOf_errors_found=0
+    docker__numof_errors_found_ctr=0
 
     #Print
     show_msg_only__func "${DOCKER__SUBJECT_START_TB_INIT_SH_CREATE_SOFTLINK}" "${DOCKER__NUMOFLINES_1}" "${DOCKER__NUMOFLINES_0}"
@@ -1782,7 +1825,7 @@ docker__overlay_tb_init_softlink_handler__sub() {
     docker__overlay_tb_init_softlink_create__sub
 
     #Show error message and exit (if applicable)
-    if [[ ${docker__numOf_errors_found} -gt 0 ]]; then
+    if [[ ${docker__numof_errors_found_ctr} -gt 0 ]]; then
         show_errMsg_wo_menuTitle_and_exit_func "${DOCKER__ERRMSG_COULD_NOT_CREATE_SOFTLINK}" \
                 ${DOCKER__NUMOFLINES_1} \
                 ${DOCKER__NUMOFLINES_0}
@@ -1799,7 +1842,7 @@ docker__overlay_tb_init_softlink_create__sub() {
     local printmsg="${DOCKER__EMPTYSTRING}"
 
     #Start generating 'printmsg'
-    printmsg="-------:${DOCKER__STATUS}: crete soft-link of ${DOCKER__FG_LIGHTGREY}${docker__tb_init_sh__filename}${DOCKER__NOCOLOR}: "
+    printmsg="${DOCKER__SIXDASHES_COLON}${DOCKER__STATUS}: crete soft-link of ${DOCKER__FG_LIGHTGREY}${docker__tb_init_sh__filename}${DOCKER__NOCOLOR}: "
 
     #Update variables
     docker_exec_cmd="${DOCKER__EXEC_IT} ${docker__containerid} ${docker__bash_fpath} -c"
@@ -1811,7 +1854,7 @@ docker__overlay_tb_init_softlink_create__sub() {
     #Remove soft-link 'init'
     remove_file__func "${docker__containerid}" \
             "${docker__SP7021_linux_rootfs_initramfs_disk_sbin_init__fpath}" \
-            "${DOCKER__SEVENDASHES_COLON}"
+            "${DOCKER__SIXDASHES_COLON}"
 
     #Execute command
     if [[ ${docker__isRunning_inside_container} == true ]]; then   #currently in a container
@@ -1824,7 +1867,7 @@ docker__overlay_tb_init_softlink_create__sub() {
     docker__exitcode=$?
     if [[ ${docker__exitcode} -ne 0 ]]; then #error found
         #Increment index
-        ((docker__numOf_errors_found++))
+        ((docker__numof_errors_found_ctr++))
 
         #Update 'printmsg'
         printmsg+="${DOCKER__STATUS_FAILED}"
@@ -1860,7 +1903,11 @@ docker__overlay_restore_original_state__sub() {
 
     remove_file__func "${docker__containerid}" \
             "${docker__SP7021_linux_rootfs_initramfs_disk_sbin_tb_init_sh__fpath}" \
-            "${DOCKER__SEVENDASHES_COLON}"
+            "${DOCKER__SIXDASHES_COLON}"
+
+    remove_file__func "${docker__containerid}" \
+            "${docker__SP7021_linux_rootfs_initramfs_disk_sbin_tb_init_bootmenu__fpath}" \
+            "${DOCKER__SIXDASHES_COLON}"
 
     #/usr/sbin/tb_init_bootmenu has to be removed here
 }
@@ -1874,22 +1921,36 @@ docker__run_script__sub() {
     local printmsg="${DOCKER__EMPTYSTRING}"
 
     #Execute script 'docker__build_ispboootbin_fpath'
-    if [[ ${docker__isRunning_inside_container} == true ]]; then   #currently in a container
-        ${cmd_outside_container}
-    else    #currently outside of a container
-        ${docker_exec_cmd} "${cmd_inside_container}"
-    fi
+    # printmsg="---:${DOCKER__START}: build ${DOCKER__FG_LIGHTGREY}ISPBOOOT.BIN${DOCKER__NOCOLOR}"
+    # if [[ ${docker__isRunning_inside_container} == true ]]; then   #currently in a container
+    #     ${cmd_outside_container}
+    # else    #currently outside of a container
+    #     ${docker_exec_cmd} "${cmd_inside_container}"
+    # fi
 
     #Check if there are any errors
     docker__exitcode=$?
     if [[ ${docker__exitcode} -ne 0 ]]; then #error found
-        printmsg="-------:${DOCKER__STATUS}: build ${DOCKER__FG_LIGHTGREY}ISPBOOOT.BIN${DOCKER__NOCOLOR}: ${DOCKER__STATUS_FAILED}"
-        show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_1}" "${DOCKER__NUMOFLINES_0}"
+        #Update print message
+        printmsg="${DOCKER__SIXDASHES_COLON}${DOCKER__STATUS}: build ${DOCKER__FG_LIGHTGREY}ISPBOOOT.BIN${DOCKER__NOCOLOR}: ${DOCKER__STATUS_FAILED}"
 
-        exit__func "${docker__exitcode}" "${DOCKER__NUMOFLINES_1}"
+        # exit__func "${docker__exitcode}" "${DOCKER__NUMOFLINES_1}"
     else
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+        #Update print message
+        printmsg="${DOCKER__SIXDASHES_COLON}${DOCKER__STATUS}: build ${DOCKER__FG_LIGHTGREY}ISPBOOOT.BIN${DOCKER__NOCOLOR}: ${DOCKER__STATUS_SUCCESSFUL}"
+
+        #Print the following message in case 'docker__overlaysetting_set = DOCKER__OVERLAYFS_ENABLED'
+        if [[ "${docker__overlaysetting_set}" == "${DOCKER__OVERLAYFS_ENABLED}" ]]; then
+            printmsg+="\n"
+            printmsg+="${DOCKER__NINEDASHES_COLON}${DOCKER__NOTICE}: After reimaging the TPS with the new ${DOCKER__FG_LIGHTGREY}ISPBOOOT.BIN${DOCKER__NOCOLOR} image...\n"
+            printmsg+="${DOCKER__NINEDASHES_COLON}${DOCKER__NOTICE}: ...executable ${DOCKER__FG_LIGHTGREY}tb_init_bootmenu${DOCKER__NOCOLOR} will become available.\n"
+            printmsg+="${DOCKER__NINEDASHES_COLON}${DOCKER__NOTICE}: With this tool, overlay ${DOCKER__FG_LIGHTGREY}mode/options${DOCKER__NOCOLOR} can configured ${DOCKER__FG_LIGHTGREY}within${DOCKER__NOCOLOR} Linux."
+        fi
+        # moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
     fi
+
+    #Print message
+    show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_1}" "${DOCKER__NUMOFLINES_0}"
 }
 
 docker__main__sub(){

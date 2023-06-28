@@ -138,62 +138,62 @@
 
 #define MD_BUTTON_VARIABLES_INIT_SHOW \
 "echo ---:tibbo:init: variables \n; " \
-"echo ------: tb_button_state=$tb_button_state \n; " \
-"echo ------: ISP_IF_SD1=$ISP_IF_SD1 \n; " \
-"echo ------: ISP_IF_USB0=$ISP_IF_USB0 \n; " \
-"echo ------: ISP_IF_USB1=$ISP_IF_USB1 \n; " \
-"echo ------: SDDEV1_CMD=$SDDEV1_CMD \n; " \
-"echo ------: USBDEV0_CMD=$USBDEV0_CMD \n; " \
-"echo ------: USBDEV1_CMD=$USBDEV1_CMD \n; " \
-"echo ------: isp_if_test=$isp_if_test \n; " \
-"echo ------: isp_bootseq1=$isp_bootseq1 \n; " \
-"echo ------: isp_bootseq2=$isp_bootseq2 \n; " \
-"echo ------: isp_bootseq3=$isp_bootseq3 \n; " \
+"echo ${DOCKER__SIXDASHES_COLON} tb_button_state=$tb_button_state \n; " \
+"echo ${DOCKER__SIXDASHES_COLON} ISP_IF_SD1=$ISP_IF_SD1 \n; " \
+"echo ${DOCKER__SIXDASHES_COLON} ISP_IF_USB0=$ISP_IF_USB0 \n; " \
+"echo ${DOCKER__SIXDASHES_COLON} ISP_IF_USB1=$ISP_IF_USB1 \n; " \
+"echo ${DOCKER__SIXDASHES_COLON} SDDEV1_CMD=$SDDEV1_CMD \n; " \
+"echo ${DOCKER__SIXDASHES_COLON} USBDEV0_CMD=$USBDEV0_CMD \n; " \
+"echo ${DOCKER__SIXDASHES_COLON} USBDEV1_CMD=$USBDEV1_CMD \n; " \
+"echo ${DOCKER__SIXDASHES_COLON} isp_if_test=$isp_if_test \n; " \
+"echo ${DOCKER__SIXDASHES_COLON} isp_bootseq1=$isp_bootseq1 \n; " \
+"echo ${DOCKER__SIXDASHES_COLON} isp_bootseq2=$isp_bootseq2 \n; " \
+"echo ${DOCKER__SIXDASHES_COLON} isp_bootseq3=$isp_bootseq3 \n; " \
 
 #define MD_BUTTON_VARIABLES_ENDRESULT_SHOW \
 "echo ---:tibbo:end-result: variables \n; " \
-"echo ------: tb_button_state=$tb_button_state \n; " \
-"echo ------: ISP_IF_SD1=$ISP_IF_SD1 \n; " \
-"echo ------: ISP_IF_USB0=$ISP_IF_USB0 \n; " \
-"echo ------: ISP_IF_USB1=$ISP_IF_USB1 \n; " \
-"echo ------: SDDEV1_CMD=$SDDEV1_CMD \n; " \
-"echo ------: USBDEV0_CMD=$USBDEV0_CMD \n; " \
-"echo ------: USBDEV1_CMD=$USBDEV1_CMD \n; " \
-"echo ------: isp_if_test=$isp_if_test \n; " \
-"echo ------: isp_bootseq1=$isp_bootseq1 \n; " \
-"echo ------: isp_bootseq2=$isp_bootseq2 \n; " \
-"echo ------: isp_bootseq3=$isp_bootseq3 \n; " \
+"echo ${DOCKER__SIXDASHES_COLON} tb_button_state=$tb_button_state \n; " \
+"echo ${DOCKER__SIXDASHES_COLON} ISP_IF_SD1=$ISP_IF_SD1 \n; " \
+"echo ${DOCKER__SIXDASHES_COLON} ISP_IF_USB0=$ISP_IF_USB0 \n; " \
+"echo ${DOCKER__SIXDASHES_COLON} ISP_IF_USB1=$ISP_IF_USB1 \n; " \
+"echo ${DOCKER__SIXDASHES_COLON} SDDEV1_CMD=$SDDEV1_CMD \n; " \
+"echo ${DOCKER__SIXDASHES_COLON} USBDEV0_CMD=$USBDEV0_CMD \n; " \
+"echo ${DOCKER__SIXDASHES_COLON} USBDEV1_CMD=$USBDEV1_CMD \n; " \
+"echo ${DOCKER__SIXDASHES_COLON} isp_if_test=$isp_if_test \n; " \
+"echo ${DOCKER__SIXDASHES_COLON} isp_bootseq1=$isp_bootseq1 \n; " \
+"echo ${DOCKER__SIXDASHES_COLON} isp_bootseq2=$isp_bootseq2 \n; " \
+"echo ${DOCKER__SIXDASHES_COLON} isp_bootseq3=$isp_bootseq3 \n; " \
 
 #define MD_BUTTON_BOOTSEQ_SELECT \
 "echo ---:tibbo:isp-bootseq-start: selection \n; " \
-"echo ------:tibbo:isp-bootseq-note: please ignore warnings (should there be any) \n; " \
+"echo ${DOCKER__SIXDASHES_COLON}tibbo:isp-bootseq-note: please ignore warnings (should there be any) \n; " \
 "if test -e mmc 0:9 /.tb_init_bootseq_sdusb0usb1; then \n; " /* START: check if .tb_init_bootseq_sdusb0usb1 is PRESENT in /tb_reserve */ \
-"echo ------:tibbo:bootseq-chosen: SD > USB0 > USB1 \n; " \
+"echo ${DOCKER__SIXDASHES_COLON}tibbo:bootseq-chosen: SD > USB0 > USB1 \n; " \
 "setenv isp_bootseq1 run md_button_validate_sd_cmd \n; " \
 "setenv isp_bootseq2 run md_button_validate_usb0_cmd \n; " \
 "setenv isp_bootseq3 run md_button_validate_usb1_cmd \n; " \
 "elif test -e mmc 0:9 /.tb_init_bootseq_sdusb1usb0; then \n; " /* ELIF: check if .tb_init_bootseq_sdusb1usb0 is PRESENT in /tb_reserve */ \
-"echo ------:tibbo:bootseq-chosen: SD > USB1 > USB0 \n; " \
+"echo ${DOCKER__SIXDASHES_COLON}tibbo:bootseq-chosen: SD > USB1 > USB0 \n; " \
 "setenv isp_bootseq1 run md_button_validate_sd_cmd \n; " \
 "setenv isp_bootseq2 run md_button_validate_usb1_cmd \n; " \
 "setenv isp_bootseq3 run md_button_validate_usb0_cmd \n; " \
 "elif test -e mmc 0:9 /.tb_init_bootseq_usb0sdusb1; then \n; " /* ELIF: check if .tb_init_bootseq_usb0sdusb1 is PRESENT in /tb_reserve */ \
-"echo ------:tibbo:bootseq-chosen: USB0 > SD > USB1 \n; " \
+"echo ${DOCKER__SIXDASHES_COLON}tibbo:bootseq-chosen: USB0 > SD > USB1 \n; " \
 "setenv isp_bootseq1 run md_button_validate_usb0_cmd \n; " \
 "setenv isp_bootseq2 run md_button_validate_sd_cmd \n; " \
 "setenv isp_bootseq3 run md_button_validate_usb1_cmd \n; " \
 "elif test -e mmc 0:9 /.tb_init_bootseq_usb0usb1sd; then \n; " /* ELIF: check if .tb_init_bootseq_usb0usb1sd is PRESENT in /tb_reserve */ \
-"echo ------:tibbo:bootseq-chosen: USB0 > USB1 > SD \n; " \
+"echo ${DOCKER__SIXDASHES_COLON}tibbo:bootseq-chosen: USB0 > USB1 > SD \n; " \
 "setenv isp_bootseq1 run md_button_validate_usb0_cmd \n; " \
 "setenv isp_bootseq2 run md_button_validate_usb1_cmd \n; " \
 "setenv isp_bootseq3 run md_button_validate_sd_cmd \n; " \
 "elif test -e mmc 0:9 /.tb_init_bootseq_usb1sdusb0; then \n; " /* ELIF: check if .tb_init_bootseq_usb1sdusb0 is PRESENT in /tb_reserve */ \
-"echo ------:tibbo:bootseq-chosen: USB1 > SD > USB0 \n; " \
+"echo ${DOCKER__SIXDASHES_COLON}tibbo:bootseq-chosen: USB1 > SD > USB0 \n; " \
 "setenv isp_bootseq1 run md_button_validate_usb1_cmd \n; " \
 "setenv isp_bootseq2 run md_button_validate_sd_cmd \n; " \
 "setenv isp_bootseq3 run md_button_validate_usb0_cmd \n; " \
 "elif test -e mmc 0:9 /.tb_init_bootseq_usb1usb0sd; then \n; " /* ELIF: check if .tb_init_bootseq_usb1usb0sd is PRESENT in /tb_reserve */ \
-"echo ------:tibbo:bootseq-chosen: USB1 > USB0 > SD \n; " \
+"echo ${DOCKER__SIXDASHES_COLON}tibbo:bootseq-chosen: USB1 > USB0 > SD \n; " \
 "setenv isp_bootseq1 run md_button_validate_usb1_cmd \n; " \
 "setenv isp_bootseq2 run md_button_validate_usb0_cmd \n; " \
 "setenv isp_bootseq3 run md_button_validate_sd_cmd \n; " \
