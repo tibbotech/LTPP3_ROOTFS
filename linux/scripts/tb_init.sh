@@ -607,7 +607,7 @@ function choose_a_key_to_continue__func() {
     while [[ ${tcounter} -gt 0 ]]
     do
         #Update read-dialog
-        readdialog="press (s)afemode or any key to reboot (${tcounter})"
+        readdialog="press (c)leanboot or any key to reboot (${tcounter})"
         readdialog_len=${#readdialog}
 
         #Show read-dialog and automatically continue after 1 second
@@ -732,20 +732,19 @@ function unmount_and_remove_dir__func() {
 function reboot__func() {
     eval ${reboot_cmd}
 }
-function safemode_or_reboot__func() {
+function cleanboot_or_overlayboot__func() {
     #Choose a key to continue
     #Remark:
     #   This function passes the result to the global variable 'keyinput'
     choose_a_key_to_continue__func "${TCOUNTER_MAX}"
 
-    if [[ "${keyinput}" == "s" ]]; then
+    if [[ "${keyinput}" == "c" ]]; then
         #Go to safe-mode
         exit__func "${EXITCODE_1}"
     else
         #Unmount all
         # unmount_handler__func "${DEV_MMCBLK0}"
         unmount_mmcblk0p8_mccblk0p9__func
-
 
         #Reboot to overlay-environment
         reboot__func
@@ -1064,7 +1063,7 @@ if [ ! -z ${tb_backup} ]; then
     unmount_and_remove_dir__func "${tb_backup_of_imagefpath}"
 
     #Reboot
-    safemode_or_reboot__func
+    cleanboot_or_overlayboot__func
 fi
 
 
@@ -1097,7 +1096,7 @@ if [ ! -z ${tb_restore} ]; then
     unmount_and_remove_dir__func "${tb_restore_if_imagefpath}"
 
     #Reboot
-    safemode_or_reboot__func
+    cleanboot_or_overlayboot__func
 fi
 
 
