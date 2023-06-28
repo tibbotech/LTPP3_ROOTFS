@@ -10,6 +10,9 @@ ROOTFS_PARTITION_NUM=8
 
 TCOUNTER_MAX=10
 
+CHMOD_PERMISSION_644=644
+CHMOD_PERMISSION_755=755
+
 COPYTYPE_BACKUP="backup"
 COPYTYPE_RESTORE="restore"
 
@@ -39,6 +42,7 @@ PROC_FSTYPE="proc"
 #---VARIABLES
 bin_bash_exec=/bin/bash
 
+etc_update_motd_d_dir=/etc/update-motd.d
 overlay_dir=/overlay
 proc_dir=/proc
 proc_cmdline_fpath=${proc_dir}/cmdline
@@ -57,16 +61,28 @@ tb_init_bootargs_tmp_fpath=${tb_reserve_dir}/.tb_init_bootargs.tmp
 tb_init_bootargs_cfg_fpath=${tb_reserve_dir}/.tb_init_bootargs.cfg
 tb_overlay_current_cfg_fpath=${tb_reserve_dir}/.tb_overlay_current.cfg
 
+motd_96_overlayboot_notice_fpath=${etc_update_motd_d_dir}/96-overlayboot-notice
+motd_98_normalboot_notice_fpath=${etc_update_motd_d_dir}/98-normalboot-notice
+
 reboot_cmd="echo 1 >${proc_sys_kernel_sysrq_fpath} && echo b >${proc_sysrqtrigger_fpath}"
 
-print_safemode="\n*********************************************************************\n"
-print_safemode+="${FOUR_SPACES}SAFE-MODE\n"
-print_safemode+="*********************************************************************\n"
-print_safemode+="${FOUR_SPACES}To go back to the normal-mode, use command:\n"
-print_safemode+="\n"
-print_safemode+="${FOUR_SPACES}${FOUR_SPACES}${reboot_cmd}"
-print_safemode+="\n"
-print_safemode+="*********************************************************************\n"
+print_cleanboot_mode="\n*********************************************************************\n"
+print_cleanboot_mode+="${FOUR_SPACES}Entering *clean-boot* environment\n"
+print_cleanboot_mode+="*********************************************************************\n"
+print_cleanboot_mode+="${FOUR_SPACES}To go back to the overlay-boot environment, use command:\n"
+print_cleanboot_mode+="\n"
+print_cleanboot_mode+="${FOUR_SPACES}${FOUR_SPACES}${reboot_cmd}"
+print_cleanboot_mode+="\n"
+print_cleanboot_mode+="*********************************************************************\n"
+
+print_error_mode="\n*********************************************************************\n"
+print_error_mode+="${FOUR_SPACES}An *error* just occured\n"
+print_error_mode+="*********************************************************************\n"
+print_error_mode+="${FOUR_SPACES}To go back to the overlay-boot environment, use command:\n"
+print_error_mode+="\n"
+print_error_mode+="${FOUR_SPACES}${FOUR_SPACES}${reboot_cmd}"
+print_error_mode+="\n"
+print_error_mode+="*********************************************************************\n"
 
 print_start="\n\n*********************************************************************\n"
 print_start+="${FOUR_SPACES}TB_INIT.SH\n"
@@ -81,13 +97,29 @@ fsck_retry=0
 
 
 #---FUNCTIONS
-function bin_bash_safemode_print__func() {
-    echo -e "${print_safemode}"
-}
-function bin_bash_handler__func() {
-    bin_bash_safemode_print__func
+function checkif_ismounted__func() {
+    #Input args
+    local devpart=${1}
+    local mountdir=${2}
 
-    ${bin_bash_exec}
+    #Initialize
+    local ret=false
+    local ismounted=""
+    
+    #Check if 'devpart' is mounted
+    if [[ -z "${mountdir}" ]]; then
+        ismounted=$(mount | grep "${devpart}")
+    else
+        ismounted=$(mount | grep "${devpart}" | grep "${mountdir}")
+    fi
+
+    #If is mounted, then update 'ret'
+    if [[ ! -z ${ismounted} ]]; then
+        ret=true
+    fi
+
+    #Output
+    echo "${ret}"
 }
 
 function chkdsk__func() {
@@ -128,29 +160,19 @@ function chkdsk__func() {
     trap trap_err__func ERR
 }
 
-function checkif_ismounted__func() {
+function chmod__func() {
     #Input args
-    local devpart=${1}
-    local mountdir=${2}
+    local targetfpath__input=${1}
+    local permission__input=${2}
 
-    #Initialize
-    local ret=false
-    local ismounted=""
-    
-    #Check if 'devpart' is mounted
-    if [[ -z "${mountdir}" ]]; then
-        ismounted=$(mount | grep "${devpart}")
-    else
-        ismounted=$(mount | grep "${devpart}" | grep "${mountdir}")
-    fi
+    #Change permissions
+    chmod ${permission__input} ${targetfpath__input}
+}
 
-    #If is mounted, then update 'ret'
-    if [[ ! -z ${ismounted} ]]; then
-        ret=true
-    fi
+function cleanboot_handler__func() {
+    echo -e "${print_cleanboot_mode}"
 
-    #Output
-    echo "${ret}"
+    ${bin_bash_exec}
 }
 
 function create_and_mount_dir__func() {
@@ -463,7 +485,7 @@ function exit__func() {
     local exitcode=${1}
 
     #Print
-    echo -e "${print_safemode}"
+    echo -e "${print_error_mode}"
 
     #Mount '/proc' and '/sys
     # mount_proc__func
@@ -566,7 +588,7 @@ function mount__func() {
     fi
 }
 
-choose_a_key_to_continue__func() {
+function choose_a_key_to_continue__func() {
     #Remark:
     #   This function passes the result to the global variable 'keyinput'
 
@@ -725,7 +747,7 @@ function safemode_or_reboot__func() {
         unmount_mmcblk0p8_mccblk0p9__func
 
 
-        #Reboot to normal-mode
+        #Reboot to overlay-environment
         reboot__func
     fi
 }
@@ -1086,7 +1108,7 @@ if [ ! -z ${tb_noboot} ]; then
     echo -e "---:TB_INIT:-:BOOT-MODE: clean (without overlay)"
 
     while [ 1 ]; do
-        bin_bash_handler__func
+        cleanboot_handler__func
     done
 fi
 
@@ -1095,6 +1117,18 @@ fi
 #---NORMAL-BOOT SECTION
 if [ ! -z ${tb_normalboot} ]; then
     echo -e "---:TB_INIT:-:BOOT-MODE: normal (without overlay)"
+
+    #Change permission of '96-overlayboot-notice' to 'rw-r--r--'
+    #Note: this way this script will NOT be executed.
+    chmod__func "${motd_96_overlayboot_notice_fpath}" "${CHMOD_PERMISSION_644}"
+    #Change permission of '98-normalboot-notice' to 'rwxr-xr-x'
+    chmod__func "${motd_98_normalboot_notice_fpath}" "${CHMOD_PERMISSION_755}"
+else
+    #Change permission of '96-overlayboot-notice' to 'rwxr-xr-x'
+    chmod__func "${motd_96_overlayboot_notice_fpath}" "${CHMOD_PERMISSION_755}"
+    #Change permission of '98-normalboot-notice' to 'rw-r--r--'
+    #Note: this way this script will NOT be executed.
+    chmod__func "${motd_98_normalboot_notice_fpath}" "${CHMOD_PERMISSION_644}"
 fi 
 
 

@@ -630,7 +630,9 @@ docker__overlay_files_check_handler__sub() {
     docker__overlay_checkif_file_ispresent__sub "${DOCKER__EMPTYSTRING}" \
             "${docker__LTPP3_ROOTFS_linux_scripts_tb_init_bootmenu__fpath}" "false"
     docker__overlay_checkif_file_ispresent__sub "${DOCKER__EMPTYSTRING}" \
-            "${docker__LTPP3_ROOTFS_motd_update_motd_99_tb_init_bootmenu_notice__fpath}" "false"
+            "${docker__LTPP3_ROOTFS_motd_update_motd_96_overlayboot_notice__fpath}" "false"
+    docker__overlay_checkif_file_ispresent__sub "${DOCKER__EMPTYSTRING}" \
+            "${docker__LTPP3_ROOTFS_motd_update_motd_98_normalboot_notice__fpath}" "false"
 
     docker__overlay_checkif_file_ispresent__sub "${docker__containerid}" \
             "${docker__SP7021_linux_rootfs_initramfs_disk_etc_fstab_overlaybck__fpath}" "true"
@@ -1096,9 +1098,13 @@ docker__overlay_copy_files_from_src_to_tmp_handler__sub() {
             "${docker__docker_overlayfs_tb_init_bootmenu__fpath}"
 
     docker__overlay_copy_file__sub "${DOCKER__EMPTYSTRING}" \
-            "${docker__LTPP3_ROOTFS_motd_update_motd_99_tb_init_bootmenu_notice__fpath}" \
+            "${docker__LTPP3_ROOTFS_motd_update_motd_96_overlayboot_notice__fpath}" \
             "${DOCKER__EMPTYSTRING}" \
-            "${docker__docker_overlayfs_99_tb_init_bootmenu_notice__fpath}"
+            "${docker__docker_overlayfs_96_overlayboot_notice__fpath}"
+    docker__overlay_copy_file__sub "${DOCKER__EMPTYSTRING}" \
+            "${docker__LTPP3_ROOTFS_motd_update_motd_98_normalboot_notice__fpath}" \
+            "${DOCKER__EMPTYSTRING}" \
+            "${docker__docker_overlayfs_98_normalboot_notice__fpath}"
 
     #Show error message and exit (if applicable)
     if [[ ${docker__numof_errors_found_ctr} -gt 0 ]]; then
@@ -1750,9 +1756,13 @@ docker__overlay_copy_files_from_tmp_to_dst_handler__sub() {
             "${docker__SP7021_linux_rootfs_initramfs_disk_sbin_tb_init_bootmenu__fpath}"
 
     docker__overlay_copy_file__sub "${DOCKER__EMPTYSTRING}" \
-            "${docker__docker_overlayfs_99_tb_init_bootmenu_notice__fpath}" \
+            "${docker__docker_overlayfs_96_overlayboot_notice__fpath}" \
             "${docker__containerid}" \
-            "${docker__SP7021_linux_rootfs_initramfs_disk_etc_update_motd_d_99_tb_init_bootmenu_notice__fpath}"
+            "${docker__SP7021_linux_rootfs_initramfs_disk_etc_update_motd_d_96_overlayboot_notice__fpath}"
+    docker__overlay_copy_file__sub "${DOCKER__EMPTYSTRING}" \
+            "${docker__docker_overlayfs_98_normalboot_notice__fpath}" \
+            "${docker__containerid}" \
+            "${docker__SP7021_linux_rootfs_initramfs_disk_etc_update_motd_d_98_normalboot_notice__fpath}"
 
     #Show error message and exit (if applicable)
     if [[ ${docker__numof_errors_found_ctr} -gt 0 ]]; then
@@ -1776,7 +1786,8 @@ docker__overlay_dst_exec_files_change_permission_handler__sub() {
     docker__overlay_dst_exec_file_change_permission__sub "${docker__SP7021_build_isp_sh__fpath}"
     docker__overlay_dst_exec_file_change_permission__sub "${docker__SP7021_linux_rootfs_initramfs_disk_sbin_tb_init_sh__fpath}"
     docker__overlay_dst_exec_file_change_permission__sub "${docker__SP7021_linux_rootfs_initramfs_disk_sbin_tb_init_bootmenu__fpath}"
-    docker__overlay_dst_exec_file_change_permission__sub "${docker__SP7021_linux_rootfs_initramfs_disk_etc_update_motd_d_99_tb_init_bootmenu_notice__fpath}"
+    docker__overlay_dst_exec_file_change_permission__sub "${docker__SP7021_linux_rootfs_initramfs_disk_etc_update_motd_d_96_overlayboot_notice__fpath}"
+    #Note: do NOT change the permission for 'docker__SP7021_linux_rootfs_initramfs_disk_etc_update_motd_d_98_normalboot_notice__fpath'
 
     #Show error message and exit (if applicable)
     if [[ ${docker__numof_errors_found_ctr} -gt 0 ]]; then
@@ -1923,7 +1934,10 @@ docker__overlay_restore_original_state__sub() {
             "${DOCKER__SIXDASHES_COLON}"
 
     remove_file__func "${docker__containerid}" \
-            "${docker__SP7021_linux_rootfs_initramfs_disk_etc_update_motd_d_99_tb_init_bootmenu_notice__fpath}" \
+            "${docker__SP7021_linux_rootfs_initramfs_disk_etc_update_motd_d_96_overlayboot_notice__fpath}" \
+            "${DOCKER__SIXDASHES_COLON}"
+    remove_file__func "${docker__containerid}" \
+            "${docker__SP7021_linux_rootfs_initramfs_disk_etc_update_motd_d_98_normalboot_notice__fpath}" \
             "${DOCKER__SIXDASHES_COLON}"
 }
 
