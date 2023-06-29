@@ -1,10 +1,18 @@
-#!/bin/sh
-echo "\r"
+#!/bin/bash
+#---CONSTANTS
+FG_RESET="\e[0;0m"
+FG_ORANGE_130="\e[30;38;5;130m"
+FG_ORANGE_215="\e[30;38;5;215m"
+FG_GREY="\e[30;38;5;246m"
+BLINK="\e[5m"
+
+#---PRINT
+echo -e "\r"
 echo "*********************************************************************"
-echo "% Entering *normal-boot* environment"
+echo -e "% Entering *${BLINK}normal-boot${FG_RESET}* environment (${BLINK}overlay disabled${FG_RESET})"
 echo "*********************************************************************"
-echo "% Execute \e[30;38;5;215msudo tb_init_bootmenu\e[0;0m to configure the \e[30;38;5;215moverlay \e[30;38;5;130mmode\e[0;0m/\e[30;38;5;130moptions\e[0;0m"
+echo -e "% ${FG_GREY}Execute ${FG_ORANGE_215}sudo tb_init_bootmenu${FG_GREY} to configure the ${FG_ORANGE_215}overlay ${FG_ORANGE_130}mode${FG_RESET}/${FG_ORANGE_130}options${FG_RESET}"
 echo "%"
-echo "% To go back to the *overlay-boot* environment, simply reboot"
+echo -e "% ${FG_GREY}To go back to the${FG_RESET} *overlay-boot* environment, ${FG_GREY}run${FG_RESET} reboot now"
 echo "*********************************************************************"
-echo "\r"
+echo -e "\r"

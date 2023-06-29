@@ -1,8 +1,54 @@
-#!/bin/sh
-echo "\r"
+#!/bin/bash
+#---CONSTANTS
+FG_RESET="\e[0;0m"
+FG_ORANGE_130="\e[30;38;5;130m"
+FG_ORANGE_215="\e[30;38;5;215m"
+FG_GREY="\e[30;38;5;246m"
+BLINK="\e[5m"
+
+EMPTYSTRING=""
+EQUAL_CHAR="="
+NONPERSISTENT="non-persistent <ro>"
+ONESPACE=" "
+PERSISTENT="persistent <rw>"
+TB_ROOTFS_RO="tb_rootfs_ro"
+TB_ROOTFS_RO_EQUAL="${TB_ROOTFS_RO}${EQUAL_CHAR}"
+TRUE="true"
+UNKNOWN="unknown"
+
+#---VARIABLES
+overlaymode="${UNKNOWN}"
+proc_cmdline_fpath=/proc/cmdline
+tb_overlay_current_fpath=/tb_reserve/.tb_overlay_current.cfg
+tb_rootfs_ro="${EMPTYSTRING}"
+
+#---RETRIEVE 'tb_rootfs_ro'
+if [[ -f "${tb_overlay_current_fpath}" ]]; then   #file exists
+    tb_rootfs_ro=$(grep -o "${TB_ROOTFS_RO_EQUAL}.*" ${tb_overlay_current_fpath} | cut -d" " -f1 | cut -d"=" -f2)
+else    #file does not exists
+    if [[ -f "${proc_cmdline_fpath}" ]]; then   #file exists
+        tb_rootfs_ro=$(grep -o "${TB_ROOTFS_RO_EQUAL}.*" ${proc_cmdline_fpath} | cut -d" " -f1 | cut -d"=" -f2)
+    else    #file does not exists
+        tb_rootfs_ro="${UNKNOWN}"
+    fi
+fi
+
+#---PRINT
+case "${tb_rootfs_ro}" in
+    "${TRUE}")
+        overlaymode="${NONPERSISTENT}"
+        ;;
+    "${EMPTYSTRING}")
+        overlaymode="${PERSISTENT}"
+        ;;
+    *)
+        overlaymode="${UNKNOWN}"
+        ;;
+esac
 echo "*********************************************************************"
-echo "% Entering *overlay-boot* environment"
+echo -e "% Entering *${BLINK}overlay-boot${FG_RESET}* environment (${BLINK}${overlaymode}${FG_RESET})"
 echo "*********************************************************************"
-echo "% Execute \e[30;38;5;215msudo tb_init_bootmenu\e[0;0m to configure the \e[30;38;5;215moverlay \e[30;38;5;130mmode\e[0;0m/\e[30;38;5;130moptions\e[0;0m"
+echo -e "% ${FG_GREY}Execute ${FG_ORANGE_215}sudo tb_init_bootmenu${FG_GREY} to configure the ${FG_ORANGE_215}overlay ${FG_ORANGE_130}mode${FG_RESET}/${FG_ORANGE_130}options${FG_RESET}"
 echo "*********************************************************************"
-echo "\r"
+echo -e "\r"
+
