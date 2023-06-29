@@ -33,7 +33,6 @@ else    #file does not exists
     fi
 fi
 
-#---PRINT
 case "${tb_rootfs_ro}" in
     "${TRUE}")
         overlaymode="${NONPERSISTENT}"
@@ -45,6 +44,9 @@ case "${tb_rootfs_ro}" in
         overlaymode="${UNKNOWN}"
         ;;
 esac
+
+#---PRINT
+echo -e "\r"
 echo "*********************************************************************"
 echo -e "% Entering *${BLINK}overlay-boot${FG_RESET}* environment (${BLINK}${overlaymode}${FG_RESET})"
 echo "*********************************************************************"
