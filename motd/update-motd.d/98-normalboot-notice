@@ -13,6 +13,6 @@ echo -e "% Entering *${BLINK}normal-boot${FG_RESET}* environment (${BLINK}overla
 echo "*********************************************************************"
 echo -e "% ${FG_GREY}Execute ${FG_ORANGE_215}sudo tb_init_bootmenu${FG_GREY} to configure the ${FG_ORANGE_215}overlay ${FG_ORANGE_130}mode${FG_RESET}/${FG_ORANGE_130}options${FG_RESET}"
 echo "%"
-echo -e "% ${FG_GREY}To go back to the${FG_RESET} *overlay-boot* environment, ${FG_GREY}run${FG_RESET} reboot now"
+echo -e "% ${FG_GREY}To go back to the${FG_RESET} *overlay-boot* environment, ${FG_GREY}run${FG_RESET} sudo reboot now"
 echo "*********************************************************************"
 echo -e "\r"
