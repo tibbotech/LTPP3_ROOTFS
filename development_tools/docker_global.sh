@@ -6150,6 +6150,8 @@ docker__get_source_fullpath__sub() {
 
 
 #---docker__docker__dir - contents
+    docker__dockerfile_autogen_filename="dockerfile_autogen"
+
     docker__docker__dir=${docker__parentDir_of_LTPP3_ROOTFS__dir}/docker
     docker__docker_cache__dir=${docker__docker__dir}/cache
     docker__docker_config__dir=${docker__docker__dir}/config
