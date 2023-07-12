@@ -348,15 +348,16 @@ docker__create_dockerfile__sub() {
     fi
 
     #Generate timestamp
-    local dockerfile_autogen_filename=${docker__dockerfile_auto_filename}_${docker__repo_new}
+    local docker__repo_new_filename=$(echo "${docker__repo_new}" | sed 's/\//-/g')  #replace slash (\/) with dash (-)
+    local autogen_filename=${docker__dockerfile_autogen_filename}_${docker__repo_new_filename}
 
     #Define filename
-    docker__dockerfile_autogen_fpath=${docker__docker_dockerfiles__dir}/${dockerfile_autogen_filename}
+    docker__autogen_fpath=${docker__docker_dockerfiles__dir}/${autogen_filename}
 
     #Check if file exist
     #If DOCKER__TRUE, then remove file
-    if [[ -f ${docker__dockerfile_autogen_fpath} ]]; then
-        rm ${docker__dockerfile_autogen_fpath}
+    if [[ -f ${docker__autogen_fpath} ]]; then
+        rm ${docker__autogen_fpath}
     fi
 
     #Define dockerfile content
@@ -381,10 +382,10 @@ docker__create_dockerfile__sub() {
     )
 
 
-    #Cycle thru array and write each row to Global variable 'docker__dockerfile_autogen_fpath'
+    #Cycle thru array and write each row to Global variable 'docker__autogen_fpath'
 	for ((i=0; i<${#DOCKERFILE_CONTENT_ARR[@]}; i++))
 	do
-        echo -e "${DOCKERFILE_CONTENT_ARR[$i]}" >> ${docker__dockerfile_autogen_fpath}
+        echo -e "${DOCKERFILE_CONTENT_ARR[$i]}" >> ${docker__autogen_fpath}
 	done
 }
 
@@ -621,11 +622,11 @@ docker__create_image_exec__sub() {
             echo "---${DOCKER__FG_ORANGE}START${DOCKER__NOCOLOR}: ${ECHOMSG_CREATING_IMAGE}"
 
             #Generate a 'dockerfile' with content
-            #OUTPUT: docker__dockerfile_autogen_fpath
-            docker__create_dockerfile__sub "${docker__dockerfile_auto_filename}" ${docker__repo_new} "${docker__docker_dockerfiles__dir}"
+            #OUTPUT: docker__autogen_fpath
+            docker__create_dockerfile__sub "${docker__dockerfile_autogen_filename}" ${docker__repo_new} "${docker__docker_dockerfiles__dir}"
 
             #Execute command
-            docker build --tag ${docker__repo_new}:${docker__tag_new} - < ${docker__dockerfile_autogen_fpath}
+            docker build --tag ${docker__repo_new}:${docker__tag_new} - < ${docker__autogen_fpath}
             
             #Remove command-output (which containing 'sha256...')
             moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
