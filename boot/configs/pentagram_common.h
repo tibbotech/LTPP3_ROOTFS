@@ -258,8 +258,83 @@
 "md.l 0x9e809408 1 \n; " \
 
 #define MD_BUTTON_NOTSUPPORTED \
-"echo ---:tibbo-info: md-button feature not enabled... \n; " \
+"echo ---:tibbo:info: md-button feature not enabled... \n; " \
 "echo \n; " \
+
+#define MD_BUTTON_PRINTENV_REMOVE \
+"echo ---:tibbo:printenv: remove 'md_button_sd_or_usb_boot_cmd' \n; " \
+"env delete md_button_sd_or_usb_boot_cmd \n; " \
+"echo ---:tibbo:printenv: remove 'md_button_isp_usb1_cmd' \n; " \
+"env delete md_button_isp_usb1_cmd \n; " \
+"echo ---:tibbo:printenv: remove 'md_button_validate_sd_cmd' \n; " \
+"env delete md_button_validate_sd_cmd \n; " \
+"echo ---:tibbo:printenv: remove 'md_button_validate_usb0_cmd' \n; " \
+"env delete md_button_validate_usb0_cmd \n; " \
+"echo ---:tibbo:printenv: remove 'md_button_validate_usb1_cmd' \n; " \
+"env delete md_button_validate_usb1_cmd \n; " \
+"saveenv \n; " \
+
+#define MD_BUTTON_BOOTCMD_RESET_TO_DEFAULT \
+"echo ---:tibbo:bootcmd: remove all entries \n; " \
+"setenv bootcmd \n; " \
+"echo ---:tibbo:bootcmd: set to default \n; " \
+"setenv bootcmd '" \
+	BOOTCOMMAND_DEFAULT \
+	"'\n; " \
+"saveenv \n; " \
+
+#define BOOTCOMMAND_DEFAULT \
+"echo [scr] bootcmd started; " \
+"md.l ${bootinfo_base} 1; " \
+"if itest.l *${bootinfo_base} == " __stringify(SPI_NOR_BOOT) "; then " \
+	"if itest ${if_zebu} == 1; then " \
+		"if itest ${if_qkboot} == 1; then " \
+			"echo [scr] qk zmem boot; " \
+			"run qk_zmem_boot; " \
+		"else " \
+			"echo [scr] zmem boot; " \
+			"run zmem_boot; " \
+		"fi; " \
+	"else " \
+		"if itest ${if_qkboot} == 1; then " \
+			"echo [scr] qk romter boot; " \
+			"run qk_romter_boot; " \
+		"elif itest.s ${sp_main_storage} == tftp; then " \
+			"echo [scr] tftp_boot; " \
+			"run tftp_boot; " \
+		"else " \
+			"echo [scr] romter boot; " \
+			"run romter_boot; " \
+		"fi; " \
+	"fi; " \
+"elif itest.l *${bootinfo_base} == " __stringify(EMMC_BOOT) "; then " \
+	"if itest ${if_zebu} == 1; then " \
+		"echo [scr] zebu emmc boot; " \
+		"run zebu_emmc_boot; " \
+	"else " \
+		"if itest ${if_qkboot} == 1; then " \
+			"echo [scr] qk emmc boot; " \
+			"run qk_emmc_boot; " \
+		"else " \
+			"echo [scr] emmc boot; " \
+			"run emmc_boot; " \
+		"fi; " \
+	"fi; " \
+"elif itest.l *${bootinfo_base} == " __stringify(SPINAND_BOOT) "; then " \
+	"echo [scr] nand boot; " \
+	"run nand_boot; " \
+"elif itest.l *${bootinfo_base} == " __stringify(USB_ISP) "; then " \
+	"echo [scr] ISP from USB storage; " \
+	"run isp_usb; " \
+"elif itest.l *${bootinfo_base} == " __stringify(SDCARD_ISP) "; then " \
+	"echo [scr] ISP from SD Card; " \
+	"run isp_sdcard; " \
+"else " \
+	"echo Stop; " \
+"fi"
+
+#define MD_BUTTON_RESET \
+"reset \n; " \
 
 #define MD_BUTTON_SD_OR_USB_BOOT \
 MD_BUTTON_VARIABLES_DEFINE \
@@ -267,41 +342,44 @@ MD_BUTTON_VARIABLES_DEFINE \
 "echo ---:tibbo:detect: md-button state... \n; " \
 "tb_button \n; " \
 "if test $tb_button_state != $ISP_NULL; then \n; " /* START: check if variable is NOT an EMPTY STRING */ \
-"echo \n; " \
-"echo **************************************************\n; " \
-"echo     Boot from sd or usb\n; " \
-"echo **************************************************\n; " \
-MD_BUTTON_VARIABLES_INIT_SHOW \
-"if test $tb_button_state = pressed; then \n; " /* START: check if md-button is PRESSED */ \
-"echo ---:tibbo:state: md-button is *pressed*... \n; " \
-MD_BUTTON_BOOTSEQ_SELECT \
-"echo ---:tibbo:state--------END: md-button is *pressed*... \n; " \
-"$isp_bootseq1 \n; " /* execute variable as selected in macro 'MD_BUTTON_BOOTSEQ_SELECT' */ \
-"if test $isp_if_test = $ISP_NULL; then \n; " /* START: for SD: check if isp_if_test is null */ \
-"$isp_bootseq2 \n; " /* execute variable as selected in macro 'MD_BUTTON_BOOTSEQ_SELECT' */ \
-"if test $isp_if_test = $ISP_NULL; then \n; " /* START: for USB0: check if isp_if_test is null */ \
-"$isp_bootseq3 \n; " /* execute variable as selected in macro 'MD_BUTTON_BOOTSEQ_SELECT' */ \
-"fi \n; " /* END: for USB0: check if isp_if_test is null */ \
-"fi \n; " /* END: for SD: check if isp_if_test is null */ \
-"fi \n; " /* END: check if md-button is PRESSED */ \
-"if test $isp_if_test != $ISP_NULL; then; \n; " /* START: check if isp_if_test is NOT null */ \
-"if test $isp_if_test = $ISP_IF_USB1; then; \n; " /* START: check if isp_if_test is usb_dev_1 */ \
-MD_BUTTON_MEM_WRITE_AND_READ_0X9E809408_0X00000027 \
-"elif test $isp_if_test = $ISP_IF_USB0; then; \n; " /* ELIF: check if isp_if_test is usb_dev_0 */ \
-MD_BUTTON_MEM_WRITE_AND_READ_0X9E809408_0X00000017 \
-"else; \n; " /* ELSE: check if isp_if_test is  sd_mmc_1 */ \
-MD_BUTTON_MEM_WRITE_AND_READ_0X9E809408_0X00000007 \
-"fi; \n; " /* END: check if isp_if_test is usb_dev_0/mmc_dev_1 */ \
-MD_BUTTON_VARIABLES_ENDRESULT_SHOW \
-"else; \n; " /* ELSE: check if isp_if_test is NOT null */ \
-"echo \n; " \
-"echo ---:tibbo:state: md-button *not* pressed... \n; " \
-"echo ---:tibbo:start: boot normally... \n; " \
-"fi; \n; " /* END: check if isp_if_test is NOT null */ \
-"echo ************************************************** \n; " \
-"echo \n; " \
+	"echo \n; " \
+	"echo **************************************************\n; " \
+	"echo     Boot from sd or usb\n; " \
+	"echo **************************************************\n; " \
+	MD_BUTTON_VARIABLES_INIT_SHOW \
+	"if test $tb_button_state = pressed; then \n; " /* START: check if md-button is PRESSED */ \
+		"echo ---:tibbo:state: md-button is *pressed*... \n; " \
+		MD_BUTTON_BOOTSEQ_SELECT \
+		"echo ---:tibbo:state--------END: md-button is *pressed*... \n; " \
+		"$isp_bootseq1 \n; " /* execute variable as selected in macro 'MD_BUTTON_BOOTSEQ_SELECT' */ \
+		"if test $isp_if_test = $ISP_NULL; then \n; " /* START: for SD: check if isp_if_test is null */ \
+			"$isp_bootseq2 \n; " /* execute variable as selected in macro 'MD_BUTTON_BOOTSEQ_SELECT' */ \
+			"if test $isp_if_test = $ISP_NULL; then \n; " /* START: for USB0: check if isp_if_test is null */ \
+				"$isp_bootseq3 \n; " /* execute variable as selected in macro 'MD_BUTTON_BOOTSEQ_SELECT' */ \
+			"fi \n; " /* END: for USB0: check if isp_if_test is null */ \
+		"fi \n; " /* END: for SD: check if isp_if_test is null */ \
+	"fi \n; " /* END: check if md-button is PRESSED */ \
+	"if test $isp_if_test != $ISP_NULL; then; \n; " /* START: check if isp_if_test is NOT null */ \
+		"if test $isp_if_test = $ISP_IF_USB1; then; \n; " /* START: check if isp_if_test is usb_dev_1 */ \
+			MD_BUTTON_MEM_WRITE_AND_READ_0X9E809408_0X00000027 \
+		"elif test $isp_if_test = $ISP_IF_USB0; then; \n; " /* ELIF: check if isp_if_test is usb_dev_0 */ \
+			MD_BUTTON_MEM_WRITE_AND_READ_0X9E809408_0X00000017 \
+		"else; \n; " /* ELSE: check if isp_if_test is  sd_mmc_1 */ \
+			MD_BUTTON_MEM_WRITE_AND_READ_0X9E809408_0X00000007 \
+		"fi; \n; " /* END: check if isp_if_test is usb_dev_0/mmc_dev_1 */ \
+		MD_BUTTON_VARIABLES_ENDRESULT_SHOW \
+		"else; \n; " /* ELSE: check if isp_if_test is NOT null */ \
+		"echo \n; " \
+		"echo ---:tibbo:state: md-button *not* pressed... \n; " \
+		"echo ---:tibbo:start: boot normally... \n; " \
+	"fi; \n; " /* END: check if isp_if_test is NOT null */ \
+	"echo ************************************************** \n; " \
+	"echo \n; " \
 "else; \n; " /* ELSE: check if variable is NOT an EMPTY STRING */ \
-MD_BUTTON_NOTSUPPORTED \
+	MD_BUTTON_NOTSUPPORTED \
+	MD_BUTTON_PRINTENV_REMOVE \
+	MD_BUTTON_BOOTCMD_RESET_TO_DEFAULT \
+	MD_BUTTON_RESET \
 "fi \n; " /* END: check if variable is NOT an EMPTY STRING */ \
 /* Added to handle the situation when the MD-button is pressed */
 
