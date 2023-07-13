@@ -901,13 +901,6 @@ fi
 
 
 
-#---SET OVERLAY-MODE (HARD-CODED)
-# >>>>>>>> INSERT these variables from 'docker_container_build_ispboootbin.sh'
-# tb_overlay_devpart_set=""
-# tb_overlay_mode_set=""
-
-
-
 #---ADDITIONAL PARTITIONS
 
 
@@ -936,23 +929,6 @@ else
     #Get /proc/cmdline contents
     echo -e "---:TB-INIT:-:READ: ${proc_cmdline_fpath}"
     proc_cmdline_result=$(cat ${proc_cmdline_fpath})
-
-    #Check if 'proc_cmdline_result' contains the following strings:
-    #   tb_overlay=/dev/mmcblk0p10 (must be there)
-    #   tb_rootfs_ro=true (is there if set to non-persistent)
-    if [[ ${proc_cmdline_result} != *"tb_overlay"* ]]; then   #'tb_overlay' is NOT found
-        #Append the 'tb_overlay_devpart_set'
-        proc_cmdline_result+=" ${tb_overlay_devpart_set}"
-        
-        #Append 'tb_overlay_mode_set' (if applicable)
-        if [[ -n "${tb_overlay_mode_set}" ]]; then
-            proc_cmdline_result+=" ${tb_overlay_mode_set}"
-        fi
-
-        #Write to '/proc/cmdline'
-        echo "${proc_cmdline_result}" | tee "${proc_cmdline_fpath}"
-    fi
-
 
     if [[ -s "${tb_init_bootargs_cfg_fpath}" ]]; then
         #Get '/tb_reserve/.tb_init_bootargs.cfg' content
