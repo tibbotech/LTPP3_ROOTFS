@@ -21,6 +21,20 @@ function checkif_software_isinstalled__func() {
     fi
 }
 
+function create_dir_in_container__func() {
+    #Input args
+    containerid__input=${1}
+    dir__input=${2}
+
+    #In container, check if directory exists
+    ${DOCKER__EXEC} ${containerid__input} [ ! -d "${dir__input}" ] && exitcode=1
+
+    #If directory does NOT exist, create directory
+    if [[ ${exitcode} -ne 0 ]]; then
+        ${DOCKER__EXEC} ${containerid__input} mkdir -p "${dir__input}"
+    fi
+}
+
 
 
 #---SUBROUTINES
@@ -335,6 +349,7 @@ docker__load_constants__sub() {
 
     # DOCKER__SIXDASHES_COLON="------:"
 
+    DOCKER__EXEC="docker exec"
     DOCKER__EXEC_IT="docker exec -it"
 }
 
@@ -577,7 +592,7 @@ docker__overlay__sub() {
                 ;;
             "${PHASE_OVERLAY_COPY_FILES_FROM_TMP_TO_DST}")
                 docker__overlay_copy_files_from_tmp_to_dst_handler__sub
-
+exit
                 phase="${PHASE_OVERLAY_DST_EXEC_FILES_CHANGE_PERMISSION}"
                 ;;
             "${PHASE_OVERLAY_DST_EXEC_FILES_CHANGE_PERMISSION}")
@@ -1567,12 +1582,34 @@ docker__overlay_tempfile_pentagram_common_h_patch__sub() {
         #Update 'printmsg'
         printmsg+="${DOCKER__STATUS_FAILED}"
     else
+        #Compose 'proc_cmdline_content' by retrieving data from '..docker/overlayfs/pentagram_common.h'
+        #   and write to '..docker/overlayfs/cmdline'
+        docker__overlay_tmpfile_cmdline__sub
+
+        #Print
         printmsg+="${DOCKER__STATUS_SUCCESSFUL}"
     fi
     
     #Print
     show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
 }
+docker__overlay_tmpfile_cmdline__sub() {
+        #Retrieve 'b_c' part
+        proc_cmdline_content_lpart=$(grep -o "${DOCKER__PATTERN_B_C_IS_CONSOLE}.*" \
+                "${docker__docker_overlayfs_pentagram_common_h__fpath}" | \
+                cut -d"=" -f2- | cut -d"\\" -f1)
+        #Retrieve 'emmc_root' part
+        proc_cmdline_content_rpart=$(grep -o "${DOCKER__PATTERN_EMMC_ROOT_IS_ROOT}.*" \
+                "${docker__docker_overlayfs_pentagram_common_h__fpath}" | \
+                cut -d"=" -f2- | cut -d"\\" -f1)
+        
+        #Combine 'proc_cmdline_content_lpart' and 'proc_cmdline_content_lpart'
+        proc_cmdline_content="${proc_cmdline_content_lpart} ${proc_cmdline_content_rpart}"
+    
+        #Write to file
+        echo "${proc_cmdline_content}" | tee ${docker__docker_overlayfs_cmdline__fpath} >/dev/null
+}
+
 docker__overlay_tempfile_tb_init_sh_and_fstab_patch__sub() {
     #Define constants
     local OVERLAy_PARTITION_NUM=10
@@ -1751,9 +1788,9 @@ docker__overlay_copy_files_from_tmp_to_dst_handler__sub() {
             "${docker__SP7021_linux_rootfs_initramfs_disk_sbin_tb_init_sh__fpath}"
 
     docker__overlay_copy_file__sub "${DOCKER__EMPTYSTRING}" \
-            "${docker__docker_overlayfs_tb_init_bootmenu__fpath}" \
+            "${docker__docker_overlayfs_cmdline__fpath}" \
             "${docker__containerid}" \
-            "${docker__SP7021_linux_rootfs_initramfs_disk_sbin_tb_init_bootmenu__fpath}"
+            "${docker__SP7021_linux_rootfs_initramfs_disk_sbin_tb_init_sh__fpath}"
 
     docker__overlay_copy_file__sub "${DOCKER__EMPTYSTRING}" \
             "${docker__docker_overlayfs_96_overlayboot_notice__fpath}" \
@@ -1764,6 +1801,9 @@ docker__overlay_copy_files_from_tmp_to_dst_handler__sub() {
             "${docker__containerid}" \
             "${docker__SP7021_linux_rootfs_initramfs_disk_etc_update_motd_d_98_normalboot_notice__fpath}"
 
+    #This is a special subroutine for 'cmdline'
+    docker__overlay_create_dir_and_copy_cmdline__sub
+
     #Show error message and exit (if applicable)
     if [[ ${docker__numof_errors_found_ctr} -gt 0 ]]; then
         show_errMsg_wo_menuTitle_and_exit_func "${DOCKER__ERRMSG_ONE_OR_MORE_CHECKITEMS_FAILED}" \
@@ -1773,6 +1813,15 @@ docker__overlay_copy_files_from_tmp_to_dst_handler__sub() {
 
     #Print
     show_msg_only__func "${DOCKER__SUBJECT_COMPLETED_COPY_FILES}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+}
+docker__overlay_create_dir_and_copy_cmdline__sub() {
+    create_dir_in_container__func "${docker__containerid}" \
+            "${docker__SP7021_linux_rootfs_initramfs_disk_etc_tibbo_proc__dir}"
+
+    docker__overlay_copy_file__sub "${DOCKER__EMPTYSTRING}" \
+            "${docker__docker_overlayfs_cmdline__fpath}" \
+            "${docker__containerid}" \
+            "${docker__SP7021_linux_rootfs_initramfs_disk_etc_tibbo_proc_cmdline__fpath}"
 }
 
 docker__overlay_dst_exec_files_change_permission_handler__sub() {

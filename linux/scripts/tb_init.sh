@@ -41,22 +41,28 @@ PROC_FSTYPE="proc"
 
 #---VARIABLES
 bin_bash_exec=/bin/bash
-
-etc_update_motd_d_dir=/etc/update-motd.d
+etc_dir=/etc
+etc_tibbo_proc_dir=${etc_dir}/tibbo/proc
+etc_update_motd_d_dir=${etc_dir}/update-motd.d
+lib_dir=/lib
 overlay_dir=/overlay
 proc_dir=/proc
-proc_cmdline_fpath=${proc_dir}/cmdline
+rootfs_dir=/
+rootfs_etc_tibbo_uboot_dir=${etc_dir}/tibbo/uboot
+sbin_dir=/sbin
+tb_reserve_dir=/tb_reserve
+usr_dir=/usr
+
+etc_tibbo_proc_cmdline_fpath=${etc_tibbo_proc_dir}/cmdline
 proc_sys_kernel_sysrq_fpath=${proc_dir}/sys/kernel/sysrq
 proc_sysrqtrigger_fpath=${proc_dir}/sysrq-trigger
-rootfs_dir=/
-rootfs_etc_tibbo_uboot_dir=/etc/tibbo/uboot
-tb_reserve_dir=/tb_reserve
-usr_sbin_mkfsext4=/usr/sbin/mkfs.ext4
 
-lib_systemd_systemd_exec=/lib/systemd/systemd
+usr_sbin_mkfsext4=${usr_dir}${sbin_dir}/mkfs.ext4
+
+lib_systemd_systemd_exec=${lib_dir}/systemd/systemd
 fsck_retry_fpath1=${rootfs_etc_tibbo_uboot_dir}/fsck_retry.tmp
 fsck_retry_fpath2=${tb_reserve_dir}/.fsck_retry.tmp
-tb_init_backup_lst_fpath=/tb_reserve/.tb_init_backup.lst
+tb_init_backup_lst_fpath=${tb_reserve_dir}/.tb_init_backup.lst
 tb_init_bootargs_tmp_fpath=${tb_reserve_dir}/.tb_init_bootargs.tmp
 tb_init_bootargs_cfg_fpath=${tb_reserve_dir}/.tb_init_bootargs.cfg
 tb_overlay_current_cfg_fpath=${tb_reserve_dir}/.tb_overlay_current.cfg
@@ -933,9 +939,9 @@ if [[ -s "${tb_init_bootargs_tmp_fpath}" ]]; then
             "${DEV_MMCBLK0P9}" \
             "${tb_reserve_dir}"
 else
-    #Get /proc/cmdline contents
-    echo -e "---:TB-INIT:-:READ: ${proc_cmdline_fpath}"
-    proc_cmdline_result=$(cat ${proc_cmdline_fpath})
+    #Get /etc/tibbo/proc/cmdline contents
+    echo -e "---:TB-INIT:-:READ: ${etc_tibbo_proc_cmdline_fpath}"
+    proc_cmdline_result=$(cat ${etc_tibbo_proc_cmdline_fpath})
 
     #Check if 'proc_cmdline_result' contains the following strings:
     #   tb_overlay=/dev/mmcblk0p10 (must be there)
@@ -949,8 +955,8 @@ else
             proc_cmdline_result+=" ${tb_overlay_mode_set}"
         fi
 
-        #Write to '/proc/cmdline'
-        echo "${proc_cmdline_result}" | tee "${proc_cmdline_fpath}"
+        #Write to '/etc/tibbo/proc/cmdline'
+        echo "${proc_cmdline_result}" | tee "${etc_tibbo_proc_cmdline_fpath}"
     fi
 
 
@@ -974,7 +980,7 @@ else
         else    #'tb_rootfs_ro=true' is NOT found in 'tb_init_bootargs.cfg'
             if [[ ${proc_cmdline_result} == *"tb_rootfs_ro"* ]]; then
                 echo -e "---:TB-INIT:-:EXCLUDE: ${PATTERN_TB_ROOTFS_RO_IS_TRUE}"
-                cmdline_output=$(sed "s/${PATTERN_TB_ROOTFS_RO_IS_TRUE}//g" "${proc_cmdline_fpath}")
+                cmdline_output=$(sed "s/${PATTERN_TB_ROOTFS_RO_IS_TRUE}//g" "${etc_tibbo_proc_cmdline_fpath}")
             else
                 echo -e "---:TB-INIT:-:STATUS: ${PATTERN_TB_ROOTFS_RO_IS_TRUE} is already excluded"
                 cmdline_output="${proc_cmdline_result}"

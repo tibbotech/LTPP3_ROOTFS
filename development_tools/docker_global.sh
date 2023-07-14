@@ -429,7 +429,9 @@ DOCKER__COLOR_SLASH_DOTDOT_SLASH_DOTDOT="${DOCKER__COLOR_SLASH}${DOCKER__COLOR_D
 
 
 #---PATTERN CONSTANTS
+DOCKER__PATTERN_B_C_IS_CONSOLE="b_c=console"
 DOCKER__PATTERN_DOCKER_IO="docker.io"
+DOCKER__PATTERN_EMMC_ROOT_IS_ROOT="emmc_root=root"
 DOCKER__PATTERN_IF="if"
 DOCKER__PATTERN_TOP="top"
 
@@ -6131,7 +6133,8 @@ docker__get_source_fullpath__sub() {
 
 
 
-#---filenames used at multiple places
+#---filenames used in multiple places
+    docker__cmdline__filename="cmdline"
     docker__docker_fs_partition_diskpartsize_dat__filename="docker_fs_partition_diskpartsize.dat"
     docker__docker_fs_partition_conf__filename="docker_fs_partition.conf"
     docker__fstab__filename="fstab"
@@ -6159,6 +6162,7 @@ docker__get_source_fullpath__sub() {
     docker__docker_images__dir=${docker__docker__dir}/images
     docker__docker_overlayfs__dir=${docker__docker__dir}/overlayfs
 
+    docker__docker_overlayfs_cmdline__fpath=${docker__docker_overlayfs__dir}/${docker__cmdline__filename}
     docker__docker_overlayfs_fstab__fpath=${docker__docker_overlayfs__dir}/${docker__fstab__filename}
     docker__docker_fs_partition_diskpartsize_dat__fpath=${docker__docker_overlayfs__dir}/${docker__docker_fs_partition_diskpartsize_dat__filename}
     docker__docker_fs_partition_conf__fpath=${docker__docker_overlayfs__dir}/${docker__docker_fs_partition_conf__filename}
@@ -6376,6 +6380,8 @@ docker__get_source_fullpath__sub() {
     docker__SP7021_linux_rootfs_initramfs_disk_sbin__dir=${docker__SP7021_linux_rootfs_initramfs_disk_dir}/sbin
     docker__SP7021_linux_rootfs_initramfs_disk_etc__dir=${docker__SP7021_linux_rootfs_initramfs_disk_dir}/etc
     docker__SP7021_linux_rootfs_initramfs_disk_etc_update_motd_d__dir=${docker__SP7021_linux_rootfs_initramfs_disk_etc__dir}/update-motd.d
+    docker__SP7021_linux_rootfs_initramfs_disk_etc_tibbo__dir=${docker__SP7021_linux_rootfs_initramfs_disk_etc__dir}/tibbo
+    docker__SP7021_linux_rootfs_initramfs_disk_etc_tibbo_proc__dir=${docker__SP7021_linux_rootfs_initramfs_disk_etc_tibbo__dir}/proc
 
     docker__SP7021_build_tools_isp_isp_c__fpath=${docker__SP7021_build_tools_isp__dir}/${docker__isp_c__filename}
     docker__SP7021_build_tools_isp_isp_c_overlaybck__fpath=${docker__SP7021_build_tools_isp__dir}/${docker__isp_c_overlaybck__filename}
@@ -6388,6 +6394,7 @@ docker__get_source_fullpath__sub() {
     docker__SP7021_linux_rootfs_initramfs_disk_sbin_init__fpath=${docker__SP7021_linux_rootfs_initramfs_disk_sbin__dir}/${docker__init__filename}
     docker__SP7021_linux_rootfs_initramfs_disk_sbin_tb_init_sh__fpath="${docker__SP7021_linux_rootfs_initramfs_disk_sbin__dir}/${docker__tb_init_sh__filename}"
     docker__SP7021_linux_rootfs_initramfs_disk_sbin_tb_init_bootmenu__fpath="${docker__SP7021_linux_rootfs_initramfs_disk_sbin__dir}/${docker__tb_init_bootmenu__filename}"
+    docker__SP7021_linux_rootfs_initramfs_disk_etc_tibbo_proc_cmdline__fpath=${docker__SP7021_linux_rootfs_initramfs_disk_etc_tibbo_proc__dir}/${docker__cmdline__filename}
     docker__SP7021_linux_rootfs_initramfs_disk_etc_update_motd_d_96_overlayboot_notice__fpath="${docker__SP7021_linux_rootfs_initramfs_disk_etc_update_motd_d__dir}/${docker__96_overlayboot_notice__filename}"
     docker__SP7021_linux_rootfs_initramfs_disk_etc_update_motd_d_98_normalboot_notice__fpath="${docker__SP7021_linux_rootfs_initramfs_disk_etc_update_motd_d__dir}/${docker__98_normalboot_notice__filename}"
 
@@ -6485,6 +6492,9 @@ docker__get_source_fullpath__sub() {
 #---REAL PATH (ON THE LTPP3G2)
     docker__sbin__dir=/sbin
     docker__sbin_tb_init_sh__fpath=${docker__sbin__dir}/${docker__tb_init_sh__filename}
+
+    docker__etc_tibbo_proc__dir=/etc/tibbo/proc
+    docker__etc_tibbo_proc_cmdline__fpath=${docker__etc_tibbo_proc__dir}/${docker__cmdline__filename}
 
 
     #OLD VERSION (is temporarily present for backwards compaitibility)
