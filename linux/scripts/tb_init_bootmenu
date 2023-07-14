@@ -234,7 +234,7 @@ TB_PRINT_OPTIONS_SEMICOLON_Q="${TB_FG_YELLOW_33};${TB_NOCOLOR}q"
 TB_PRINT_UPDATE="---:${TB_FG_BLUE_45}UPDATE${TB_NOCOLOR}"
 
 #---REGEX CONSTANTS
-TB_BOOTINTO_MYCHOICE_REGEX="[12345mq]"
+TB_BOOTINTO_MYCHOICE_REGEX="[12345mrq]"
 TB_ISPBOOOTBIN_BOOTSEQ_MYCHOICE_REGEX="[123456mq]"
 TB_MAINMENU_MYCHOICE_REGEX="[123rq]"
 TB_RQ_REGEX="[rq]"
@@ -3696,6 +3696,10 @@ bootoptions_body_print__sub() {
             "${TB_OPTIONS_MAIN}" \
             "${TB_EMPTYSTRING}"
     print_menuitem__func "${TB_FOURSPACES}" \
+            "${TB_OPTIONS_R}" \
+            "${TB_OPTIONS_REBOOT}" \
+            "${TB_EMPTYSTRING}"
+    print_menuitem__func "${TB_FOURSPACES}" \
             "${TB_OPTIONS_Q}" \
             "${TB_OPTIONS_QUIT_CTRL_C}" \
             "${TB_EMPTYSTRING}"
@@ -3777,6 +3781,9 @@ bootoptions_readdialog_action__sub() {
             ;;
         m)
             flag_bootoptions_exitloop=true;
+            ;;
+        r)
+            reboot__sub
             ;;
         q)
             exit__func "${TB_EXITCODE_99}" "${TB_NUMOFLINES_2}"

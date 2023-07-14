@@ -592,7 +592,7 @@ docker__overlay__sub() {
                 ;;
             "${PHASE_OVERLAY_COPY_FILES_FROM_TMP_TO_DST}")
                 docker__overlay_copy_files_from_tmp_to_dst_handler__sub
-exit
+
                 phase="${PHASE_OVERLAY_DST_EXEC_FILES_CHANGE_PERMISSION}"
                 ;;
             "${PHASE_OVERLAY_DST_EXEC_FILES_CHANGE_PERMISSION}")
@@ -1788,9 +1788,9 @@ docker__overlay_copy_files_from_tmp_to_dst_handler__sub() {
             "${docker__SP7021_linux_rootfs_initramfs_disk_sbin_tb_init_sh__fpath}"
 
     docker__overlay_copy_file__sub "${DOCKER__EMPTYSTRING}" \
-            "${docker__docker_overlayfs_cmdline__fpath}" \
+            "${docker__docker_overlayfs_tb_init_bootmenu__fpath}" \
             "${docker__containerid}" \
-            "${docker__SP7021_linux_rootfs_initramfs_disk_sbin_tb_init_sh__fpath}"
+            "${docker__SP7021_linux_rootfs_initramfs_disk_sbin_tb_init_bootmenu__fpath}"
 
     docker__overlay_copy_file__sub "${DOCKER__EMPTYSTRING}" \
             "${docker__docker_overlayfs_96_overlayboot_notice__fpath}" \
