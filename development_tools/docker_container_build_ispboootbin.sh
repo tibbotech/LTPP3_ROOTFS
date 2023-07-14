@@ -2020,9 +2020,10 @@ docker__run_script__sub() {
         #Print the following message in case 'docker__overlaysetting_set = DOCKER__OVERLAYFS_ENABLED'
         if [[ "${docker__overlaysetting_set}" == "${DOCKER__OVERLAYFS_ENABLED}" ]]; then
             printmsg+="\n"
-            printmsg+="${DOCKER__NINEDASHES_COLON}${DOCKER__NOTICE}: After reimaging the TPS with the new ${DOCKER__FG_LIGHTGREY}ISPBOOOT.BIN${DOCKER__NOCOLOR} image...\n"
-            printmsg+="${DOCKER__NINEDASHES_COLON}${DOCKER__NOTICE}: ...executable ${DOCKER__FG_LIGHTGREY}tb_init_bootmenu${DOCKER__NOCOLOR} will become available.\n"
-            printmsg+="${DOCKER__NINEDASHES_COLON}${DOCKER__NOTICE}: With this tool, overlay ${DOCKER__FG_LIGHTGREY}mode/options${DOCKER__NOCOLOR} can be configured ${DOCKER__FG_LIGHTGREY}within${DOCKER__NOCOLOR} Linux."
+            printmsg+="${DOCKER__NINEDASHES_COLON}${DOCKER__NOTICE}: After reimaging the LTPS with this new ${DOCKER__FG_LIGHTGREY}ISPBOOOT.BIN${DOCKER__NOCOLOR} image...\n"
+            printmsg+="${DOCKER__NINEDASHES_COLON}${DOCKER__NOTICE}: ...executable ${DOCKER__FG_LIGHTGREY}tb_init_bootmenu${DOCKER__NOCOLOR} will be available.\n"
+            printmsg+="${DOCKER__NINEDASHES_COLON}${DOCKER__NOTICE}: With this tool, overlay ${DOCKER__FG_LIGHTGREY}mode/options${DOCKER__NOCOLOR} "
+            printmsg+="can be configured ${DOCKER__FG_LIGHTGREY}within${DOCKER__NOCOLOR} Linux."
         fi
     fi
 
