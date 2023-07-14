@@ -234,7 +234,7 @@ TB_PRINT_OPTIONS_SEMICOLON_Q="${TB_FG_YELLOW_33};${TB_NOCOLOR}q"
 TB_PRINT_UPDATE="---:${TB_FG_BLUE_45}UPDATE${TB_NOCOLOR}"
 
 #---REGEX CONSTANTS
-TB_BOOTINTO_MYCHOICE_REGEX="[12345mq]"
+TB_BOOTINTO_MYCHOICE_REGEX="[12345mrq]"
 TB_ISPBOOOTBIN_BOOTSEQ_MYCHOICE_REGEX="[123456mq]"
 TB_MAINMENU_MYCHOICE_REGEX="[123rq]"
 TB_RQ_REGEX="[rq]"
@@ -266,6 +266,7 @@ tb_tb_reserve_dir="/tb_reserve"
 tb_tmp_dir="/tmp"
 tb_sbin_dir="/sbin"
 tb_usr_sbin_dir="/usr/sbin"
+tb_etc_tibbo_proc_dir=/etc/tibbo/proc
 
 tb_tb_init_sh="tb_init.sh"
 
@@ -279,7 +280,7 @@ tb_init_bootseq_usb0usb1sd_fpath=${tb_tb_reserve_dir}/.tb_init_bootseq_usb0usb1s
 tb_init_bootseq_usb1sdusb0_fpath=${tb_tb_reserve_dir}/.tb_init_bootseq_usb1sdusb0
 tb_init_bootseq_usb1usb0sd_fpath=${tb_tb_reserve_dir}/.tb_init_bootseq_usb1usb0sd
 tb_overlay_current_cfg_fpath=${tb_tb_reserve_dir}/.tb_overlay_current.cfg
-tb_proc_cmdline_fpath=${tb_proc_dir}/cmdline
+tb_etc_tibbo_proc_cmdline_fpath=${tb_etc_tibbo_proc_dir}/cmdline
 tb_sbin_tb_init_sh_fpath=${tb_usr_sbin_dir}/${tb_tb_init_sh}
 tb_usr_sbin_tb_init_sh_fpath=${tb_sbin_dir}/${tb_tb_init_sh}
 
@@ -1016,8 +1017,8 @@ function extract_if_and_of_from_string__func() {
 function extract_overlaymode_info__func() {
     #Get 'tb_rootfs_ro' values from 2 files (if present)
     tb_proc_cmdline_tb_rootfs_ro_get="${TB_EMPTYSTRING}"
-    if [[ -f "${tb_proc_cmdline_fpath}" ]]; then
-        tb_proc_cmdline_tb_rootfs_ro_get=$(grep -o "${TB_PATTERN_TB_ROOTFS_RO}.*" "${tb_proc_cmdline_fpath}")
+    if [[ -f "${tb_etc_tibbo_proc_cmdline_fpath}" ]]; then
+        tb_proc_cmdline_tb_rootfs_ro_get=$(grep -o "${TB_PATTERN_TB_ROOTFS_RO}.*" "${tb_etc_tibbo_proc_cmdline_fpath}")
     fi
     tb_init_bootargs_cfg_tb_rootfs_ro_get="${TB_EMPTYSTRING}"
     if [[ -f "${tb_init_bootargs_cfg_fpath}" ]]; then
@@ -1066,26 +1067,26 @@ function extract_overlaymode_info__tb_overlaymode_set_and_tag____func() {
     #Validate overlay-mode (persistent or non-persistent)
     #Determine the 'tb_overlaymode_set'
     if [[ -z ${tb_init_bootargs_cfg_tb_rootfs_ro_get} ]]; then  #tb_rootfs_ro is NOT set in '/tb_reserve/tb_init_bootargs.cfg'
-        if [[ -z ${tb_proc_cmdline_tb_rootfs_ro_get} ]]; then  #tb_rootfs_ro is NOT set in '/proc/cmdline'
+        if [[ -z ${tb_proc_cmdline_tb_rootfs_ro_get} ]]; then  #tb_rootfs_ro is NOT set in '/etc/tibbo/proc/cmdline'
             tb_overlaymode_set="${TB_MODE_PERSISTENT}"
-        else    #tb_rootfs_ro is set in '/proc/cmdline'
+        else    #tb_rootfs_ro is set in '/etc/tibbo/proc/cmdline'
             tb_overlaymode_set="${TB_MODE_NONPERSISTENT}"
         fi
     else    #tb_rootfs_ro is set in '/tb_reserve/tb_init_bootargs.cfg'
         if [[ "${tb_init_bootargs_cfg_tb_rootfs_ro_get}" == "${TB_ROOTFS_RO_IS_NULL}" ]]; then
             tb_overlaymode_set="${TB_MODE_PERSISTENT}"
 
-            if [[ -z "${tb_proc_cmdline_tb_rootfs_ro_get}" ]]; then  #tb_rootfs_ro is NOT set in '/proc/cmdline'
+            if [[ -z "${tb_proc_cmdline_tb_rootfs_ro_get}" ]]; then  #tb_rootfs_ro is NOT set in '/etc/tibbo/proc/cmdline'
                 flag_file_can_be_removed=true
-            else    #tb_rootfs_ro is already set in '/proc/cmdline'
+            else    #tb_rootfs_ro is already set in '/etc/tibbo/proc/cmdline'
                 flag_file_can_be_removed=false
             fi
         else    #tb_init_bootargs_cfg_tb_rootfs_ro_get = true
             tb_overlaymode_set="${TB_MODE_NONPERSISTENT}"
 
-            if [[ "${tb_proc_cmdline_tb_rootfs_ro_get}" == "${TB_ROOTFS_RO_IS_TRUE}" ]]; then  #tb_rootfs_ro is already set in '/proc/cmdline'
+            if [[ "${tb_proc_cmdline_tb_rootfs_ro_get}" == "${TB_ROOTFS_RO_IS_TRUE}" ]]; then  #tb_rootfs_ro is already set in '/etc/tibbo/proc/cmdline'
                 flag_file_can_be_removed=true
-            else    #tb_rootfs_ro is NOT set in '/proc/cmdline'
+            else    #tb_rootfs_ro is NOT set in '/etc/tibbo/proc/cmdline'
                 flag_file_can_be_removed=false
             fi
         fi
@@ -3405,16 +3406,16 @@ mainmenu_precheck_softlink_init_isvalid__sub() {
 mainmenu_precheck_overlay_isvalid__sub() {
     #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     # This subroutine checks whether pattern 'tb_overlay' 
-    #   is present in file '/proc/cmdline.
+    #   is present in file '/etc/tibbo/proc/cmdline.
     #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    #Check if 'tb_overlay' is present in '/proc/cmdline'
+    #Check if 'tb_overlay' is present in '/etc/tibbo/proc/cmdline'
     local ispresent="${TB_EMPTYSTRING}"
-    if [[ -f "${tb_proc_cmdline_fpath}" ]]; then
-        ispresent=$(grep -o "${TB_PATTERN_TB_OVERLAY}.*" "${tb_proc_cmdline_fpath}")
+    if [[ -f "${tb_etc_tibbo_proc_cmdline_fpath}" ]]; then
+        ispresent=$(grep -o "${TB_PATTERN_TB_OVERLAY}.*" "${tb_etc_tibbo_proc_cmdline_fpath}")
     fi
 
     if [[ -z "${ispresent}" ]]; then   #is NOT present
-        local errormsg="${TB_PRINT_ERROR}: ${TB_FG_GREY_246}tb_overlay${TB_NOCOLOR} is *NOT* found in ${TB_FG_GREY_246}${tb_proc_cmdline_fpath}${TB_NOCOLOR}.\n"
+        local errormsg="${TB_PRINT_ERROR}: ${TB_FG_GREY_246}tb_overlay${TB_NOCOLOR} is *NOT* found in ${TB_FG_GREY_246}${tb_etc_tibbo_proc_cmdline_fpath}${TB_NOCOLOR}.\n"
         errormsg+="${TB_PRINT_ERROR}: This may be the case if ${TB_FG_GREY_246}overlay${TB_NOCOLOR} is *NOT* enabled.\n"
         errormsg+="${TB_PRINT_ERROR}: Exiting now..."
         movedown_and_clean__func "${TB_NUMOFLINES_2}"
@@ -3695,6 +3696,10 @@ bootoptions_body_print__sub() {
             "${TB_OPTIONS_MAIN}" \
             "${TB_EMPTYSTRING}"
     print_menuitem__func "${TB_FOURSPACES}" \
+            "${TB_OPTIONS_R}" \
+            "${TB_OPTIONS_REBOOT}" \
+            "${TB_EMPTYSTRING}"
+    print_menuitem__func "${TB_FOURSPACES}" \
             "${TB_OPTIONS_Q}" \
             "${TB_OPTIONS_QUIT_CTRL_C}" \
             "${TB_EMPTYSTRING}"
@@ -3776,6 +3781,9 @@ bootoptions_readdialog_action__sub() {
             ;;
         m)
             flag_bootoptions_exitloop=true;
+            ;;
+        r)
+            reboot__sub
             ;;
         q)
             exit__func "${TB_EXITCODE_99}" "${TB_NUMOFLINES_2}"

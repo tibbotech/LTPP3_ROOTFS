@@ -18,7 +18,7 @@ UNKNOWN="unknown"
 
 #---VARIABLES
 overlaymode="${UNKNOWN}"
-proc_cmdline_fpath=/proc/cmdline
+tb_etc_tibbo_proc_cmdline_fpath=/etc/tibbo/proc/cmdline
 tb_overlay_current_fpath=/tb_reserve/.tb_overlay_current.cfg
 tb_rootfs_ro="${EMPTYSTRING}"
 
@@ -26,8 +26,8 @@ tb_rootfs_ro="${EMPTYSTRING}"
 if [[ -f "${tb_overlay_current_fpath}" ]]; then   #file exists
     tb_rootfs_ro=$(grep -o "${TB_ROOTFS_RO_EQUAL}.*" ${tb_overlay_current_fpath} | cut -d" " -f1 | cut -d"=" -f2)
 else    #file does not exists
-    if [[ -f "${proc_cmdline_fpath}" ]]; then   #file exists
-        tb_rootfs_ro=$(grep -o "${TB_ROOTFS_RO_EQUAL}.*" ${proc_cmdline_fpath} | cut -d" " -f1 | cut -d"=" -f2)
+    if [[ -f "${tb_etc_tibbo_proc_cmdline_fpath}" ]]; then   #file exists
+        tb_rootfs_ro=$(grep -o "${TB_ROOTFS_RO_EQUAL}.*" ${tb_etc_tibbo_proc_cmdline_fpath} | cut -d" " -f1 | cut -d"=" -f2)
     else    #file does not exists
         tb_rootfs_ro="${UNKNOWN}"
     fi
