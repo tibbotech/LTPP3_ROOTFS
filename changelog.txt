@@ -1,0 +1,8 @@
+#---:20 Jul 2023: 16:45:---
+# File: development_tools/docker_fs_partition_diskpartition_menu.sh
+# Function: docker__menu_options_print_sub
+# Tasks:
+# 1. at line 390, changed string 'partition' to 'partitions'
+# 2. at line 391, changed string 'Configure' to 'Reconfigure'
+# 2. at line 391, changed string 'partition' to 'partitions'
+#
