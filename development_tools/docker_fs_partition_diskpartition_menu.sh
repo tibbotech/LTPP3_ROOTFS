@@ -387,8 +387,8 @@ docker__menu_options_print_sub() {
 
     ###Configure new/existing partition
     #Print options
-    echo -e "${DOCKER__FOURSPACES}1. Configure ${DOCKER__BLINKING}new${DOCKER__NOCOLOR} partition"
-    echo -e "${DOCKER__FOURSPACES}2. Configure ${DOCKER__DIM}existing${DOCKER__NOCOLOR} partition"
+    echo -e "${DOCKER__FOURSPACES}1. Configure ${DOCKER__BLINKING}new${DOCKER__NOCOLOR} partitions"
+    echo -e "${DOCKER__FOURSPACES}2. Reconfigure ${DOCKER__DIM}existing${DOCKER__NOCOLOR} partitions"
 
     ###Overlay-setting
     #Check if 'overlay' partition is present in 'docker__isp_partition_array'
