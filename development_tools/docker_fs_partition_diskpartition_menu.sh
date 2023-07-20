@@ -114,7 +114,7 @@ docker__init_variables__sub() {
 
     docker__exitcode=0
 
-    docker__regex12q="[12q]"
+    docker__regex3q="[3q]"
     docker__regex1234q="[1-4q]"
     docker__regex="${docker__regex1234q}"
 }
@@ -257,8 +257,9 @@ docker__menu__sub() {
         #Remark:
         #   If 'overlay' partition is NOT present, then DISABLE option '3' and '4'
         grep_overlay=$(echo ${docker__isp_partition_array[@]} | grep -w "${DOCKER__DISKPARTNAME_OVERLAY}")
-        if [[ -z "${grep_overlay}" ]]; then  #pattern 'overlay' is found
-            docker__regex="${docker__regex12q}"
+        if [[ -z "${grep_overlay}" ]] || \
+            [[ "${docker__overlaysetting_set}" == "${DOCKER__OVERLAYFS_DISABLED}" ]]; then  #'overlay' is NOT found or Disabled
+            docker__regex="${docker__regex3q}"
         fi
 
         while true
@@ -381,15 +382,11 @@ docker__menu_body_print_sub() {
 }
 docker__menu_options_print_sub() {
     #Define variables
+    local configpartitions_print="${DOCKER__EMPTYSTRING}"
     local overlaymode_print="${DOCKER__EMPTYSTRING}"
     local overlaysetting_print="${DOCKER__EMPTYSTRING}"
     local grep_overlay="${DOCKER__EMPTYSTRING}"
-
-    ###Configure new/existing partition
-    #Print options
-    echo -e "${DOCKER__FOURSPACES}1. Configure ${DOCKER__BLINKING}new${DOCKER__NOCOLOR} partitions"
-    echo -e "${DOCKER__FOURSPACES}2. Reconfigure ${DOCKER__DIM}existing${DOCKER__NOCOLOR} partitions"
-
+    
     ###Overlay-setting
     #Check if 'overlay' partition is present in 'docker__isp_partition_array'
     grep_overlay=$(echo ${docker__isp_partition_array[@]} | grep -w "${DOCKER__DISKPARTNAME_OVERLAY}")
@@ -410,16 +407,21 @@ docker__menu_options_print_sub() {
         overlaysetting_print+="(${DOCKER__FG_RED187}${DOCKER__OVERLAYFS_DISABLED}${DOCKER__NOCOLOR})"
     fi
 
-    echo -e "${overlaysetting_print}"
 
-    ###Overlay-mode
+    ###(Re)configure partitions && Overlay-mode
     #   dash (-) (do NOT change the pentagram_common.h)
     #   persistent ('overlay' partition is RW; do NOT remove 'overlay' partition after reboot)
     #   non-persistent ('overlay' partition is RO; remove 'overlay' partition after reboot)
     if [[ -n "${grep_overlay}" ]] && \
             [[ "${docker__overlaysetting_set}" == "${DOCKER__OVERLAYFS_ENABLED}" ]]; then  #'overlay' is found and enabled
+        configpartitions_print="${DOCKER__FOURSPACES}1. Configure ${DOCKER__BLINKING}new${DOCKER__NOCOLOR} partitions\n"
+        configpartitions_print+="${DOCKER__FOURSPACES}2. Reconfigure ${DOCKER__DIM}existing${DOCKER__NOCOLOR} partitions"
+
         overlaymode_print="${DOCKER__FOURSPACES}4. ${DOCKER__OVERLAYMODE} "
-    else    #'overlay' is found and enabled
+    else   #for all other cases
+        configpartitions_print="${DOCKER__FG_LIGHTGREY}${DOCKER__FOURSPACES}1.${DOCKER__NOCOLOR} Configure ${DOCKER__BLINKING}new${DOCKER__NOCOLOR} partitions\n"
+        configpartitions_print+="${DOCKER__FG_LIGHTGREY}${DOCKER__FOURSPACES}2.${DOCKER__NOCOLOR} Reconfigure ${DOCKER__DIM}existing${DOCKER__NOCOLOR} partitions"
+
         overlaymode_print="${DOCKER__FG_LIGHTGREY}${DOCKER__FOURSPACES}4.${DOCKER__NOCOLOR} ${DOCKER__OVERLAYMODE} "
     fi
 
@@ -428,8 +430,12 @@ docker__menu_options_print_sub() {
     else
         overlaymode_print+="(${DOCKER__FG_RED187}${docker__overlaymode_set}${DOCKER__NOCOLOR})"
     fi
-    echo -e "${overlaymode_print}"
 
+
+    #Print
+    echo -e "${configpartitions_print}"
+    echo -e "${overlaysetting_print}"
+    echo -e "${overlaymode_print}"
     duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
     echo -e "${DOCKER__FOURSPACES}q. $DOCKER__QUIT_CTRL_C"
 }
