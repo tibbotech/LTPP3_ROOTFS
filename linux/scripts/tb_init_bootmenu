@@ -88,12 +88,12 @@ TB_FUNC_24="24"
 
 #---LEGEND CONSTANTS
 TB_LEGEND="${TB_FG_GREY_246}Legend:${TB_NOCOLOR}"
-TB_LEGEND_SAME="="
-TB_LEGEND_SAME_W_DESCRIPTION="${TB_LEGEND_SAME} : ${TB_FG_GREY_246}same${TB_NOCOLOR}"
-TB_LEGEND_NEW="${TB_FG_GREEN_158}+${TB_NOCOLOR}"
-TB_LEGEND_NEW_W_DESCRIPTION="${TB_LEGEND_NEW} : ${TB_FG_GREY_246}new${TB_NOCOLOR}"
-TB_LEGEND_NEW_PRIORITY="${TB_LEGEND_NEW}${TB_FG_RED_9}*${TB_NOCOLOR}"
-TB_LEGEND_NEW_PRIORITY_W_DESCRIPTION="${TB_LEGEND_NEW_PRIORITY}: ${TB_FG_GREY_246}new with priority${TB_NOCOLOR}"
+TB_LEGEND_UNCHANGED="="
+TB_LEGEND_UNCHANGED_W_DESCRIPTION="${TB_LEGEND_UNCHANGED} : ${TB_FG_GREY_246}unchanged${TB_NOCOLOR}"
+TB_LEGEND_CHANGED="${TB_FG_GREEN_158}+${TB_NOCOLOR}"
+TB_LEGEND_CHANGED_W_DESCRIPTION="${TB_LEGEND_CHANGED} : ${TB_FG_GREY_246}changed${TB_NOCOLOR}"
+TB_LEGEND_CHANGED_PRIORITY="${TB_LEGEND_CHANGED}${TB_FG_RED_9}*${TB_NOCOLOR}"
+TB_LEGEND_CHANGED_PRIORITY_W_DESCRIPTION="${TB_LEGEND_CHANGED_PRIORITY}: ${TB_FG_GREY_246}changed (priority)${TB_NOCOLOR}"
 
 #---MENU CONSTANTS
 TB_MENUITEM_BOOTOPTIONS="One-time boot-options"
@@ -1095,15 +1095,15 @@ function extract_overlaymode_info__tb_overlaymode_set_and_tag____func() {
     #Determine the 'tb_overlaymode_tag'
     if [[ "${tb_overlaymode_set}" == "${TB_MODE_PERSISTENT}" ]]; then
         if [[ "${tb_overlay_current_cfg_tb_rootfs_ro_get}" == "${TB_ROOTFS_RO_IS_EMPTYSTRING}" ]]; then
-            tb_overlaymode_tag="${TB_LEGEND_SAME}"
+            tb_overlaymode_tag="${TB_LEGEND_UNCHANGED}"
         else    #tb_overlay_current_cfg_tb_rootfs_ro_get = TB_ROOTFS_RO_IS_TRUE
-            tb_overlaymode_tag="${TB_LEGEND_NEW}"
+            tb_overlaymode_tag="${TB_LEGEND_CHANGED}"
         fi
     else    #tb_overlaymode_set = TB_MODE_NONPERSISTENT
         if [[ "${tb_overlay_current_cfg_tb_rootfs_ro_get}" == "${TB_ROOTFS_RO_IS_TRUE}" ]]; then
-            tb_overlaymode_tag="${TB_LEGEND_SAME}"
+            tb_overlaymode_tag="${TB_LEGEND_UNCHANGED}"
         else    #tb_overlay_current_cfg_tb_rootfs_ro_get = TB_ROOTFS_RO_IS_EMPTYSTRING
-            tb_overlaymode_tag="${TB_LEGEND_NEW}"
+            tb_overlaymode_tag="${TB_LEGEND_CHANGED}"
         fi
     fi
 }
@@ -1133,7 +1133,7 @@ function extract_bootoptions_info__func() {
     fi
    
     #Initialize global variables
-    tb_bootoptions_status="${TB_LEGEND_SAME}"
+    tb_bootoptions_status="${TB_LEGEND_UNCHANGED}"
     tb_bootoptions_get="${TB_EMPTYSTRING}"
     tb_bootoptions_set="${TB_MODE_DISABLED}"
     tb_bootoptions_set_printable="${tb_bootoptions_set}"
@@ -1147,34 +1147,34 @@ function extract_bootoptions_info__func() {
     
         tb_bootoptions_set="${TB_MODE_CLEANBOOT}"
 
-        tb_bootoptions_status="${TB_LEGEND_NEW_PRIORITY}"
+        tb_bootoptions_status="${TB_LEGEND_CHANGED_PRIORITY}"
     fi
     if [[ -n "${normalboot_result}" ]]; then
         tb_bootoptions_get=$(echo "${normalboot_result}" | cut -d"=" -f2 | sed 's/\s+//g' | tr -d '\r')
 
         tb_bootoptions_set="${TB_MODE_NORMALBOOT}"
 
-        tb_bootoptions_status="${TB_LEGEND_NEW_PRIORITY}"
+        tb_bootoptions_status="${TB_LEGEND_CHANGED_PRIORITY}"
     fi
     if [[ -n "${backup_result}" ]]; then
         tb_bootoptions_get=$(echo "${backup_result}" | cut -d"=" -f2 | sed 's/\s+//g' | tr -d '\r')
 
         tb_bootoptions_set="${TB_MODE_BACKUPMODE}"
 
-        tb_bootoptions_status="${TB_LEGEND_NEW_PRIORITY}"
+        tb_bootoptions_status="${TB_LEGEND_CHANGED_PRIORITY}"
     fi
     if [[ -n "${restore_result}" ]]; then
         tb_bootoptions_get=$(echo "${restore_result}" | cut -d"=" -f2 | sed 's/\s+//g' | tr -d '\r')
 
         tb_bootoptions_set="${TB_MODE_RESTOREMODE}"
 
-        tb_bootoptions_status="${TB_LEGEND_NEW_PRIORITY}"
+        tb_bootoptions_status="${TB_LEGEND_CHANGED_PRIORITY}"
     fi
 
     #Update printable or remove file
     if [[ "${tb_bootoptions_set}" != "${TB_MODE_DISABLED}" ]]; then
-        if [[ ${tb_bootoptions_status} != "${TB_LEGEND_SAME}" ]]; then
-            tb_bootoptions_set_printable="${tb_bootoptions_set}: ${TB_LEGEND_NEW_PRIORITY}"
+        if [[ ${tb_bootoptions_status} != "${TB_LEGEND_UNCHANGED}" ]]; then
+            tb_bootoptions_set_printable="${tb_bootoptions_set}: ${TB_LEGEND_CHANGED_PRIORITY}"
         else
             tb_bootoptions_set_printable="${tb_bootoptions_set}"
         fi
@@ -3492,20 +3492,20 @@ mainmenu_print_legend__sub() {
             "${TB_EMPTYSTRING}"
     print_menuitem__func "${TB_FOURSPACES}" \
             "${TB_EMPTYSTRING}" \
-            "${TB_LEGEND_SAME_W_DESCRIPTION}" \
+            "${TB_LEGEND_UNCHANGED_W_DESCRIPTION}" \
             "${TB_EMPTYSTRING}"
     print_menuitem__func "${TB_FOURSPACES}" \
             "${TB_EMPTYSTRING}" \
-            "${TB_LEGEND_NEW_W_DESCRIPTION}" \
+            "${TB_LEGEND_CHANGED_W_DESCRIPTION}" \
             "${TB_EMPTYSTRING}"
     print_menuitem__func "${TB_FOURSPACES}" \
             "${TB_EMPTYSTRING}" \
-            "${TB_LEGEND_NEW_PRIORITY_W_DESCRIPTION}" \
+            "${TB_LEGEND_CHANGED_PRIORITY_W_DESCRIPTION}" \
             "${TB_EMPTYSTRING}"
     print_duplicate_char__func "${TB_DASH}" "${TB_TABLEWIDTH}" "${TB_NOCOLOR}"
 }
 mainmenu_print_remark__sub() {
-    if [[ "${tb_overlaymode_tag}" == "${TB_LEGEND_SAME}" ]] && [[ "${tb_bootoptions_status}" == "${TB_LEGEND_SAME}" ]]; then
+    if [[ "${tb_overlaymode_tag}" == "${TB_LEGEND_UNCHANGED}" ]] && [[ "${tb_bootoptions_status}" == "${TB_LEGEND_UNCHANGED}" ]]; then
         return 0;
     fi
 
