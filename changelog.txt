@@ -1,11 +1,10 @@
-#---:20 Jul 2023: 16:45:---
+#---:20 Jul 2023:---
 # File: development_tools/docker_fs_partition_diskpartition_menu.sh
 # Function: docker__menu_options_print_sub
 # 1. at line 390, changed string 'partition' to 'partitions'
 # 2. at line 391, changed string 'Configure' to 'Reconfigure'
 # 2. at line 391, changed string 'partition' to 'partitions'
 #
-#---:20 Jul 2023: 17:37---
 # File: development_tools/docker_fs_partition_diskpartition_menu.sh
 # Function: docker__menu__sub
 # 1. at line 260, changed if-condition
@@ -15,7 +14,16 @@
 # 2. for variable 'docker__regex3q' changed value from '[12q]' to '[3q]'
 # 
 # Function: docker__menu_options_print_sub
-# Tasks:
 # 1. revised this function to *grey out* options 1, 2, 4 if overlay-setting is DISABLED.
 #    On the other hand, if overlay-setting is ENABLED, do NOT *grey out* options 1, 2, 4.
 #
+#---:31 Jul 2023:---
+#Affected file(s): chroot_exec_cmd_inside_chroot.sh
+#Changed:
+#1. enabled the pre-install of 'tibbo-oobe' (during the docker-image build)
+#
+#Affected file(s): diskpreprep.sh
+#Added:
+#1. copy 'tpd.ko' from '/home/imcase/LTPP3_ROOTFS/kernel/drivers/tpd' to '/root/SP7021/linux/kernel/drivers/tpd'
+#2. copy 'tpd_fix.sh' from '/home/imcase/LTPP3_ROOTFS/kernel/scripts/tpd' to '/root/SP7021/linux/kernel/scripts/tpd'
+#3. apply patch 'Kbuild.patch' to '/root/SP7021/linux/kernel/Kbuild'. This patch is required in order to run 'tpd_fix.sh'

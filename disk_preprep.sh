@@ -309,8 +309,8 @@ dst_usb_mount_sh_fpath=${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}/$
 src_usb_mount_rules_fpath=${home_lttp3rootfs_services_automount_dir}/${usb_mount_rules_filename}
 dst_usb_mount_rules_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_udev_rulesd_dir}/${usb_mount_rules_filename}
 
-src_tpd_fpath=${home_lttp3rootfs_kernel_drivers_tpd_dir}/${tpd_ko_filename}
-dst_tpd_fpath=${SP7xxx_linux_kernel_drivers_tpd_dir}/${tpd_ko_filename}
+src_tpd_ko_fpath=${home_lttp3rootfs_kernel_drivers_tpd_dir}/${tpd_ko_filename}
+dst_tpd_ko_fpath=${SP7xxx_linux_kernel_drivers_tpd_dir}/${tpd_ko_filename}
 
 src_tpd_fix_sh_fpath=${home_lttp3rootfs_kernel_scripts_tpd_dir}/${tpd_fix_sh_filename}
 dst_tpd_fix_sh_fpath=${SP7xxx_linux_kernel_scripts_tpd_dir}/${tpd_fix_sh_filename}
@@ -375,12 +375,23 @@ echo -e "\tPRE-PREPARATION of DISK for CHROOT"
 echo -e "---------------------------------------------------------------"
 
 press_any_key__func
-#---Create Download directory (if needed)
+#---Create directories (if needed)
 if [[ ! -d ${home_downloads_dir} ]]; then
 	echo -e "\r"
 	echo -e ">Create ${home_downloads_dir}"
 	mkdir ${home_downloads_dir}
 fi
+if [[ ! -d ${SP7xxx_linux_kernel_drivers_tpd_dir} ]]; then
+	echo -e "\r"
+	echo -e ">Create ${SP7xxx_linux_kernel_drivers_tpd_dir}"
+	mkdir ${SP7xxx_linux_kernel_drivers_tpd_dir}
+fi
+if [[ ! -d ${SP7xxx_linux_kernel_scripts_tpd_dir} ]]; then
+	echo -e "\r"
+	echo -e ">Create ${SP7xxx_linux_kernel_scripts_tpd_dir}"
+	mkdir ${SP7xxx_linux_kernel_scripts_tpd_dir}
+fi
+
 
 
 #---Download armhf-image (if needed)
@@ -731,15 +742,15 @@ echo -e "\r"
 echo -e ">Copy file: ${tpd_ko_filename}"
 echo -e ">from: ${home_lttp3rootfs_kernel_drivers_tpd_dir}"
 echo -e ">to: ${SP7xxx_linux_kernel_drivers_tpd_dir}"
-	cp ${src_tpd_fpath} ${SP7xxx_linux_kernel_drivers_tpd_dir}
+	cp ${src_tpd_ko_fpath} ${SP7xxx_linux_kernel_drivers_tpd_dir}
 
 echo -e "\r"
 echo -e ">>>Change ownership to <root> for file: ${tpd_ko_filename}"
-	chown root:root ${dst_tpd_fpath}
+	chown root:root ${dst_tpd_ko_fpath}
 
 echo -e "\r"
 echo -e ">>>Change permission to <-rw-r--r--> for file: ${tpd_ko_filename}"
-	chmod 644 ${dst_tpd_fpath}
+	chmod 644 ${dst_tpd_ko_fpath}
 
 echo -e "\r"
 echo -e ">Copy file: ${tpd_fix_sh_filename}"
