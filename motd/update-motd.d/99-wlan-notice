@@ -1,0 +1,16 @@
+#!/bin/bash
+#---CONSTANTS
+FG_RESET="\e[0;0m"
+FG_DARKBLUE="\e[30;38;5;33m"
+FG_LIGHTBLUE=$'\e[30;38;5;45m'
+FG_GREY="\e[30;38;5;246m"
+BLINK="\e[5m"
+
+#---PRINT
+echo -e "\r"
+echo "*********************************************************************"
+echo -e "% WLAN ${BLINK}found${FG_RESET}"
+echo "*********************************************************************"
+echo -e "% ${FG_GREY}Execute ${FG_DARKBLUE}sudo tb_wlan_mainmenu${FG_GREY} to configure ${FG_LIGHTBLUE}WLAN${FG_RESET}"
+echo "*********************************************************************"
+echo -e "\r"

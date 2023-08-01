@@ -6150,6 +6150,7 @@ docker__get_source_fullpath__sub() {
     docker__tb_init_bootmenu__filename="tb_init_bootmenu"
     docker__96_overlayboot_notice__filename="96-overlayboot-notice"
     docker__98_normalboot_notice__filename="98-normalboot-notice"
+    docker__99_wlan_notice__filename="99-wlan-notice"
 
 
 #---docker__docker__dir - contents
@@ -6368,6 +6369,7 @@ docker__get_source_fullpath__sub() {
 #---docker__LTPP3_ROOTFS_motd__dir - contents
     docker__LTPP3_ROOTFS_motd_update_motd_96_overlayboot_notice__fpath=${docker__LTPP3_ROOTFS_motd_update_motd__dir}/${docker__96_overlayboot_notice__filename}
     docker__LTPP3_ROOTFS_motd_update_motd_98_normalboot_notice__fpath=${docker__LTPP3_ROOTFS_motd_update_motd__dir}/${docker__98_normalboot_notice__filename}
+    docker__LTPP3_ROOTFS_motd_update_motd_99_wlan_notice__fpath=${docker__LTPP3_ROOTFS_motd_update_motd__dir}/${docker__99_wlan_notice__filename}
 
 #---docker__SP7021__dir - contents
     #Note: this directory MUST be the same as the 'SP7021_dir' which is defined in 'sunplus_inst.sh'
@@ -6397,6 +6399,7 @@ docker__get_source_fullpath__sub() {
     docker__SP7021_linux_rootfs_initramfs_disk_etc_tibbo_proc_cmdline__fpath=${docker__SP7021_linux_rootfs_initramfs_disk_etc_tibbo_proc__dir}/${docker__cmdline__filename}
     docker__SP7021_linux_rootfs_initramfs_disk_etc_update_motd_d_96_overlayboot_notice__fpath="${docker__SP7021_linux_rootfs_initramfs_disk_etc_update_motd_d__dir}/${docker__96_overlayboot_notice__filename}"
     docker__SP7021_linux_rootfs_initramfs_disk_etc_update_motd_d_98_normalboot_notice__fpath="${docker__SP7021_linux_rootfs_initramfs_disk_etc_update_motd_d__dir}/${docker__98_normalboot_notice__filename}"
+    docker__SP7021_linux_rootfs_initramfs_disk_etc_update_motd_d_99_wlan_notice__fpath="${docker__SP7021_linux_rootfs_initramfs_disk_etc_update_motd_d__dir}/${docker__99_wlan_notice__filename}"
 
 #---docker__tmp__dir - contents
     compgen__query_w_autocomplete_out__filename="compgen_query_w_autocomplete.out"
