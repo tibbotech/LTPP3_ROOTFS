@@ -94,6 +94,7 @@ kbuild_filename="Kbuild"
 kbuild_patch_filename="Kbuild.patch"
 make_menuconfig_filename="armhf_kernel.config"
 make_menuconfig_default_filename=".config"
+ninetynine_wlan_notice__filename="99-wlan-notice"
 ntios_su_add_name="ntios-su-add"
 ntios_su_addasperand_name="${ntios_su_add_name}@"
 ntios_su_add_monitor_name="${ntios_su_add_name}-monitor"
@@ -156,6 +157,7 @@ home_lttp3rootfs_dir=${home_dir}/LTPP3_ROOTFS
 home_lttp3rootfs_boot_configs_dir=${home_lttp3rootfs_dir}/boot/configs
 home_lttp3rootfs_boot_drivers_dir=${home_lttp3rootfs_dir}/boot/drivers
 home_lttp3rootfs_build_drivers_dir=${home_lttp3rootfs_dir}/build/drivers
+home_lttp3rootfs_motd_update_motd_d_dir=${home_lttp3rootfs_dir}/motd/update-motd.d
 home_lttp3rootfs_rootfs_initramfs_dir=${home_lttp3rootfs_dir}/rootfs/initramfs
 home_lttp3rootfs_rootfs_initramfs_disk_etc_dir=${home_lttp3rootfs_rootfs_initramfs_dir}/disk/etc
 home_lttp3rootfs_services_automount_dir=${home_lttp3rootfs_dir}/services/automount
@@ -198,6 +200,7 @@ SP7xxx_linux_rootfs_initramfs_dir=${SP7xxx_dir}/linux/rootfs/initramfs
 SP7xxx_linux_rootfs_initramfs_disk_dir=${SP7xxx_linux_rootfs_initramfs_dir}/${disk_foldername}
 SP7xxx_linux_rootfs_initramfs_disk_etc_dir=${SP7xxx_linux_rootfs_initramfs_disk_dir}/etc
 SP7xxx_linux_rootfs_initramfs_disk_lib_dir=${SP7xxx_linux_rootfs_initramfs_disk_dir}/lib
+SP7xxx_linux_rootfs_initramfs_disk_etc_update_motd_d_dir=${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}/update-motd.d
 SP7xxx_linux_rootfs_initramfs_disk_usr_bin_dir=${SP7xxx_linux_rootfs_initramfs_disk_dir}/usr/bin
 SP7xxx_linux_rootfs_initramfs_disk_var_backups_gpio_dir=${SP7xxx_linux_rootfs_initramfs_disk_dir}/var/backups/gpio
 SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir=${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}/systemd/system
@@ -263,6 +266,9 @@ dst_hosts_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}/${hosts_filename}
 
 src_make_menuconfig_fpath=${home_lttp3rootfs_kernel_makeconfig_dir}/${make_menuconfig_filename}
 dst_make_menuconfig_fpath=${SP7xxx_linux_kernel_dir}/${make_menuconfig_default_filename}
+
+src_ninetynine_wlan_notice_fpath=${home_lttp3rootfs_motd_update_motd_d_dir}/${ninetynine_wlan_notice__filename}
+dst_ninetynine_wlan_notice_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_update_motd_d_dir}/${ninetynine_wlan_notice__filename}
 
 src_ntios_su_add_sh_fpath=${home_lttp3rootfs_services_sudo_dir}/${ntios_su_add_sh_filename}
 dst_ntios_su_add_sh_fpath=${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}/${ntios_su_add_sh_filename}
@@ -1217,7 +1223,21 @@ echo -e ">to: -rwxr-xr-x"
 echo -e "\r"
 chmod +x ${build_disk_fpath}
 
+#UPDATE-MOTD-D
+press_any_key__func
+echo -e "\r"
+echo -e ">Copying: ${ninetynine_wlan_notice__filename}"
+echo -e ">from: ${home_lttp3rootfs_motd_update_motd_d_dir}"
+echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_etc_update_motd_d_dir}"
+	cp -rf ${src_ninetynine_wlan_notice_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_etc_update_motd_d_dir}
 
+echo -e "\r"
+echo -e ">>>Change ownership to <root> for folder: ${ninetynine_wlan_notice__filename}"
+	chown -R root:root ${dst_ninetynine_wlan_notice_fpath}
+
+echo -e "\r"
+echo -e ">>>Change permission to <-rw-r-xr-x> for folder: ${ninetynine_wlan_notice__filename}"
+	chmod -R 755 ${dst_ninetynine_wlan_notice_fpath}
 
 ###APPLYIBG PATCHES###
 press_any_key__func

@@ -27,3 +27,9 @@
 #1. copy 'tpd.ko' from '/home/imcase/LTPP3_ROOTFS/kernel/drivers/tpd' to '/root/SP7021/linux/kernel/drivers/tpd'
 #2. copy 'tpd_fix.sh' from '/home/imcase/LTPP3_ROOTFS/kernel/scripts/tpd' to '/root/SP7021/linux/kernel/scripts/tpd'
 #3. apply patch 'Kbuild.patch' to '/root/SP7021/linux/kernel/Kbuild'. This patch is required in order to run 'tpd_fix.sh'
+#4. implementation motd notice for wlan. Filename: 99-wlan-notice
+#
+#---:1 Aug 2023:---
+#Affected file(s): diskpreprep.sh
+#Added:
+#1. implementation motd notice for wlan. Filename: 99-wlan-notice
