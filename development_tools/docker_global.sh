@@ -6243,6 +6243,9 @@ docker__get_source_fullpath__sub() {
     docker__create_images_from_dockerfile_dockerlist_menu__filename="docker_create_images_from_dockerfile_dockerlist_menu.sh"
     docker__create_images_from_dockerfile_dockerlist_menu__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__create_images_from_dockerfile_dockerlist_menu__filename}
 
+    docker__dockerhub_menu__filename="dockerhub_menu.sh"
+    docker__dockerhub_menu__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__dockerhub_menu__filename}
+
     docker__enter_command__filename="docker_enter_command.sh"
     docker__enter_command__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__enter_command__filename}
 

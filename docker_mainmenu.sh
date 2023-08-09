@@ -282,7 +282,7 @@ docker__checkIf_user_is_root__sub()
 docker__init_variables__sub() {
     docker__tibboHeader_prepend_numOfLines=${DOCKER__NUMOFLINES_2}
 
-    docker__regEx="[1-3890rcseipgq]"
+    docker__regEx="[1-3890rcseipdgq]"
     docker__myChoice=""
 
     docker__git_current_branchName=${DOCKER__EMPTYSTRING}
@@ -330,6 +330,7 @@ docker__mainmenu__sub() {
         echo -e "${DOCKER__FOURSPACES}1. ${DOCKER__MENU} create ${DOCKER__FG_BORDEAUX}image${DOCKER__NOCOLOR}(s) using docker-file/list"
         echo -e "${DOCKER__FOURSPACES}2. ${DOCKER__MENU} create${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}remove${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}rename ${DOCKER__FG_BORDEAUX}image${DOCKER__NOCOLOR}"
         echo -e "${DOCKER__FOURSPACES}3. ${DOCKER__MENU} run${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}remove${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}build ${DOCKER__FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
+
         echo -e "${DOCKER__FOURSPACES}8. Copy file from${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}to ${DOCKER__FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
         echo -e "${DOCKER__FOURSPACES}9. Chroot from inside${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}outside ${DOCKER__FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}" 
         echo -e "${DOCKER__FOURSPACES}0. Enter Command Prompt"
@@ -342,7 +343,8 @@ docker__mainmenu__sub() {
         echo -e "${DOCKER__FOURSPACES}i. Load from ${DOCKER__FG_BORDEAUX}image${DOCKER__NOCOLOR} file"
         echo -e "${DOCKER__FOURSPACES}e. Save to ${DOCKER__FG_BORDEAUX}image${DOCKER__NOCOLOR} file"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-        echo -e "${DOCKER__FOURSPACES}g. ${DOCKER__MENU} Git"
+        echo -e "${DOCKER__FOURSPACES}d. ${DOCKER__MENU} Dockerhub"
+        echo -e "${DOCKER__FOURSPACES}g. ${DOCKER__MENU} Github"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
         echo -e "${DOCKER__FOURSPACES}q. ${DOCKER__QUIT_CTRL_C}"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
