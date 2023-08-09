@@ -1,134 +1,7 @@
 #!/bin/bash -m
-#Remark: by using '-m' the INTERRUPT executed here will NOT propagate to the UPPERLAYER scripts
-#---NUMERIC CONSTANTS
-DOCKER__SSH_LOCALPORT=10022
-DOCKER__SSH_PORT=22
-
-
-
-#---FUNCTIONS
-function checkIf_repoTag_isUniq__func() {
-    #Input args
-    local repoName__input=${1}
-    local tag__input=${2}
-
-    #Define variables
-    local dataArr=()
-    local dataArr_item=${DOCKER__EMPTYSTRING}
-    local stdOutput1=${DOCKER__EMPTYSTRING}
-    local stdOutput2=${DOCKER__EMPTYSTRING}
-
-    #Write 'docker images' command output to array
-    readarray dataArr <<< $(docker images)
-
-    #Check if repository:tag is unique
-    local ret=true
-
-    for dataArr_item in "${dataArr[@]}"
-    do                                                      
-        stdOutput1=`echo ${dataArr_item} | awk '{print $1}' | grep -w "${repoName__input}"`
-        if [[ ! -z ${stdOutput1} ]]; then
-            stdOutput2=`echo ${dataArr_item} | awk '{print $2}' | grep -w "${tag__input}"`
-            if [[ ! -z ${stdOutput2} ]]; then
-                ret=false
-
-                break
-            fi
-        fi                                             
-    done
-
-    #Output
-    echo "${ret}"
-}
-
-function cmd_was_executed_successfully__func() {
-    RESULT=$?
-    if [ $RESULT -ne 0 ]; then
-        echo failed
-    fi
-}
-
-function get_available_localport__func() {
-    local ssh_localport=${DOCKER__SSH_LOCALPORT}    #initial value
-    local pattern=${DOCKER__EMPTYSTRING}
-    local localport_isUnique=${DOCKER__EMPTYSTRING}
-
-    while true
-    do
-        #Define search pattern (e.g. 10022->22)
-        search_pattern="${ssh_localport}->22"
-        
-        #Check if 'search_pattern' can be found in 'docker image ls'
-        localport_isUnique=`docker container ls | grep ${search_pattern}`
-        if [[ -z ${localport_isUnique} ]]; then #match was NOT found
-            docker__ssh_localport=${ssh_localport}   #set value for 'docker__ssh_localport'
-
-            break   #exit loop
-        else    #match was found
-            ssh_localport=$((ssh_localport+1))  #define a new value for 'ssh_localport'
-        fi
-    done
-}
-
-function get_assigned_ipv4_addresses__func() {
-    #Define local constants
-    local ERRMSG_NO_IP_ADDRESS_FOUND="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: no ip-address found"
-
-    #Define local variabes
-    local iproute_line=${DOCKER__EMPTYSTRING}
-    local dev_colno=0
-    local src_colno=0
-    local nic_name=${DOCKER__EMPTYSTRING}
-    local ipv4addr=${DOCKER__EMPTYSTRING}
-    local ipv4addr_isPresent=${DOCKER__EMPTYSTRING}
-    local nic_belongs_toDocker=${DOCKER__EMPTYSTRING}
-    local numOf_iproute_results=0
-    local i=0
-
-    #Get Network-adapter vs. IP-address
-    local numOf_iproute_results=`ip route | wc -l`
-    if [[ $numOf_iproute_results -ne 0 ]]; then
-        for ((i = 1 ; i <= ${numOf_iproute_results} ; i++)); do
-            iproute_line=`ip route | head -"$i" | tail -1`	#get ip route result for line i
-            
-            dev_colno=`echo ${iproute_line} | awk '{ for (k=1; k<=NF; ++k) { if ($k ~ "dev") print k } }'`	#get column number of "dev"
-            if [[ ${dev_colno} -ne 0 ]]; then
-                src_colno=`echo ${iproute_line} | awk '{ for (k=1; k<=NF; ++k) { if ($k ~ "src") print k } }'`	#get column number of "src"
-                if [[ ${src_colno} -ne 0 ]]; then
-                    dev_colno=$((dev_colno+1))	#get nic column number
-                    src_colno=$((src_colno+1))	#get ip address column number
-                    nic_name=`echo ${iproute_line} | awk -v c=${dev_colno} '{ print $c }'`	#get result on right-side of "dev"
-                    ipv4addr=`echo ${iproute_line} | awk -v c=${src_colno} '{ print $c }'`	#get result on right-side of "src"
-                    
-                    #Check if 'nic_name' value is found in the 'docker network inspect bridge' result
-                    nic_belongs_toDocker=$(docker network inspect bridge | grep '${nic_name}') 
-                    if [[ -z ${nic_belongs_toDocker} ]]; then   #'nic_name' does not belong to 'docker'
-                        if [[ ${ipv4addr} =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then  #'ip4addr' is valid
-                            
-                            #Check if 'ipv4addr' is already added to 'docker__ipv4_addr_summarize_str'
-                            ipv4addr_isPresent=$(echo ${docker__ipv4_addr_summarize_str} | grep ${ipv4addr})  
-                            if [[ -z ${ipv4addr_isPresent} ]]; then #'ipv4addr' is unique
-                                if [[ -z ${docker__ipv4_addr_summarize_str} ]]; then
-                                    docker__ipv4_addr_summarize_str="${ipv4addr}"
-                                else
-                                    docker__ipv4_addr_summarize_str="${docker__ipv4_addr_summarize_str} ${ipv4addr}"
-                                fi
-                            fi
-                        fi
-                    fi		
-                fi
-            fi
-        done
-
-        eval "docker__ipv4_addr_summarize_arr=(${docker__ipv4_addr_summarize_str})"
-    else
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-        echo -e "${ERRMSG_NO_IP_ADDRESS_FOUND}"    
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
-    fi
-}
-
-
+#Remark:
+#   Line (#!/bin/bash -m) may cause the git-menu and its sub-menus not to respond correctly)
+#   Should this be the case then remove line (#!/bin/bash -m)
 
 #---SUBROUTINES
 docker__get_source_fullpath__sub() {
@@ -388,39 +261,132 @@ docker__load_global_fpath_paths__sub() {
     source ${docker__global__fpath}
 }
 
+docker__load_constants__sub() {
+    DOCKERHUB__MENUTITLE="${DOCKER__FG_LIGHTBLUE}DOCKERHUB MENU${DOCKER__NOCOLOR}"
+
+    DOCKER__DOCKERHUB_PRINT="--->${DOCKER__BG_LIGHTBLUE}DOCKER-HUB${DOCKER__NOCOLOR}"
+    DOCKER__DOCKERHUB_LOGIN_PRINT="${DOCKER__DOCKERHUB_PRINT}: login"
+    DOCKER__DOCKERHUB_READDIALOG_REPO_INPUT="${DOCKER__DOCKERHUB_PRINT}: input ${DOCKER__FG_BRIGHTLIGHTPURPLE}repository${DOCKER__NOCOLOR}: "
+    DOCKER__DOCKERHUB_READDIALOG_TAG_INPUT="${DOCKER__DOCKERHUB_PRINT}: input ${DOCKER__FG_LIGHTPINK}tag${DOCKER__NOCOLOR}: "
+    DOCKER__DOCKERHUB_PUSH_PRINT="${DOCKER__DOCKERHUB_PRINT}: push"
+    DOCKER__DOCKERHUB_REMOVE_CACHE_FILE="${DOCKER__DOCKERHUB_PRINT}: remove cache file"
+}
+
 docker__init_variables__sub() {
+    # docker__current_checkOut_branch=${DOCKER__EMPTYSTRING}
     docker__exitCode=0
-    docker__ipv4_addr=${DOCKER__EMPTYSTRING}
-    docker__ipv4_addr_summarize_str=${DOCKER__EMPTYSTRING}
-    docker__ipv4_addr_summarize_arr=()
-    docker__ssh_localport=${DOCKER__SSH_LOCALPORT}
-
-
-    #Newly Added (not in use yet)
     docker__imageID_chosen=${DOCKER__EMPTYSTRING}
+    docker__myChoice=""    
+    docker__regEx="[012q]"
     docker__repo_chosen=${DOCKER__EMPTYSTRING}
+    docker__repoTag_get=${DOCKER__EMPTYSTRING}
+    docker__repo_put=${DOCKER__EMPTYSTRING}
+    docker__tag_put=${DOCKER__EMPTYSTRING}
+    docker__repoTag_put=${DOCKER__EMPTYSTRING}
     docker__tag_chosen=${DOCKER__EMPTYSTRING}
-    docker__repoTag_chosen=${DOCKER__EMPTYSTRING}
+    docker__tibboHeader_prepend_numOfLines=0
 
-    # docker__images_cmd="docker images"
-    # docker__ps_a_cmd="docker ps -a"
-
-    # docker__images_repoColNo=1
-    # docker__images_tagColNo=2
-    # docker__images_IDColNo=3
-
+    docker__childWhileLoop_isExit=false
     docker__onEnter_breakLoop=false
+    docker__parentWhileLoop_isExit=false
     docker__showTable=true
 }
 
-docker__run_container_handler__sub() {
+docker__dockerhub_menu__sub() {
+    #Initialization
+    docker__tibboHeader_prepend_numOfLines=${DOCKER__NUMOFLINES_2}
+
+    while true
+    do
+        #Get Git-information
+        #Output:
+        #   docker_git_current_info_msg
+        docker__get_git_info__sub
+
+        #Load header
+        load_tibbo_title__func "${docker__tibboHeader_prepend_numOfLines}"
+
+        #Set 'docker__tibboHeader_prepend_numOfLines'
+        docker__tibboHeader_prepend_numOfLines=${DOCKER__NUMOFLINES_1}
+
+        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+        show_leadingAndTrailingStrings_separatedBySpaces__func "${DOCKERHUB__MENUTITLE}" "${docker_git_current_info_msg}" "${DOCKER__TABLEWIDTH}"
+        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+        # echo -e "${DOCKER__FOURSPACES}Current Checkout Branch: ${DOCKER__FG_LIGHTSOFTYELLOW}${docker__git_current_branchName}${DOCKER__NOCOLOR}"
+        # duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+        echo -e "${DOCKER__FOURSPACES}1. Push"
+        echo -e "${DOCKER__FOURSPACES}2. Pull"
+        echo -e "${DOCKER__FOURSPACES}0. Enter Command Prompt"
+        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+        echo -e "${DOCKER__FOURSPACES}q. $DOCKER__QUIT_CTRL_C"
+        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+        # echo -e "\r"
+
+        while true
+        do
+            #Select an option
+            read -N1 -r -p "Please choose an option: " docker__myChoice
+            echo -e "\r"
+
+            #Only continue if a valid option is selected
+            case "${docker__myChoice}" in
+                ${DOCKER__CTRL_C})
+                    docker__exit_handler__sub
+                    ;;
+                *)
+                    if [[ ! -z "${docker__myChoice}" ]]; then
+                        if [[ ${docker__myChoice} =~ ${docker__regEx} ]]; then
+                            break
+                        else
+                            if [[ ${docker__myChoice} == ${DOCKER__ENTER} ]]; then
+                                moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
+                            else
+                                moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+                            fi
+                        fi
+                    else
+                        moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+                    fi
+                    ;;
+            esac
+
+            #Check if flag is given to break loop
+            if [[ ${docker__childWhileLoop_isExit} == true ]]; then
+                break
+            fi
+        done
+            
+        #Goto the selected option
+        case ${docker__myChoice} in
+            1)  
+                docker__docker_push_handler__sub
+                ;;
+            2)  
+                docker__docker_pull__sub "tibbotech/ltpp3_g2_u"
+                ;;
+            0)
+                ${docker__enter_cmdline_mode__fpath} "${DOCKER__EMPTYSTRING}"
+                ;;
+            q)
+                docker__exit_handler__sub
+                ;;
+        esac
+
+        #Check if flag is given to break loop
+        if [[ ${docker__parentWhileLoop_isExit} == true ]]; then
+            break
+        fi
+    done
+}
+
+docker__docker_push_handler__sub() {
     #Define phase constants
     local IMAGEID_SELECT_PHASE=0
     local REPOTAG_RETRIEVE_PHASE=1
-    local RUN_CONTAINER_PHASE=2
+    local DOCKER_PUSH_PHASE=2
 
     #Define message constants
-    local MENUTITLE="Run ${DOCKER__FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR} from specfied ${DOCKER__FG_PURPLE}Repository${DOCKER__NOCOLOR}"
+    local MENUTITLE="Docker Push"
 
     #Define variables
     local containerName=${DOCKER__EMPTYSTRING}
@@ -497,83 +463,18 @@ docker__run_container_handler__sub() {
                                 "${DOCKER__NUMOFLINES_3}"
                     return
                 else
-                    phase=${RUN_CONTAINER_PHASE}
+                    phase=${DOCKER_PUSH_PHASE}
                 fi
                 
                 ;;
-            ${RUN_CONTAINER_PHASE})
-                docker__run_container__sub
+            ${DOCKER_PUSH_PHASE})
+                docker__docker_push__sub
                 
                 return
                 ;;
         esac
     done
 }
-
-docker__run_container__sub() {
-    #Get an unused value for the 'docker__ssh_localport'
-    #Note: 
-    #   function 'get_available_localport__func' does NOT have an output, instead...
-    #   ....'docker__ssh_localport' is set in this function
-    get_available_localport__func
-
-    #Define Container Name
-    local container_label="containerOf__${docker__imageID_chosen}_p${docker__ssh_localport}"
-
-    #Combine 'myRepository' and 'myTag', but separated by a colon ':'
-    docker__repoTag_chosen="${docker__repo_chosen}:${docker__tag_chosen}"
-
-    #Run Container of the specified Image-ID
-    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-    docker run -d -p ${docker__ssh_localport}:${DOCKER__SSH_PORT} --name ${container_label} ${docker__repoTag_chosen} > /dev/null
-
-    #Check if docker__exitCode=0
-    docker__exitCode=$? #get docker__exitCode
-    if [[ ${docker__exitCode} -eq 0 ]]; then    #docker__exitCode=0, which means that command was executed successfully
-        #Define message constants
-        local MENUTITLE_UPDATED_CONTAINER_LIST="Updated ${DOCKER__FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}-list"
-
-        #Show Container's list
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-
-        show_repoList_or_containerList_w_menuTitle__func "${MENUTITLE_UPDATED_CONTAINER_LIST}" "${docker__ps_a_cmd}"
-
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-        # moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-        local echomsg1="Summary:\n"
-        echomsg1+="\tChosen Repository:\t\t\t${DOCKER__FG_PURPLE}${myRepository}${DOCKER__NOCOLOR}\n"
-        echomsg1+="\tCreated Container-ID:\t\t\t${DOCKER__FG_BRIGHTPRUPLE}${containerName}${DOCKER__NOCOLOR}\n"
-        echomsg1+="\tTCP-port to-used-for SSH:\t\t${DOCKER__FG_LIGHTBLUE}${docker__ssh_localport}${DOCKER__NOCOLOR}\n"
-        echo -e "${echomsg1}"
-
-        get_assigned_ipv4_addresses__func
-        
-        local echomsg2="\tAvailable ip-address(es) for SSH:"
-        echo -e "${echomsg2}"
-        for ipv4 in "${docker__ipv4_addr_summarize_arr[@]}"; do 
-            echo -e "\t\t\t\t\t\t${DOCKER__FG_LIGHTCYAN}${ipv4}${DOCKER__NOCOLOR}"
-        done
-        
-        # moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-
-
-        #Show EXAMPLE OF HOW TO SSH FROM a REMOTE PC
-        docker__ipv4_addr=$(cut -d" " -f1 <<< ${docker__ipv4_addr_summarize_str})
-        local echomsg3="How to SSH from a remote PC?\n"
-        echomsg3="\tDefault login/pass: ${DOCKER__FG_YELLOW}root/root${DOCKER__NOCOLOR}\n"
-        echomsg3+="\tSample:\n"
-        echomsg3+="\t\tssh ${DOCKER__FG_YELLOW}root${DOCKER__NOCOLOR}@${DOCKER__FG_LIGHTCYAN}${docker__ipv4_addr}${DOCKER__NOCOLOR} -p ${DOCKER__FG_LIGHTBLUE}${docker__ssh_localport}${DOCKER__NOCOLOR}\n"
-        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-        echo -e ${echomsg3}
-        # moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-        # moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-        
-        exit__func "${docker__exitCode}" "${DOCKER__NUMOFLINES_0}"
-    # else
-    #     break
-    fi
-}
-
 docker__get_and_check_repoTag__sub() {
     #Define message constants
     local ERRMSG_NO_REPO_FOUND="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: No matching ${DOCKER__FG_BRIGHTLIGHTPURPLE}Repository${DOCKER__NOCOLOR} found for ${DOCKER__FG_BORDEAUX}ID${DOCKER__NOCOLOR} '${DOCKER__FG_LIGHTGREY}${docker__imageID_chosen}${DOCKER__NOCOLOR}'"
@@ -600,20 +501,136 @@ docker__get_and_check_repoTag__sub() {
     fi
 }
 
+docker__docker_push__sub() {
+    #Define variables
+    local printmsg="${DOCKER__EMPTYSTRING}"
+
+    #Initialize variables
+    docker__repoTag_get="${DOCKER__EMPTYSTRING}"
+
+    #Combine 'myRepository' and 'myTag', but separated by a colon ':'
+    docker__repoTag_get="${docker__repo_chosen}:${docker__tag_chosen}"
+
+    #Run dockerhub login
+    printmsg="${DOCKER__DOCKERHUB_LOGIN_PRINT}"
+    show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_1}" "${DOCKER__NUMOFLINES_0}"
+
+    ${docker__docker_login_cmd}; docker__exitCode=$?
+
+    if [[ ${docker__exitCode} -eq 0 ]]; then
+        #Docker push repository:tag
+        printmsg="${DOCKER__DOCKERHUB_PUSH_PRINT} ${docker__repoTag_get}"
+        show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_2}" "${DOCKER__NUMOFLINES_0}"
+
+        ${docker__docker_push_cmd} ${docker__repoTag_get}
+
+        #Remove docker login cache
+        printmsg="${DOCKER__DOCKERHUB_REMOVE_CACHE_FILE} '${docker__config_json__fpath}'"
+        show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_2}" "${DOCKER__NUMOFLINES_0}"
+
+        rm "${docker__config_json__fpath}"
+    fi
+
+    #Move-down and clean 1 line
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+}
+
+docker__docker_pull__sub() {
+    #Initialize variables
+    docker__repo_put="${DOCKER__EMPTYSTRING}"
+    docker__tag_put="${DOCKER__EMPTYSTRING}"
+
+    #Show read-dialog for 'repository' input
+    readDialog_w_Output__func "${DOCKER__DOCKERHUB_READDIALOG_REPO_INPUT}" \
+                    "${DOCKER__EMPTYSTRING}" \
+                    "${docker__readDialog_w_Output__func_out__fpath}" \
+                    "${DOCKER__NUMOFLINES_2}" \
+                    "${DOCKER__NUMOFLINES_0}"
+
+    #Get the exitcode just in case a Ctrl-C was pressed in function 'readDialog_w_Output__func'
+    docker__exitCode=$?
+    if [[ ${docker__exitCode} -eq ${DOCKER__EXITCODE_99} ]]; then
+        exit__func "${docker__exitCode}" "${DOCKER__NUMOFLINES_2}"
+    fi
+
+    #Get docker__result_from_output
+    docker__repo_put=`retrieve_line_from_file__func "${DOCKER__LINENUM_1}" \
+                    "${docker__readDialog_w_Output__func_out__fpath}"`
+
+    #Show read-dialog for 'tag' input
+    readDialog_w_Output__func "${DOCKER__DOCKERHUB_READDIALOG_TAG_INPUT}" \
+                    "${DOCKER__EMPTYSTRING}" \
+                    "${docker__readDialog_w_Output__func_out__fpath}" \
+                    "${DOCKER__NUMOFLINES_0}" \
+                    "${DOCKER__NUMOFLINES_0}"
+
+    #Get the exitcode just in case a Ctrl-C was pressed in function 'readDialog_w_Output__func'
+    docker__exitCode=$?
+    if [[ ${docker__exitCode} -eq ${DOCKER__EXITCODE_99} ]]; then
+        exit__func "${docker__exitCode}" "${DOCKER__NUMOFLINES_2}"
+    fi
+
+    #Get docker__result_from_output
+    docker__tag_put=`retrieve_line_from_file__func "${DOCKER__LINENUM_1}" \
+                    "${docker__readDialog_w_Output__func_out__fpath}"`
+
+    #Combine 'docker__repo_put' and 'docker__tag_put'
+    docker__repoTag_put="${docker__repo_put}:${docker__tag_put}"
+
+    #Docker pull repository:tag
+    ${docker__docker_pull_cmd} ${docker__repoTag_put}
+
+    #Move-down and clean 1 line
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+}
+
+docker__exit_handler__sub() {
+    #Set flag to true
+    docker__childWhileLoop_isExit=true
+    docker__parentWhileLoop_isExit=true
+
+    #Move-down and clean 1 line
+    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+}
+
+docker__get_git_info__sub() {
+    #Get information
+    docker__git_current_branchName=`git__get_current_branchName__func`
+
+    docker__git_current_abbrevCommitHash=`git__log_for_pushed_and_unpushed_commits__func "${DOCKER__EMPTYSTRING}" \
+                        "${GIT__LAST_COMMIT}" \
+                        "${GIT__PLACEHOLDER_ABBREV_COMMIT_HASH}"`
+  
+    docker__git_push_status=`git__checkIf_branch_isPushed__func "${docker__git_current_branchName}"`
+
+    docker__git_current_tag=`git__get_tag_for_specified_branchName__func "${docker__git_current_branchName}" "${DOCKER__FALSE}"`
+    if [[ -z "${docker__git_current_tag}" ]]; then
+        docker__git_current_tag="${GIT__NOT_TAGGED}"
+    fi
+
+    #Generate message to be shown
+    docker_git_current_info_msg="${DOCKER__FG_LIGHTBLUE}${docker__git_current_branchName}${DOCKER__NOCOLOR}:"
+    docker_git_current_info_msg+="${DOCKER__FG_DARKBLUE}${docker__git_current_abbrevCommitHash}${DOCKER__NOCOLOR}"
+    docker_git_current_info_msg+="(${DOCKER__FG_DARKBLUE}${docker__git_push_status}${DOCKER__NOCOLOR}):"
+    docker_git_current_info_msg+="${DOCKER__FG_LIGHTBLUE}${docker__git_current_tag}${DOCKER__NOCOLOR}"
+}
+
 
 
 #---MAIN SUBROUTINE
-main_sub() {
+main__sub() {
     docker__get_source_fullpath__sub
 
     docker__load_global_fpath_paths__sub
 
+    docker__load_constants__sub
+
     docker__init_variables__sub
 
-    docker__run_container_handler__sub
+    docker__dockerhub_menu__sub
 }
 
 
 
 #---EXECUTE
-main_sub
+main__sub

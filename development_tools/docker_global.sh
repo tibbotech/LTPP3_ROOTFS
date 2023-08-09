@@ -671,6 +671,9 @@ DOCKER__HTTP_200=200
 
 
 #---VARIABLES
+docker__docker_login_cmd="docker login"
+docker__docker_pull_cmd="docker pull"
+docker__docker_push_cmd="docker push"
 docker__images_cmd="docker images"
 docker__ps_a_cmd="docker ps -a"
 
@@ -6243,6 +6246,9 @@ docker__get_source_fullpath__sub() {
     docker__create_images_from_dockerfile_dockerlist_menu__filename="docker_create_images_from_dockerfile_dockerlist_menu.sh"
     docker__create_images_from_dockerfile_dockerlist_menu__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__create_images_from_dockerfile_dockerlist_menu__filename}
 
+    docker__dockerhub_menu__filename="dockerhub_menu.sh"
+    docker__dockerhub_menu__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__dockerhub_menu__filename}
+
     docker__enter_command__filename="docker_enter_command.sh"
     docker__enter_command__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__enter_command__filename}
 
@@ -6343,6 +6349,7 @@ docker__get_source_fullpath__sub() {
 #---docker__root__dir - contents
     docker__root__dir="/root"   #this is the 
     docker__home_dotbashrc__fpath="${docker__root__dir}/.bashrc"
+    docker__config_json__fpath="${docker__root__dir}/.docker/config.json"
 
 
 #---docker__LTPP3_ROOTFS_docker__dir - contents
