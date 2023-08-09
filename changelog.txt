@@ -36,9 +36,14 @@
 #
 #---:9 Aug 2023:---
 #Affected file(s): pentagram_common.h, pentagram_common.h.patch
-#Added:
-#1. change notification message when ISPBOOOT.BIN is detected by USB0, USB1, SD
+#Modified:
+#1. notification message when ISPBOOOT.BIN is detected by USB0, USB1, SD
 #
 #Affected file(s): docker_global.sh, docker_mainmenu.sh, dockerhub_menu.sh
 #Added:
 #1. Implementation of docker pull and push from within docker_mainmenu.sh
+#
+#Affected file(s): docker_enter_cmdline_mode.sh
+#Modified:
+#1. Colors in the menu from orange to blue
+#

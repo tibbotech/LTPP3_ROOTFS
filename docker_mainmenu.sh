@@ -420,6 +420,10 @@ docker__mainmenu__sub() {
                 ${docker__save__fpath}
                 ;;
 
+            d)
+                ${docker__dockerhub_menu__fpath}
+                ;;
+
             g)  
                 ${docker__git_menu__fpath}
                 ;;

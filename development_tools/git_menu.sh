@@ -262,7 +262,7 @@ docker__load_global_fpath_paths__sub() {
 }
 
 docker__load_constants__sub() {
-    GIT__MENUTITLE="${DOCKER__FG_LIGHTBLUE}GIT MENU${DOCKER__NOCOLOR}"
+    GIT__MENUTITLE="${DOCKER__FG_LIGHTBLUE}GITHUB MENU${DOCKER__NOCOLOR}"
 }
 
 docker__init_variables__sub() {
@@ -276,7 +276,7 @@ docker__init_variables__sub() {
     docker__parentWhileLoop_isExit=false
 }
 
-git__menu_sub() {
+docker__github_menu__sub() {
     #Initialization
     docker__tibboHeader_prepend_numOfLines=${DOCKER__NUMOFLINES_2}
 
@@ -429,7 +429,7 @@ main__sub() {
 
     docker__init_variables__sub
 
-    git__menu_sub
+    docker__github_menu__sub
 }
 
 
