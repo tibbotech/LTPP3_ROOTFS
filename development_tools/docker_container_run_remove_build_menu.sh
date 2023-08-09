@@ -269,7 +269,7 @@ docker__load_constants__sub() {
 
 docker__init_variables__sub() {
     docker__myChoice=${DOCKER__EMPTYSTRING}
-    docker__regEx="[1-30brcsiegq]"
+    docker__regEx="[1-30brcsiedgq]"
     docker__tibboHeader_prepend_numOfLines=0
 }
 
@@ -315,7 +315,8 @@ docker__menu__sub() {
         echo -e "${DOCKER__FOURSPACES}i. Load from File"
         echo -e "${DOCKER__FOURSPACES}e. Save to File"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-        echo -e "${DOCKER__FOURSPACES}g. ${DOCKER__FG_LIGHTGREY}Git${DOCKER__NOCOLOR} Menu"
+        echo -e "${DOCKER__FOURSPACES}d. ${DOCKER__MENU} Dockerhub"
+        echo -e "${DOCKER__FOURSPACES}g. ${DOCKER__MENU} Github"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
         echo -e "${DOCKER__FOURSPACES}q. $DOCKER__QUIT_CTRL_C"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
@@ -375,6 +376,9 @@ docker__menu__sub() {
                 ;;
             i)
                 ${docker__load__fpath}
+                ;;
+            d)
+                ${docker__dockerhub_menu__fpath}
                 ;;
             g)  
                 ${docker__git_menu__fpath}

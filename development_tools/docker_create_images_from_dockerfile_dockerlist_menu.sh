@@ -315,7 +315,8 @@ docker__menu__sub() {
         echo -e "${DOCKER__FOURSPACES}i. Load from File"
         echo -e "${DOCKER__FOURSPACES}e. Save to File"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-        echo -e "${DOCKER__FOURSPACES}g. ${DOCKER__FG_LIGHTGREY}Git${DOCKER__NOCOLOR} Menu"
+        echo -e "${DOCKER__FOURSPACES}d. ${DOCKER__MENU} Dockerhub"
+        echo -e "${DOCKER__FOURSPACES}g. ${DOCKER__MENU} Github"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
         echo -e "${DOCKER__FOURSPACES}q. $DOCKER__QUIT_CTRL_C"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
@@ -330,7 +331,7 @@ docker__menu__sub() {
 
             #Only continue if a valid option is selected
             if [[ ! -z ${docker__myChoice} ]]; then
-                if [[ ${docker__myChoice} =~ [1-3rcsiegq] ]]; then
+                if [[ ${docker__myChoice} =~ [1-3rcsiedgq] ]]; then
                     break
                 else
                     if [[ ${docker__myChoice} == ${DOCKER__ENTER} ]]; then
@@ -376,6 +377,10 @@ docker__menu__sub() {
 
             i)
                 ${docker__load__fpath}
+                ;;
+
+            d)
+                ${docker__dockerhub_menu__fpath}
                 ;;
 
             g)  
