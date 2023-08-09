@@ -212,7 +212,7 @@
 "if test -e mmc 1:1 /ISPBOOOT.BIN; then \n; " /* START: check if ISPBOOOT.BIN is PRESENT */ \
 "setenv isp_if_test $ISP_IF_SD1 \n; " \
 "else \n; " /* ELSE: check if ISPBOOOT.BIN is PRESENT */ \
-"echo ---:tibbo:sd-card (mmc 1:1): ISPBOOOT.BIN *NOT* found \n; " \
+"echo ---:tibbo:SD (mmc 1:1): ISPBOOOT.BIN *NOT* found \n; " \
 "fi \n; " /* END: check if ISPBOOOT.BIN is PRESENT */ \
 "fi \n; " /* END: check if sd-card is PRESENT */ \
 
@@ -223,7 +223,7 @@
 "if test -e usb 0:1 /ISPBOOOT.BIN; then \n; " /* START: check if ISPBOOOT.BIN is PRESENT */ \
 "setenv isp_if_test $ISP_IF_USB0 \n; " \
 "else \n; " /* ELSE: check if ISPBOOOT.BIN is PRESENT */ \
-"echo ---:tibbo:usb0 (usb 0:1): ISPBOOOT.BIN *NOT* found \n; " \
+"echo ---:tibbo:USB0 (usb 0:1): ISPBOOOT.BIN *NOT* found \n; " \
 "fi \n; " /* END: check if ISPBOOOT.BIN is PRESENT */ \
 "fi \n; " /* END: check if usb-0 is PRESENT */ \
 
@@ -234,25 +234,25 @@
 "if test -e usb 1:1 /ISPBOOOT.BIN; then \n; " /* START: check if ISPBOOOT.BIN is PRESENT */ \
 "setenv isp_if_test $ISP_IF_USB1 \n; " \
 "else \n; " /* ELSE: check if ISPBOOOT.BIN is PRESENT */ \
-"echo ---:tibbo:usb1 (usb 1:1): ISPBOOOT.BIN *NOT* found \n; " \
+"echo ---:tibbo:USB1 (usb 1:1): ISPBOOOT.BIN *NOT* found \n; " \
 "fi \n; " /* END: check if ISPBOOOT.BIN is PRESENT */ \
 "fi \n; " /* END: check if usb-0 is PRESENT */ \
 
 #define MD_BUTTON_MEM_WRITE_AND_READ_0X9E809408_0X00000027 \
-"echo ------:tibbo:note: this will run bootcmd 'isp_usb' \n; " \
+"echo ---:tibbo:USB1 (usb 1:1): ISPBOOOT.BIN is *FOUND* \n; " \
 "mw.l  0x9e809408  0x00000027 1 \n; " \
 "echo ---:tibbo:get: memory-display of address (0x9e809408)\n; " \
 "md.l 0x9e809408 1 \n; " \
 
 #define MD_BUTTON_MEM_WRITE_AND_READ_0X9E809408_0X00000017 \
-"echo ------:tibbo:note: this will run bootcmd 'isp_usb' \n; " \
+"echo ---:tibbo:USB0 (usb 0:1): ISPBOOOT.BIN is *FOUND* \n; " \
 "mw.l  0x9e809408  0x00000017 1 \n; " \
 "echo ---:tibbo:get: memory-display of address (0x9e809408)\n; " \
 "md.l 0x9e809408 1 \n; " \
 
 #define MD_BUTTON_MEM_WRITE_AND_READ_0X9E809408_0X00000007 \
 "echo ---:TIBBO:FORCE-SET: memory-write to address (0x9e809408): 0x00000007 \n; " \
-"echo ------:tibbo:note: this will run bootcmd 'isp_sdcard' \n; " \
+"echo ---:tibbo:SD (mmc 1:1): ISPBOOOT.BIN is *FOUND* \n; " \
 "mw.l  0x9e809408  0x00000007 1 \n; " \
 "echo ---:tibbo:get: memory-display of address (0x9e809408)\n; " \
 "md.l 0x9e809408 1 \n; " \
@@ -461,10 +461,10 @@ MD_BUTTON_VARIABLES_DEFINE \
 	"echo [scr] nand boot; " \
 	"run nand_boot; " \
 "elif itest.l *${bootinfo_base} == " __stringify(USB_ISP) "; then " \
-	"echo [scr] ISP from USB storage; " \
+	"echo [scr] ISP from USB0 storage; " \
 	"run isp_usb; " \
 "elif itest.l *${bootinfo_base} == " __stringify(MD_BUTTON_ISP_USB1) "; then " \
-	"echo [scr] ISP from USB storage; " \
+	"echo [scr] ISP from USB1 storage; " \
 	"run md_button_isp_usb1_cmd; " \
 "elif itest.l *${bootinfo_base} == " __stringify(SDCARD_ISP) "; then " \
 	"echo [scr] ISP from SD Card; " \
