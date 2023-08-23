@@ -262,6 +262,9 @@ docker__load_global_fpath_paths__sub() {
 
 docker__load_constants__sub() {
     DOCKER__MENUTITLE="${DOCKER__FG_LIGHTBLUE}DOCKER: ${DOCKER__FG_DARKBLUE}MAIN-MENU${DOCKER__NOCOLOR}"
+
+    DOCKER__REGEX_OUTSIDE_CONTAINER="[1-3890rcseidgq]"
+    DOCKER__REGEX_INSIDE_CONTAINER="[90bq]"
 }
 
 docker__checkIf_user_is_root__sub()
@@ -282,7 +285,7 @@ docker__checkIf_user_is_root__sub()
 docker__init_variables__sub() {
     docker__tibboHeader_prepend_numOfLines=${DOCKER__NUMOFLINES_2}
 
-    docker__regEx="[1-3890rcseipdgq]"
+    docker__regEx="${DOCKER__REGEX_OUTSIDE_CONTAINER}"
     docker__myChoice=""
 
     docker__git_current_branchName=${DOCKER__EMPTYSTRING}
@@ -290,6 +293,8 @@ docker__init_variables__sub() {
 	docker__git_current_unpushed_abbrevCommitHash=${DOCKER__EMPTYSTRING}
 	docker__git_current_push_status=${DOCKER__EMPTYSTRING}
     docker__git_current_tag=${DOCKER__EMPTYSTRING}
+
+    docker__isRunning_inside_container=false
 }
 
 docker__enable_objects__sub() {
@@ -300,9 +305,25 @@ docker__enable_objects__sub() {
     enable_stty_intr__func
 }
 
+docker__checkif_isrunning_in_container__sub() {
+    #Check if running inside a container
+    docker__isRunning_inside_container=$(checkIf_isRunning_inside_container__func)
+}
+
 docker__mainmenu__sub() {
     #Initialization
     docker__tibboHeader_prepend_numOfLines=${DOCKER__NUMOFLINES_2}
+
+    #Check if running inside a container
+    docker__checkif_isrunning_in_container__sub
+
+    #If running inside containerm then change the 'docker_regEx' value
+    #Remark:
+    #   By doing this, we will restrict access to certain options which
+    #       are not relevant for when running inside a container.
+    if [[ ${docker__isRunning_inside_container} == true ]]; then
+        docker__regEx=${DOCKER__REGEX_INSIDE_CONTAINER}
+    fi
 
     while true
     do
@@ -327,24 +348,37 @@ docker__mainmenu__sub() {
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
 
         #Print menu-options
-        echo -e "${DOCKER__FOURSPACES}1. ${DOCKER__MENU} create ${DOCKER__FG_BORDEAUX}image${DOCKER__NOCOLOR}(s) using docker-file/list"
-        echo -e "${DOCKER__FOURSPACES}2. ${DOCKER__MENU} create${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}remove${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}rename ${DOCKER__FG_BORDEAUX}image${DOCKER__NOCOLOR}"
-        echo -e "${DOCKER__FOURSPACES}3. ${DOCKER__MENU} run${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}remove${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}build ${DOCKER__FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
-
-        echo -e "${DOCKER__FOURSPACES}8. Copy file from${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}to ${DOCKER__FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
+        #Only print this part if NOT running in a container
+        if [[ ${docker__isRunning_inside_container} == false ]]; then
+            echo -e "${DOCKER__FOURSPACES}1. ${DOCKER__MENU} create ${DOCKER__FG_BORDEAUX}image${DOCKER__NOCOLOR}(s) using docker-file/list"
+            echo -e "${DOCKER__FOURSPACES}2. ${DOCKER__MENU} create${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}remove${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}rename ${DOCKER__FG_BORDEAUX}image${DOCKER__NOCOLOR}"
+            echo -e "${DOCKER__FOURSPACES}3. ${DOCKER__MENU} run${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}remove${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}build ${DOCKER__FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
+        fi
+    
+        #Only print this part if NOT running in a container
+        if [[ ${docker__isRunning_inside_container} == false ]]; then
+            echo -e "${DOCKER__FOURSPACES}8. Copy file from${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}to ${DOCKER__FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
+        fi
+        
         echo -e "${DOCKER__FOURSPACES}9. Chroot from inside${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}outside ${DOCKER__FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}" 
         echo -e "${DOCKER__FOURSPACES}0. Enter Command Prompt"
+
+        #Only print this part if NOT running in a container
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-        echo -e "${DOCKER__FOURSPACES}r. ${DOCKER__FG_PURPLE}Repository${DOCKER__NOCOLOR}-list"
-        echo -e "${DOCKER__FOURSPACES}c. ${DOCKER__FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}-list"
-        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-        echo -e "${DOCKER__FOURSPACES}s. ${DOCKER__FG_YELLOW}SSH${DOCKER__NOCOLOR} to ${DOCKER__FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
-        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-        echo -e "${DOCKER__FOURSPACES}i. Load from ${DOCKER__FG_BORDEAUX}image${DOCKER__NOCOLOR} file"
-        echo -e "${DOCKER__FOURSPACES}e. Save to ${DOCKER__FG_BORDEAUX}image${DOCKER__NOCOLOR} file"
-        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
-        echo -e "${DOCKER__FOURSPACES}d. ${DOCKER__MENU} Dockerhub"
-        echo -e "${DOCKER__FOURSPACES}g. ${DOCKER__MENU} Github"
+        if [[ ${docker__isRunning_inside_container} == false ]]; then
+            echo -e "${DOCKER__FOURSPACES}r. ${DOCKER__FG_PURPLE}Repository${DOCKER__NOCOLOR}-list"
+            echo -e "${DOCKER__FOURSPACES}c. ${DOCKER__FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}-list"
+            duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+            echo -e "${DOCKER__FOURSPACES}s. ${DOCKER__FG_YELLOW}SSH${DOCKER__NOCOLOR} to ${DOCKER__FG_BRIGHTPRUPLE}container${DOCKER__NOCOLOR}"
+            duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+            echo -e "${DOCKER__FOURSPACES}i. Load from ${DOCKER__FG_BORDEAUX}image${DOCKER__NOCOLOR} file"
+            echo -e "${DOCKER__FOURSPACES}e. Save to ${DOCKER__FG_BORDEAUX}image${DOCKER__NOCOLOR} file"
+            duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+            echo -e "${DOCKER__FOURSPACES}d. ${DOCKER__MENU} Dockerhub"
+            echo -e "${DOCKER__FOURSPACES}g. ${DOCKER__MENU} Github"
+        else
+            echo -e "${DOCKER__FOURSPACES}b. ${DOCKER__MENU} overlay & ISPBOOOT.BIN"
+        fi
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
         echo -e "${DOCKER__FOURSPACES}q. ${DOCKER__QUIT_CTRL_C}"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
@@ -385,7 +419,15 @@ docker__mainmenu__sub() {
                 ;;
 
             3)
-                ${docker__container_run_remove_build_menu__fpath}
+                #Depending on whether we are currently running inside a container
+                #   or not execute the correct script-file.
+                #   1. if NOT inside a container -> run 'docker__container_run_remove_build_menu__fpath'
+                #   2. if INSIDE a container -> run 'docker__fs_partition_menu__fpath'
+                if [[ ${docker__isRunning_inside_container} == false ]]; then   #NOT INSIDE container
+                    ${docker__container_run_remove_build_menu__fpath}
+                else    #INSIDE container
+                    ${docker__fs_partition_menu__fpath}
+                fi
                 ;;
 
             8)
@@ -428,7 +470,16 @@ docker__mainmenu__sub() {
                 ${docker__git_menu__fpath}
                 ;;
 
+            b)
+                #Note: this script will only be triggered if 'docker__isRunning_inside_container = true'
+                if [[ ${docker__isRunning_inside_container} == true ]]; then
+                    ${docker__fs_partition_menu__fpath}
+                fi
+                ;;
+
             q)
+                moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
                 exit
                 ;;
         esac

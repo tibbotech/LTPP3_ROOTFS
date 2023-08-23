@@ -110,6 +110,7 @@ DOCKER__FG_GREEN158=$'\e[30;38;5;158m'
 DOCKER__FG_LIGHTBLUE=$'\e[30;38;5;45m'
 DOCKER__FG_LIGHTGREEN=$'\e[1;32m'
 DOCKER__FG_LIGHTGREY=$'\e[30;38;5;246m'
+DOCKER__FG_LIGHTGREY_250=$'\e[30;38;5;250m'
 DOCKER__FG_LIGHTPINK=$'\e[30;38;5;218m'
 DOCKER__FG_LIGHTRED=$'\e[1;31m'
 DOCKER__FG_LIGHTSOFTYELLOW=$'\e[30;38;5;229m'
@@ -386,6 +387,7 @@ DOCKER__FSTAB_DEV_MMCBLK09="/dev/mmcblk0p9"
 DOCKER__FSTAB_EXT4="ext4"
 DOCKER__FSTAB_TB_RESERVE_DIR="/${DOCKER__DISKPARTNAME_TB_RESERVE}"
 
+DOCKER__OVERLAY_SIZE_DEFAULT=4   #in MB
 DOCKER__RESERVED_SIZE_DEFAULT=128   #in MB
 DOCKER__ROOTFS_SIZE_DEFAULT=1536    #in MB
 
@@ -1387,6 +1389,20 @@ function check_containerID_state__func() {
             echo "${DOCKER__STATE_RUNNING}"
         fi
     fi
+}
+
+function checkIf_isRunning_inside_container__func() {
+    #Define contants
+    local PATTERN_DOCKER="docker"
+
+    #Check if you are currently inside a docker container
+    local ret=false
+    if [[ -f "${docker__dotdockerenv__fpath}" ]]; then
+        ret=true
+    fi
+
+    #Output
+    echo "${ret}"
 }
 
 function checkIf_repoTag_isUniq__func() {
@@ -5267,6 +5283,7 @@ function replace_or_append_string_based_on_pattern_in_file__func() {
     local string__input=${1}
     local pattern__input=${2}
     local targetfpath__input=${3}
+    local onlywrite_if_pattern_isfound__input=${4}  #by default is false (0)
 
     #Check if file exists
     #Note: if false, then add string to file.
@@ -5284,7 +5301,9 @@ function replace_or_append_string_based_on_pattern_in_file__func() {
     if [[ -n "${line}" ]]; then
         sed -i "s/${line}/${string__input}/g" ${targetfpath__input}
     else
-        echo -e "${string__input}" | tee -a ${targetfpath__input} >/dev/null
+        if [[ ${onlywrite_if_pattern_isfound__input} == false ]]; then
+            echo -e "${string__input}" | tee -a ${targetfpath__input} >/dev/null
+        fi
     fi
 }
 
@@ -6139,6 +6158,9 @@ docker__get_source_fullpath__sub() {
 #---filenames used in multiple places
     docker__cmdline__filename="cmdline"
     docker__docker_fs_partition_diskpartsize_dat__filename="docker_fs_partition_diskpartsize.dat"
+    docker__docker_fs_partition_diskpartsize_dat_4g__filename="docker_fs_partition_diskpartsize.dat.4g"
+    docker__docker_fs_partition_diskpartsize_dat_8g__filename="docker_fs_partition_diskpartsize.dat.8g"
+    # docker__docker_fs_partition_diskpartsize_dat_userdefined__filename="docker_fs_partition_diskpartsize.dat.userdefined"
     docker__docker_fs_partition_conf__filename="docker_fs_partition.conf"
     docker__fstab__filename="fstab"
     docker__fstab_overlaybck__filename="fstab.overlaybck"
@@ -6156,6 +6178,13 @@ docker__get_source_fullpath__sub() {
     docker__99_wlan_notice__filename="99-wlan-notice"
 
 
+
+#---docker__rootfs__dir - contents
+    docker__dootfs__dir="/"
+    docker__dotdockerenv__fpath="${docker__dootfs__dir}/.dockerenv"
+
+
+
 #---docker__docker__dir - contents
     docker__dockerfile_autogen_filename="dockerfile_autogen"
 
@@ -6169,6 +6198,9 @@ docker__get_source_fullpath__sub() {
     docker__docker_overlayfs_cmdline__fpath=${docker__docker_overlayfs__dir}/${docker__cmdline__filename}
     docker__docker_overlayfs_fstab__fpath=${docker__docker_overlayfs__dir}/${docker__fstab__filename}
     docker__docker_fs_partition_diskpartsize_dat__fpath=${docker__docker_overlayfs__dir}/${docker__docker_fs_partition_diskpartsize_dat__filename}
+    docker__docker_fs_partition_diskpartsize_dat_4g__fpath=${docker__docker_overlayfs__dir}/${docker__docker_fs_partition_diskpartsize_dat_4g__filename}
+    docker__docker_fs_partition_diskpartsize_dat_8g__fpath=${docker__docker_overlayfs__dir}/${docker__docker_fs_partition_diskpartsize_dat_8g__filename}
+    # docker__docker_fs_partition_diskpartsize_dat_userdefined__fpath=${docker__docker_overlayfs__dir}/${docker__docker_fs_partition_diskpartsize_dat_userdefined__filename}
     docker__docker_fs_partition_conf__fpath=${docker__docker_overlayfs__dir}/${docker__docker_fs_partition_conf__filename}
     docker__docker_overlayfs_isp_c__fpath=${docker__docker_overlayfs__dir}/${docker__isp_c__filename}
     docker__docker_overlayfs_isp_sh__fpath=${docker__docker_overlayfs__dir}/${docker__isp_sh__filename}
@@ -6345,6 +6377,11 @@ docker__get_source_fullpath__sub() {
     git__git_undo_last_unpushed_commit__filename="git_undo_last_unpushed_commit.sh"
     git__git_undo_last_unpushed_commit__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${git__git_undo_last_unpushed_commit__filename}
 
+
+#---docker__proc__dir - contents
+    docker__proc__dir="/proc"
+    docker__proc_1__dir="${docker__proc__dir}/1"
+    docker__proc_1_cgroup__fpath="${docker__proc_1__dir}/cgroup"
 
 #---docker__root__dir - contents
     docker__root__dir="/root"   #this is the 

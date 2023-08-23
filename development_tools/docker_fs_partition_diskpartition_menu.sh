@@ -53,7 +53,7 @@ docker__check_inputarg__sub() {
             echo -e "***\e[1;31mERROR\e[0;0m: \e[30;38;5;246mInput argument\e[0;0m: \e[30;38;5;131mNOT provided\e[0;0m"
             echo -e "\r"
 
-            exit 99
+            exit__func "${DOCKER__EXITCODE_99}" "${DOCKER__NUMOFLINES_0}"
         else
             #Get the directory stored in cache-file
             docker__LTPP3_ROOTFS_development_tools__dir=$(awk 'NR==1' "${docker__mainmenu_path_cache__fpath}")
@@ -74,21 +74,27 @@ docker__load_constants__sub() {
     DOCKER__MENUTITLE+="${DOCKER__FG_RED9}DISK${DOCKER__NOCOLOR}-${DOCKER__FG_RED9}PARTITION${DOCKER__NOCOLOR} "
     DOCKER__MENUTITLE+="(${DOCKER__FG_DARKBLUE}MB${DOCKER__NOCOLOR})"
 
-    DOCKER__READDIALOG_HEADER="---:${DOCKER__INPUT}"
-
     DOCKER__ERRMSG_ALREADY_INUSE="${DOCKER__FG_LIGHTRED}already in-use${DOCKER__NOCOLOR}"
     DOCKER__ERRMSG_CANNOT_BE_ZERO="${DOCKER__FG_LIGHTRED}can't be zero${DOCKER__NOCOLOR}"
     DOCKER__ERRMSG_INVALID="${DOCKER__FG_LIGHTRED}invalid${DOCKER__NOCOLOR}"
     DOCKER__ERRMSG_TOO_LARGE="${DOCKER__FG_LIGHTRED}too large${DOCKER__NOCOLOR}"
 
-    DOCKER__WRNMSG_LESSTHAN_RECOMMEND_VALUE="${DOCKER__FG_LIGHTPINK}< recommend value: ${DOCKER__ROOTFS_SIZE_DEFAULT}${DOCKER__NOCOLOR}"
+    DOCKER__ERRMSG_DOCKER_FS_PARTITION_CONF_NOT_EXIST="${DOCKER__ERROR}: file ${DOCKER__FG_LIGHTGREY_250}${docker__docker_overlayfs__dir}${DOCKER__NOCOLOR}/"
+    DOCKER__ERRMSG_DOCKER_FS_PARTITION_CONF_NOT_EXIST+="${DOCKER__FG_LIGHTGREY}${docker__docker_fs_partition_conf__filename}${DOCKER__NOCOLOR} ${DOCKER__FG_LIGHTRED}not${DOCKER__NOCOLOR} found.\n"
+    DOCKER__ERRMSG_DOCKER_FS_PARTITION_CONF_NOT_EXIST+="${DOCKER__ERROR}: parameter ${DOCKER__FG_LIGHTGREY}Disksize-setting${DOCKER__NOCOLOR} ${DOCKER__FG_LIGHTRED}not${DOCKER__NOCOLOR} set!!!"
+
+    DOCKER__WRNMSG_OVERLAY_LESSTHAN_RECOMMEND_VALUE="${DOCKER__FG_LIGHTPINK}< recommended value: ${DOCKER__OVERLAY_SIZE_DEFAULT}${DOCKER__NOCOLOR}"
+    DOCKER__WRNMSG_ROOTFS_LESSTHAN_RECOMMEND_VALUE="${DOCKER__FG_LIGHTPINK}< recommended value: ${DOCKER__ROOTFS_SIZE_DEFAULT}${DOCKER__NOCOLOR}"
     DOCKER__INFOMSG_UNALLOCATED_DISKSPACE_LEFT="${DOCKER__FG_ORANGE130}unallocated${DOCKER__NOCOLOR} diskspace left:"
+
+    DOCKER__READDIALOG_HEADER="---:${DOCKER__INPUT}"
 }
 
 docker__init_variables__sub() {
-    docker__disksize_remain=${disksize__input}
-    
-    docker__overlaymode_set="${DOCKER__OVERLAYMODE_PERSISTENT}"
+    docker__docker_fs_partition_diskpartsize_dat_userdefined__fpath="${DOCKER__EMPTYSTRING}"
+
+    docker__disksize_set=0
+    docker__overlaymode_set="${DOCKER__OVERLAYMODE_NONPERSISTENT}"
     docker__overlaysetting_set="${DOCKER__OVERLAYFS_DISABLED}"
 
     docker__readdialog_output="${DOCKER__EMPTYSTRING}"
@@ -96,18 +102,19 @@ docker__init_variables__sub() {
     docker__reservedfs_size=${DOCKER__RESERVED_SIZE_DEFAULT}
     docker__rootfs_size=${DOCKER__ROOTFS_SIZE_DEFAULT}
     docker__overlayfs_size=$((disksize__input - docker__reservedfs_size - docker__rootfs_size))
+    docker__disksize_remain=0
 
     docker__isp_partition_array=()
     docker__isp_partition_array[0]="${DOCKER__DISKPARTNAME_TB_RESERVE} ${docker__reservedfs_size}"
     docker__isp_partition_array[1]="${DOCKER__DISKPARTNAME_ROOTFS} ${docker__rootfs_size}"
     docker__isp_partition_array[2]="${DOCKER__DISKPARTNAME_OVERLAY} ${docker__overlayfs_size}"
-    docker__isp_partition_array[3]="${DOCKER__DISKPARTNAME_REMAINING} 0"
+    docker__isp_partition_array[3]="${DOCKER__DISKPARTNAME_REMAINING} ${docker__disksize_remain}"
 
     docker__isp_partition_array_default=()
     docker__isp_partition_array_default[0]="${DOCKER__DISKPARTNAME_TB_RESERVE} ${docker__reservedfs_size}"
     docker__isp_partition_array_default[1]="${DOCKER__DISKPARTNAME_ROOTFS} ${docker__rootfs_size}"
     docker__isp_partition_array_default[2]="${DOCKER__DISKPARTNAME_OVERLAY} ${docker__overlayfs_size}"
-    docker__isp_partition_array_default[3]="${DOCKER__DISKPARTNAME_REMAINING} 0"
+    docker__isp_partition_array_default[3]="${DOCKER__DISKPARTNAME_REMAINING} ${docker__disksize_remain}"
 
     docker__diskpartname="${DOCKER__EMPTYSTRING}"
     docker__diskpartsize="${DOCKER__EMPTYSTRING}"
@@ -122,11 +129,81 @@ docker__init_variables__sub() {
 docker__preprep__sub() {
     #Define variables
     local i=0
+    local backupFile_isFound=false
 
-    #Check if file 'docker__docker_fs_partition_diskpartsize_dat__fpath' is present:
-    #If true, then RETRIEVE the data from file
-    #If false, then WRITE default array-data to file
+    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    #***IMPORTANT: check if file exist
+    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    if [[ ! -f "${docker__docker_fs_partition_conf__fpath}" ]]; then    #file does NOT exist
+        #Print
+        show_msg_only__func "${DOCKER__ERRMSG_DOCKER_FS_PARTITION_CONF_NOT_EXIST}" "${DOCKER__NUMOFLINES_2}" "${DOCKER__NUMOFLINES_0}"
+
+        exit__func "${DOCKER__EXITCODE_99}" "${DOCKER__NUMOFLINES_0}"
+    fi
+
+    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    #REMOVE FILE: docker__docker_fs_partition_diskpartsize_dat__fpath
+    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     if [[ -f "${docker__docker_fs_partition_diskpartsize_dat__fpath}" ]]; then
+        rm "${docker__docker_fs_partition_diskpartsize_dat__fpath}"
+    fi
+
+    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    #DISK-SIZE SETTING: RETRIEVE
+    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    docker__disksize_set=$(retrieve__data_specified_by_col_within_file__func "${DOCKER__DISKSIZESETTING}" \
+            "${DOCKER__COLNUM_2}" \
+            "${docker__docker_fs_partition_conf__fpath}")
+
+    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    #DOCKER_FS_PARTITION_DISKPARTSIZE.DAT: RESTORE FROM BACKUP
+    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    case "${docker__disksize_set}" in
+        "${DOCKER__DISKSIZE_4G_IN_MBYTES}")
+            #Check if file exist
+            if [[ -f "${docker__docker_fs_partition_diskpartsize_dat_4g__fpath}" ]]; then   #file exists
+                #Rename file
+                cp "${docker__docker_fs_partition_diskpartsize_dat_4g__fpath}" "${docker__docker_fs_partition_diskpartsize_dat__fpath}"
+
+                #Change flag to 'true'
+                backupFile_isFound=true
+            fi
+            ;;
+        "${DOCKER__DISKSIZE_8G_IN_MBYTES}")
+            #Check if file exist
+            if [[ -f "${docker__docker_fs_partition_diskpartsize_dat_8g__fpath}" ]]; then   #file exists
+                #Rename file
+                cp "${docker__docker_fs_partition_diskpartsize_dat_8g__fpath}" "${docker__docker_fs_partition_diskpartsize_dat__fpath}"
+
+                #Change flag to 'true'
+                backupFile_isFound=true
+            fi
+            ;;
+        *)
+            #Update 'docker__docker_fs_partition_diskpartsize_dat_userdefined__fpath'
+            #Note: each USER-DEFINED disk-size setting has a backup filename with the following format:
+            #   ${docker__docker_fs_partition_diskpartsize_dat__fpath}.${docker__disksize_set}
+            #Example:
+            #   docker_fs_partition_diskpartsize.dat.3000   (with '3000' in 'MB')
+            docker__docker_fs_partition_diskpartsize_dat_userdefined__fpath="${docker__docker_fs_partition_diskpartsize_dat__fpath}.${docker__disksize_set}"
+
+            #Check if file exist
+            if [[ -f "${docker__docker_fs_partition_diskpartsize_dat_userdefined__fpath}" ]]; then   #file exists
+                #Rename file
+                cp "${docker__docker_fs_partition_diskpartsize_dat_userdefined__fpath}" "${docker__docker_fs_partition_diskpartsize_dat__fpath}"
+
+                #Change flag to 'true'
+                backupFile_isFound=true
+            fi
+            ;;
+    esac
+
+    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    #DISK-PARTITION:
+    #1. Update array 'docker__isp_partition_array'
+    #2. Write file 'docker__docker_fs_partition_diskpartsize_dat__fpath'
+    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    if [[ "${backupFile_isFound}" == true ]]; then
         #Reset array
         docker__isp_partition_array=()
 
@@ -140,66 +217,55 @@ docker__preprep__sub() {
             ((i++))
         done < "${docker__docker_fs_partition_diskpartsize_dat__fpath}"
     else
-        #Write default array-data to file 'docker__docker_fs_partition_diskpartsize_dat__fpath'
-        write_array_to_file__func "${docker__docker_fs_partition_diskpartsize_dat__fpath}" \
-                "${docker__isp_partition_array_default[@]}"
+        docker__isp_part_arr_update_and_writeto_file "${docker__isp_partition_array_default[@]}"
     fi
 
+    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    #OVERLAY-MODE: retrieve from file
+    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    docker__overlaymode_set=$(retrieve__data_specified_by_col_within_file__func "${DOCKER__OVERLAYMODE}" \
+            "${DOCKER__COLNUM_2}" \
+            "${docker__docker_fs_partition_conf__fpath}")
+    #Remark:
+    #   It could happen that 'docker__overlaymode_set' is NOT set  yet
+    #   In that case, automatically set 'docker__overlaymode_set' to the default setting 'DOCKER__OVERLAYMODE_NONPERSISTENT'.
+    if [[ -z "${docker__overlaymode_set}" ]]; then  #file is found
+        #Set variable
+        docker__overlaymode_set="${DOCKER__OVERLAYMODE_NONPERSISTENT}"
 
-
-    #Check if file 'docker__docker_fs_partition_conf__fpath' is present:
-    #If true, then RETRIEVE the data from file
-    #If false, then WRITE default array-data to file
-    if [[ -f "${docker__docker_fs_partition_conf__fpath}" ]]; then
-        docker__overlaymode_set=$(retrieve__data_specified_by_col_within_file__func "${DOCKER__OVERLAYMODE}" \
-                "${DOCKER__COLNUM_2}" \
-                "${docker__docker_fs_partition_conf__fpath}")
-        #Remark:
-        #   It can happen that 'docker__overlaymode_set' is an 'Empty String'
-        #   ...in case file 'docker__docker_fs_partition_conf__fpath' has
-        #   ...no 'DOCKER__OVERLAYMODE' input.
-        #   In that case, automatically set 'docker__overlaymode_set = DOCKER__OVERLAYMODE_PERSISTENT'.
-        if [[ -z "${docker__overlaymode_set}" ]]; then
-            #Set variable
-            docker__overlaymode_set="${DOCKER__OVERLAYMODE_PERSISTENT}"
-
-            #Generate 'filecontent'
-            filecontent="${DOCKER__OVERLAYMODE} ${DOCKER__OVERLAYMODE_PERSISTENT}"
-
-            #Replace/Append to file
-            replace_or_append_string_based_on_pattern_in_file__func "${filecontent}" \
-                    "${DOCKER__OVERLAYMODE}" \
-                    "${docker__docker_fs_partition_conf__fpath}"
-        fi
-
-        docker__overlaysetting_set=$(retrieve__data_specified_by_col_within_file__func "${DOCKER__OVERLAYSETTING}" \
-                "${DOCKER__COLNUM_2}" \
-                "${docker__docker_fs_partition_conf__fpath}")
-        #Remark:
-        #   It can happen that 'docker__overlaysetting_set' is an 'Empty String'
-        #   ...in case file 'docker__docker_fs_partition_conf__fpath' has
-        #   ...no 'DOCKER__OVERLAYSETTING' input.
-        #   In that case, automatically set 'docker__overlaysetting_set = DOCKER__OVERLAYFS_DISABLED'.
-        if [[ -z "${docker__overlaysetting_set}" ]]; then
-            docker__overlaysetting_set="${DOCKER__OVERLAYFS_DISABLED}"
-
-            #Generate 'filecontent'
-            filecontent="${DOCKER__OVERLAYSETTING} ${DOCKER__OVERLAYFS_DISABLED}"
-
-            #Replace/Append to file
-            replace_or_append_string_based_on_pattern_in_file__func "${filecontent}" \
-                    "${DOCKER__OVERLAYSETTING}" \
-                    "${docker__docker_fs_partition_conf__fpath}"
-        fi
-    else
         #Generate 'filecontent'
-        filecontent="${DOCKER__OVERLAYMODE} ${DOCKER__OVERLAYMODE_PERSISTENT}\n"
-        filecontent+="${DOCKER__OVERLAYSETTING} ${DOCKER__OVERLAYFS_DISABLED}"
+        filecontent="${DOCKER__OVERLAYMODE} ${docker__overlaymode_set}"
 
         #Replace/Append to file
         replace_or_append_string_based_on_pattern_in_file__func "${filecontent}" \
-                "${DOCKER__PATTERN_DUMMY}" \
-                "${docker__docker_fs_partition_conf__fpath}"
+                "${DOCKER__OVERLAYMODE}" \
+                "${docker__docker_fs_partition_conf__fpath}" \
+                "${DOCKER__FALSE}"
+    fi
+
+
+    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    #OVERLAY-SETTING: retrieve from file
+    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    docker__overlaysetting_set=$(retrieve__data_specified_by_col_within_file__func "${DOCKER__OVERLAYSETTING}" \
+            "${DOCKER__COLNUM_2}" \
+            "${docker__docker_fs_partition_conf__fpath}")
+    #Remark:
+    #   It can happen that 'docker__overlaysetting_set' is an 'Empty String'
+    #   ...in case file 'docker__docker_fs_partition_conf__fpath' has
+    #   ...no 'DOCKER__OVERLAYSETTING' input.
+    #   In that case, automatically set 'docker__overlaysetting_set = DOCKER__OVERLAYFS_DISABLED'.
+    if [[ -z "${docker__overlaysetting_set}" ]]; then
+        docker__overlaysetting_set="${DOCKER__OVERLAYFS_DISABLED}"
+
+        #Generate 'filecontent'
+        filecontent="${DOCKER__OVERLAYSETTING} ${DOCKER__OVERLAYFS_DISABLED}"
+
+        #Replace/Append to file
+        replace_or_append_string_based_on_pattern_in_file__func "${filecontent}" \
+                "${DOCKER__OVERLAYSETTING}" \
+                "${docker__docker_fs_partition_conf__fpath}" \
+                "${DOCKER__FALSE}"
     fi
 }
 
@@ -342,20 +408,26 @@ docker__menu_body_print_sub() {
     local diskpart_arritem_print="${DOCKER__EMPTYSTRING}"
     local diskpart_arritem_left_len=0
     local diskpart_arritem_left_max=0
-    # local disksize_remain=${disksize__input}
 
+
+    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     #---THIS PART IS DEDICATED TO THE PRINTING OF THE:
     #       LEFT-STRING (e.g. rootfs, tb_reserve, overlay, etc.)
     #       RIGHT-STRING (e.g. 1536, 128, 256 etc...)
     #Determine the longest string of 'diskpart_arritem_left'
+    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     diskpart_arritem_left_max=$(printf '%s\n' ${docker__isp_partition_array[@]} | wc -L)
 
+    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     #Increase 'diskpart_arritem_left_max' with '4'
     #Remark:
     #   This is the Empty Space between the left-string and right-string
+    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     diskpart_arritem_left_max=$((diskpart_arritem_left_max + DOCKER__NUMOFCHARS_8))
 
+    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     #Print 'partition sizes'
+    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     for diskpart_arritem in "${docker__isp_partition_array[@]}"
     do  
         #Get the left-string 'diskpart_arritem_left'
@@ -387,8 +459,10 @@ docker__menu_options_print_sub() {
     local overlaysetting_print="${DOCKER__EMPTYSTRING}"
     local grep_overlay="${DOCKER__EMPTYSTRING}"
     
-    ###Overlay-setting
+    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    #OVERLAY-SETTING:
     #Check if 'overlay' partition is present in 'docker__isp_partition_array'
+    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     grep_overlay=$(echo ${docker__isp_partition_array[@]} | grep -w "${DOCKER__DISKPARTNAME_OVERLAY}")
     if [[ -n "${grep_overlay}" ]]; then  #pattern 'overlay' is found
         overlaysetting_print="${DOCKER__FOURSPACES}3. ${DOCKER__OVERLAYSETTING} "
@@ -407,11 +481,12 @@ docker__menu_options_print_sub() {
         overlaysetting_print+="(${DOCKER__FG_RED187}${DOCKER__OVERLAYFS_DISABLED}${DOCKER__NOCOLOR})"
     fi
 
-
-    ###(Re)configure partitions && Overlay-mode
+    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    #(RE)CONFIGURE PARTITIONS & OVERLAY-MODE
     #   dash (-) (do NOT change the pentagram_common.h)
     #   persistent ('overlay' partition is RW; do NOT remove 'overlay' partition after reboot)
     #   non-persistent ('overlay' partition is RO; remove 'overlay' partition after reboot)
+    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     if [[ -n "${grep_overlay}" ]] && \
             [[ "${docker__overlaysetting_set}" == "${DOCKER__OVERLAYFS_ENABLED}" ]]; then  #'overlay' is found and enabled
         configpartitions_print="${DOCKER__FOURSPACES}1. Configure ${DOCKER__BLINKING}new${DOCKER__NOCOLOR} partitions\n"
@@ -456,7 +531,7 @@ docker__partitiondisk__sub() {
     #Define variables
     local isp_partition_array_new=()
     local disksize_remain_bck=0
-    local i=0
+    # local i=0
     local j=0
     local goto_next_input=true
     local phase="${PHASE_ARRAYDATA_RETRIEVE}"
@@ -474,8 +549,14 @@ docker__partitiondisk__sub() {
     while true
     do
         case "${phase}" in
-        "${PHASE_ARRAYDATA_RETRIEVE}")
-                #Retrieve data from array 'dataarr__input'
+            "${PHASE_ARRAYDATA_RETRIEVE}")
+                #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                #RETRIEVE PARTITION-NAME and -SIZE
+                #Note:
+                #   j = 0: tb_reserve
+                #   j = 1: rootfs
+                #   j = 2: overlay
+                #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 docker__diskpartname=$(echo "${dataarr__input[j]}" | cut -d" " -f1)
                 docker__diskpartsize=$(echo "${dataarr__input[j]}" | cut -d" " -f2)
 
@@ -487,11 +568,15 @@ docker__partitiondisk__sub() {
                 #Goto next-phase
                 phase="${PHASE_PARTITIONNAME_INPUT}"
                 ;;
-            "${PHASE_PARTITIONNAME_INPUT}")       
-                #Partition-NAME read-dialog handler (only for 'additonal' fs)
+            "${PHASE_PARTITIONNAME_INPUT}")
+                #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                #PARTITION-NAME:
+                #   j <= 2: PREDEFINED PARTITION-NAMES: tb_reservce, rootfs, overlay
+                #   j > 2: INPUT PARTITION-NAME
                 #Remark:
                 #   Provide the partition-name of the 'additonal' fs
                 #   ...and write to variable 'docker__diskpartname'
+                #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 case "${j}" in
                     "0")    #tb_reserve
                         #Goto next-phase
@@ -547,194 +632,292 @@ docker__partitiondisk__sub() {
                 esac
                 ;;
             "${PHASE_PARTITIONSIZE_INPUT}")
-                #Partition-SIZE read-dialog handler
-                if [[ "${j}" -gt 0 ]]; then   #j > 0: do NOT show the read-dialog for the 'tb_reserve-fs'
-                    #Update 'readdialog_diskpartsize'
-                    readdialog_diskpartsize="${DOCKER__READDIALOG_HEADER}: ${docker__diskpartname} "
-                    
-                    if [[ ${j} -eq 1 ]]; then  #rootfs
-                        readdialog_diskpartsize+="(${DOCKER__SEMICOLON_CLEAR_ABORT_COLORED}) "           
-                    elif [[ ${j} -eq 2 ]]; then #overlay
-                        readdialog_diskpartsize+="(${DOCKER__SEMICOLON_CLEAR_REDO_ABORT_COLORED}) "
-                    elif [[ ${j} -gt 2 ]]; then #anything else except for 'tb_reserve'
-                        readdialog_diskpartsize+="(${DOCKER__SEMICOLON_CLEAR_REDO_FINISH_ABORT_COLORED}) "
-                    fi
-                    readdialog_diskpartsize+="(${DOCKER__FG_ORANGE215}${docker__disksize_remain}${DOCKER__NOCOLOR}): "
+                #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                #PARTITION-NAME:
+                #   j = 0: tb_reserve: disk-size = 128 MB
+                #   j = 1: rootfs: disksize >= 1536 MB
+                #   j = 2: overlay: disksize >= 4 MB
+                #   j > 2: additional partitions: disksize > 0 MB
+                #Remark:
+                #   Provide the partition-name of the 'additonal' fs
+                #   ...and write to variable 'docker__diskpartname'
+                #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                case "${j}" in
+                    "0")
+                        #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                        #Update 'isp_partition_array_new'
+                        #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                        isp_partition_array_new[j]="${docker__diskpartname} ${DOCKER__RESERVED_SIZE_DEFAULT}"
 
-                    #Show read-dialog
-                    if [[ -n "${docker__diskpartsize}" ]] && [[ ${docker__diskpartsize} -ne 0 ]]; then
-                        readdialog_diskpartsize_default="${docker__diskpartsize}"
+                        #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                        #Calculate 'docker__disksize_remain'
+                        #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                        docker__disksize_remain=$(bc_substract_x_from_y "${docker__disksize_remain}" "${DOCKER__RESERVED_SIZE_DEFAULT}")
+
+                        #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                        #Backup 'docker__disksize_remain'
+                        #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                        disksize_remain_bck="${docker__disksize_remain}"
+
+                        #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                        #Increment index
+                        #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                        ((j++))
+
+                        #Goto next-phase
+                        phase="${PHASE_ARRAYDATA_RETRIEVE}"
+                        ;;
+                    *)
+                        #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                        #Update 'readdialog_diskpartsize'
+                        #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                        readdialog_diskpartsize="${DOCKER__READDIALOG_HEADER}: ${docker__diskpartname} "
                         
-                        #Only apply this condition for partitions other than 'tb_reserve' and 'rootfs'
-                        #Only apply this condition if 'isnewdiskpartconfig__input = true'
-                        if [[ "${j}" -gt 1 ]] && [[ "${isnewdiskpartconfig__input}" == "true" ]]; then
+                        #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                        #Based on the disk-partition (rootfs, overlay, etc.), append its respectively options
+                        #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                        if [[ ${j} -eq 1 ]]; then  #rootfs
+                            readdialog_diskpartsize+="(${DOCKER__SEMICOLON_CLEAR_ABORT_COLORED}) "           
+                        elif [[ ${j} -eq 2 ]]; then #overlay
+                            readdialog_diskpartsize+="(${DOCKER__SEMICOLON_CLEAR_REDO_ABORT_COLORED}) "
+                        elif [[ ${j} -gt 2 ]]; then #anything else except for 'tb_reserve, rootfs, overlay'
+                            readdialog_diskpartsize+="(${DOCKER__SEMICOLON_CLEAR_REDO_FINISH_ABORT_COLORED}) "
+                        fi
+                        readdialog_diskpartsize+="(${DOCKER__FG_ORANGE215}${docker__disksize_remain}${DOCKER__NOCOLOR}): "
+
+                        #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                        #Show read-dialog
+                        #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                        if [[ -n "${docker__diskpartsize}" ]] && [[ ${docker__diskpartsize} -ne 0 ]]; then
+                            readdialog_diskpartsize_default="${docker__diskpartsize}"
+                            
+                            #Only apply this condition for partitions other than 'tb_reserve', 'rootfs', and 'overlayfs'
+                            #Only apply this condition if 'isnewdiskpartconfig__input = true'
+                            if [[ "${j}" -gt 2 ]] && [[ "${isnewdiskpartconfig__input}" == "true" ]]; then
+                                readdialog_diskpartsize_default="${docker__disksize_remain}"
+                            fi
+                        else
                             readdialog_diskpartsize_default="${docker__disksize_remain}"
                         fi
-                    else
-                        readdialog_diskpartsize_default="${docker__disksize_remain}"
-                    fi
 
-                    #Remarks:
-                    #   The read-dialog will not stop until a non Empty String is inputted.
-                    #       This functionality is implicitely built-in.
-                    #   This function outputs a value for variable 'docker__readdialog_output'
-                    docker__readdialog_w_output__func "${readdialog_diskpartsize}" "${readdialog_diskpartsize_default}"
+                        #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                        #Remarks:
+                        #   The read-dialog will not stop until a non Empty String is inputted.
+                        #       This functionality is implicitely built-in.
+                        #   This function outputs a value for variable 'docker__readdialog_output'
+                        #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                        docker__readdialog_w_output__func "${readdialog_diskpartsize}" "${readdialog_diskpartsize_default}"
 
-                    #Only continue if a valid option is selected
-                    if [[ ! -z "${docker__readdialog_output}" ]]; then  #is NOT an Empty String
-                        if [[ $(isNumeric__func "${docker__readdialog_output}") == true ]]; then  #is numeric
-                            #Calculate 'docker__disksize_remain'
-                            docker__disksize_remain=$(bc_substract_x_from_y "${docker__disksize_remain}" "${docker__readdialog_output}")
+                        #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                        #READ-DIALOG OUTPUT HANDLER
+                        #Note:
+                        #   docker__readdialog_output is the read-dialog output of 'docker__readdialog_w_output__func'
+                        #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                        if [[ ! -z "${docker__readdialog_output}" ]]; then  #is NOT an Empty String
+                            #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                            #NUMERIC
+                            #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                            if [[ $(isNumeric__func "${docker__readdialog_output}") == true ]]; then  #is numeric
+                                #Calculate 'docker__disksize_remain'
+                                docker__disksize_remain=$(bc_substract_x_from_y "${docker__disksize_remain}" "${docker__readdialog_output}")
 
-                            case "${docker__readdialog_output}" in
-                                "0")
-                                    #Move-up and clean line(s)
-                                    moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+                                case "${docker__readdialog_output}" in
+                                    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                                    #DISK-SIZE INPUT = 0
+                                    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                                    "0")    #docker__readdialog_output = 0
+                                        #Move-up and clean line(s)
+                                        moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
-                                    #Print error message
-                                    echo -e "${readdialog_diskpartsize}${docker__readdialog_output} (${DOCKER__ERRMSG_CANNOT_BE_ZERO})"
+                                        #Print error message
+                                        echo -e "${readdialog_diskpartsize}${docker__readdialog_output} (${DOCKER__ERRMSG_CANNOT_BE_ZERO})"
 
-                                    #Revert back to the backup
-                                    docker__disksize_remain=${disksize_remain_bck}
-
-                                    #Goto next-phase
-                                    phase="${PHASE_PARTITIONSIZE_INPUT}"
-                                    ;;
-                                *)
-                                    if [[ "${docker__disksize_remain}" -eq 0 ]]; then
-                                        #Update 'isp_partition_array_new'
-                                        isp_partition_array_new[j]="${docker__diskpartname} ${docker__readdialog_output}"
+                                        #Revert back to the backup
+                                        docker__disksize_remain=${disksize_remain_bck}
 
                                         #Goto next-phase
-                                        phase="${PHASE_UPDATE}"
-                                    else
-                                        #Check if 'docker__disksize_remain > 0'
-                                        if [[ $(bc_is_x_greaterthan_zero "${docker__disksize_remain}") == true ]]; then
-                                            #Only show this message for 'rootfs' and only if 'docker__readdialog_output < DOCKER__ROOTFS_SIZE_DEFAULT'
-                                            if [[ ${j} -eq 1 ]] && [[ "${docker__readdialog_output}" -lt "${DOCKER__ROOTFS_SIZE_DEFAULT}" ]]; then
+                                        phase="${PHASE_PARTITIONSIZE_INPUT}"
+                                        ;;
+
+                                    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                                    #DISK-SIZE INPUT > 0
+                                    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                                    *)  #docker__readdialog_output > 0
+                                        #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                                        #DISK-SIZE REMAIN = 0
+                                        #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                                        if [[ "${docker__disksize_remain}" -eq 0 ]]; then
+                                            #Update 'isp_partition_array_new'
+                                            isp_partition_array_new[j]="${docker__diskpartname} ${docker__readdialog_output}"
+
+                                            #Goto next-phase
+                                            phase="${PHASE_UPDATE}"
+
+                                        #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                                        #DISK-SIZE REMAIN != 0
+                                        #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                                        else    #docker__disksize_remain != 0
+                                            #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                                            #DISK-SIZE REMAIN > 0
+                                            #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                                            if [[ $(bc_is_x_greaterthan_zero "${docker__disksize_remain}") == true ]]; then #docker__disksize_remain > 0
+                                                #ROOTFS-SECTION: j = 1 and 'readdialog_output < DOCKER__ROOTFS_SIZE_DEFAULT'
+                                                if [[ ${j} -eq 1 ]] && [[ "${docker__readdialog_output}" -lt "${DOCKER__ROOTFS_SIZE_DEFAULT}" ]]; then
+                                                    #Move-up and clean line(s)
+                                                    moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+                                                    #Print error message
+                                                    echo -e "${readdialog_diskpartsize}${docker__readdialog_output} (${DOCKER__WRNMSG_ROOTFS_LESSTHAN_RECOMMEND_VALUE})"
+
+                                                    #Revert back to the backup
+                                                    docker__disksize_remain=${disksize_remain_bck}
+
+                                                    #Goto next-phase
+                                                    phase="${PHASE_PARTITIONSIZE_INPUT}"
+
+                                                #OVERLAY-SECTION: j = 2 and  'docker__readdialog_output < DOCKER__ROOTFS_SIZE_DEFAULT'
+                                                elif [[ ${j} -eq 2 ]] && [[ "${docker__readdialog_output}" -lt "${DOCKER__OVERLAY_SIZE_DEFAULT}" ]]; then
+                                                    #Move-up and clean line(s)
+                                                    moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+                                                    #Print error message
+                                                    echo -e "${readdialog_diskpartsize}${docker__readdialog_output} (${DOCKER__WRNMSG_OVERLAY_LESSTHAN_RECOMMEND_VALUE})"
+
+                                                    #Revert back to the backup
+                                                    docker__disksize_remain=${disksize_remain_bck}
+
+                                                    #Goto next-phase
+                                                    phase="${PHASE_PARTITIONSIZE_INPUT}"
+
+                                                #ADDITIONAL-PARTITIONS-SECTION: if any
+                                                else
+                                                    #Update 'isp_partition_array_new'
+                                                    isp_partition_array_new[j]="${docker__diskpartname} ${docker__readdialog_output}"
+
+                                                    #Update 'disksize_remain_bck'
+                                                    disksize_remain_bck=${docker__disksize_remain}
+
+                                                    #Increment index
+                                                    ((j++))
+
+                                                    #Goto next-phase
+                                                    phase="${PHASE_ARRAYDATA_RETRIEVE}"
+                                                fi
+
+                                            #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                                            #DISK-SIZE REMAIN < 0
+                                            #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                                            else    #docker__disksize_remain < 0
                                                 #Move-up and clean line(s)
                                                 moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
                                                 #Print error message
-                                                echo -e "${readdialog_diskpartsize}${docker__readdialog_output} (${DOCKER__WRNMSG_LESSTHAN_RECOMMEND_VALUE})"
+                                                echo -e "${readdialog_diskpartsize}${docker__readdialog_output} (${DOCKER__ERRMSG_TOO_LARGE})"
+
+                                                #Revert back to the backup
+                                                docker__disksize_remain=${disksize_remain_bck}
+
+                                                #Goto next-phase
+                                                phase="${PHASE_PARTITIONSIZE_INPUT}"
                                             fi
+                                        fi
+                                        ;;
+                                esac
+                            
+                            #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                            #NOT NUMERIC && NOT EMPTY-STRING
+                            #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                            else
+                                case "${docker__readdialog_output}" in
+                                    "${DOCKER__SEMICOLON_REDO}")
+                                        #Remark:
+                                        #   r(edo) is available starting from the 'overlay' input
+                                        if [[ ${j} -gt 1 ]]; then
+                                            #Reset array
+                                            isp_partition_array_new=()
 
-                                            #Update 'isp_partition_array_new'
-                                            isp_partition_array_new[j]="${docker__diskpartname} ${docker__readdialog_output}"
+                                            #Reset dvariables
+                                            docker__disksize_remain=${disksize__input}
+                                            disksize_remain_bck=${disksize__input}
 
-                                            #Backup 'docker__disksize_remain'
-                                            disksize_remain_bck=${docker__disksize_remain}
-
-                                            #Increment index
-                                            ((j++))
+                                            #Reset index
+                                            j=0
 
                                             #Goto next-phase
                                             phase="${PHASE_ARRAYDATA_RETRIEVE}"
-                                        else    #docker__disksize_remain < 0
-                                            #Move-up and clean line(s)
-                                            moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-
-                                            #Print error message
-                                            echo -e "${readdialog_diskpartsize}${docker__readdialog_output} (${DOCKER__ERRMSG_TOO_LARGE})"
-
-                                            #Revert back to the backup
-                                            docker__disksize_remain=${disksize_remain_bck}
-
-                                            #Goto next-phase
+                                        fi
+                                        ;;
+                                    "${DOCKER__SEMICOLON_FINISH}")
+                                        #Remark:
+                                        #   f(inish) is available over the 'overlay' input
+                                        if [[ ${j} -gt 2 ]]; then
+                                            phase="${PHASE_UPDATE}"
+                                        else
                                             phase="${PHASE_PARTITIONSIZE_INPUT}"
                                         fi
-                                    fi
-                                    ;;
-                            esac
-                        else    #is NOT numeric
-                            case "${docker__readdialog_output}" in
-                                "${DOCKER__SEMICOLON_REDO}")
-                                    #Remark:
-                                    #   r(edo) is available starting from the 'overlay' input
-                                    if [[ ${j} -gt 1 ]]; then
-                                        #Reset array
-                                        isp_partition_array_new=()
+                                        ;;
+                                    "${DOCKER__SEMICOLON_ABORT}")
+                                        #Goto next-phase
+                                        phase="${PHASE_EXIT}"
+                                        ;;
+                                    *)
+                                        #Move-up and clean line(s)
+                                        moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
-                                        #Reset dvariables
-                                        docker__disksize_remain=${disksize__input}
-                                        disksize_remain_bck=${disksize__input}
+                                        #Print error message
+                                        echo -e "${readdialog_diskpartsize}${docker__readdialog_output} (${DOCKER__ERRMSG_INVALID})"
 
-                                        #Reset index
-                                        j=0
+                                        #Revert back to the backup
+                                        docker__disksize_remain=${disksize_remain_bck}
 
                                         #Goto next-phase
-                                        phase="${PHASE_ARRAYDATA_RETRIEVE}"
-                                    fi
-                                    ;;
-                                "${DOCKER__SEMICOLON_FINISH}")
-                                    #Remark:
-                                    #   f(inish) is available over the 'overlay' input
-                                    if [[ ${j} -gt 2 ]]; then
-                                        phase="${PHASE_UPDATE}"
-                                    else
                                         phase="${PHASE_PARTITIONSIZE_INPUT}"
-                                    fi
-                                    ;;
-                                "${DOCKER__SEMICOLON_ABORT}")
-                                    #Goto next-phase
-                                    phase="${PHASE_EXIT}"
-                                    ;;
-                                *)
-                                    #Move-up and clean line(s)
-                                    moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-
-                                    #Print error message
-                                    echo -e "${readdialog_diskpartsize}${docker__readdialog_output} (${DOCKER__ERRMSG_INVALID})"
-
-                                    #Revert back to the backup
-                                    docker__disksize_remain=${disksize_remain_bck}
-
-                                    #Goto next-phase
-                                    phase="${PHASE_PARTITIONSIZE_INPUT}"
-                                    ;;
-                            esac
-                        fi
-                    else    #is an Empty String
-                        #Goto next-phase
-                        phase="${PHASE_PARTITIONSIZE_INPUT}"
+                                        ;;
+                                esac
+                            fi
                         
-                        #Moveup and clean line(s)
-                        moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-                    fi
-                else    #j = 0
-                    #Update 'isp_partition_array_new'
-                    isp_partition_array_new[j]="${docker__diskpartname} ${DOCKER__RESERVED_SIZE_DEFAULT}"
-
-                    #Calculate 'docker__disksize_remain'
-                    docker__disksize_remain=$(bc_substract_x_from_y "${docker__disksize_remain}" "${DOCKER__RESERVED_SIZE_DEFAULT}")
-
-                    #Backup 'docker__disksize_remain'
-                    disksize_remain_bck="${docker__disksize_remain}"
-
-                    #Increment index
-                    ((j++))
-
-                    #Goto next-phase
-                    phase="${PHASE_ARRAYDATA_RETRIEVE}"
-                fi
+                        #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                        #EMPTY STRING
+                        #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                        else    #is an Empty String
+                            #Goto next-phase
+                            phase="${PHASE_PARTITIONSIZE_INPUT}"
+                            
+                            #Moveup and clean line(s)
+                            moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+                        fi
+                        ;;
+                esac
                 ;;
             "${PHASE_UPDATE}")
+                #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 #Check if 'docker__disksize_remain > 0'
+                #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 if [[ $(bc_is_x_greaterthan_zero "${docker__disksize_remain}") == true ]]; then
                     #Print error message
                     echo -e "---:${DOCKER__INFO}: ${DOCKER__INFOMSG_UNALLOCATED_DISKSPACE_LEFT} ${DOCKER__FG_ORANGE131}${docker__disksize_remain}${DOCKER__NOCOLOR}"
                 fi
 
+                #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 #Increment index
+                #Note:
+                #   This is needed to add 'remaining' to the array
+                #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 ((j++))
 
+                #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 #Add 'docker__disksize_remain' to array
+                #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 isp_partition_array_new[j]="${DOCKER__DISKPARTNAME_REMAINING} ${docker__disksize_remain}"
 
-                #Update array 'docker__isp_partition_array' and 
-                #...file 'docker__docker_fs_partition_diskpartsize_dat__fpath' with new data
-                docker__isp_partition_array_update__sub "${isp_partition_array_new[@]}"
+                #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                #USING 'isp_partition_array_new' do the following:
+                #1. Update array 'docker__isp_partition_array'
+                #2. Update file 'docker__docker_fs_partition_diskpartsize_dat__fpath' with new data
+                #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                docker__isp_part_arr_update_and_writeto_file "${isp_partition_array_new[@]}"
 
+                #Goto next-phase
                 phase="${PHASE_EXIT}"
                 ;;
              "${PHASE_EXIT}")
@@ -743,23 +926,45 @@ docker__partitiondisk__sub() {
         esac
     done
 }
-docker__isp_partition_array_update__sub() {
+docker__isp_part_arr_update_and_writeto_file() {
     #Input args
     local dataarr__input=("$@")
 
     #Define variables
     local k=0
 
-    #Reset array
+    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    #RESET ARRAY: docker__isp_partition_array
+    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     docker__isp_partition_array=()
 
-    #Update 'docker__isp_partition_array' with new data
+    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    #UPDATE ARRAY: docker__isp_partition_array
+    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     for k in "${!dataarr__input[@]}"; do 
         docker__isp_partition_array[k]="${dataarr__input[$k]}"
     done
 
-    #Update 'docker__docker_fs_partition_diskpartsize_dat__fpath' with new data
+    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    #Write to file 'docker__docker_fs_partition_diskpartsize_dat__fpath'
+    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     write_array_to_file__func "${docker__docker_fs_partition_diskpartsize_dat__fpath}" "${dataarr__input[@]}"
+
+    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    #Backup file 'docker__docker_fs_partition_diskpartsize_dat__fpath' based on 'DISK-SIZE SETTING'
+    #Note: the 'disk-size setting' can be found in file 'docker__docker_fs_partition_conf__fpath'
+    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    case "${docker__disksize_set}" in
+        "${DOCKER__DISKSIZE_4G_IN_MBYTES}")
+            cp "${docker__docker_fs_partition_diskpartsize_dat__fpath}" "${docker__docker_fs_partition_diskpartsize_dat_4g__fpath}"
+            ;;
+        "${DOCKER__DISKSIZE_8G_IN_MBYTES}")
+            cp "${docker__docker_fs_partition_diskpartsize_dat__fpath}" "${docker__docker_fs_partition_diskpartsize_dat_8g__fpath}"
+            ;;
+        *)  #user-defined
+            cp "${docker__docker_fs_partition_diskpartsize_dat__fpath}" "${docker__docker_fs_partition_diskpartsize_dat_userdefined__fpath}"
+            ;;
+    esac
 }
 docker__diskpartname_handler__sub() {
     #Input args
@@ -771,7 +976,9 @@ docker__diskpartname_handler__sub() {
     local readdialog_diskpartname="${DOCKER__READDIALOG_HEADER}: ${DOCKER__FG_LIGHTGREY}new${DOCKER__NOCOLOR} "
     readdialog_diskpartname+="partition-name (${DOCKER__SEMICOLON_CLEAR_REDO_FINISH_ABORT_COLORED}): "
 
-    #Read-dialog handler
+    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    #READ-DIALOG: REQUEST INPUT PARTITION-NAME
+    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     while true
     do
         #Show read-dialog
@@ -796,7 +1003,9 @@ docker__diskpartname_handler__sub() {
         fi
     done
 
-    #Update variable
+    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    #UPDATE VARIABLE
+    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     docker__diskpartname="${docker__readdialog_output}"
 }
 
@@ -804,7 +1013,9 @@ docker__overlaymode__sub() {
     #Define variables
     local filecontent="${DOCKER__EMPTYSTRING}"
 
-    #Flip 'docker__overlaymode_set' value
+    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    #TOGGLE BETWEEN {PERSISTENT | NON-PERSISTENT}
+    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     if [[ "${docker__overlaymode_set}" == "${DOCKER__OVERLAYMODE_NONPERSISTENT}" ]]; then
         docker__overlaymode_set="${DOCKER__OVERLAYMODE_PERSISTENT}"
     else
@@ -814,30 +1025,39 @@ docker__overlaymode__sub() {
     #Update variable
     filecontent="${DOCKER__OVERLAYMODE} ${docker__overlaymode_set}"
 
-    #Replace/Append to file
+    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    #OVERLAY-MODE: write to file
+    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     replace_or_append_string_based_on_pattern_in_file__func "${filecontent}" \
             "${DOCKER__OVERLAYMODE}" \
-            "${docker__docker_fs_partition_conf__fpath}"
+            "${docker__docker_fs_partition_conf__fpath}" \
+            "${DOCKER__FALSE}"
 }
 
 docker__overlaysetting__sub() {
     #Define variables
     local filecontent="${DOCKER__EMPTYSTRING}"
 
-    #Flip 'docker__overlaysetting_set' value
+    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    #TOGGLE BETWEEN {DISABLED | ENABLED}
+    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     if [[ "${docker__overlaysetting_set}" == "${DOCKER__OVERLAYFS_DISABLED}" ]]; then
         docker__overlaysetting_set="${DOCKER__OVERLAYFS_ENABLED}"
     else
         docker__overlaysetting_set="${DOCKER__OVERLAYFS_DISABLED}"
     fi
 
+    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    #OVERLAY-SETTING: write to file
+    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     #Update variable
     filecontent="${DOCKER__OVERLAYSETTING} ${docker__overlaysetting_set}"
 
     #Replace/Append to file
     replace_or_append_string_based_on_pattern_in_file__func "${filecontent}" \
             "${DOCKER__OVERLAYSETTING}" \
-            "${docker__docker_fs_partition_conf__fpath}"
+            "${docker__docker_fs_partition_conf__fpath}" \
+            "${DOCKER__FALSE}"
 }
 
 
