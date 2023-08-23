@@ -27,11 +27,21 @@ function create_dir_in_container__func() {
     dir__input=${2}
 
     #In container, check if directory exists
-    ${DOCKER__EXEC} ${containerid__input} [ ! -d "${dir__input}" ] && exitcode=1
+    if [[ -n ${containerid__input} ]]; then  #not inside container
+        #Check if directory exist.
+        ${DOCKER__EXEC} ${containerid__input} [ ! -d "${dir__input}" ] && exitcode=1
 
-    #If directory does NOT exist, create directory
-    if [[ ${exitcode} -ne 0 ]]; then
-        ${DOCKER__EXEC} ${containerid__input} mkdir -p "${dir__input}"
+        #If false, exitcode > 0.
+        if [[ ${exitcode} -ne 0 ]]; then    #directory does NOT exist
+            #Send a command from OUTSIDE to INSIDE container to execute the directory creation.
+            ${DOCKER__EXEC} ${containerid__input} mkdir -p "${dir__input}"
+        fi
+    else    #inside a container, that's why containerid__input = Empty String
+        #Check if directory exist.
+        if [[ ! -d "${dir__input}" ]]; then   #directory does NOT exist
+            #Create directory
+            mkdir -p "${dir__input}"
+        fi
     fi
 }
 
@@ -336,6 +346,7 @@ docker__load_constants__sub() {
 
     DOCKER__ERRMSG_NO_IF_CONDITIONS_FOUND="${DOCKER__ERROR}: no if conditions found!"
     DOCKER__ERRMSG_ONE_OR_MORE_CHECKITEMS_FAILED="${DOCKER__ERROR}: one or more precheck items failed to pass!"
+    DOCKER__ERRMSG_IGNORE_THESE_ERRORS_AND_BUILD_WITHOUT_OVERLAY="${DOCKER__ERROR}: *ignore* error -> build without overlay"
     DOCKER__ERRMSG_ONE_OR_MORE_ENTRIES_ARE_INVALID="${DOCKER__ERROR}: one or more entries are invalid!"
     DOCKER__ERRMSG_ONE_OR_MORE_FILES_COULD_NOT_BE_COPIED="${DOCKER__ERROR}: one or more files could NOT be copied!"
     DOCKER__ERRMSG_PATTERN_EMMC_NOT_FOUND="${DOCKER__ERROR}: pattern ${DOCKER__FG_LIGHTGREY}EMMC${DOCKER__NOCOLOR} not found!"
@@ -371,20 +382,9 @@ docker__init_variables__sub() {
     docker__showTable=true
 }
 
-docker__checkIf_isRunning_inside_container__sub() {
-    #Define contants
-    local PATTERN_DOCKER="docker"
-
-    #Define variables
-    local proc_1_cgroup_dir=/proc/1/cgroup
-
-    #Check if you are currently inside a docker container
-    local isDocker=`cat "${proc_1_cgroup_dir}" | grep "${PATTERN_DOCKER}"`
-    if [[ ! -z ${isDocker} ]]; then
-        docker__isRunning_inside_container=true
-    else
-        docker__isRunning_inside_container=false
-    fi
+docker__checkif_isrunning_in_container__sub() {
+    #Check if running inside a container
+    docker__isRunning_inside_container=$(checkIf_isRunning_inside_container__func)
 }
 
 docker__choose_containerID__sub() {
@@ -392,10 +392,9 @@ docker__choose_containerID__sub() {
     local READMSG_CHOOSE_A_CONTAINERID="Choose a ${DOCKER__FG_BRIGHTPRUPLE}Container-ID${DOCKER__NOCOLOR} (e.g. dfc5e2f3f7ee): "
     local ERRMSG_INVALID_INPUT_VALUE="${DOCKER__ERROR}: Invalid input value "
 
-
     #Check if running inside Docker Container
     #If true, then exit subroutine right away.
-    if [[ ${docker__isRunning_inside_container} == true ]]; then   #running in docker container
+    if [[ ${docker__isRunning_inside_container} == true ]]; then   #currently inside container
         return  #exit function
     fi
 
@@ -442,11 +441,11 @@ docker__preCheck__sub() {
     show_msg_only__func "${DOCKER__SUBJECT_MANDATORY_SOFTWARE_AND_FILES}" "${DOCKER__NUMOFLINES_1}" "${DOCKER__NUMOFLINES_0}"
 
     #Check if running inside docker container
-    if [[ ${docker__isRunning_inside_container} == true ]]; then   #running in docker container
+    if [[ ${docker__isRunning_inside_container} == true ]]; then   #currently inside container
         printmsg="${DOCKER__SIXDASHES_COLON}${DOCKER__STATUS}: (${DOCKER__FG_LIGHTGREY}${DOCKER__LOCATION_LLOCAL}${DOCKER__NOCOLOR}) Inside Container: true"
 
         docker__numof_errors_found_ctr=0
-    else    #NOT running in docker container
+    else    ##currently outside containerner
         printmsg="${DOCKER__SIXDASHES_COLON}${DOCKER__STATUS}: (${DOCKER__FG_LIGHTGREY}${DOCKER__LOCATION_LLOCAL}${DOCKER__NOCOLOR}) Inside Container: false"
 
         #Check if docker.io is installed
@@ -551,6 +550,10 @@ docker__overlay__sub() {
                 docker__overlay_files_check_handler__sub
 
                 #Choose 'phase' based on 'docker__numof_errors_found_ctr'
+                #Remarks:
+                #   In case one or more files were not found, then:
+                #   1. exit this subroutine
+                #   2. build normally WITHOUT overlay
                 if [[ ${docker__numof_errors_found_ctr} -gt 0 ]]; then  #errors were found
                     phase="${PHASE_OVERLAY_EXIT}"
                 else    #NO errors found
@@ -618,9 +621,6 @@ docker__overlay__sub() {
 }
 
 docker__overlay_files_check_handler__sub() {
-    #Reset variables
-    docker__numof_errors_found_ctr=0
-
     #Print
     show_msg_only__func "${DOCKER__SUBJECT_OVERLAY_RELATED_FILES}" "${DOCKER__NUMOFLINES_1}" "${DOCKER__NUMOFLINES_0}"
 
@@ -708,9 +708,15 @@ docker__overlay_files_check_handler__sub() {
 
     #Show error message and exit (if applicable)
     if [[ ${docker__numof_errors_found_ctr} -gt 0 ]]; then
-        show_errMsg_wo_menuTitle_and_exit_func "${DOCKER__ERRMSG_ONE_OR_MORE_CHECKITEMS_FAILED}" \
-                ${DOCKER__NUMOFLINES_1} \
-                ${DOCKER__NUMOFLINES_0}
+        # show_errMsg_wo_menuTitle_and_exit_func "${DOCKER__ERRMSG_ONE_OR_MORE_CHECKITEMS_FAILED}" \
+        #         ${DOCKER__NUMOFLINES_1} \
+        #         ${DOCKER__NUMOFLINES_0}
+        show_msg_only__func "${DOCKER__ERRMSG_ONE_OR_MORE_CHECKITEMS_FAILED}" \
+                        ${DOCKER__NUMOFLINES_1} \
+                        ${DOCKER__NUMOFLINES_0}
+        show_msg_only__func "${DOCKER__ERRMSG_IGNORE_THESE_ERRORS_AND_BUILD_WITHOUT_OVERLAY}" \
+                        ${DOCKER__NUMOFLINES_0} \
+                        ${DOCKER__NUMOFLINES_0}
     fi
 }
 docker__overlay_checkif_file_ispresent__sub() {
@@ -781,11 +787,29 @@ docker__overlay_docker_fs_partition_conf_check_handler__sub() {
     show_msg_only__func "${DOCKER__SUBJECT_DOCKER_FS_PARTITION_CONF_FILECONTENT}" "${DOCKER__NUMOFLINES_1}" "${DOCKER__NUMOFLINES_0}"
 
     #Validate the content of 'docker_fs_partition.conf'
+    #1. 'docker__disksize_set' is set or retrieved in subroutine 'docker__overlay_disksizeset_check__sub'
     docker__overlay_disksizeset_check__sub
+    
+    #2. 'docker__overlaymode_set' is set or retrieved in subroutine 'docker__overlay_overlaymode_check__sub'
     docker__overlay_overlaymode_check__sub
-    docker__overlay_overlayfs_check__sub
+    
+    #3. 'docker__overlaysetting_set' is set or retrieved in subroutine 'docker__overlay_overlaysetting_check__sub'
+    docker__overlay_overlaysetting_check__sub
 
-    #Show error message and exit (if applicable)
+    #Before showing any errors and exit...
+    #FIRST of ALL, check if 'docker__overlaysetting_set = DISABLED'.
+    #If true, then exit this subroutine.
+    if [[ "${docker__overlaysetting_set}" == "${DOCKER__OVERLAYFS_DISABLED}" ]]; then
+        return 0;
+    fi
+
+    #docker__overlaysetting_set = DOCKER__OVERLAYFS_ENABLED.
+    #Check if 'docker__numof_errors_found_ctr > 0'. 
+    #If true, then errors were found previously in one or all of the 3 subroutines:
+    #   docker__overlay_disksizeset_check__sub
+    #   docker__overlay_overlaymode_check__sub
+    #   docker__overlay_overlaysetting_check__sub
+    #In this case, show error-message and exit script.
     if [[ ${docker__numof_errors_found_ctr} -gt 0 ]]; then
         show_errMsg_wo_menuTitle_and_exit_func "${DOCKER__ERRMSG_ONE_OR_MORE_ENTRIES_ARE_INVALID}" \
                 ${DOCKER__NUMOFLINES_1} \
@@ -861,7 +885,7 @@ docker__overlay_overlaymode_check__sub() {
     #Print
     show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
 }
-docker__overlay_overlayfs_check__sub() {
+docker__overlay_overlaysetting_check__sub() {
     #Remark:
     # This subroutine passes the result(s) to the following global variable(s):
     #       docker__numof_errors_found_ctr (integer)
@@ -1402,7 +1426,8 @@ docker__overlay_tempfile_isp_sh_patch__sub() {
     #Patch the temporary file '.../docker/overlayfs/isp.sh'
     replace_or_append_string_based_on_pattern_in_file__func "${partitions_for_isp}" \
             "${DOCKER__PATTERN_ROOTFS_0X1E0000000}" \
-            "${docker__docker_overlayfs_isp_sh__fpath}"
+            "${docker__docker_overlayfs_isp_sh__fpath}" \
+            "${DOCKER__FALSE}"
     
     #Check exit-code
     docker__exitcode=$?
@@ -1865,9 +1890,9 @@ docker__overlay_dst_exec_file_change_permission__sub() {
     cmd_to_change_permission="chmod 755 ${targetfpath__input}"
 
     #Execute command
-    if [[ ${docker__isRunning_inside_container} == true ]]; then   #currently in a container
+    if [[ ${docker__isRunning_inside_container} == true ]]; then   #currently inside container
         ${cmd_to_change_permission}
-    else    #currently outside of a container
+    else    #currently outside container
         ${docker_exec_cmd} "${cmd_to_change_permission}"
     fi
 
@@ -1930,9 +1955,11 @@ docker__overlay_tb_init_softlink_create__sub() {
             "${DOCKER__SIXDASHES_COLON}"
 
     #Execute command
-    if [[ ${docker__isRunning_inside_container} == true ]]; then   #currently in a container
-        ${cmd_tocreate_softlink}
-    else    #currently outside of a container
+    if [[ ${docker__isRunning_inside_container} == true ]]; then   #currently inside container
+        #Note: MUST use eval, because we want to EVALUATE string 
+        #       'cmd_tocreate_softlink' as a SHELL-command.
+        eval "${cmd_tocreate_softlink}"
+    else    #currently outside container
         ${docker_exec_cmd} "${cmd_tocreate_softlink}"
     fi
 
@@ -2000,9 +2027,9 @@ docker__run_script__sub() {
 
     #Execute script 'docker__build_ispboootbin_fpath'
     printmsg="---:${DOCKER__START}: build ${DOCKER__FG_LIGHTGREY}ISPBOOOT.BIN${DOCKER__NOCOLOR}"
-    if [[ ${docker__isRunning_inside_container} == true ]]; then   #currently in a container
-        ${cmd_outside_container}
-    else    #currently outside of a container
+    if [[ ${docker__isRunning_inside_container} == true ]]; then   #currently inside container
+        eval ${cmd_outside_container}
+    else    #currently outside container
         ${docker_exec_cmd} "${cmd_inside_container}"
     fi
 
@@ -2042,7 +2069,7 @@ docker__main__sub(){
 
     docker__init_variables__sub
 
-    docker__checkIf_isRunning_inside_container__sub
+    docker__checkif_isrunning_in_container__sub
 
     docker__choose_containerID__sub
 

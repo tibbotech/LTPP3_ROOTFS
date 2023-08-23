@@ -40,6 +40,9 @@ docker__load_constants__sub() {
     DOCKER__MENUTITLE="${DOCKER__FG_LIGHTBLUE}DOCKER: "
     DOCKER__MENUTITLE+="${DOCKER__FG_DARKBLUE}CHOOSE "
     DOCKER__MENUTITLE+="${DOCKER__FG_RED125}DISK${DOCKER__NOCOLOR}-${DOCKER__FG_RED125}SIZE${DOCKER__NOCOLOR}"
+
+	DOCKER__WRNMSG_1="${DOCKER__WARNING}: CHANGING the ${DOCKER__FG_LIGHTGREY}Disk-size${DOCKER__NOCOLOR} "
+    DOCKER__WRNMSG_1+="will cause a RESET of the EXISTING ${DOCKER__FG_LIGHTGREY}Disk-partitions${DOCKER__NOCOLOR}."
 }
 
 docker__get_git_info__sub() {
@@ -66,17 +69,21 @@ docker__get_git_info__sub() {
 
 docker__menu__sub() {
     #Define variables
+    local disksize_retrieved=0
+    local filecontent="${DOCKER__EMPTYSTRING}"
     local mychoice="${DOCKER__EMPTYSTRING}"
+    local myconfirm="${DOCKER__EMPTYSTRING}"
     local exitcode=0
-    local regex1234q="[1-4q]"
     local ret=0
+    local regex1234q="[1-4q]"
+    local regexyn="[yn]"
 
     #Write initial 'ret' value to file.
     #Note: this is done in case ctrl+c is pressed.
     write_data_to_file__func "${ret}" "${docker__fs_partition_disksize_menu_output__fpath}"
 
     #Show menu
-    while true
+    while [[ 1 ]];
     do
         #IMPORTANT: reset exitcode
         exitcode=0
@@ -105,7 +112,7 @@ docker__menu__sub() {
         echo -e "${DOCKER__FOURSPACES}q. $DOCKER__QUIT_CTRL_C"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
 
-        while true
+        while [[ 1 ]];
         do
             #Select an option
             read -N1 -r -p "Please choose an option: " mychoice
@@ -136,14 +143,16 @@ docker__menu__sub() {
                 ret=${DOCKER__DISKSIZE_8G_IN_MBYTES}
                 ;;
             3)
-                ${docker__fs_partition_disksize_userdefined__fpath}
-                exitcode=$?
-        
-                #Read from file
+                #The output of this subroutine is written to file 'docker__fs_partition_disksize_userdefined_output__fpath'
+                ${docker__fs_partition_disksize_userdefined__fpath}; exitcode=$?
+
+                #Only retrieve the output if subroutine 'docker__fs_partition_disksize_userdefined__fpath'
+                #   was successfully executed (exit-code = 0).
                 if [[ ${exitcode} -eq 0 ]]; then
                     ret=$(read_1stline_from_file__func "${docker__fs_partition_disksize_userdefined_output__fpath}")
                 fi
 
+                #Remove file
                 remove_file__func "${docker__fs_partition_disksize_userdefined_output__fpath}"
                 ;;
             4)
@@ -160,15 +169,32 @@ docker__menu__sub() {
     done
 
 
-   #Update variable
+    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    # DISK-SIZE: WRITE TO FILE 'docker__docker_fs_partition_conf__fpath'
+    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    #Update parameter
     filecontent="${DOCKER__DISKSIZESETTING} ${ret}"
 
-    #Replace/Append to file
+    #Add to file
     replace_or_append_string_based_on_pattern_in_file__func "${filecontent}" \
             "${DOCKER__DISKSIZESETTING}" \
-            "${docker__docker_fs_partition_conf__fpath}"
-}
+            "${docker__docker_fs_partition_conf__fpath}" \
+            "${DOCKER__FALSE}"
 
+    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    # DISK-SIZE: UNSET
+    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    if [[ ${mychoice} -eq 4 ]]; then
+        #Update parameter
+        filecontent="${DOCKER__OVERLAYSETTING} ${DOCKER__OVERLAYFS_DISABLED}"
+
+        #String 'filecontent {write to | replace in} file
+        replace_or_append_string_based_on_pattern_in_file__func "${filecontent}" \
+            "${DOCKER__OVERLAYSETTING}" \
+            "${docker__docker_fs_partition_conf__fpath}" \
+            "${DOCKER__TRUE}"
+    fi
+}
 
 
 #---MAIN SUBROUTINE

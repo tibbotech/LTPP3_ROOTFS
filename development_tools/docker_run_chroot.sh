@@ -308,21 +308,6 @@ docker__init_variables__sub() {
     docker__onEnter_breakLoop=true
 }
 
-docker__checkIf_isRunning_inside_container__sub() {
-    #Define contants
-    local PATTERN_DOCKER="docker"
-
-    #Define variablers
-    local proc_1_cgroup_dir=/proc/1/cgroup
-
-    isDocker=`cat "${proc_1_cgroup_dir}" | grep "${PATTERN_DOCKER}"`
-    if [[ ! -z ${isDocker} ]]; then
-        docker__isRunning_inside_container=true
-    else
-        docker__isRunning_inside_container=false
-    fi
-}
-
 docker__choose_containerID__sub() {
     #Define local message constants
     # local MENUTITLE="Current ${DOCKER__FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}-list"
@@ -330,6 +315,8 @@ docker__choose_containerID__sub() {
     local READMSG_CHOOSE_A_CONTAINERID="Choose a ${DOCKER__FG_BRIGHTPRUPLE}Container-ID${DOCKER__NOCOLOR} (e.g. dfc5e2f3f7ee): "
     local ERRMSG_INVALID_INPUT_VALUE="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Invalid input value "
 
+    #Check if running inside a container
+    docker__isRunning_inside_container=$(checkIf_isRunning_inside_container__func)
 
     #Check if running inside Docker Container
     #If true, then exit subroutine right away.
@@ -514,7 +501,8 @@ docker__main__sub(){
 
     docker__init_variables__sub
 
-    docker__checkIf_isRunning_inside_container__sub
+    #Check if running inside a container
+    docker__isRunning_inside_container=$(checkIf_isRunning_inside_container__func)
 
     docker__choose_containerID__sub
 
