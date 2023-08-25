@@ -50,4 +50,5 @@
 #Affected file(s): docker_mainmenu.sh, docker_global.sh, docker_container_build_ispboootbin.sh, docker_fs_partition_disksize_menu.sh, docker_fs_partition_diskpartition_menu.sh
 #Implemented:
 #1. Possibility to configure overlay and build ISPBOOOT.BIN from within a container
-#2. Improvements
+#2. Bug fixes
+#3. for each disk-size type (e.g. LTPP3-G2, LTPP3-G3, Custom) -> remember the last disk-partition config
