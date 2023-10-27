@@ -71,6 +71,12 @@ press_any_key__localfunc() {
 	echo -e "\r"
 }
 
+#---Define constants
+TIBBO_OOBE_CHECK_PATTERN1="export LD_LIBRARY_PATH=:/usr/lib/arm-linux-gnueabihf/"
+TIBBO_OOBE_CHECK_PATTERN2="export PYTHONPATH=:/usr/lib/python3/ntios/:/usr/lib/python3/ntios/pmux/"
+TIBBO_OOBE_CHECK_PATTERN3="export PL_IO_NUM_NULL=65"
+
+
 
 #---Define path variables
 echo -e "\r"
@@ -139,6 +145,10 @@ wifipwrmgmt_sh_fpath=${usr_local_bin_dir}/${wifipwrmgmt_sh_filename}
 
 wifipwrmgmt_run_sh_filename="wifipwrmgmt_run.sh"
 wifipwrmgmt_run_sh_fpath=${etc_profile_d_dir}/${wifipwrmgmt_run_sh_filename}
+
+profile_filename="profile"
+profile_fpath=${etc_dir}/${profile_filename}
+
 
 
 #---Define useraccount variables
@@ -396,10 +406,23 @@ echo ">Installing update"
 echo -e "\r"
 	apt-get -y update
 
+
 echo -e "\r"
-echo "---Installing <tibbo-oobe>---"
-echo -e "\r"
-	apt-get -y install tibbo-oobe
+echo "---Check if <tibbo-oobe> is already installed---"
+pattern1_ispresent=$(grep -F "${TIBBO_OOBE_CHECK_PATTERN1}" "${profile_fpath}")
+pattern2_ispresent=$(grep -F "${TIBBO_OOBE_CHECK_PATTERN2}" "${profile_fpath}")
+pattern3_ispresent=$(grep -F "${TIBBO_OOBE_CHECK_PATTERN3}" "${profile_fpath}")
+if [[ -z "${pattern1_ispresent}" ]] || [[ -z "${pattern2_ispresent}" ]] || [[ -z "${pattern3_ispresent}" ]]; then
+	echo "---<tibbo-oobe> is NOT installed---"
+	echo "---Installing <tibbo-oobe>---"
+	echo -e "\r"
+		apt-get -y install tibbo-oobe
+else
+	echo "---<tibbo-oobe> is ALREADY installed---"
+	echo "---SKIPPING install <tibbo-oobe>---"
+fi
+
+
 
 # echo -e "\r"
 # echo "---Installing <pmount>---"

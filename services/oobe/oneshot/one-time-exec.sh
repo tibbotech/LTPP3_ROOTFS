@@ -100,3 +100,16 @@ fi
 
 mount -t ${mqueue_fs} ${MOUNTPOINT_NONE} ${dev_mqueue_dir}
 echo -e ":-->${FG_ORANGE}STATUS${NOCOLOR}: MOUNTED ${FG_LIGHTGREY}${dev_mqueue_dir}${NOCOLOR}"
+
+
+
+#---LOAD TPD MODULE
+tpd_isloaded=$(lsmod | grep 'tpd')
+if [[ -z "${tpd_isloaded}" ]]; then
+    echo -e ":-->${FG_ORANGE}STATUS${NOCOLOR}: UPDATE MODULE DEPENDENCIES: ${FG_LIGHTGREY}depmod -a${NOCOLOR}"
+    depmod -a
+
+    echo -e ":-->${FG_ORANGE}STATUS${NOCOLOR}: LOAD TPD-MODULE: ${FG_LIGHTGREY}modprobe tpd${NOCOLOR}"
+    modprobe tpd
+fi
+
