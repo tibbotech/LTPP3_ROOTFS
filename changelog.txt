@@ -52,3 +52,11 @@
 #1. Possibility to configure overlay and build ISPBOOOT.BIN from within a container
 #2. Bug fixes
 #3. for each disk-size type (e.g. LTPP3-G2, LTPP3-G3, Custom) -> remember the last disk-partition config
+#
+#---:26 Oct 2023:---
+#Affected file(s): tpd.ko, one-time-exec.sh, chroot_exec_cmd_inside_chroot.sh
+#Modified:
+#1. replaced CORRUPTED driver tpd.ko
+#2. modified 'one-time-exec.sh' to auto-load module 'tpd' at FIRST TIME boot
+#3. modified 'chroot_exec_cmd_inside_chroot.sh' to check if 'tibbo-oobe' is already installed.
+#
