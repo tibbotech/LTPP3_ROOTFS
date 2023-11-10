@@ -1,0 +1,23 @@
+--- /root/SP7021/linux/kernel/drivers/usb/host/ehci-sched.c	2023-10-27 10:26:57.000000000 +0000
++++ /root/LTPP3_ROOTFS/kernel/drivers/usb/host/ehci-sched.c	2023-11-09 09:17:16.000000000 +0000
+@@ -1842,7 +1842,9 @@
+ 			/* HC need not update length with this error */
+ 			if (!(t & EHCI_ISOC_BABBLE)) {
+ 				/* Refer to Mantis #10310 for this bug. */
+-#if defined(CONFIG_SOC_SP7021) || defined(CONFIG_SOC_Q645) || defined(CONFIG_SOC_SP7350)
++
++// #if defined(CONFIG_SOC_SP7021) || defined(CONFIG_SOC_Q645) || defined(CONFIG_SOC_SP7350)
++#if defined(CONFIG_SOC_Q645) || defined(CONFIG_SOC_SP7350)
+ 				desc->actual_length = urb->iso_frame_desc[urb_index].length;
+ #else
+ 				desc->actual_length = EHCI_ITD_LENGTH(t);
+@@ -1852,7 +1854,8 @@
+ 		} else if (likely((t & EHCI_ISOC_ACTIVE) == 0)) {
+ 			desc->status = 0;
+ 			/* Refer to Mantis #10310 for this bug. */
+-#if defined(CONFIG_SOC_SP7021) || defined(CONFIG_SOC_Q645) || defined(CONFIG_SOC_SP7350)
++// #if defined(CONFIG_SOC_SP7021) || defined(CONFIG_SOC_Q645) || defined(CONFIG_SOC_SP7350)
++#if defined(CONFIG_SOC_Q645) || defined(CONFIG_SOC_SP7350)
+ 			desc->actual_length = urb->iso_frame_desc[urb_index].length;
+ #else
+ 			desc->actual_length = EHCI_ITD_LENGTH(t);

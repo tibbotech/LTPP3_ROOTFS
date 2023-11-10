@@ -60,3 +60,10 @@
 #2. modified 'one-time-exec.sh' to auto-load module 'tpd' at FIRST TIME boot
 #3. modified 'chroot_exec_cmd_inside_chroot.sh' to check if 'tibbo-oobe' is already installed.
 #
+#---:11 Nov 2023:---
+#Affected file(s): armhf_kernel.config, ehci-sched.c, diskpreprep.sh
+#Modified:
+#1. updated 'armhf_kernel.config' by adding a missing line '# CONFIG_VIDEO_TP2815 is not set'
+#2. modified 'ehci-sched.c' by omitting '#if defined(CONFIG_SOC_SP7021)'
+#3. updated 'diskpreprep.sh' by adding lines related to patching the file 'ehci-sched.c'
+#
