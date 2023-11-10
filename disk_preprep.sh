@@ -78,6 +78,8 @@ create_chown_pwm_sh_filename="create-chown-pwm.sh"
 daisychain_state_service_filename="daisychain_state.service"
 daisychain_state_sh_filename="daisychain_state.sh"
 disk_foldername="disk"
+ehci_sched_c_filename="ehci-sched.c"
+ehci_sched_c_patch_filename="ehci-sched.c.patch"
 enable_eth1_before_login_service_filename="enable-eth1-before-login.service"
 enable_eth1_before_login_sh_filename="enable-eth1-before-login.sh"
 enable_ufw_before_login_service_filename="enable-ufw-before-login.service"
@@ -171,6 +173,7 @@ home_lttp3rootfs_kernel_dir=${home_lttp3rootfs_dir}/kernel
 home_lttp3rootfs_kernel_drivers_tpd_dir=${home_lttp3rootfs_kernel_dir}/drivers/tpd
 home_lttp3rootfs_kernel_makeconfig_dir=${home_lttp3rootfs_kernel_dir}/makeconfig
 # home_lttp3rootfs_kernel_drivers_clk_dir=${home_lttp3rootfs_kernel_dir}/drivers/clk
+home_lttp3rootfs_kernel_drivers_usb_host_dir=${home_lttp3rootfs_kernel_dir}/drivers/usb/host
 home_lttp3rootfs_kernel_drivers_irqchip_dir=${home_lttp3rootfs_kernel_dir}/drivers/irqchip
 home_lttp3rootfs_kernel_drivers_misc_dir=${home_lttp3rootfs_kernel_dir}/drivers/misc
 home_lttp3rootfs_kernel_drivers_nvnmem_dir=${home_lttp3rootfs_kernel_dir}/drivers/nvmem
@@ -187,6 +190,7 @@ SP7xxx_build_tools_isp_dir=${SP7xxx_dir}/build/tools/isp
 SP7xxx_linux_kernel_dir=${SP7xxx_dir}/linux/kernel
 SP7xxx_linux_kernel_arch_arm_boot_dts_dir=${SP7xxx_linux_kernel_dir}/arch/arm/boot/dts
 # SP7xxx_linux_kernel_drivers_clk_dir=${SP7xxx_linux_kernel_dir}/drivers/clk
+SP7xxx_linux_kernel_drivers_usb_host_dir=${SP7xxx_linux_kernel_dir}/drivers/usb/host
 SP7xxx_linux_kernel_drivers_irqchip_dir=${SP7xxx_linux_kernel_dir}/drivers/irqchip
 SP7xxx_linux_kernel_drivers_misc_dir=${SP7xxx_linux_kernel_dir}/drivers/misc
 SP7xxx_linux_kernel_drivers_net_wireless_dir=${SP7xxx_linux_kernel_dir}/drivers/net/wireless
@@ -321,6 +325,10 @@ dst_tpd_ko_fpath=${SP7xxx_linux_kernel_drivers_tpd_dir}/${tpd_ko_filename}
 src_tpd_fix_sh_fpath=${home_lttp3rootfs_kernel_scripts_tpd_dir}/${tpd_fix_sh_filename}
 dst_tpd_fix_sh_fpath=${SP7xxx_linux_kernel_scripts_tpd_dir}/${tpd_fix_sh_filename}
 
+old_ehci_sched_c_fpath=${SP7xxx_linux_kernel_drivers_usb_host_dir}/${ehci_sched_c_filename}
+new_ehci_sched_c_fpath=${home_lttp3rootfs_kernel_drivers_usb_host_dir}/${ehci_sched_c_filename}
+ehci_sched_c_patch_fpath=${home_lttp3rootfs_kernel_drivers_usb_host_dir}/${ehci_sched_c_patch_filename}
+
 old_irq_sp7021_intc_c_fpath=${SP7xxx_linux_kernel_drivers_irqchip_dir}/${irq_sp7021_intc_c_filename}
 new_irq_sp7021_intc_c_fpath=${home_lttp3rootfs_kernel_drivers_irqchip_dir}/${irq_sp7021_intc_c_filename}
 irq_sp7021_intc_c_patch_fpath=${home_lttp3rootfs_kernel_drivers_irqchip_dir}/${irq_sp7021_intc_c_patch_filename}
@@ -372,6 +380,7 @@ sp7021_common_dtsi_patch_fpath=${home_lttp3rootfs_kernel_dts_dir}/${sp7021_commo
 old_sp7021_ltpp3g2revD_dtsi_fpath=${SP7xxx_linux_kernel_arch_arm_boot_dts_dir}/${sp7021_ltpp3g2revD_dtsi_filename}
 new_sp7021_ltpp3g2revD_dtsi_fpath=${home_lttp3rootfs_kernel_dts_dir}/${sp7021_ltpp3g2revD_dtsi_filename}
 sp7021_ltpp3g2revD_dtsi_patch_fpath=${home_lttp3rootfs_kernel_dts_dir}/${sp7021_ltpp3g2revD_dtsi_patch_filename}
+echo -e "---:TIBBO:ENV: FINISHED"
 
 
 
@@ -1241,6 +1250,18 @@ echo -e ">>>Change permission to <-rw-r-xr-x> for folder: ${ninetynine_wlan_noti
 
 ###APPLYIBG PATCHES###
 press_any_key__func
+ehci_sched_c_diff=$(diff ${old_ehci_sched_c_fpath} ${new_ehci_sched_c_fpath})
+if [[ -n "${ehci_sched_c_diff}" ]]; then
+	echo -e "\r"
+	echo -e ">Patching file"
+	echo -e ">from: ${old_ehci_sched_c_fpath}"
+	echo -e ">with: ${ehci_sched_c_patch_fpath}"
+	patch "${old_ehci_sched_c_fpath}" < "${ehci_sched_c_patch_fpath}"
+else
+	echo -e "\r"
+	echo -e ">Patch already applied to: ${old_ehci_sched_c_fpath}"
+fi
+
 irq_sp7021_intc_c_diff=$(diff ${old_irq_sp7021_intc_c_fpath} ${new_irq_sp7021_intc_c_fpath})
 if [[ -n "${irq_sp7021_intc_c_diff}" ]]; then
 	echo -e "\r"
