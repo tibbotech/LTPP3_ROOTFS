@@ -96,15 +96,18 @@ kbuild_filename="Kbuild"
 kbuild_patch_filename="Kbuild.patch"
 make_menuconfig_filename="armhf_kernel.config"
 make_menuconfig_default_filename=".config"
-ninetynine_wlan_notice__filename="99-wlan-notice"
-ntios_su_add_name="ntios-su-add"
-ntios_su_addasperand_name="${ntios_su_add_name}@"
-ntios_su_add_monitor_name="${ntios_su_add_name}-monitor"
-ntios_su_add_sh_filename="${ntios_su_add_name}.sh"
-ntios_su_addasperand_service_filename="${ntios_su_addasperand_name}.service"
-ntios_su_add_monitor_service_filename="${ntios_su_add_monitor_name}.service"
-ntios_su_add_monitor_sh_filename="${ntios_su_add_monitor_name}.sh"
-ntios_su_add_monitor_timer_filename="${ntios_su_add_monitor_name}.timer"
+media_sync_sh_filename="media_sync.sh"
+media_sync_service_filename="media_sync.service"
+media_sync_timer_filename="media_sync.timer"
+ninetynine_wlan_notice_filename="99-wlan-notice"
+ntios_su_add_filename="ntios-su-add"
+ntios_su_addasperand_filename="${ntios_su_add_filename}@"
+ntios_su_add_monitor_filename="${ntios_su_add_filename}-monitor"
+ntios_su_add_sh_filename="${ntios_su_add_filename}.sh"
+ntios_su_addasperand_service_filename="${ntios_su_addasperand_filename}.service"
+ntios_su_add_monitor_service_filename="${ntios_su_add_monitor_filename}.service"
+ntios_su_add_monitor_sh_filename="${ntios_su_add_monitor_filename}.sh"
+ntios_su_add_monitor_timer_filename="${ntios_su_add_monitor_filename}.timer"
 one_time_exec_sh_filename="one-time-exec.sh"
 one_time_exec_before_login_sh_filename="one-time-exec-before-login.sh"
 one_time_exec_before_login_service_filename="one-time-exec-before-login.service"
@@ -168,6 +171,7 @@ home_lttp3rootfs_services_network_dir=${home_lttp3rootfs_dir}/services/network
 home_lttp3rootfs_services_pwm_dir=${home_lttp3rootfs_dir}/services/pwm
 home_lttp3rootfs_services_ufw_dir=${home_lttp3rootfs_dir}/services/ufw
 home_lttp3rootfs_services_permissions_dir=${home_lttp3rootfs_dir}/services/permissions
+home_lttp3rootfs_services_sync_dir=${home_lttp3rootfs_dir}/services/sync
 home_lttp3rootfs_services_sudo_dir=${home_lttp3rootfs_dir}/services/sudo
 home_lttp3rootfs_kernel_dir=${home_lttp3rootfs_dir}/kernel
 home_lttp3rootfs_kernel_drivers_tpd_dir=${home_lttp3rootfs_kernel_dir}/drivers/tpd
@@ -271,8 +275,17 @@ dst_hosts_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}/${hosts_filename}
 src_make_menuconfig_fpath=${home_lttp3rootfs_kernel_makeconfig_dir}/${make_menuconfig_filename}
 dst_make_menuconfig_fpath=${SP7xxx_linux_kernel_dir}/${make_menuconfig_default_filename}
 
-src_ninetynine_wlan_notice_fpath=${home_lttp3rootfs_motd_update_motd_d_dir}/${ninetynine_wlan_notice__filename}
-dst_ninetynine_wlan_notice_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_update_motd_d_dir}/${ninetynine_wlan_notice__filename}
+src_media_sync_sh_fpath=${home_lttp3rootfs_services_sync_dir}/${media_sync_sh_filename}
+dst_media_sync_sh_fpath=${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}/${media_sync_sh_filename}
+
+src_media_sync_service_fpath=${home_lttp3rootfs_services_sync_dir}/${media_sync_service_filename}
+dst_media_sync_service_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}/${media_sync_service_filename}
+
+src_media_sync_timer_fpath=${home_lttp3rootfs_services_sync_dir}/${media_sync_timer_filename}
+dst_media_sync_timer_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}/${media_sync_timer_filename}
+
+src_ninetynine_wlan_notice_fpath=${home_lttp3rootfs_motd_update_motd_d_dir}/${ninetynine_wlan_notice_filename}
+dst_ninetynine_wlan_notice_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_update_motd_d_dir}/${ninetynine_wlan_notice_filename}
 
 src_ntios_su_add_sh_fpath=${home_lttp3rootfs_services_sudo_dir}/${ntios_su_add_sh_filename}
 dst_ntios_su_add_sh_fpath=${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}/${ntios_su_add_sh_filename}
@@ -951,6 +964,50 @@ echo -e ">>>Change permission to <-rwxr-xr-x> for file: ${enable_ufw_before_logi
 
 
 echo -e "\r"
+echo -e ">Copying: ${media_sync_service_filename}>"
+echo -e ">from: ${home_lttp3rootfs_services_sync_dir}"
+echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}"
+	cp ${src_media_sync_service_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}
+
+echo -e "\r"
+echo -e ">>>Change ownership to <root> for file: ${media_sync_service_filename}"
+	chown root:root ${dst_media_sync_service_fpath}
+
+echo -e "\r"
+echo -e ">>>Change permission to <-rw-r--r--> for file: ${media_sync_service_filename}"
+	chmod 644 ${dst_media_sync_service_fpath}
+
+echo -e "\r"
+echo -e ">Copying: ${media_sync_sh_filename}"
+echo -e ">from: ${home_lttp3rootfs_services_sync_dir}"
+echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}"
+	cp ${src_media_sync_sh_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}
+
+echo -e "\r"
+echo -e ">>>Change ownership to <root> for file: ${media_sync_sh_filename}"
+	chown root:root ${dst_media_sync_sh_fpath}
+
+echo -e "\r"
+echo -e ">>>Change permission to <-rwxr-xr-x> for file: ${media_sync_sh_filename}"
+	chmod 755 ${dst_media_sync_sh_fpath}
+
+echo -e "\r"
+echo -e ">Copying: ${media_sync_timer_filename}>"
+echo -e ">from: ${home_lttp3rootfs_services_sync_dir}"
+echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}"
+	cp ${src_media_sync_timer_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}
+
+echo -e "\r"
+echo -e ">>>Change ownership to <root> for file: ${media_sync_timer_filename}"
+	chown root:root ${dst_media_sync_timer_fpath}
+
+echo -e "\r"
+echo -e ">>>Change permission to <-rw-r--r--> for file: ${media_sync_timer_filename}"
+	chmod 644 ${dst_media_sync_timer_fpath}
+
+
+
+echo -e "\r"
 echo -e ">Copying: ${ntios_su_addasperand_service_filename}>"
 echo -e ">from: ${home_lttp3rootfs_services_sudo_dir}"
 echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}"
@@ -1235,17 +1292,17 @@ chmod +x ${build_disk_fpath}
 #UPDATE-MOTD-D
 press_any_key__func
 echo -e "\r"
-echo -e ">Copying: ${ninetynine_wlan_notice__filename}"
+echo -e ">Copying: ${ninetynine_wlan_notice_filename}"
 echo -e ">from: ${home_lttp3rootfs_motd_update_motd_d_dir}"
 echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_etc_update_motd_d_dir}"
 	cp -rf ${src_ninetynine_wlan_notice_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_etc_update_motd_d_dir}
 
 echo -e "\r"
-echo -e ">>>Change ownership to <root> for folder: ${ninetynine_wlan_notice__filename}"
+echo -e ">>>Change ownership to <root> for folder: ${ninetynine_wlan_notice_filename}"
 	chown -R root:root ${dst_ninetynine_wlan_notice_fpath}
 
 echo -e "\r"
-echo -e ">>>Change permission to <-rw-r-xr-x> for folder: ${ninetynine_wlan_notice__filename}"
+echo -e ">>>Change permission to <-rw-r-xr-x> for folder: ${ninetynine_wlan_notice_filename}"
 	chmod -R 755 ${dst_ninetynine_wlan_notice_fpath}
 
 ###APPLYIBG PATCHES###
