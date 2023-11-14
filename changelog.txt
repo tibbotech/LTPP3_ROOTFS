@@ -67,3 +67,10 @@
 #2. modified 'ehci-sched.c' by omitting '#if defined(CONFIG_SOC_SP7021)'
 #3. updated 'diskpreprep.sh' by adding lines related to patching the file 'ehci-sched.c'
 #
+#---:14 Nov 2023:---
+#Affected file(s): media_sync.timer, media_sync.service, media_sync.sh, disk_preprep.sh, chroot_exec_cmd_inside_chroot.sh
+#Implemented:
+#1. This media-sync service makes sure to sync the media (e.g, USB, SD) every 3 seconds.
+#Note: Ubuntu has a built-in syncing mechanism, however, it takes times before changes to the media is synced.
+#2. Updated 'disk_preprep.sh' by adding lines related to media-sync files.
+#3. Updated 'chroot_exec_cmd_inside_chroot.sh' by adding lines related to media-sync files.

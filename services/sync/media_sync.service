@@ -1,0 +1,18 @@
+[Unit]
+Description=Synchronize filesystem of the folders in directory /media
+After=network.target
+Wants=media_sync.timer
+
+[Service]
+Nice=19
+Type=oneshot
+#User MUST BE SET TO 'root'
+User=root
+ExecStart=/usr/local/bin/media_sync.sh
+
+#Print messages
+StandardInput=journal+console
+StandardOutput=journal+console
+
+[Install]
+WantedBy=multi-user.target

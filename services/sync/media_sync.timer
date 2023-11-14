@@ -1,0 +1,15 @@
+[Unit]
+Description=Run media_sync.service every 3 sec (active-state) and 30 sec (idle-state)
+Requires=media_sync.service
+
+[Timer]
+#Run on boot after 1 seconds
+OnBootSec=1s
+#Run script every 3 sec when Device is Active
+OnUnitActiveSec=3s
+#Run script every 30 sec when Device is Idle
+OnUnitInactiveSec=30s
+AccuracySec=1s
+
+[Install]
+WantedBy=timers.target

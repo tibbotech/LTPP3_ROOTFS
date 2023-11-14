@@ -100,6 +100,7 @@ usr_lib_dir=${usr_dir}/lib
 usr_local_bin_dir=${usr_dir}/local/bin
 etc_systemd_system_dir=${etc_dir}/systemd/system
 etc_systemd_system_multi_user_target_wants_dir=${etc_systemd_system_dir}/multi-user.target.wants
+etc_systemd_system_timers_target_wants_dir=${etc_systemd_system_dir}/timers.target.wants
 
 localtime_dir=${etc_dir}/localtime
 passwd_fpath=${etc_dir}/passwd
@@ -128,6 +129,10 @@ one_time_exec_before_login_service_symlink_fpath=${etc_systemd_system_multi_user
 enable_ufw_before_login_service_filename="enable-ufw-before-login.service"
 enable_ufw_before_login_service_fpath=${etc_systemd_system_dir}/${enable_ufw_before_login_service_filename}
 enable_ufw_before_login_service_symlink_fpath=${etc_systemd_system_multi_user_target_wants_dir}/${enable_ufw_before_login_service_filename}
+
+media_sync_timer_filename="media_sync.timer"
+media_sync_timer_fpath=${etc_systemd_system_dir}/${media_sync_timer_filename}
+media_sync_timer_symlink_fpath=${etc_systemd_system_timers_target_wants_dir}/${media_sync_timer_filename}
 
 environment_fpath=${etc_dir}/environment
 
@@ -561,7 +566,10 @@ echo ">Create symlink for <${enable_ufw_before_login_service_filename}>"
 	ln -s ${enable_ufw_before_login_service_fpath} ${enable_ufw_before_login_service_symlink_fpath}
 
 echo -e "\r"
+echo ">Create symlink for <${media_sync_timer_filename}>"
+	ln -s ${media_sync_timer_fpath} ${media_sync_timer_symlink_fpath}
 
+echo -e "\r"
 
 press_any_key__localfunc
 echo -e "\r"
