@@ -5,6 +5,9 @@ DOCKER__GIT_MAIN="main"
 DOCKER__PATTERN1="repository:tag"
 DOCKER__PATTERN2="On branch"
 DOCKER__PATTERN3="origin"
+DOCKER__PATTERN4="CONTAINER_ENV1"
+DOCKER__PATTERN5="CONTAINER_ENV2"
+DOCKER__PATTERN6="DOCKERFILE_ENV1"
 SED__PATTERN_SSH_FORMAT="git\@github.com:"
 SED__PATTERN_HTTPS_FORMAT="https:\/\/github.com\/"
 
@@ -20,7 +23,9 @@ function create_image__func() {
 
     #Define local message variables
     local statusMsg="---:${DOCKER__FG_ORANGE}STATUS${DOCKER__NOCOLOR}: Creating image..."
-    local errorMsg="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: No branch name found...abort"
+    local errorMsg1="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: No branch name found...abort"
+    local errorMsg2="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Oops...it appears that the Environment variables are not set yet...\n"
+    errorMsg2+="***${DOCKER__FG_LIGHTBLUE}RECOMMEND${DOCKER__NOCOLOR}: Please choose 'option 3: Export environment variables' first!"
 
     #Define local  variables
     # local docker__images_cmd="docker images"
@@ -41,49 +46,65 @@ function create_image__func() {
         #Set a value for 'dockerfile_repository_tag'
         dockerfile_repository_tag="${dockerfile}:${DOCKER__LATEST}"
     else    #is Not an Empty String
-        #Retrieve to-be-exported Environment variables
-        exported_env_var1=`retrieve_env_var_link_from_file__func "${dockerfile_fpath}" "${docker__exported_env_var__fpath}"`
-        exported_env_var2=`retrieve_env_var_checkout_from_file__func "${dockerfile_fpath}" "${docker__exported_env_var__fpath}"`
-        exported_env_var3=`git config --get remote.origin.url`
+        #Find the following patterns in 'dockerfile_fpath': 'DOCKER__PATTERN4', 'DOCKER__PATTERN5', and 'DOCKER__PATTERN6'
+        container_env1_isfound=$(grep -F "${DOCKER__PATTERN4}" "${dockerfile_fpath}")
+        container_env2_isfound=$(grep -F "${DOCKER__PATTERN5}" "${dockerfile_fpath}")
+        container_env3_isfound=$(grep -F "${DOCKER__PATTERN6}" "${dockerfile_fpath}")
+    
+        #Check if 'dockerfile_fpath' contains 'DOCKER__PATTERN4', 'DOCKER__PATTERN5', and 'DOCKER__PATTERN6' are present in file 'dockerfile_fpath'?
+        if [[ -n "${container_env1_isfound}" ]] && [[ -n "${container_env2_isfound}" ]] && [[ -n "${container_env3_isfound}" ]]; then   #Yes, patterns are present
+            #Retrieve to-be-exported Environment variables
+            exported_env_var1=`retrieve_env_var_link_from_file__func "${dockerfile_fpath}" "${docker__exported_env_var__fpath}"`
+            exported_env_var2=`retrieve_env_var_checkout_from_file__func "${dockerfile_fpath}" "${docker__exported_env_var__fpath}"`
+            exported_env_var3=`git config --get remote.origin.url`
 
-        #For now, lets assume that the git-repo was cloned via HTTPS.
-        #Remark:
-        #   Cloning via SSH would require to set the SSH-key of the HOST on GIT-HUB.
-        #   This is not do-able, because everytime when a new image is created the SSH-KEY...
-        #   ...would change as well. 
-        git_https_link_isFound=`echo "${exported_env_var3}" | grep "https"`
-        if [[ -z ${git_https_link_isFound} ]]; then #no match was found
-            #Substitute 'SED__PATTERN_SSH_FORMAT' with 'SED__PATTERN_HTTPS_FORMAT'
-            #In other words:
-            #   git@github.com:tibbotech/LTPP3_ROOTFS.git
-            #   to
-            #   https://github.com/tibbotech/LTPP3_ROOTFS.git
-            exported_env_var3=`echo "${exported_env_var3}" | sed "s/${SED__PATTERN_SSH_FORMAT}/${SED__PATTERN_HTTPS_FORMAT}/g"`
-        fi
-
-        #Get the 'status' to see if we are in 'main'
-        #Remark:
-        #   'git status' cannot retrieve the 'branch' if it is DETACHED
-        git_status=`git status -uno | grep "${DOCKER__PATTERN2}" | rev | cut -d" " -f1 | rev`
-
-        #Get the 'branch' from which the repo was cloned (e.g. main, fixonetimexec, etc.)
-        #Remark:
-        #   Using the following command to get the 'branch' will always work (even if the branch is DETACHED)
-        git_branch=`git show -s --pretty=%d HEAD | grep -o "${DOCKER__PATTERN3}.*" | cut -d"/" -f2 | cut -d")" -f1`
-
-        #Update 'exported_env_var3' by including 'git_branch' 
-        #Remark:
-        #   Do this only if 'git_status != main'
-        if [[ "${git_status}" != "${DOCKER__GIT_MAIN}" ]]; then
-            if [[ -z "${git_branch}" ]]; then
+            if [[ -z "${exported_env_var1}" ]] || [[ -z "${exported_env_var2}" ]]; then
                 moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-                echo -e "${errorMsg}"
+                echo -e "${errorMsg2}"
                 moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
-                exit__func "${DOCKER__EXITCODE_99}" "${DOCKER__NUMOFLINES_2}"
+                exit 99
             fi
 
-            exported_env_var3="--branch ${git_branch} ${exported_env_var3}"
+            #For now, lets assume that the git-repo was cloned via HTTPS.
+            #Remark:
+            #   Cloning via SSH would require to set the SSH-key of the HOST on GIT-HUB.
+            #   This is not do-able, because everytime when a new image is created the SSH-KEY...
+            #   ...would change as well. 
+            git_https_link_isFound=`echo "${exported_env_var3}" | grep "https"`
+            if [[ -z ${git_https_link_isFound} ]]; then #no match was found
+                #Substitute 'SED__PATTERN_SSH_FORMAT' with 'SED__PATTERN_HTTPS_FORMAT'
+                #In other words:
+                #   git@github.com:tibbotech/LTPP3_ROOTFS.git
+                #   to
+                #   https://github.com/tibbotech/LTPP3_ROOTFS.git
+                exported_env_var3=`echo "${exported_env_var3}" | sed "s/${SED__PATTERN_SSH_FORMAT}/${SED__PATTERN_HTTPS_FORMAT}/g"`
+            fi
+
+            #Get the 'status' to see if we are in 'main'
+            #Remark:
+            #   'git status' cannot retrieve the 'branch' if it is DETACHED
+            git_status=`git status -uno | grep "${DOCKER__PATTERN2}" | rev | cut -d" " -f1 | rev`
+
+            #Get the 'branch' from which the repo was cloned (e.g. main, fixonetimexec, etc.)
+            #Remark:
+            #   Using the following command to get the 'branch' will always work (even if the branch is DETACHED)
+            git_branch=`git show -s --pretty=%d HEAD | grep -o "${DOCKER__PATTERN3}.*" | cut -d"/" -f2 | cut -d")" -f1`
+
+            #Update 'exported_env_var3' by including 'git_branch' 
+            #Remark:
+            #   Do this only if 'git_status != main'
+            if [[ "${git_status}" != "${DOCKER__GIT_MAIN}" ]]; then
+                if [[ -z "${git_branch}" ]]; then
+                    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+                    echo -e "${errorMsg1}"
+                    moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+                    exit__func "${DOCKER__EXITCODE_99}" "${DOCKER__NUMOFLINES_2}"
+                fi
+
+                exported_env_var3="--branch ${git_branch} ${exported_env_var3}"
+            fi
         fi
     fi
 
