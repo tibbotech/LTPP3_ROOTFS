@@ -83,3 +83,10 @@
 #Implemented:
 #1. These 3 new files enables us to create a docker-image, and thus run a container, to build a firmware which is able to boot from SD-CARD
 #
+#---:12 Mar 2024:---
+#Affected file(s): docker_create_an_image_from_dockerfile.sh, docker_create_images_from_dockerlist.sh, exported_env_var.txt, exported_env_var_default.txt
+#Implemented:
+#1. Detection whether a dockerfile contains the following 3 environment variables 'CONTAINER_ENV1', CONTAINER_ENV2', 'DOCKER__PATTERN6'
+#2. Added additional error if environment variable 'CONTAINER_ENV1' or 'CONTAINER_ENV2' is an EMPTY STRING.
+#   Additionally, a recommendation will be given which option to choose first to set the environment variables.
+#

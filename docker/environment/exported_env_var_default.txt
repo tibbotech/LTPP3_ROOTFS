@@ -1,2 +1,3 @@
 #repository:tag DOCKER_ARG1 DOCKER_ARG2
 ltps_sunplus:latest https://github.com/sunplus-plus1/SP7021.git 976a53bfd956afbb698c52b20da04c9b46b44a46
+ltps_sunplus:sd https://github.com/sunplus-plus1/SP7021.git 976a53bfd956afbb698c52b20da04c9b46b44a46
