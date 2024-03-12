@@ -1,2 +1,0 @@
-#List of Docker files to-be-executed
-dockerfile_ltps_sunplus

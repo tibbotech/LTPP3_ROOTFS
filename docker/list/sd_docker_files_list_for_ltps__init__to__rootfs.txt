@@ -1,0 +1,4 @@
+#List of Docker files to-be-executed
+dockerfile_ltps_init
+sd_dockerfile_ltps_sunplus
+sd_dockerfile_ltps_rootfs

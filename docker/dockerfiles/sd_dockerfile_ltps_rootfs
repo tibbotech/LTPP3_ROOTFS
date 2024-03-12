@@ -1,0 +1,20 @@
+#---Continue from REPOSITORY:TAG=ltps_sunplus:sd
+FROM ltps_sunplus:sd
+
+#---LABEL about the custom image
+LABEL maintainer="hien@tibbo.com"
+LABEL version="0.1"
+LABEL description="Continue from image 'ltps_sunplus:sd'"
+LABEL repository:tag="ltps_rootfs:sd"
+
+#---Disable Prompt During Packages Installation
+ARG DEBIAN_FRONTEND=noninteractive
+
+#---Update local Git repository
+RUN cd ~/LTPP3_ROOTFS && git pull
+
+# ---Disk Prepreparation (before CHROOT)
+RUN cd ~ && ~/LTPP3_ROOTFS/disk_preprep.sh
+
+#---CHROOT
+RUN cd ~ && ~/LTPP3_ROOTFS/chroot_rundisk.sh

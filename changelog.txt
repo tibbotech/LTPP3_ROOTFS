@@ -74,3 +74,12 @@
 #Note: Ubuntu has a built-in syncing mechanism, however, it takes times before changes to the media is synced.
 #2. Updated 'disk_preprep.sh' by adding lines related to media-sync files.
 #3. Updated 'chroot_exec_cmd_inside_chroot.sh' by adding lines related to media-sync files.
+#
+#---:12 Mar 2024:---
+#New file(s): sd_dockerfile_ltps_sunplus, sd_dockerfile_ltps_rootfs, sd_dockerfile_ltps_rootfs_ispboootbin.txt, 
+#       sd_docker_files_list_for_ltps__init__to__sunplus.txt, sd_docker_files_list_for_ltps__init__to__rootfs.txt, 
+#       sd_docker_files_list_for_ltps__init__to__rootfs_ispboootbin.txt, sd_docker_files_list_for_ltps__rootfs__to__ispboootbin.txt,
+#       sunplus_inst_for_sd_boot.sh
+#Implemented:
+#1. These 3 new files enables us to create a docker-image, and thus run a container, to build a firmware which is able to boot from SD-CARD
+#
