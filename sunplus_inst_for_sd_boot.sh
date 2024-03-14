@@ -36,11 +36,16 @@ press_any_key__func
 echo -e "\r"
 echo "---Defining Varabiles (Filenames, Directories, Paths, Full-Paths)---"
 echo -e "\r"
+config_sh_filename="config.sh"
 home_dir=~
-etc_dir=/etc
-home_scripts_dir=${home_dir}/scripts
-Downloads_dir=${home_dir}/Downloads
+LTPP3_ROOTFS_dir=${home_dir}/LTPP3_ROOTFS
+LTPP3_ROOTFS_build_scripts_dir=${LTPP3_ROOTFS_dir}/build/scripts
 SP7021_dir=${home_dir}/SP7021
+SP7021_build_dir=${SP7021_dir}/build
+src_config_sh_fpath=${LTPP3_ROOTFS_build_scripts_dir}/${config_sh_filename}
+dst_config_sh_fpath=${SP7021_build_dir}/${config_sh_filename}
+
+
 
 #---Check if current working directory
 echo -e "\r"
@@ -150,43 +155,69 @@ echo -e "\r"
 git submodule update --init --recursive
 echo -e "\r"
 
+
+#-------------------------------------------------------------------
+# This part is implemented to FIX the ISSUE that instead of the CORRECT 
+#	DTB-file 'sp7021-ltpp3g2revD.dtb', the WRONG file 
+#	'sp7021-ltpp3g2-sunplus.dtb' is created.
+# With the consequence that the wrong '/root/SP7021/out/u-boot.img', and
+#	thus '/root/SP7021/out/boot2linux_SDcard/u-boot.img' is created.
+#-------------------------------------------------------------------
+press_any_key__func
+echo -e "\r"
+echo ">Copy file ${config_sh_filename}"
+echo ">>>From: ${LTPP3_ROOTFS_build_scripts_dir}"
+echo ">>>To: ${SP7021_build_dir}"
+echo -e "\r"
+cp ${src_config_sh_fpath} ${dst_config_sh_fpath}; exitcode=$?
+if [[ ${exitcode} -ne 0 ]]; then
+	exit 99
+fi
+
+echo -e "\r"
+echo "---Executing: <chmod 755 ${dst_config_sh_fpath}>---"
+echo -e "\r"
+chmod 755 ${dst_config_sh_fpath}; exitcode=$?
+if [[ ${exitcode} -ne 0 ]]; then
+	exit 99
+fi
+#-------------------------------------------------------------------
+
+press_any_key__func
 echo -e "\r"
 echo ">Navigating to ${SP7021_dir}"
 echo -e "\r"
 cd ${SP7021_dir}
 
-press_any_key__func
+#-------------------------------------------------------------------
+# This part is implemented to be able to BOOT from SD-card
+#-------------------------------------------------------------------
 echo -e "\r"
-echo "---Executing: <make config <<< 7>---"
+echo "---Executing: <echo -e "7\n2\n2" | make config>---"		#select: [7] > [2] > [2]
 echo -e "\r"
-make config <<< 7 		#Select: [2] LTPP3G2 S+
+echo -e "7\n2\n2" | make config; exitcode=$?
+if [[ ${exitcode} -ne 0 ]]; then
+	exit 99
+fi
+#-------------------------------------------------------------------
 
-press_any_key__func
-echo -e "\r"
-echo "---Executing: <make config <<< 2>---"
-echo -e "\r"
-make config <<< 2 		#Select: [2] SD card
-
-press_any_key__func
-echo -e "\r"
-echo "---Executing: <echo -e "7\n2\n2" | make config>---"
-echo -e "\r"
-echo -e "7\n2\n2" | make config	#select: [7] > [2] > [2]
-
-press_any_key__func
 echo -e "\r"
 echo "---Executing: <make all>---"
 echo -e "\r"
-make all
+make all; exitcode=$?
+if [[ ${exitcode} -ne 0 ]]; then
+	exit 99
+fi
 
-press_any_key__func
 echo -e "\r"
 echo "---Installing dosfstools mtools---"
 echo -e "\r"
 apt-get install dosfstools mtools -y
 
-press_any_key__func
 echo -e "\r"
 echo "---Executing: <make all>---"
 echo -e "\r"
-make all
+make all; exitcode=$?
+if [[ ${exitcode} -ne 0 ]]; then
+	exit 99
+fi

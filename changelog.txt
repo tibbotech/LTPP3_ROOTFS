@@ -90,3 +90,10 @@
 #2. Added additional error if environment variable 'CONTAINER_ENV1' or 'CONTAINER_ENV2' is an EMPTY STRING.
 #   Additionally, a recommendation will be given which option to choose first to set the environment variables.
 #
+#---:14 Mar 2024:---
+#Affected file(s): sunplus_inst_for_sd_boot.sh
+#Implemented:
+#1. added command to replace '/root/SP7021/build/config.sh' after running git clone https://github.com/sunplus-plus1/SP7021.git, 
+#       and git submodule update --init --recursive.
+#NOTE: this is necessary due to wrong DTB-file creation, namely 'sp7021-ltpp3g2-sunplus.dtb' instead of 'sp7021-ltpp3g2revD.dtb'
+#
