@@ -1,4 +1,3 @@
 #List of Docker files to-be-executed
 sd_dockerfile_ltps_rootfs
 sd_dockerfile_ltps_rootfs_ispboootbin
-
