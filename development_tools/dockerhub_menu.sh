@@ -540,6 +540,12 @@ docker__docker_pull__sub() {
     docker__repo_put="${DOCKER__EMPTYSTRING}"
     docker__tag_put="${DOCKER__EMPTYSTRING}"
 
+    ${docker__docker_login_cmd}; docker__exitCode=$?
+
+    if [[ ${docker__exitCode} -ne 0 ]]; then
+        return 0;
+    fi
+
     #Show read-dialog for 'repository' input
     readDialog_w_Output__func "${DOCKER__DOCKERHUB_READDIALOG_REPO_INPUT}" \
                     "${DOCKER__EMPTYSTRING}" \
@@ -579,6 +585,12 @@ docker__docker_pull__sub() {
 
     #Docker pull repository:tag
     ${docker__docker_pull_cmd} ${docker__repoTag_put}
+
+    #Remove docker login cache
+    printmsg="${DOCKER__DOCKERHUB_REMOVE_CACHE_FILE} '${docker__config_json__fpath}'"
+    show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_2}" "${DOCKER__NUMOFLINES_0}"
+
+    rm "${docker__config_json__fpath}"
 
     #Move-down and clean 1 line
     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
