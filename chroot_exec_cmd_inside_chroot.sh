@@ -369,6 +369,21 @@ echo -e "\r"
 
 press_any_key__localfunc
 echo -e "\r"
+echo "---Installing <NTFS tools>---"
+echo "NOTE: this is the fix for mounting NTFS External Devices (USB, SD)"
+echo -e "\r"
+	apt-get -y install ntfs-3g
+
+press_any_key__localfunc
+echo -e "\r"
+echo "---Installing <exFAT tools>---"
+echo "NOTE: this is the fix for mounting exFAT External Devices (USB, SD)"
+echo -e "\r"
+	apt-get -y install exfat-fuse exfat-utils
+
+
+press_any_key__localfunc
+echo -e "\r"
 echo "---Installing <Additional software>---"
 echo -e "\r"
 	apt-get -y install dialog

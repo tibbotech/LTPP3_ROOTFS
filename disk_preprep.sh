@@ -62,6 +62,7 @@ echo -e "\r"
 
 bcmdhd_foldername="bcmdhd"
 sunplus_foldername="SP7021"
+tpd_foldername="tpd"
 
 
 
@@ -88,17 +89,21 @@ firmware_foldername="firmware"
 gpio_gpio_set_group_rules_filename="gpio-set_group.rules"
 hostname_filename="hostname"
 hosts_filename="hosts"
+ispboootbin_version_txt_filename="ispboootbin_version.txt"
 irq_sp7021_intc_c_filename="irq-sp7021-intc.c"
 irq_sp7021_intc_c_patch_filename="irq-sp7021-intc.c.patch"
 isp_c_filename="isp.c"
 isp_c_patch_filename="isp.c.patch"
-kbuild_filename="Kbuild"
-kbuild_patch_filename="Kbuild.patch"
+Kconfig_filename="Kconfig"
+Kconfig_patch_filename="Kconfig.patch"
+makefile_filename="Makefile"
+makefile_patch_filename="Makefile.patch"
 make_menuconfig_filename="armhf_kernel.config"
 make_menuconfig_default_filename=".config"
 media_sync_sh_filename="media_sync.sh"
 media_sync_service_filename="media_sync.service"
 media_sync_timer_filename="media_sync.timer"
+modules_filename="modules"
 ninetynine_wlan_notice_filename="99-wlan-notice"
 ntios_su_add_filename="ntios-su-add"
 ntios_su_addasperand_filename="${ntios_su_add_filename}@"
@@ -139,8 +144,6 @@ sunplus_icm_c_filename="sunplus_icm.c"
 sunplus_icm_c_patch_filename="sunplus_icm.c.patch"
 sunplus_uart_c_filename="sunplus-uart.c"
 sunplus_uart_c_patch_filename="sunplus-uart.c.patch"
-tpd_fix_sh_filename="tpd_fix.sh"
-tpd_ko_filename="tpd.ko"
 usb_mount_rules_filename="usb-mount.rules"
 usb_mount_service_filename="usb-mount@.service"
 usb_mount_sh_filename="usb-mount.sh"
@@ -162,6 +165,7 @@ home_lttp3rootfs_dir=${home_dir}/LTPP3_ROOTFS
 home_lttp3rootfs_boot_configs_dir=${home_lttp3rootfs_dir}/boot/configs
 home_lttp3rootfs_boot_drivers_dir=${home_lttp3rootfs_dir}/boot/drivers
 home_lttp3rootfs_build_drivers_dir=${home_lttp3rootfs_dir}/build/drivers
+home_lttp3rootfs_docker_version_dir=${home_lttp3rootfs_dir}/docker/version
 home_lttp3rootfs_motd_update_motd_d_dir=${home_lttp3rootfs_dir}/motd/update-motd.d
 home_lttp3rootfs_rootfs_initramfs_dir=${home_lttp3rootfs_dir}/rootfs/initramfs
 home_lttp3rootfs_rootfs_initramfs_disk_etc_dir=${home_lttp3rootfs_rootfs_initramfs_dir}/disk/etc
@@ -174,7 +178,8 @@ home_lttp3rootfs_services_permissions_dir=${home_lttp3rootfs_dir}/services/permi
 home_lttp3rootfs_services_sync_dir=${home_lttp3rootfs_dir}/services/sync
 home_lttp3rootfs_services_sudo_dir=${home_lttp3rootfs_dir}/services/sudo
 home_lttp3rootfs_kernel_dir=${home_lttp3rootfs_dir}/kernel
-home_lttp3rootfs_kernel_drivers_tpd_dir=${home_lttp3rootfs_kernel_dir}/drivers/tpd
+home_lttp3rootfs_kernel_drivers_dir=${home_lttp3rootfs_kernel_dir}/drivers
+home_lttp3rootfs_kernel_drivers_tpd_dir=${home_lttp3rootfs_kernel_drivers_dir}/${tpd_foldername}
 home_lttp3rootfs_kernel_makeconfig_dir=${home_lttp3rootfs_kernel_dir}/makeconfig
 # home_lttp3rootfs_kernel_drivers_clk_dir=${home_lttp3rootfs_kernel_dir}/drivers/clk
 home_lttp3rootfs_kernel_drivers_usb_host_dir=${home_lttp3rootfs_kernel_dir}/drivers/usb/host
@@ -185,7 +190,7 @@ home_lttp3rootfs_kernel_drivers_pinctrl_sunplus_dir=${home_lttp3rootfs_kernel_di
 home_lttp3rootfs_kernel_drivers_serial_dir=${home_lttp3rootfs_kernel_dir}/drivers/serial
 home_lttp3rootfs_kernel_drivers_wifi_dir=${home_lttp3rootfs_kernel_dir}/drivers/wifi
 home_lttp3rootfs_kernel_dts_dir=${home_lttp3rootfs_kernel_dir}/dts
-home_lttp3rootfs_kernel_scripts_tpd_dir=${home_lttp3rootfs_kernel_dir}/scripts/tpd
+home_lttp3rootfs_kernel_modules_load_d_dir=${home_lttp3rootfs_kernel_dir}/modules-load.d
 home_lttp3rootfs_usr_bin_dir=${home_lttp3rootfs_dir}/usr/bin
 SP7xxx_dir=${home_dir}/SP7021
 SP7xxx_boot_uboot_include_configs_dir=${SP7xxx_dir}/boot/uboot/include/configs
@@ -194,6 +199,8 @@ SP7xxx_build_tools_isp_dir=${SP7xxx_dir}/build/tools/isp
 SP7xxx_linux_kernel_dir=${SP7xxx_dir}/linux/kernel
 SP7xxx_linux_kernel_arch_arm_boot_dts_dir=${SP7xxx_linux_kernel_dir}/arch/arm/boot/dts
 # SP7xxx_linux_kernel_drivers_clk_dir=${SP7xxx_linux_kernel_dir}/drivers/clk
+SP7xxx_linux_kernel_drivers_dir=${SP7xxx_linux_kernel_dir}/drivers
+SP7xxx_linux_kernel_drivers_tpd_dir=${SP7xxx_linux_kernel_drivers_dir}/${tpd_foldername}
 SP7xxx_linux_kernel_drivers_usb_host_dir=${SP7xxx_linux_kernel_dir}/drivers/usb/host
 SP7xxx_linux_kernel_drivers_irqchip_dir=${SP7xxx_linux_kernel_dir}/drivers/irqchip
 SP7xxx_linux_kernel_drivers_misc_dir=${SP7xxx_linux_kernel_dir}/drivers/misc
@@ -201,9 +208,7 @@ SP7xxx_linux_kernel_drivers_net_wireless_dir=${SP7xxx_linux_kernel_dir}/drivers/
 SP7xxx_linux_kernel_drivers_net_wireless_bcmdhd_dir=${SP7xxx_linux_kernel_drivers_net_wireless_dir}/${bcmdhd_foldername}
 SP7xxx_linux_kernel_drivers_nvmem_dir=${SP7xxx_linux_kernel_dir}/drivers/nvmem
 SP7xxx_linux_kernel_drivers_pinctrl_sunplus_dir=${SP7xxx_linux_kernel_dir}/drivers/pinctrl/sunplus
-SP7xxx_linux_kernel_drivers_tpd_dir="/root/SP7021/linux/kernel/drivers/tpd"
 SP7xxx_linux_kernel_drivers_tty_serial_dir=${SP7xxx_linux_kernel_dir}/drivers/tty/serial
-SP7xxx_linux_kernel_scripts_tpd_dir="/root/SP7021/linux/kernel/scripts/tpd"
 SP7xxx_linux_rootfs_initramfs_dir=${SP7xxx_dir}/linux/rootfs/initramfs
 SP7xxx_linux_rootfs_initramfs_disk_dir=${SP7xxx_linux_rootfs_initramfs_dir}/${disk_foldername}
 SP7xxx_linux_rootfs_initramfs_disk_etc_dir=${SP7xxx_linux_rootfs_initramfs_disk_dir}/etc
@@ -212,6 +217,7 @@ SP7xxx_linux_rootfs_initramfs_disk_etc_update_motd_d_dir=${SP7xxx_linux_rootfs_i
 SP7xxx_linux_rootfs_initramfs_disk_usr_bin_dir=${SP7xxx_linux_rootfs_initramfs_disk_dir}/usr/bin
 SP7xxx_linux_rootfs_initramfs_disk_var_backups_gpio_dir=${SP7xxx_linux_rootfs_initramfs_disk_dir}/var/backups/gpio
 SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir=${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}/systemd/system
+SP7xxx_linux_rootfs_initramfs_disk_etc_tibbo_version_dir=${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}/tibbo/version
 SP7xxx_linux_rootfs_initramfs_disk_etc_tibbo_sudo_dir=${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}/tibbo/sudo
 SP7xxx_linux_rootfs_initramfs_disk_etc_udev_rulesd_dir=${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}/udev/rules.d
 SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir=${SP7xxx_linux_rootfs_initramfs_disk_dir}/usr/local/bin
@@ -272,6 +278,9 @@ dst_hostname_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}/${hostname_file
 src_hosts_fpath=${home_lttp3rootfs_rootfs_initramfs_disk_etc_dir}/${hosts_filename}
 dst_hosts_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}/${hosts_filename}
 
+src_ispboootbin_version_txt_fpath=${home_lttp3rootfs_docker_version_dir}/${ispboootbin_version_txt_filename}
+dst_ispboootbin_version_txt_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_tibbo_version_dir}/${ispboootbin_version_txt_filename}
+
 src_make_menuconfig_fpath=${home_lttp3rootfs_kernel_makeconfig_dir}/${make_menuconfig_filename}
 dst_make_menuconfig_fpath=${SP7xxx_linux_kernel_dir}/${make_menuconfig_default_filename}
 
@@ -283,6 +292,9 @@ dst_media_sync_service_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_sy
 
 src_media_sync_timer_fpath=${home_lttp3rootfs_services_sync_dir}/${media_sync_timer_filename}
 dst_media_sync_timer_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}/${media_sync_timer_filename}
+
+src_modules_fpath=${home_lttp3rootfs_kernel_modules_load_d_dir}/${modules_filename}
+dst_modules_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}/${modules_filename}
 
 src_ninetynine_wlan_notice_fpath=${home_lttp3rootfs_motd_update_motd_d_dir}/${ninetynine_wlan_notice_filename}
 dst_ninetynine_wlan_notice_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_update_motd_d_dir}/${ninetynine_wlan_notice_filename}
@@ -332,11 +344,8 @@ dst_usb_mount_sh_fpath=${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}/$
 src_usb_mount_rules_fpath=${home_lttp3rootfs_services_automount_dir}/${usb_mount_rules_filename}
 dst_usb_mount_rules_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_udev_rulesd_dir}/${usb_mount_rules_filename}
 
-src_tpd_ko_fpath=${home_lttp3rootfs_kernel_drivers_tpd_dir}/${tpd_ko_filename}
-dst_tpd_ko_fpath=${SP7xxx_linux_kernel_drivers_tpd_dir}/${tpd_ko_filename}
-
-src_tpd_fix_sh_fpath=${home_lttp3rootfs_kernel_scripts_tpd_dir}/${tpd_fix_sh_filename}
-dst_tpd_fix_sh_fpath=${SP7xxx_linux_kernel_scripts_tpd_dir}/${tpd_fix_sh_filename}
+src_tpd_dir=${home_lttp3rootfs_kernel_drivers_tpd_dir}
+dst_tpd_dir=${SP7xxx_linux_kernel_drivers_tpd_dir}
 
 old_ehci_sched_c_fpath=${SP7xxx_linux_kernel_drivers_usb_host_dir}/${ehci_sched_c_filename}
 new_ehci_sched_c_fpath=${home_lttp3rootfs_kernel_drivers_usb_host_dir}/${ehci_sched_c_filename}
@@ -350,9 +359,13 @@ old_isp_c_fpath=${SP7xxx_build_tools_isp_dir}/${isp_c_filename}
 new_isp_c_fpath=${home_lttp3rootfs_build_drivers_dir}/${isp_c_filename}
 isp_c_patch_fpath=${home_lttp3rootfs_build_drivers_dir}/${isp_c_patch_filename}
 
-old_kbuild_fpath=${SP7xxx_linux_kernel_dir}/${kbuild_filename}
-new_kbuild_fpath=${home_lttp3rootfs_kernel_dir}/${kbuild_filename}
-kbuild_patch_fpath=${home_lttp3rootfs_kernel_dir}/${kbuild_patch_filename}
+old_makefile_fpath=${SP7xxx_linux_kernel_drivers_dir}/${makefile_filename}
+new_makefile_fpath=${home_lttp3rootfs_kernel_drivers_dir}/${makefile_filename}
+makefile_patch_fpath=${home_lttp3rootfs_kernel_drivers_dir}/${makefile_patch_filename}
+
+old_kconfig_fpath=${SP7xxx_linux_kernel_dir}/${Kconfig_filename}
+new_kconfig_fpath=${home_lttp3rootfs_kernel_dir}/${Kconfig_filename}
+kconfig_patch_fpath=${home_lttp3rootfs_kernel_dir}/${Kconfig_patch_filename}
 
 old_pentagram_common_h_fpath=${SP7xxx_boot_uboot_include_configs_dir}/${pentagram_common_h_filename}
 new_pentagram_common_h_fpath=${home_lttp3rootfs_boot_configs_dir}/${pentagram_common_h_filename}
@@ -414,12 +427,11 @@ if [[ ! -d ${SP7xxx_linux_kernel_drivers_tpd_dir} ]]; then
 	echo -e ">Create ${SP7xxx_linux_kernel_drivers_tpd_dir}"
 	mkdir ${SP7xxx_linux_kernel_drivers_tpd_dir}
 fi
-if [[ ! -d ${SP7xxx_linux_kernel_scripts_tpd_dir} ]]; then
+if [[ ! -d ${SP7xxx_linux_rootfs_initramfs_disk_etc_tibbo_version_dir} ]]; then
 	echo -e "\r"
-	echo -e ">Create ${SP7xxx_linux_kernel_scripts_tpd_dir}"
-	mkdir ${SP7xxx_linux_kernel_scripts_tpd_dir}
+	echo -e ">Create ${SP7xxx_linux_rootfs_initramfs_disk_etc_tibbo_version_dir}"
+	mkdir ${SP7xxx_linux_rootfs_initramfs_disk_etc_tibbo_version_dir}
 fi
-
 
 
 #---Download armhf-image (if needed)
@@ -468,7 +480,7 @@ fi
 
 press_any_key__func
 echo -e "\r"
-echo -e ">Moving (UBUNTU): ${disk_foldername}"
+echo -e ">Moving folder: ${disk_foldername}"
 echo -e ">from: ${SP7xxx_linux_rootfs_initramfs_dir}"
 echo -e ">to: ${home_downloads_dir}"
 	mv ${SP7xxx_linux_rootfs_initramfs_disk_dir} ${home_downloads_dir}/
@@ -562,9 +574,12 @@ echo -e "\r"
 echo -e "\r"
 	cp ${src_resolve_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}
 
+
+
+#---AUTOMOUNT USB & SD
 press_any_key__func
 echo -e "\r"
-echo -e "---AUTO-MOUNT USB & MMC-SD---"
+echo -e "---AUTO-MOUNT USB & SD---"
 echo -e "\r"
 echo -e ">Checking if directory <${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir}> exists?"
 if [[ -d ${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_system_dir} ]]; then
@@ -766,36 +781,9 @@ echo -e "\r"
 echo -e ">>>Change permission to <-rw-r--r--> for file: ${sd_detect_rules_filename}"
 	chmod 644 ${dst_sd_detect_rules_fpath}
 
-echo -e "\r"
-echo -e ">Copy file: ${tpd_ko_filename}"
-echo -e ">from: ${home_lttp3rootfs_kernel_drivers_tpd_dir}"
-echo -e ">to: ${SP7xxx_linux_kernel_drivers_tpd_dir}"
-	cp ${src_tpd_ko_fpath} ${SP7xxx_linux_kernel_drivers_tpd_dir}
-
-echo -e "\r"
-echo -e ">>>Change ownership to <root> for file: ${tpd_ko_filename}"
-	chown root:root ${dst_tpd_ko_fpath}
-
-echo -e "\r"
-echo -e ">>>Change permission to <-rw-r--r--> for file: ${tpd_ko_filename}"
-	chmod 644 ${dst_tpd_ko_fpath}
-
-echo -e "\r"
-echo -e ">Copy file: ${tpd_fix_sh_filename}"
-echo -e ">from: ${home_lttp3rootfs_kernel_scripts_tpd_dir}"
-echo -e ">to: ${SP7xxx_linux_kernel_scripts_tpd_dir}"
-	cp ${src_tpd_fix_sh_fpath} ${SP7xxx_linux_kernel_scripts_tpd_dir}
-
-echo -e "\r"
-echo -e ">>>Change ownership to <root> for file: ${tpd_fix_sh_filename}"
-	chown root:root ${dst_tpd_fix_sh_fpath}
-
-echo -e "\r"
-echo -e ">>>Change permission to <-rwx-r-xr-x> for file: ${tpd_fix_sh_filename}"
-	chmod 755 ${dst_tpd_fix_sh_fpath}
 
 
-
+#---RULES
 press_any_key__func
 echo -e "\r"
 echo -e "\r"
@@ -829,6 +817,7 @@ echo -e ">>>Change permission to <-rw-r--r--> for file: ${gpio_gpio_set_group_ru
 
 
 
+#SERVICES
 press_any_key__func
 echo -e "\r"
 echo -e "---Services to run BEFORE login---"
@@ -1006,6 +995,20 @@ echo -e ">>>Change permission to <-rw-r--r--> for file: ${media_sync_timer_filen
 	chmod 644 ${dst_media_sync_timer_fpath}
 
 
+echo -e "\r"
+echo -e ">Copying: ${modules_filename}>"
+echo -e ">from: ${home_lttp3rootfs_kernel_modules_load_d_dir}"
+echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}"
+	cp ${src_modules_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}
+
+echo -e "\r"
+echo -e ">>>Change ownership to <root> for file: ${modules_filename}"
+	chown root:root ${dst_modules_fpath}
+
+echo -e "\r"
+echo -e ">>>Change permission to <-rw-r--r--> for file: ${modules_filename}"
+	chmod 644 ${dst_modules_fpath}
+
 
 echo -e "\r"
 echo -e ">Copying: ${ntios_su_addasperand_service_filename}>"
@@ -1127,6 +1130,23 @@ echo -e ">>>Change permission to <-rwxr-xr-x> for file: ${one_time_exec_before_l
 
 
 
+#---DOCKER
+echo -e "\r"
+echo -e ">Copying: ${ispboootbin_version_txt_filename}>"
+echo -e ">from: ${home_lttp3rootfs_docker_version_dir}"
+echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_etc_tibbo_version_dir}"
+	cp ${src_ispboootbin_version_txt_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_etc_tibbo_version_dir}
+
+echo -e "\r"
+echo -e ">>>Change ownership to <root> for file: ${ispboootbin_version_txt_filename}"
+	chown root:root ${dst_ispboootbin_version_txt_fpath}
+
+echo -e "\r"
+echo -e ">>>Change permission to <-rwxr-xr-x> for file: ${ispboootbin_version_txt_filename}"
+	chmod 644 ${dst_ispboootbin_version_txt_fpath}
+
+
+
 #---HOSTNAME/HOSTS
 press_any_key__func
 echo -e "\r"
@@ -1213,8 +1233,18 @@ echo -e ">>>Change permission to <-rwxr-xr-x> for file: ${brcm_patchram_plus_fil
 
 
 
-#---KERNEL: MAKE MENUCONFIG
+#---KERNEL
 press_any_key__func
+echo -e "\r"
+echo -e ">Copy contents of folder: ${tpd_foldername}"
+echo -e ">from: ${home_lttp3rootfs_kernel_scripts_tpd_dir}"
+echo -e ">to: ${dst_tpd_dir}"
+	cp ${src_tpd_dir}/* ${dst_tpd_dir}
+
+echo -e "\r"
+echo -e ">>>Change ownership to <root> for this folder and its contents: ${tpd_foldername}"
+	chown root:root -R ${dst_tpd_dir}
+
 echo -e "\r"
 echo -e "---Kernel Configuration File"
 echo -e ">Copying: ${make_menuconfig_filename}"
@@ -1225,10 +1255,10 @@ echo -e "\r"
 echo -e "\r"
 	cp ${src_make_menuconfig_fpath} ${dst_make_menuconfig_fpath}
 
-press_any_key__func
-echo -e "\r"
-echo -e ">>>Navigate to ${SP7xxx_linux_kernel_dir}"
-	cd ${SP7xxx_linux_kernel_dir}
+# press_any_key__func
+# echo -e "\r"
+# echo -e ">>>Navigate to ${SP7xxx_linux_kernel_dir}"
+# 	cd ${SP7xxx_linux_kernel_dir}
 
 #press_any_key__func
 #echo -e "\r"
@@ -1289,6 +1319,8 @@ echo -e ">to: -rwxr-xr-x"
 echo -e "\r"
 chmod +x ${build_disk_fpath}
 
+
+
 #UPDATE-MOTD-D
 press_any_key__func
 echo -e "\r"
@@ -1304,6 +1336,8 @@ echo -e ">>>Change ownership to <root> for folder: ${ninetynine_wlan_notice_file
 echo -e "\r"
 echo -e ">>>Change permission to <-rw-r-xr-x> for folder: ${ninetynine_wlan_notice_filename}"
 	chmod -R 755 ${dst_ninetynine_wlan_notice_fpath}
+
+
 
 ###APPLYIBG PATCHES###
 press_any_key__func
@@ -1343,16 +1377,28 @@ else
 	echo -e ">Patch already applied to: ${old_isp_c_fpath}"
 fi
 
-kbuild_diff=$(diff ${old_kbuild_fpath} ${new_kbuild_fpath})
-if [[ -n "${kbuild_diff}" ]]; then
+makefile_diff=$(diff ${old_makefile_fpath} ${new_makefile_fpath})
+if [[ -n "${makefile_diff}" ]]; then
 	echo -e "\r"
 	echo -e ">Patching file"
-	echo -e ">from: ${old_kbuild_fpath}"
-	echo -e ">with: ${kbuild_patch_fpath}"
-	patch "${old_kbuild_fpath}" < "${kbuild_patch_fpath}"
+	echo -e ">from: ${old_makefile_fpath}"
+	echo -e ">with: ${makefile_patch_fpath}"
+	patch "${old_makefile_fpath}" < "${makefile_patch_fpath}"
 else
 	echo -e "\r"
-	echo -e ">Patch already applied to: ${old_kbuild_fpath}"
+	echo -e ">Patch already applied to: ${old_makefile_fpath}"
+fi
+
+kconfig_diff=$(diff ${old_kconfig_fpath} ${new_kconfig_fpath})
+if [[ -n "${kconfig_diff}" ]]; then
+	echo -e "\r"
+	echo -e ">Patching file"
+	echo -e ">from: ${old_kconfig_fpath}"
+	echo -e ">with: ${kconfig_patch_fpath}"
+	patch "${old_kconfig_fpath}" < "${kconfig_patch_fpath}"
+else
+	echo -e "\r"
+	echo -e ">Patch already applied to: ${old_kconfig_fpath}"
 fi
 
 pentagram_common_h_diff=$(diff ${old_pentagram_common_h_fpath} ${new_pentagram_common_h_fpath})

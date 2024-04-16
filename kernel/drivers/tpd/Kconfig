@@ -1,0 +1,22 @@
+##################################################################################
+# Kconfig created by Ngoc Hien Tran
+# NOTE 1: 
+#   /root/SP7021/linux/kernel/Kconfig also needs to be modified by adding
+#       the following line:
+#           source "drivers/tpd/Kconfig"
+# NOTE 2:
+#   If a Kconfig is created from scratch, and when running 'make kconfig', then
+#       error may occur saying 'warning: ignoring unsupported character'. To avoid
+#       this error:
+#       1. copy/paste a good working Kconfig from another object to the drivers/tpd folder.
+#       2. Remove the content of this copied Kconfig.
+#       3. Paste the tpd's Kconfig commands into this copied Kconfig file.
+##################################################################################
+# SPDX-License-Identifier: GPL-2.0-only
+menu "TPD Settings (NHT)"
+config TPD
+    tristate "Enable TPD driver"
+    default m
+    help
+        Enable support for the TPD driver.
+endmenu

@@ -48,7 +48,7 @@
 #1. Colors in the menu from orange to blue
 #
 #Affected file(s): docker_mainmenu.sh, docker_global.sh, docker_container_build_ispboootbin.sh, docker_fs_partition_disksize_menu.sh, docker_fs_partition_diskpartition_menu.sh
-#Implemented:
+#Implementation:
 #1. Possibility to configure overlay and build ISPBOOOT.BIN from within a container
 #2. Bug fixes
 #3. for each disk-size type (e.g. LTPP3-G2, LTPP3-G3, Custom) -> remember the last disk-partition config
@@ -69,7 +69,7 @@
 #
 #---:14 Nov 2023:---
 #Affected file(s): media_sync.timer, media_sync.service, media_sync.sh, disk_preprep.sh, chroot_exec_cmd_inside_chroot.sh
-#Implemented:
+#Implementation:
 #1. This media-sync service makes sure to sync the media (e.g, USB, SD) every 3 seconds.
 #Note: Ubuntu has a built-in syncing mechanism, however, it takes times before changes to the media is synced.
 #2. Updated 'disk_preprep.sh' by adding lines related to media-sync files.
@@ -80,20 +80,44 @@
 #       sd_docker_files_list_for_ltps__init__to__sunplus.txt, sd_docker_files_list_for_ltps__init__to__rootfs.txt, 
 #       sd_docker_files_list_for_ltps__init__to__rootfs_ispboootbin.txt, sd_docker_files_list_for_ltps__rootfs__to__ispboootbin.txt,
 #       sunplus_inst_for_sd_boot.sh
-#Implemented:
+#Implementation:
 #1. These 3 new files enables us to create a docker-image, and thus run a container, to build a firmware which is able to boot from SD-CARD
 #
 #---:12 Mar 2024:---
 #Affected file(s): docker_create_an_image_from_dockerfile.sh, docker_create_images_from_dockerlist.sh, exported_env_var.txt, exported_env_var_default.txt
-#Implemented:
+#Implementation:
 #1. Detection whether a dockerfile contains the following 3 environment variables 'CONTAINER_ENV1', CONTAINER_ENV2', 'DOCKER__PATTERN6'
 #2. Added additional error if environment variable 'CONTAINER_ENV1' or 'CONTAINER_ENV2' is an EMPTY STRING.
 #   Additionally, a recommendation will be given which option to choose first to set the environment variables.
 #
 #---:14 Mar 2024:---
 #Affected file(s): sunplus_inst_for_sd_boot.sh
-#Implemented:
+#Implementation:
 #1. added command to replace '/root/SP7021/build/config.sh' after running git clone https://github.com/sunplus-plus1/SP7021.git, 
 #       and git submodule update --init --recursive.
 #NOTE: this is necessary due to wrong DTB-file creation, namely 'sp7021-ltpp3g2-sunplus.dtb' instead of 'sp7021-ltpp3g2revD.dtb'
 #
+#---:14 Mar 2024:---
+#Affected file(s): sunplus_inst_for_sd_boot.sh
+#Implementation:
+#1. added command to replace '/root/SP7021/build/config.sh' after running git clone https://github.com/sunplus-plus1/SP7021.git, 
+#       and git submodule update --init --recursive.
+#NOTE: this is necessary due to wrong DTB-file creation, namely 'sp7021-ltpp3g2-sunplus.dtb' instead of 'sp7021-ltpp3g2revD.dtb'
+#
+#---:16 Apr 2024:---
+#Affected file(s): 
+#   chroot_exec_cmd_inside_chroot.sh, disk_preprep.sh, 
+#   kernel/Kconfig, kernel/Kconfig.patch, kernel/drivers/Makefile, kernel/drivers/Makefile.patch,
+#   development_tools/docker_create_images_from_dockerlist.sh, development_tools/docker_create_an_image_from_dockerfile.sh,
+#   development_tools/docker_ispboootbin_version_input.sh, development_tools/docker_global.sh,
+#   docker/version/ispboootbin_version.txt,
+#   kernel/drivers/modules-load.d/modules, 
+#   kernel/makeconfig/armhf_kernel.config,
+#   kernel/drivers/tpd/Kconfig, kernel/drivers/tpd/tpd.c, kernel/drivers/tpd/tpd.h, kernel/drivers/tpd/tibbo_kdbg.h, kernel/drivers/tpd/Makefile,
+#   services/automount/sd-detect-add.sh, services/automount/usb-mount.sh, 
+#   services/sync/media_sync.timer, services/oobe/oneshot/one-time-exec.sh
+#Implementation:
+#1. Enabled of NTFS, exFAT, FUSE, SWAP as Builtin in Kernel
+#2. Added TPD option in kernel and enabled TPD as Module in Kernel
+#3. Read-input asking for ISPBOOOT.BIN version
+

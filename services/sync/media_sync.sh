@@ -37,9 +37,9 @@ sync_media_folders__sub() {
         #Note: if 'media_sync_tmp_fpath' contains data, then an error had occurred
         if [[ -s "${media_sync_tmp_fpath}" ]]; then
             errmsg="\n"
-            errmsg+="${PRINT_ERROR}: The above error occurs, because currently you are...\n"
-            errmsg+="${PRINT_ERROR}: ...in an UNMOUNTED folder '${media_folders_arritem}'.\n"
-            errmsg+="${PRINT_ERROR}: Please LEAVE this folder immediately!\n"
+            errmsg+="${PRINT_ERROR}: An ERROR has occurred.\n"
+            errmsg+="${PRINT_ERROR}: SHOULD you currently be in the UNMOUNTED folder '${media_folders_arritem}'...\n"
+            errmsg+="${PRINT_ERROR}: ...then please LEAVE this folder immediately! \n"
 
             echo -e "${errmsg}"
 

@@ -44,6 +44,11 @@ BLINK=$'\e[5m'
 
 
 
+#---OTHER CONSTANTS
+FILESYSTEMTYPE_NTFS="ntfs"
+
+
+
 #---SUBROUTINES/FUNCTIONS
 usage_sub() 
 {
@@ -197,6 +202,7 @@ do_Mount_sub()
 	#	...which is 'HIEN_E' can be assigned to the variable 'MEDIAPART'.
     eval $(${sbin_dir}/blkid -o udev ${devfullpath_in})
 	local MEDIAPART=${ID_FS_LABEL}
+	local MEDIATYPE=${ID_FS_TYPE}
 	
 	#Get MEDIAFULLPATH
 	#MEDIAFULLPATH=${media_dir}/${MEDIAPART}
@@ -207,8 +213,13 @@ do_Mount_sub()
 		mkdir -p ${MEDIAFULLPATH}
 	fi
 
+	#***MANDATORY: if 'MEDIATYPE = ntfs', then BEFORE mount, run 'ntfsfix'
+	if [[ "${MEDIATYPE}" == "${FILESYSTEMTYPE_NTFS}" ]]; then
+		ntfsfix ${devfullpath_in}
+	fi
+
 	#Mount devfullpath_in (e.g. /dev/sda1) to an available MOUNTPOINT (e.g. /media/HIEN_E)
-	${usr_bin_dir}/mount -t vfat -o rw,users,umask=000,exec ${devfullpath_in} ${MEDIAFULLPATH}
+	${usr_bin_dir}/mount -t auto -o rw,users,umask=000,exec ${devfullpath_in} ${MEDIAFULLPATH}
 
 	#Get permission of directory
 	local MEDIAFULLPATH_permission=`ls -ld ${MEDIAFULLPATH} | cut -d" " -f1`
