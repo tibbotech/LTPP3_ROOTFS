@@ -420,17 +420,17 @@ press_any_key__func
 if [[ ! -d ${home_downloads_dir} ]]; then
 	echo -e "\r"
 	echo -e ">Create ${home_downloads_dir}"
-	mkdir ${home_downloads_dir}
+	mkdir -p ${home_downloads_dir}
 fi
 if [[ ! -d ${SP7xxx_linux_kernel_drivers_tpd_dir} ]]; then
 	echo -e "\r"
 	echo -e ">Create ${SP7xxx_linux_kernel_drivers_tpd_dir}"
-	mkdir ${SP7xxx_linux_kernel_drivers_tpd_dir}
+	mkdir -p ${SP7xxx_linux_kernel_drivers_tpd_dir}
 fi
 if [[ ! -d ${SP7xxx_linux_rootfs_initramfs_disk_etc_tibbo_version_dir} ]]; then
 	echo -e "\r"
 	echo -e ">Create ${SP7xxx_linux_rootfs_initramfs_disk_etc_tibbo_version_dir}"
-	mkdir ${SP7xxx_linux_rootfs_initramfs_disk_etc_tibbo_version_dir}
+	mkdir -p ${SP7xxx_linux_rootfs_initramfs_disk_etc_tibbo_version_dir}
 fi
 
 
