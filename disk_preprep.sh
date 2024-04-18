@@ -427,11 +427,7 @@ if [[ ! -d ${SP7xxx_linux_kernel_drivers_tpd_dir} ]]; then
 	echo -e ">Create ${SP7xxx_linux_kernel_drivers_tpd_dir}"
 	mkdir -p ${SP7xxx_linux_kernel_drivers_tpd_dir}
 fi
-if [[ ! -d ${SP7xxx_linux_rootfs_initramfs_disk_etc_tibbo_version_dir} ]]; then
-	echo -e "\r"
-	echo -e ">Create ${SP7xxx_linux_rootfs_initramfs_disk_etc_tibbo_version_dir}"
-	mkdir -p ${SP7xxx_linux_rootfs_initramfs_disk_etc_tibbo_version_dir}
-fi
+
 
 
 #---Download armhf-image (if needed)
@@ -574,6 +570,17 @@ echo -e "\r"
 echo -e "\r"
 	cp ${src_resolve_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}
 
+
+
+#---CREATE '/root/SP7021/linux/rootfs/initramfs/disk/etc/tibbo/version'
+#---NOTE: This should be done here or anywhere else, but at least after 
+#		'/root/SP7021/linux/rootfs/initramfs/disk' has been created.
+press_any_key__func
+if [[ ! -d ${SP7xxx_linux_rootfs_initramfs_disk_etc_tibbo_version_dir} ]]; then
+	echo -e "\r"
+	echo -e ">Create ${SP7xxx_linux_rootfs_initramfs_disk_etc_tibbo_version_dir}"
+	mkdir -p ${SP7xxx_linux_rootfs_initramfs_disk_etc_tibbo_version_dir}
+fi
 
 
 #---AUTOMOUNT USB & SD
