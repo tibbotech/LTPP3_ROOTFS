@@ -1135,7 +1135,7 @@ echo -e "\r"
 echo -e ">Copying: ${ispboootbin_version_txt_filename}>"
 echo -e ">from: ${home_lttp3rootfs_docker_version_dir}"
 echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_etc_tibbo_version_dir}"
-	cp ${src_ispboootbin_version_txt_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_etc_tibbo_version_dir}
+	cp ${src_ispboootbin_version_txt_fpath} ${dst_ispboootbin_version_txt_fpath}
 
 echo -e "\r"
 echo -e ">>>Change ownership to <root> for file: ${ispboootbin_version_txt_filename}"
