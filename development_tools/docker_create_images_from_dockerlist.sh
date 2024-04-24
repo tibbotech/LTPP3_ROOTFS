@@ -457,6 +457,9 @@ docker__load_constants__sub() {
     DOCKER__FILE_MENUOPTIONS+="${DOCKER__FOURSPACES_B_BACK}\n"
     DOCKER__FILE_MENUOPTIONS+="${DOCKER__FOURSPACES_Q_QUIT}"
     DOCKER__FILE_ERRMSG="${DOCKER__FOURSPACES}-:${DOCKER__FG_LIGHTRED}File is Empty${DOCKER__NOCOLOR}:-"
+
+    DOCKER__MATCHPATTERN_ROOTFS="rootfs"
+    DOCKER__MATCHPATTERN_LABEL_REPOSITORY_COLON_TAG_IS="LABEL repository:tag="
 }
 
 docker__init_variables__sub() {
@@ -652,6 +655,59 @@ docker__create_image_handler__sub() {
     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 }
 
+docker__ispboootbin_version_input__sub() {
+    #define local variables
+    local exitCode=0
+    local label_repositorytag=${DOCKER__EMPTYSTRING}
+    local pattern_isFound=false
+
+    #Iterate thru the file
+    while IFS= read -r dockerFile
+    do
+        #Get the fullpath
+        dockerFile_fpath=${docker__LTPP3_ROOTFS_docker_dockerfiles__dir}/${dockerFile}
+
+        #Check if file exists
+        if [[ -f "${dockerFile_fpath}" ]]; then
+            #1. Find match pattern 'DOCKER__MATCHPATTERN_LABEL_REPOSITORY_COLON_TAG_IS'
+            #2. Retrieve the string on the right-side of the equal (=) sign
+            #3. Remove the double quotes (")
+            label_repositorytag=$(cat "${dockerFile_fpath}" | \
+                    grep -o "${DOCKER__MATCHPATTERN_LABEL_REPOSITORY_COLON_TAG_IS}.*" | \
+                    cut -d"=" -f2 | \
+                    sed 's/\"//g')
+
+            #Check if pattern 'DOCKER__MATCHPATTERN_ROOTFS' is found in 'label_repositorytag'
+            if [[ "${label_repositorytag}" =~ "${DOCKER__MATCHPATTERN_ROOTFS}" ]]; then
+                #Change flag to 'true'
+                pattern_isFound=true
+
+                #Exit loop
+                break
+            fi
+        fi
+    done < ${docker__dockerList_fpath}
+
+    #Check if flag is set to 'false'
+    if [[ ${pattern_isFound} == false ]]; then
+        #Exit this script without error
+        exit 0
+    fi
+
+    #Run script and capture exit code
+    eval "${docker__ispboootbin_version_input__fpath}" || exitCode=$?
+    
+    #Check if exitCode is '99'
+    #NOTE 1: this probably means that an interrupt, thus Ctrl+C was pressed.
+    #NOTE 2: the interrupt is caught by an Global function 'docker__ctrl_c__sub'
+    # which is defined in 'docker_global.sh'.
+    if ((exitCode == DOCKER__EXITCODE_99)); then
+        exit 99
+    else
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+    fi
+}
+
 
 
 #---MAIN SUBROUTINE
@@ -669,6 +725,8 @@ main_sub() {
     while true
     do
         docker__show_dockerList_files_handler__sub
+
+        docker__ispboootbin_version_input__sub
 
         docker__create_image_handler__sub
 

@@ -5,8 +5,8 @@ Requires=media_sync.service
 [Timer]
 #Run on boot after 1 seconds
 OnBootSec=1s
-#Run script every 3 sec when Device is Active
-OnUnitActiveSec=3s
+#Run script every 2 sec when Device is Active
+OnUnitActiveSec=2s
 #Run script every 30 sec when Device is Idle
 OnUnitInactiveSec=30s
 AccuracySec=1s

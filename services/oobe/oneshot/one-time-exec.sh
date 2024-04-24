@@ -103,13 +103,13 @@ echo -e ":-->${FG_ORANGE}STATUS${NOCOLOR}: MOUNTED ${FG_LIGHTGREY}${dev_mqueue_d
 
 
 
-#---LOAD TPD MODULE
-tpd_isloaded=$(lsmod | grep 'tpd')
-if [[ -z "${tpd_isloaded}" ]]; then
-    echo -e ":-->${FG_ORANGE}STATUS${NOCOLOR}: UPDATE MODULE DEPENDENCIES: ${FG_LIGHTGREY}depmod -a${NOCOLOR}"
-    depmod -a
+# #---LOAD TPD MODULE
+# tpd_isloaded=$(lsmod | grep 'tpd')
+# if [[ -z "${tpd_isloaded}" ]]; then
+#     echo -e ":-->${FG_ORANGE}STATUS${NOCOLOR}: UPDATE MODULE DEPENDENCIES: ${FG_LIGHTGREY}depmod -a${NOCOLOR}"
+#     depmod -a
 
-    echo -e ":-->${FG_ORANGE}STATUS${NOCOLOR}: LOAD TPD-MODULE: ${FG_LIGHTGREY}modprobe tpd${NOCOLOR}"
-    modprobe tpd
-fi
+#     echo -e ":-->${FG_ORANGE}STATUS${NOCOLOR}: LOAD TPD-MODULE: ${FG_LIGHTGREY}modprobe tpd${NOCOLOR}"
+#     modprobe tpd
+# fi
 

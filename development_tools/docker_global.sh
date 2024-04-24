@@ -6305,6 +6305,9 @@ docker__get_source_fullpath__sub() {
     docker__remove_container__filename="docker_remove_container.sh"
     docker__remove_container__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__remove_container__filename}
     
+    docker__ispboootbin_version_input__filename="docker_ispboootbin_version_input.sh"
+    docker__ispboootbin_version_input__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__ispboootbin_version_input__filename}
+
     docker__remove_image__filename="docker_remove_image.sh"
     docker__remove_image__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__remove_image__filename}
 
@@ -6404,8 +6407,11 @@ docker__get_source_fullpath__sub() {
     docker__LTPP3_ROOTFS_build_scripts_isp_sh__fpath=${docker__LTPP3_ROOTFS_build_scripts__dir}/${docker__isp_sh__filename}
     docker__LTPP3_ROOTFS_boot_configs_pentagram_common_h__fpath=${docker__LTPP3_ROOTFS_boot_configs__dir}/${docker__pentagram_common_h__filename}
 
+    docker__LTPP3_ROOTFS_docker_version__dir=${docker__LTPP3_ROOTFS_docker__dir}/version
+    docker__ispboootbin_version_txt__filename="ispboootbin_version.txt"
+    docker__ispboootbin_version_txt__fpath=${docker__LTPP3_ROOTFS_docker_version__dir}/${docker__ispboootbin_version_txt__filename}
 
-#---docker__LTPP3_ROTFS_linux_scripts__dir - contents
+#---docker__LTPP3_ROOTFS_linux_scripts__dir - contents
     docker__LTPP3_ROOTFS_linux_scripts_tb_init_sh__fpath=${docker__LTPP3_ROOTFS_linux_scripts__dir}/${docker__tb_init_sh__filename}
     docker__LTPP3_ROOTFS_linux_scripts_tb_init_bootmenu__fpath=${docker__LTPP3_ROOTFS_linux_scripts__dir}/${docker__tb_init_bootmenu__filename}
 
@@ -6427,6 +6433,7 @@ docker__get_source_fullpath__sub() {
     docker__SP7021_linux_rootfs_initramfs_disk_etc__dir=${docker__SP7021_linux_rootfs_initramfs_disk_dir}/etc
     docker__SP7021_linux_rootfs_initramfs_disk_etc_update_motd_d__dir=${docker__SP7021_linux_rootfs_initramfs_disk_etc__dir}/update-motd.d
     docker__SP7021_linux_rootfs_initramfs_disk_etc_tibbo__dir=${docker__SP7021_linux_rootfs_initramfs_disk_etc__dir}/tibbo
+    docker__SP7021_linux_rootfs_initramfs_disk_etc_tibbo_version__dir=${docker__SP7021_linux_rootfs_initramfs_disk_etc_tibbo__dir}/version
     docker__SP7021_linux_rootfs_initramfs_disk_etc_tibbo_proc__dir=${docker__SP7021_linux_rootfs_initramfs_disk_etc_tibbo__dir}/proc
 
     docker__SP7021_build_tools_isp_isp_c__fpath=${docker__SP7021_build_tools_isp__dir}/${docker__isp_c__filename}

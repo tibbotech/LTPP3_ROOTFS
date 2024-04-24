@@ -453,6 +453,9 @@ docker__load_constants__sub() {
     DOCKER__MATCHPATTERNS="${DOCKER__QUIT}"
     DOCKER__ERRMSG="${DOCKER__FOURSPACES}-:${DOCKER__FG_LIGHTRED}directory is Empty${DOCKER__NOCOLOR}:-"
     DOCKER__READ_DIALOG="Choose a file: "
+
+    DOCKER__MATCHPATTERN_ROOTFS="rootfs"
+    DOCKER__MATCHPATTERN_LABEL_REPOSITORY_COLON_TAG_IS="LABEL repository:tag="
 }
 
 docker__init_variables__sub() {
@@ -481,7 +484,7 @@ docker__show_dockerList_files__sub() {
                         "${DOCKER__NUMOFLINES_2}" \
                         "${DOCKER__TRUE}"
 
-    #Get the exitcode just in case a Ctrl-C was pressed in function 'DOCKER__FOURSPACES_F4_ABORT' (in script 'docker_global.sh')
+    #Get the exitCode just in case a Ctrl-C was pressed in function 'DOCKER__FOURSPACES_F4_ABORT' (in script 'docker_global.sh')
     docker__exitCode=$?
     if [[ ${docker__exitCode} -eq ${DOCKER__EXITCODE_99} ]]; then
         exit__func "${docker__exitCode}" "${DOCKER__NUMOFLINES_2}"
@@ -532,6 +535,37 @@ docker__create_image_handler__sub() {
     fi
 }
 
+docker__ispboootbin_version_input__sub() {
+    #define local variables
+    local exitCode=0
+    local label_repositorytag=${DOCKER__EMPTYSTRING}
+
+    #1. Find match pattern 'DOCKER__MATCHPATTERN_LABEL_REPOSITORY_COLON_TAG_IS'
+    #2. Retrieve the string on the right-side of the equal (=) sign
+    #3. Remove the double quotes (")
+    label_repositorytag=$(cat "${docker__dockerFile_fpath}" | \
+            grep -o "${DOCKER__MATCHPATTERN_LABEL_REPOSITORY_COLON_TAG_IS}.*" | \
+            cut -d"=" -f2 | \
+            sed 's/\"//g')
+
+    #Check if pattern 'DOCKER__MATCHPATTERN_ROOTFS' is NOT found in 'label_repositorytag'
+    if [[ ! "${label_repositorytag}" =~ "${DOCKER__MATCHPATTERN_ROOTFS}" ]]; then
+        return 0;
+    fi
+
+    #Run script and capture exit code
+    eval "${docker__ispboootbin_version_input__fpath}" || exitCode=$?
+    
+    #Check if exitCode is '99'
+    #NOTE 1: this probably means that an interrupt, thus Ctrl+C was pressed.
+    #NOTE 2: the interrupt is caught by an Global function 'docker__ctrl_c__sub'
+    # which is defined in 'docker_global.sh'.
+    if ((exitCode == DOCKER__EXITCODE_99)); then
+        exit 99
+    else
+        moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+    fi
+}
 
 
 #---MAIN SUBROUTINE
@@ -547,6 +581,8 @@ main_sub() {
     while true
     do
         docker__show_dockerList_files__sub
+
+        docker__ispboootbin_version_input__sub
 
         docker__create_image_handler__sub
 

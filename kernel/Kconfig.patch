@@ -1,0 +1,11 @@
+--- Kconfig.old	2023-11-14 09:09:46.000000000 +0000
++++ Kconfig.new	2024-04-15 02:17:19.000000000 +0000
+@@ -5,6 +5,8 @@
+ #
+ mainmenu "Linux/$(ARCH) $(KERNELVERSION) Kernel Configuration"
+ 
++source "drivers/tpd/Kconfig"
++
+ source "scripts/Kconfig.include"
+ 
+ source "init/Kconfig"
