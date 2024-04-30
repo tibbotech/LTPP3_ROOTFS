@@ -887,6 +887,7 @@ docker__copy_from_src_to_dst__sub() {
 				#Show total missing counts
 				echo -e "...Total missing contents count (incl. parent folders):" | tee -a "${misscontfpath}"
 				echo -e "......src:dst = ${docker__src_and_dst_totalcount_list[0]}:${docker__src_and_dst_totalcount_list[1]}" | tee -a "${misscontfpath}"
+				echo -e "...See file: \"${misscontfpath}\"\n"
 			else
 				#Show total counts
 				echo -e "...Total missing contents count (incl. parent folders):"
@@ -951,7 +952,8 @@ docker__copy_from_src_to_dst__sub() {
 
 				#Show total missing counts
 				echo -e "...Total missing contents count (incl. parent folders):" | tee -a "${misscontfpath}"
-				echo -e "......src:dst = ${docker__src_and_dst_totalcount_list[0]}:${docker__src_and_dst_totalcount_list[1]}\n" | tee -a "${misscontfpath}"
+				echo -e "......src:dst = ${docker__src_and_dst_totalcount_list[0]}:${docker__src_and_dst_totalcount_list[1]}" | tee -a "${misscontfpath}"
+				echo -e "...See file: \"${misscontfpath}\"\n"
 			else
 				#Show total counts
 				echo -e "...Total missing contents count (incl. parent folders):"
