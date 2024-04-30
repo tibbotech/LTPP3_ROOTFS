@@ -1392,6 +1392,12 @@ function container_exec_cmd_and_receive_output__func() {
         ret=$(eval "${cmd__arg}")
     fi
 
+    #Get exitcode
+    exitcode=$?
+    if [[ ${exitcode} -ne 0 ]]; then    #an error occurred
+        ret=${DOCKER__EMPTYSTRING}
+    fi
+
     #OUTPUT
     echo "${ret}" > "${outputfpath__arg}"
 }
