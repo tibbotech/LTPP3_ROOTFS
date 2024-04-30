@@ -343,6 +343,11 @@ docker__init_variables__sub() {
 
 	docker__numOfMatches_output=0
 	docker__exitCode=0
+
+	#---NOTE:
+	#	index 0: contains the counter for the source path
+	#	index 0: contains the counter for the destination path
+	docker__src_and_dst_totalcount_list=(0 0)
 }
 
 docker__choose_copy_direction__sub() {
@@ -811,9 +816,13 @@ docker__copy_from_src_to_dst__sub() {
 	#Define variables
 	local asterisk_isFound=false
 	local line=${DOCKER__EMPTYSTRING}
-	local src_path=${DOCKER__EMPTYSTRING}
-	local dst_path=${DOCKER__EMPTYSTRING}
+	local src_copypath=${DOCKER__EMPTYSTRING}
+	local dst_copypath=${DOCKER__EMPTYSTRING}
 
+
+	#---------------------------------------------------------------------
+	# PHASE 1: COPY
+	#---------------------------------------------------------------------
 	#Compose 'docker__copy_msg'
 	docker__copy_msg="Container-ID: ${DOCKER__FG_LIGHTGREY}${docker__containerID_chosen}${DOCKER__NOCOLOR}\n"
 	docker__copy_msg+="Source: ${DOCKER__FG_LIGHTGREY}${docker__src_dir}${DOCKER__NOCOLOR}\n"
@@ -835,19 +844,32 @@ docker__copy_from_src_to_dst__sub() {
 		if [[ ${asterisk_isFound} == true ]]; then	#asterisk is found
 			while read -r line
 			do
-				src_path="${docker__src_dir}/${line}"
+				src_copypath="${docker__src_dir}/${line}"
+				dst_copypath="${docker__dst_dir}"
 
-				docker cp ${docker__containerID_chosen}:${src_path} ${docker__dst_dir}
+				docker cp ${docker__containerID_chosen}:${src_copypath} ${dst_copypath}
 
 				echo "...copied ${DOCKER__FG_LIGHTGREY}${line}${DOCKER__NOCOLOR}"
-			done < ${dirlist__src_ls_1aA_output__fpath}
-		else	#asterisk is NOT found
-			src_path="${docker__src_dir}/${docker__src_file}"
 
-			docker cp ${docker__containerID_chosen}:${src_path} ${docker__dst_dir}
+				docker__src_and_dst_count_contents "${docker__containerID_chosen}" "${DOCKER__EMPTYSTRING}" "${src_copypath}" "${docker__dst_dir}/${line}" "${asterisk_isFound}"
+			done < ${dirlist__src_ls_1aA_output__fpath}
+
+			#Show total counter comparison
+			echo -e "\n...Total comparison:"
+			echo "......src:dst = ${docker__src_and_dst_totalcount_list[0]}:${docker__src_and_dst_totalcount_list[1]}"
+			if [[ ${docker__src_and_dst_totalcount_list[0]} -ne ${docker__src_and_dst_totalcount_list[1]} ]]; then
+				docker__src_vs_dst_retrieve_missing_contents "${docker__containerID_chosen}" "${DOCKER__EMPTYSTRING}" "${docker__src_dir}" "${docker__dst_dir}" "${asterisk_isFound}"
+			fi
+		else	#asterisk is NOT found
+			src_copypath="${docker__src_dir}/${docker__src_file}"
+			dst_copypath="${docker__dst_dir}"
+
+			docker cp ${docker__containerID_chosen}:${src_copypath} ${dst_copypath}
 
 			echo "...copied ${DOCKER__FG_LIGHTGREY}${docker__src_file}${DOCKER__NOCOLOR}"
-		fi	
+
+			docker__src_and_dst_count_contents "${docker__containerID_chosen}" "${DOCKER__EMPTYSTRING}" "${src_copypath}" "${docker__dst_dir}/${docker__src_file}" "${asterisk_isFound}"
+		fi
 	else	#Local Host to Container
 		#Show Title
 		show_msg_w_menuTitle_only_func "${DOCKER__DIRECTION_LOCAL_TO_CONTAINER}" \
@@ -861,22 +883,137 @@ docker__copy_from_src_to_dst__sub() {
 		if [[ ${asterisk_isFound} == true ]]; then	#asterisk is found
 			while read -r line
 			do
-				src_path="${docker__src_dir}/${line}"
+				src_copypath="${docker__src_dir}/${line}"
+				dst_copypath="${docker__dst_dir}"
 
-				docker cp ${src_path} ${docker__containerID_chosen}:${docker__dst_dir}
+				docker cp ${src_copypath} ${docker__containerID_chosen}:${dst_copypath}
 
 				echo "...copied ${DOCKER__FG_LIGHTGREY}${line}${DOCKER__NOCOLOR}"
-			done < ${dirlist__src_ls_1aA_output__fpath}
-		else	#asterisk is NOT found
-			src_path="${docker__src_dir}/${docker__src_file}"
 
-			docker cp ${src_path} ${docker__containerID_chosen}:${docker__dst_dir}
+				docker__src_and_dst_count_contents "${DOCKER__EMPTYSTRING}" "${docker__containerID_chosen}" "${src_copypath}" "${docker__dst_dir}/${line}" "${asterisk_isFound}"
+			done < ${dirlist__src_ls_1aA_output__fpath}
+
+			#Show total counter comparison
+			echo -e "\n...Total comparison:"
+			echo "......src:dst = ${docker__src_and_dst_totalcount_list[0]}:${docker__src_and_dst_totalcount_list[1]}"
+			if [[ ${docker__src_and_dst_totalcount_list[0]} != ${docker__src_and_dst_totalcount_list[1]} ]]; then
+				docker__src_vs_dst_retrieve_missing_contents "${DOCKER__EMPTYSTRING}" "${docker__containerID_chosen}" "${docker__src_dir}" "${docker__dst_dir}" "${asterisk_isFound}"
+			fi
+		else	#asterisk is NOT found
+			src_copypath="${docker__src_dir}/${docker__src_file}"
+			dst_copypath="${docker__dst_dir}"
+
+			docker cp ${src_copypath} ${docker__containerID_chosen}:${dst_copypath}
 
 			echo "...copied ${DOCKER__FG_LIGHTGREY}${docker__src_file}${DOCKER__NOCOLOR}"
+
+			docker__src_and_dst_count_contents "${DOCKER__EMPTYSTRING}" "${docker__containerID_chosen}" "${src_copypath}" "${docker__dst_dir}/${docker__src_file}" "${asterisk_isFound}"
 		fi	
 	fi
 }
 
+docker__src_and_dst_count_contents() {
+	#Input args
+	src_containerid__input="${1}"
+	dst_containerid__input="${2}"
+	src_path__input="${3}"
+	dst_path__input="${4}"
+	asterisk_isFound__input="${5}"
+
+	#Define command lines
+	#EXPLANATION:
+	#	ls -1aR /root/LTPP3_ROOTFS: 
+	#		List all files and directories (including hidden ones) recursively in /root/LTPP3_ROOTFS
+	#	grep -vE ':$':
+	#		Exclude lines ending with :
+	#	grep -vE '^$':
+	#		Exclude empty lines
+	#	grep -vE '^\.+$':
+	#		Exclude lines containing only .
+	#	wc -l:
+	#		Count the remaining lines
+	local src_cmd="ls -1aR  \"${src_path__input}\" | grep -vE ':$' | grep -vE '^$' | grep -vE '^\.+$' |  wc -l"
+	local dst_cmd="ls -1aR  \"${dst_path__input}\" | grep -vE ':$' | grep -vE '^$' | grep -vE '^\.+$' |  wc -l"
+	local src_outputfpath="${docker__tmp__dir}/src.out"
+	local dst_outputfpath="${docker__tmp__dir}/dst.out"
+
+	#Execute commands
+	container_exec_cmd_and_receive_output__func "${src_containerid__input}" "${src_cmd}" "${src_outputfpath}"
+	local src_output=$(cat "${src_outputfpath}")
+	if [[ -z "${src_output}" ]]; then
+		src_output=0
+	fi
+
+	container_exec_cmd_and_receive_output__func "${dst_containerid__input}" "${dst_cmd}" "${dst_outputfpath}"
+	local dst_output=$(cat "${dst_outputfpath}")
+	if [[ -z "${dst_output}" ]]; then
+		dst_output=0
+	fi
+
+	# Add 'src_output' and 'dst_output' to array
+	#---NOTE:
+	#   index 0: contains the counter for the source path
+	#   index 1: contains the counter for the destination path
+	docker__src_and_dst_totalcount_list[0]=$((docker__src_and_dst_totalcount_list[0] + src_output))
+	docker__src_and_dst_totalcount_list[1]=$((docker__src_and_dst_totalcount_list[1] + dst_output))
+
+	#Compare 'src_output' with 'dst_output'
+	if [[ ${src_output} -eq ${dst_output} ]]; then
+		echo "......src:dst = ${src_output}:${dst_output} (${DOCKER__FG_GREEN}OK${DOCKER__NOCOLOR})"
+	else
+		echo "......src:dst = ${src_output}:${dst_output} (${DOCKER__FG_RED1}FAIL${DOCKER__NOCOLOR})"
+		docker__src_vs_dst_retrieve_missing_contents "${src_containerid__input}" "${dst_containerid__input}" "${src_path__input}" "${dst_path__input}" "${asterisk_isFound}"
+	fi
+}
+
+docker__src_vs_dst_retrieve_missing_contents() {
+	#Input args
+	src_containerid__input="${1}"
+	dst_containerid__input="${2}"
+	src_path__input="${3}"
+	dst_path__input="${4}"
+	asterisk_isFound__input="${5}"
+
+	#Define command lines
+	#EXPLANATION:
+	#	ls -1aR /root/LTPP3_ROOTFS: 
+	#		List all files and directories (including hidden ones) recursively in /root/LTPP3_ROOTFS
+	#	grep -vE ':$':
+	#		Exclude lines ending with :
+	#	grep -vE '^$':
+	#		Exclude empty lines
+	#	grep -vE '^\.+$':
+	#		Exclude lines containing only .
+	local src_cmd="ls -1aR  \"${src_path__input}\" | grep -vE ':$' | grep -vE '^$' | grep -vE '^\.+$'"
+	local dst_cmd="ls -1aR  \"${dst_path__input}\" | grep -vE ':$' | grep -vE '^$' | grep -vE '^\.+$'"
+	local src_outputfpath="${docker__tmp__dir}/src.out"
+	local dst_outputfpath="${docker__tmp__dir}/dst.out"
+
+	#Execute commands
+	container_exec_cmd_and_receive_output__func "${src_containerid__input}" "${src_cmd}" "${src_outputfpath}"
+	local src_output=$(cat "${src_outputfpath}")
+
+	container_exec_cmd_and_receive_output__func "${dst_containerid__input}" "${dst_cmd}" "${dst_outputfpath}"
+	local dst_output=$(cat "${dst_outputfpath}")
+
+	#1. Find elements in 'src_output' that are not in 'dst_output'
+	#2. Write to array
+	missing_contents_list=($(comm -23 <(printf "%s\n" "${src_output[@]}" | sort) <(printf "%s\n" "${dst_output[@]}" | sort)))
+
+	#Show missing files and folders
+	echo -e "\r"
+	echo "...List of missing contents:"
+	#Iterate thru elements of array 'missing_contents_list'
+	for content in "${missing_contents_list[@]}"
+	do
+		if [[ ${asterisk_isFound__input} == false ]]; then
+			echo "......${content}"
+		else
+			echo "......${src_path__input}/${content}" | sed 's/\/\//\//g'
+		fi
+	done
+	echo -e "\r"
+}
 
 docker__exit__sub() {
 	exit__func "${DOCKER__EXITCODE_0}" "${docker__exit_numOfLines}"

@@ -1372,6 +1372,37 @@ function bc_is_x_greaterthan_zero() {
 }
 
 
+#---CONTAINER RELATED FUNCTIONS
+function container_exec_cmd_and_receive_output__func() {
+    #Input args
+    local containerid__arg="${1}"
+    local cmd__arg="${2}"
+    local outputfpath__arg="${3}"
+
+    local ret_raw=${DOCKER__EMPTYSTRING}
+    local ret=${DOCKER__EMPTYSTRING}
+
+    #Execute command and capture output
+    if [[ -n ${containerid__arg} ]]; then
+        ret_raw=$(docker exec -t "${containerid__arg}" /bin/bash -c "${cmd__arg}")
+
+        #Remove trailing carriage returns '\r'
+        ret=$(printf "%s" "${ret_raw}" | tr -d '\r')
+    else
+        ret=$(eval "${cmd__arg}")
+    fi
+
+    #Get exitcode
+    exitcode=$?
+    if [[ ${exitcode} -ne 0 ]]; then    #an error occurred
+        ret=${DOCKER__EMPTYSTRING}
+    fi
+
+    #OUTPUT
+    echo "${ret}" > "${outputfpath__arg}"
+}
+
+
 #---DOCKER RELATED FUNCTIONS
 function check_containerID_state__func() {
     #Input args
@@ -6475,6 +6506,9 @@ docker__get_source_fullpath__sub() {
 
     docker_build_ispboootbin_tmp_sh_filename="docker_build_ispboootbin_tmp.sh"
     docker_build_ispboootbin_tmp_sh_fpath="${docker__tmp__dir}/${docker_build_ispboootbin_tmp_sh_filename}"
+
+    docker__container_exec_cmd_and_receive_output_out__filename="container_exec_cmd_and_receive_output.out"
+    docker__container_exec_cmd_and_receive_output_out__fpath=${docker__tmp__dir}/${docker__container_exec_cmd_and_receive_output_out__filename}
 
     docker__create_an_image_from_dockerfile_out__filename="docker_create_an_image_from_dockerfile.out"
     docker__create_an_image_from_dockerfile_out__fpath=${docker__tmp__dir}/${docker__create_an_image_from_dockerfile_out__filename}
