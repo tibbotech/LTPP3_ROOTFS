@@ -932,6 +932,8 @@ docker__src_and_dst_count_contents() {
 	#		Exclude lines containing only .
 	#	wc -l:
 	#		Count the remaining lines
+	#NOTE:
+	#	if 'src_path__input' and/or 'dst_path__input' is directory, then this directory is NOT INCLUDED in the count!!!
 	local src_cmd="ls -1aR  \"${src_path__input}\" | grep -vE ':$' | grep -vE '^$' | grep -vE '^\.+$' |  wc -l"
 	local dst_cmd="ls -1aR  \"${dst_path__input}\" | grep -vE ':$' | grep -vE '^$' | grep -vE '^\.+$' |  wc -l"
 	local src_outputfpath="${docker__tmp__dir}/src.out"
@@ -984,8 +986,10 @@ docker__src_vs_dst_retrieve_missing_contents() {
 	#		Exclude empty lines
 	#	grep -vE '^\.+$':
 	#		Exclude lines containing only .
-	local src_cmd="ls -1aR  \"${src_path__input}\" | grep -vE ':$' | grep -vE '^$' | grep -vE '^\.+$'"
-	local dst_cmd="ls -1aR  \"${dst_path__input}\" | grep -vE ':$' | grep -vE '^$' | grep -vE '^\.+$'"
+	# local src_cmd="ls -1aR  \"${src_path__input}\" | grep -vE ':$' | grep -vE '^$' | grep -vE '^\.+$'"
+	# local dst_cmd="ls -1aR  \"${dst_path__input}\" | grep -vE ':$' | grep -vE '^$' | grep -vE '^\.+$'"
+	local src_cmd="find \"${src_path__input}\" -mindepth 1 -printf \"${src_path__input}/%P\n\""
+	local dst_cmd="find \"${dst_path__input}\" -mindepth 1 -printf \"${dst_path__input}/%P\n\""
 	local src_outputfpath="${docker__tmp__dir}/src.out"
 	local dst_outputfpath="${docker__tmp__dir}/dst.out"
 
@@ -1007,9 +1011,9 @@ docker__src_vs_dst_retrieve_missing_contents() {
 	for content in "${missing_contents_list[@]}"
 	do
 		if [[ ${asterisk_isFound__input} == false ]]; then
-			echo "......${content}"
+			echo "${content}"
 		else
-			echo "......${src_path__input}/${content}" | sed 's/\/\//\//g'
+			echo "${src_path__input}/${content}" | sed 's/\/\//\//g'
 		fi
 	done
 	echo -e "\r"
