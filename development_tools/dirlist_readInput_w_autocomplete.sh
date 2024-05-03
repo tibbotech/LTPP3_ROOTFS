@@ -255,6 +255,7 @@ function remove_asterisk_from_string() {
     local str_len=0
     local str_wo_asterisk_len=0
     local asterisk_isFound=false
+    local isFile=false
 
     #Check if asterisk is present in 'str__input'
     asterisk_isFound=`checkForMatch_of_a_pattern_within_string__func "${DOCKER__ASTERISK}" "${str__input}"`
@@ -296,7 +297,7 @@ function process_str_basedOn_numOf_results__func() {
     fi
 
     #Remove any double slashes
-    ret=`echo ${ret} | sed "s/${SED__SLASH}${SED__SLASH}${SED__ASTERISK}/${SED__SLASH}/g"`
+    ret=`echo "${ret}" | sed "s/${SED__SLASH}${SED__SLASH}${SED__ASTERISK}/${SED__SLASH}/g"`
 
     #Output
     echo "${ret}"
@@ -762,6 +763,7 @@ dirlist__readInput_w_autocomplete__sub() {
 
     local files_areDifferent=false
     local fpaths_areSame=false
+    local noMatchIsFound=false
     local onEnterPressed=false
     local onExit_moveDown_isEnabled=false
 
@@ -788,6 +790,21 @@ dirlist__readInput_w_autocomplete__sub() {
                 phase=${PHASE_SHOW_READINPUT}
             ;;
             ${PHASE_SHOW_READINPUT})
+                #Show read-input message with error
+                if [[ ${noMatchIsFound} == true ]]; then
+                    #Show error message
+                    echo -e "${readMsg__input}${str} (${DOCKER__STATUS_LNOMATCHFOUND})" 
+
+                    #Wait for 2 seconds
+                    sleep 1
+
+                    #Move-up and clean line
+                    moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+                    #Reset flag
+                    noMatchIsFound=false
+                fi
+
                 #Show read-input message
                 echo -e "${readMsg__input}${str}"
 
@@ -845,6 +862,8 @@ dirlist__readInput_w_autocomplete__sub() {
                                 #   2. after that, exit the loop
                                 #   3. output 'ret'
                                 if [[ ${str} != ${str_prev} ]]; then
+                                    str="${str}"
+
                                     #Goto 'keyInput = DOCKER__TAB'.
                                     #Remark:
                                     #   skip read-input dialog.
@@ -972,6 +991,8 @@ dirlist__readInput_w_autocomplete__sub() {
                             fi
 
 #---------------------------If 'asterisk_isFound = true' then restore 'str'
+                            #***NOTE: do NOT rename 'str' to another name (e.g. str_processed), because 'str' is used
+                            #       through out the whole function.
                             str=`process_str_basedOn_numOf_results__func "${str_autocompleted}" \
                                     "${str}" \
                                     "${autocomplete_numOfMatches}"`
@@ -982,7 +1003,7 @@ dirlist__readInput_w_autocomplete__sub() {
 #---------------------------Check if 'onEnterPressed = true'
                             if [[ ${onEnterPressed} == true ]]; then
                                 #Update 'ret'
-                                ret=${str}
+                                ret="${str}"
 
                                 #Goto next-phase
                                 phase=${PHASE_SHOW_KEYINPUT_HANDLER}
@@ -1001,11 +1022,20 @@ dirlist__readInput_w_autocomplete__sub() {
                     ${DOCKER__EXIT})
                         #Check if at least one match is found
                         if [[ ${autocomplete_numOfMatches} -ne ${DOCKER__NUMOFMATCH_0} ]]; then #at least one match is found
-                            if [[ ${autocomplete_numOfMatches} -gt ${DOCKER__NUMOFMATCH_1} ]]; then #at least one match is found
+                            if [[ ${autocomplete_numOfMatches} -gt ${DOCKER__NUMOFMATCH_1} ]]; then #at least two matches were found
                                 #Check if an asterisk is already present
+
                                 asterisk_isFound=`checkForMatch_of_a_pattern_within_string__func "${DOCKER__ASTERISK}" "${ret}"`
+
                                 if [[ ${asterisk_isFound} == false ]]; then  #asterisk was NOT found
-                                    ret=${ret}${DOCKER__ASTERISK} #append asterisk
+                                    #Check if 'ret' is a file
+                                    isFile=$(checkIf_file_exists__func "${containerID__input}" "${ret}")
+                                    #NOTE:
+                                    #   a. if True, then DO NOTHING.
+                                    #   b. if False, then proceed and process the commands within the if-condition.
+                                    if [[ ${isFile} == false ]]; then    #No, is NOT a file
+                                        ret="${ret}${DOCKER__ASTERISK}" #append asterisk
+                                    fi
                                 fi
                             fi
 
@@ -1015,8 +1045,12 @@ dirlist__readInput_w_autocomplete__sub() {
 
                             break
                         else    #no match was found
-                            #Set flags to 'false'
+                            #Set flag to 'false'
+                            #***NOTE: this prevents us from exiting this function.
                             onEnterPressed=false
+
+                            #Set flag to 'true'
+                            noMatchIsFound=true
 
                             #Goto next-phase
                             phase=${PHASE_SHOW_READINPUT}
@@ -1051,7 +1085,7 @@ dirlist__readInput_w_autocomplete__sub() {
     done
 
     #Write chosen path to file (line 0)
-    echo ${ret} > ${dirlist__readInput_w_autocomplete_out__fpath}
+    echo "${ret}" > "${dirlist__readInput_w_autocomplete_out__fpath}"
 
     #Write number of matches to file (line 1)
     echo ${cachedInput__ArrLen} >> ${dirlist__readInput_w_autocomplete_out__fpath}

@@ -500,6 +500,7 @@ DOCKER__STATUS_LNOTPRESENT="${DOCKER__FG_LIGHTRED}not-present${DOCKER__NOCOLOR}"
 DOCKER__STATUS_LNOTPRESENT_IGNORE="${DOCKER__FG_LIGHTRED}not-present${DOCKER__NOCOLOR} (ignore)"
 DOCKER__STATUS_LVALID="${DOCKER__FG_GREEN}valid${DOCKER__NOCOLOR}"
 DOCKER__STATUS_LINVALID="${DOCKER__FG_LIGHTRED}invalid${DOCKER__NOCOLOR}"
+DOCKER__STATUS_LNOMATCHFOUND="${DOCKER__FG_LIGHTRED}no-match found${DOCKER__NOCOLOR}"
 
 DOCKER__NO_ACTION_REQUIRED="No action required"
 
@@ -1883,6 +1884,26 @@ function checkIf_fpaths_are_the_same__func() {
     else
         echo "false"
     fi
+}
+
+function get_fullpath_by_combining_dir_with_fileorfolder() {
+    #Input args
+    local dir__input="${1}"
+    local content__input="${2}"
+
+    #Combine 'dir__input' and 'content__input'
+    #***NOTE: double-slashes (//) will be substituted by single-slash (/)
+    #EXPLANATION:
+    #   s: substitute command in sed.
+    #   #//*#/#g: search and replace pattern.
+    #   //: pattern to search for (consecutive forward slashes).
+    #   /: replacement (a single forward slash).
+    #   g: stands for global, meaning that all occurrences of the pattern on each 
+    #       line will be replaced, not just the first one.
+    local ret=$(echo "${dir__input}/${content__input}" | sed 's#//*#/#g')
+
+    #OUTPUT
+    echo "${ret}"
 }
 
 function find_and_remove_all_lines_from_file_forGiven_keyWord__func() {
