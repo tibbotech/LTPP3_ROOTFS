@@ -857,17 +857,26 @@ docker__copy_from_src_to_dst__sub() {
 		if [[ ${asterisk_isFound} == true ]]; then	#asterisk is found
 			while read -r line
 			do
+				#Define paths
 				src_copypath="${docker__src_dir}/${line}"
-				dst_copypath="${docker__dst_dir}"
+				dst_copypath="${docker__dst_dir}/${line}"
 
-				docker cp ${docker__containerID_chosen}:${src_copypath} ${dst_copypath}
+				#Copy from source to destination
+				docker__copy_tar_from_src_to_dst__sub "${docker__containerID_chosen}" \
+						"${DOCKER__EMPTYSTRING}" \
+						"${line}" \
+						"${docker__src_dir}" \
+						"${docker__dst_dir}"
 
+				#Print
 				echo -e "...copied ${DOCKER__FG_LIGHTGREY}${line}${DOCKER__NOCOLOR}"
 
+				#Show total counter comparison
+				#Show missing contents (if any)
 				docker__src_and_dst_count_contents "${docker__containerID_chosen}" \
 						"${DOCKER__EMPTYSTRING}" \
 						"${src_copypath}"\
-						"${docker__dst_dir}/${line}" \
+						"${dst_copypath}" \
 						"${misscontfpath}" \
 						"${asterisk_isFound}"
 			done < ${dirlist__src_ls_1aA_output__fpath}
@@ -894,22 +903,18 @@ docker__copy_from_src_to_dst__sub() {
 				echo -e "......src:dst = ${docker__src_and_dst_totalcount_list[0]}:${docker__src_and_dst_totalcount_list[1]}"
 			fi
 		else	#asterisk is NOT found
+			#Define paths
 			src_copypath="${docker__src_dir}/${docker__src_file}"
-			dst_copypath="${docker__dst_dir}"
-			docker__src_tar_file="${docker__src_file}.tar"
+			dst_copypath="${docker__dst_dir}/${docker__src_file}"
 
-			#docker cp ${docker__containerID_chosen}:${src_copypath} ${dst_copypath}
-			docker exec ${docker__containerID_chosen} tar -cf ${docker__src_dir}/${docker__src_tar_file} -C ${docker__src_dir} ${docker__src_file}
+			#Copy from source to destination
+			docker__copy_tar_from_src_to_dst__sub "${docker__containerID_chosen}" \
+					"${DOCKER__EMPTYSTRING}" \
+					"${docker__src_file}" \
+					"${docker__src_dir}" \
+					"${docker__dst_dir}"
 
-			#Copy the tar archive from the container to the local destination path
-			docker cp ${docker__containerID_chosen}:${docker__src_dir}/${docker__src_tar_file} ${dst_copypath}/${docker__src_tar_file}
-
-			#Extract the tar archive locally
-			tar -xf ${dst_copypath}/${docker__src_tar_file} -C ${dst_copypath}
-
-			#Remove the tar archive from the local destination path
-			rm ${dst_copypath}/${docker__src_tar_file}
-
+			#Print
 			echo -e "...copied ${DOCKER__FG_LIGHTGREY}${docker__src_file}${DOCKER__NOCOLOR}"
 
 
@@ -918,7 +923,7 @@ docker__copy_from_src_to_dst__sub() {
 			docker__src_and_dst_count_contents "${docker__containerID_chosen}" \
 					"${DOCKER__EMPTYSTRING}" \
 					"${src_copypath}" \
-					"${docker__dst_dir}/${docker__src_file}" \
+					"${dst_copypath}" \
 					"${misscontfpath}" \
 					"${asterisk_isFound}"
 		fi
@@ -988,6 +993,59 @@ docker__copy_from_src_to_dst__sub() {
 					"${misscontfpath}" \
 					"${asterisk_isFound}"
 		fi	
+	fi
+}
+
+docker__copy_tar_from_src_to_dst__sub() {
+	#Input args
+	src_containerid__input="${1}"
+	dst_containerid__input="${2}"
+	src_content__input="${3}"	#file or folder
+	src_dir__input="${4}"
+	dst_dir__input="${5}"
+
+	#Define Paths
+	tar_filename="${src_content__input}.tar"
+	src_tar_fpath="${src_dir__input}/${tar_filename}"
+	dst_tar_fpath="${dst_dir__input}/${tar_filename}"
+
+	if [[ -n ${src_containerid__input} ]]; then
+		#---------------------------------------------------------------------
+		# CONTAINER TO LOCAL
+		#---------------------------------------------------------------------
+		#Compress file or folder(s) with 'tar'
+		docker exec ${src_containerid__input} tar -cf ${src_tar_fpath} -C ${src_dir__input} ${src_content__input}
+
+		#Copy 'tar' file from source to destination
+		docker cp ${src_containerid__input}:${src_tar_fpath} ${dst_tar_fpath}
+
+		#Destination: extract 'tar' file
+		tar -xf ${dst_tar_fpath} -C ${dst_dir__input}
+
+		#Source: remove tar file
+		docker exec ${src_containerid__input} rm ${src_tar_fpath}
+
+		#Destination: remove tar file
+		rm ${dst_tar_fpath}
+	else
+		#---------------------------------------------------------------------
+		# LOCAL TO CONTAINER
+		#---------------------------------------------------------------------
+		#Compress file or folder(s) with 'tar'
+		tar -cf ${src_tar_fpath} -C ${src_dir__input} ${src_content__input}
+
+		#Copy 'tar' file from source to destination
+		docker cp ${src_tar_fpath} ${dst_containerid__input}:${dst_tar_fpath}
+
+		#Destination: extract 'tar' file
+		tar -xf ${dst_tar_fpath} -C ${dst_dir__input}
+		docker exec ${dst_containerid__input} tar -xf ${dst_tar_fpath} -C ${dst_dir__input}
+
+		#Source: remove tar file
+		rm ${src_tar_fpath}
+
+		#Destination: remove tar file
+		docker exec ${dst_containerid__input} rm ${dst_tar_fpath}
 	fi
 }
 
