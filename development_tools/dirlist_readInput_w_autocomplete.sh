@@ -763,6 +763,7 @@ dirlist__readInput_w_autocomplete__sub() {
 
     local files_areDifferent=false
     local fpaths_areSame=false
+    local noMatchIsFound=false
     local onEnterPressed=false
     local onExit_moveDown_isEnabled=false
 
@@ -789,6 +790,21 @@ dirlist__readInput_w_autocomplete__sub() {
                 phase=${PHASE_SHOW_READINPUT}
             ;;
             ${PHASE_SHOW_READINPUT})
+                #Show read-input message with error
+                if [[ ${noMatchIsFound} == true ]]; then
+                    #Show error message
+                    echo -e "${readMsg__input}${str} (${DOCKER__STATUS_LNOMATCHFOUND})" 
+
+                    #Wait for 2 seconds
+                    sleep 1
+
+                    #Move-up and clean line
+                    moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+                    #Reset flag
+                    noMatchIsFound=false
+                fi
+
                 #Show read-input message
                 echo -e "${readMsg__input}${str}"
 
@@ -1029,8 +1045,12 @@ dirlist__readInput_w_autocomplete__sub() {
 
                             break
                         else    #no match was found
-                            #Set flags to 'false'
+                            #Set flag to 'false'
+                            #***NOTE: this prevents us from exiting this function.
                             onEnterPressed=false
+
+                            #Set flag to 'true'
+                            noMatchIsFound=true
 
                             #Goto next-phase
                             phase=${PHASE_SHOW_READINPUT}
