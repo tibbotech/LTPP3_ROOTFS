@@ -538,7 +538,7 @@ docker__src_path_selection__sub() {
 	local containerID__input=${1}
 
 	#Define variables
-	local asterisk_isFound=false
+	local asterisk_isfound=false
 	local fileExists=false
 
 	#Show and select path
@@ -596,8 +596,8 @@ docker__src_path_selection__sub() {
 
 	#Update 'docker__src_dir' and 'docker__src_file'
 	#Check if 'docker__path_output' contains an 'asterisk'
-	asterisk_isFound=`checkForMatch_of_a_pattern_within_string__func "${DOCKER__ASTERISK}" "${docker__path_output}"`
-	if [[ ${asterisk_isFound} == true ]]; then	#asterisk was found
+	asterisk_isfound=`checkForMatch_of_a_pattern_within_string__func "${DOCKER__ASTERISK}" "${docker__path_output}"`
+	if [[ ${asterisk_isfound} == true ]]; then	#asterisk was found
 		docker__src_dir=`get_dirname_from_specified_path__func "${docker__path_output}"`
 
 		#Set 'docker__src_file' to 'asterisk'
@@ -658,7 +658,7 @@ docker__dst_path_selection__sub() {
 	local containerID__input=${1}
 
 	#Define variables
-	# local asterisk_isFound=false
+	# local asterisk_isfound=false
 	# local fileExists=false
 
 	#Show and select path
@@ -817,7 +817,7 @@ docker__copy_from_src_to_dst__sub() {
 	# PHASE 1: DEFINITION
 	#---------------------------------------------------------------------
 	#Define variables
-	local asterisk_isFound=false
+	local asterisk_isfound=false
 	local line=${DOCKER__EMPTYSTRING}
 	local src_copypath=${DOCKER__EMPTYSTRING}
 	local dst_copypath=${DOCKER__EMPTYSTRING}
@@ -825,7 +825,9 @@ docker__copy_from_src_to_dst__sub() {
 	#Define paths
 	local datetime=$(date +"%Y%b%d_%Hh%Mm%Ss")
 	local misscontfilename="missing_contents_list"
-	local misscontfpath="${docker__tmp__dir}/${misscontfilename}_${datetime}.out"
+	local misscontfilename_w_datetime="${misscontfilename}_${datetime}.out"
+	local misscontfpath=$(get_fullpath_by_combining_dir_with_fileorfolder "${docker__tmp__dir}" \
+			"${misscontfilename_w_datetime}")
 
 	#Remove 'misscontfpath' (if present)
 	if [[ -f "${misscontfpath}" ]]; then
@@ -834,7 +836,7 @@ docker__copy_from_src_to_dst__sub() {
 
 
 	#---------------------------------------------------------------------
-	# PHASE 2: COPY & COUNT SRC AND DST CONTENTS
+	# PHASE 2: COPY & CHECK
 	#---------------------------------------------------------------------
 	#Compose 'docker__copy_msg'
 	docker__copy_msg="Container-ID: ${DOCKER__FG_LIGHTGREY}${docker__containerID_chosen}${DOCKER__NOCOLOR}\n"
@@ -842,7 +844,7 @@ docker__copy_from_src_to_dst__sub() {
 	docker__copy_msg+="Destination: ${DOCKER__FG_LIGHTGREY}${docker__dst_dir}${DOCKER__NOCOLOR}"
 
 	#Check if 'asterisk' is found (MUST BE DONE HERE!)
-	asterisk_isFound=`checkForMatch_of_a_pattern_within_string__func "${DOCKER__ASTERISK}" "${docker__src_file}"`
+	asterisk_isfound=`checkForMatch_of_a_pattern_within_string__func "${DOCKER__ASTERISK}" "${docker__src_file}"`
 
 	if [[ ${docker__mycopychoice} -eq ${DOCKER__CONTAINER_TO_HOST} ]]; then	#Container to Local Host
 		#Show Title
@@ -854,12 +856,12 @@ docker__copy_from_src_to_dst__sub() {
 							"${DOCKER__NUMOFLINES_0}" \
 							"${DOCKER__NUMOFLINES_2}"
 
-		if [[ ${asterisk_isFound} == true ]]; then	#asterisk is found
+		if [[ ${asterisk_isfound} == true ]]; then	#asterisk is found
 			while read -r line
 			do
 				#Define paths
-				src_copypath="${docker__src_dir}/${line}"
-				dst_copypath="${docker__dst_dir}/${line}"
+				src_copypath=$(get_fullpath_by_combining_dir_with_fileorfolder "${docker__src_dir}" "${line}")
+				dst_copypath=$(get_fullpath_by_combining_dir_with_fileorfolder "${docker__dst_dir}" "${line}")
 
 				#Copy from source to destination
 				docker__copy_tar_from_src_to_dst__sub "${docker__containerID_chosen}" \
@@ -873,39 +875,26 @@ docker__copy_from_src_to_dst__sub() {
 
 				#Show total counter comparison
 				#Show missing contents (if any)
-				docker__src_and_dst_count_contents "${docker__containerID_chosen}" \
+				docker__src_vs_dst_show_counts "${docker__containerID_chosen}" \
 						"${DOCKER__EMPTYSTRING}" \
 						"${src_copypath}"\
 						"${dst_copypath}" \
 						"${misscontfpath}" \
-						"${asterisk_isFound}"
+						"${asterisk_isfound}"
 			done < ${dirlist__src_ls_1aA_output__fpath}
 
-
 			#Show total missing contents & counts
-			if [[ ${docker__src_and_dst_totalcount_list[0]} -ne ${docker__src_and_dst_totalcount_list[1]} ]]; then
-				#Show total missing contents
-				docker__src_vs_dst_retrieve_missing_contents "${docker__containerID_chosen}" \
-						"${DOCKER__EMPTYSTRING}" \
-						"${docker__src_dir}" \
-						"${docker__dst_dir}" \
-						"${misscontfpath}" \
-						"${asterisk_isFound}"
-
-
-				#Show total missing counts
-				echo -e "...Total missing contents count (incl. parent folders):" | tee -a "${misscontfpath}"
-				echo -e "......src:dst = ${docker__src_and_dst_totalcount_list[0]}:${docker__src_and_dst_totalcount_list[1]}" | tee -a "${misscontfpath}"
-				echo -e "...See file: \"${misscontfpath}\"\n"
-			else
-				#Show total counts
-				echo -e "...Total missing contents count (incl. parent folders):"
-				echo -e "......src:dst = ${docker__src_and_dst_totalcount_list[0]}:${docker__src_and_dst_totalcount_list[1]}"
-			fi
+			docker__src_vs_dst_show_total_counts_and_missing_contents "${docker__containerID_chosen}" \
+					"${DOCKER__EMPTYSTRING}" \
+					"${docker__src_dir}"\
+					"${docker__dst_dir}" \
+					"${misscontfpath}" \
+					"${asterisk_isfound}" \
+					"${docker__src_and_dst_totalcount_list[@]}"
 		else	#asterisk is NOT found
 			#Define paths
-			src_copypath="${docker__src_dir}/${docker__src_file}"
-			dst_copypath="${docker__dst_dir}/${docker__src_file}"
+			src_copypath=$(get_fullpath_by_combining_dir_with_fileorfolder "${docker__src_dir}" "${docker__src_file}")
+			dst_copypath=$(get_fullpath_by_combining_dir_with_fileorfolder "${docker__dst_dir}" "${docker__src_file}")
 
 			#Copy from source to destination
 			docker__copy_tar_from_src_to_dst__sub "${docker__containerID_chosen}" \
@@ -920,12 +909,12 @@ docker__copy_from_src_to_dst__sub() {
 
 			#Show total counter comparison
 			#Show missing contents (if any)
-			docker__src_and_dst_count_contents "${docker__containerID_chosen}" \
+			docker__src_vs_dst_show_counts "${docker__containerID_chosen}" \
 					"${DOCKER__EMPTYSTRING}" \
 					"${src_copypath}" \
 					"${dst_copypath}" \
 					"${misscontfpath}" \
-					"${asterisk_isFound}"
+					"${asterisk_isfound}"
 		fi
 	else	#Local Host to Container
 		#Show Title
@@ -937,79 +926,82 @@ docker__copy_from_src_to_dst__sub() {
 							"${DOCKER__NUMOFLINES_0}" \
 							"${DOCKER__NUMOFLINES_2}"
 
-		if [[ ${asterisk_isFound} == true ]]; then	#asterisk is found
+		if [[ ${asterisk_isfound} == true ]]; then	#asterisk is found
 			while read -r line
 			do
-				src_copypath="${docker__src_dir}/${line}"
-				dst_copypath="${docker__dst_dir}"
+				#Define paths
+				src_copypath=$(get_fullpath_by_combining_dir_with_fileorfolder "${docker__src_dir}" "${line}")
+				dst_copypath=$(get_fullpath_by_combining_dir_with_fileorfolder "${docker__dst_dir}" "${line}")
 
-				docker cp ${src_copypath} ${docker__containerID_chosen}:${dst_copypath}
+				#Copy from source to destination
+				docker__copy_tar_from_src_to_dst__sub "${DOCKER__EMPTYSTRING}" \
+						"${docker__containerID_chosen}" \
+						"${line}" \
+						"${docker__src_dir}" \
+						"${docker__dst_dir}"
 
+				#Print
 				echo -e "...copied ${DOCKER__FG_LIGHTGREY}${line}${DOCKER__NOCOLOR}"
 
-				docker__src_and_dst_count_contents "${DOCKER__EMPTYSTRING}" \
+				#Show total missing contents & counts
+				docker__src_vs_dst_show_counts "${DOCKER__EMPTYSTRING}" \
 						"${docker__containerID_chosen}" \
 						"${src_copypath}" \
-						"${docker__dst_dir}/${line}" \
+						"${dst_copypath}" \
 						"${misscontfpath}" \
-						"${asterisk_isFound}"
+						"${asterisk_isfound}"
 			done < ${dirlist__src_ls_1aA_output__fpath}
 
 
 			#Show total missing contents & counts
-			if [[ ${docker__src_and_dst_totalcount_list[0]} != ${docker__src_and_dst_totalcount_list[1]} ]]; then
-				#Show total missing contents
-				docker__src_vs_dst_retrieve_missing_contents "${DOCKER__EMPTYSTRING}" \
-						"${docker__containerID_chosen}" \
-						"${docker__src_dir}" \
-						"${docker__dst_dir}" \
-						"${misscontfpath}" \
-						"${asterisk_isFound}"
-
-				#Show total missing counts
-				echo -e "...Total missing contents count (incl. parent folders):" | tee -a "${misscontfpath}"
-				echo -e "......src:dst = ${docker__src_and_dst_totalcount_list[0]}:${docker__src_and_dst_totalcount_list[1]}" | tee -a "${misscontfpath}"
-				echo -e "...See file: \"${misscontfpath}\"\n"
-			else
-				#Show total counts
-				echo -e "...Total missing contents count (incl. parent folders):"
-				echo -e "......src:dst = ${docker__src_and_dst_totalcount_list[0]}:${docker__src_and_dst_totalcount_list[1]}"
-			fi
+			docker__src_vs_dst_show_total_counts_and_missing_contents "${DOCKER__EMPTYSTRING}" \
+					"${docker__containerID_chosen}" \
+					"${docker__src_dir}"\
+					"${docker__dst_dir}" \
+					"${misscontfpath}" \
+					"${asterisk_isfound}" \
+					"${docker__src_and_dst_totalcount_list[@]}"
 		else	#asterisk is NOT found
-			src_copypath="${docker__src_dir}/${docker__src_file}"
-			dst_copypath="${docker__dst_dir}"
+			#Define paths
+			src_copypath=$(get_fullpath_by_combining_dir_with_fileorfolder "${docker__src_dir}" "${docker__src_file}")
+			dst_copypath=$(get_fullpath_by_combining_dir_with_fileorfolder "${docker__dst_dir}" "${docker__src_file}")
 
-			docker cp ${src_copypath} ${docker__containerID_chosen}:${dst_copypath}
+			docker__copy_tar_from_src_to_dst__sub "${DOCKER__EMPTYSTRING}" \
+					"${docker__containerID_chosen}" \
+					"${docker__src_file}" \
+					"${docker__src_dir}" \
+					"${docker__dst_dir}"
 
+			#print
 			echo -e "...copied ${DOCKER__FG_LIGHTGREY}${docker__src_file}${DOCKER__NOCOLOR}"
 
 
 			#Show total counter comparison
 			#Show missing contents (if any)
-			docker__src_and_dst_count_contents "${DOCKER__EMPTYSTRING}" \
+			docker__src_vs_dst_show_counts "${DOCKER__EMPTYSTRING}" \
 					"${docker__containerID_chosen}" \
 					"${src_copypath}" \
-					"${docker__dst_dir}/${docker__src_file}" \
+					"${dst_copypath}" \
 					"${misscontfpath}" \
-					"${asterisk_isFound}"
+					"${asterisk_isfound}"
 		fi	
 	fi
 }
 
 docker__copy_tar_from_src_to_dst__sub() {
 	#Input args
-	src_containerid__input="${1}"
-	dst_containerid__input="${2}"
-	src_content__input="${3}"	#file or folder
-	src_dir__input="${4}"
-	dst_dir__input="${5}"
+	local src_containerid__input="${1}"
+	local dst_containerid__input="${2}"
+	local src_content__input="${3}"	#file or folder
+	local src_dir__input="${4}"
+	local dst_dir__input="${5}"
 
 	#Define Paths
 	tar_filename="${src_content__input}.tar"
-	src_tar_fpath="${src_dir__input}/${tar_filename}"
-	dst_tar_fpath="${dst_dir__input}/${tar_filename}"
+	src_tar_fpath=$(get_fullpath_by_combining_dir_with_fileorfolder "${src_dir__input}" "${tar_filename}")
+	dst_tar_fpath=$(get_fullpath_by_combining_dir_with_fileorfolder "${dst_dir__input}" "${tar_filename}")
 
-	if [[ -n ${src_containerid__input} ]]; then
+	if [[ -n "${src_containerid__input}" ]]; then
 		#---------------------------------------------------------------------
 		# CONTAINER TO LOCAL
 		#---------------------------------------------------------------------
@@ -1038,7 +1030,6 @@ docker__copy_tar_from_src_to_dst__sub() {
 		docker cp ${src_tar_fpath} ${dst_containerid__input}:${dst_tar_fpath}
 
 		#Destination: extract 'tar' file
-		tar -xf ${dst_tar_fpath} -C ${dst_dir__input}
 		docker exec ${dst_containerid__input} tar -xf ${dst_tar_fpath} -C ${dst_dir__input}
 
 		#Source: remove tar file
@@ -1049,14 +1040,14 @@ docker__copy_tar_from_src_to_dst__sub() {
 	fi
 }
 
-docker__src_and_dst_count_contents() {
+docker__src_vs_dst_show_counts() {
 	#Input args
-	src_containerid__input="${1}"
-	dst_containerid__input="${2}"
-	src_path__input="${3}"
-	dst_path__input="${4}"
-	misscontfpath__input="${5}"
-	asterisk_isFound__input="${6}"
+	local src_containerid__input="${1}"
+	local dst_containerid__input="${2}"
+	local src_path__input="${3}"
+	local dst_path__input="${4}"
+	local misscontfpath__input="${5}"
+	local asterisk_isFound__input="${6}"
 
 	#Define command lines
 	#EXPLANATION:
@@ -1103,18 +1094,18 @@ docker__src_and_dst_count_contents() {
 	if [[ ${src_output} -eq ${dst_output} ]]; then
 		echo -e "......src:dst = ${src_output}:${dst_output} (${DOCKER__FG_GREEN}OK${DOCKER__NOCOLOR})"
 	else
-		docker__src_vs_dst_retrieve_missing_contents "${src_containerid__input}" \
+		docker__src_vs_dst_show_missing_contents "${src_containerid__input}" \
 				"${dst_containerid__input}" \
 				"${src_path__input}" \
 				"${dst_path__input}" \
 				"${misscontfpath__input}" \
-				"${asterisk_isFound}"
+				"${asterisk_isFound__input}"
 
 		echo -e "......src:dst = ${src_output}:${dst_output} (${DOCKER__FG_RED1}FAIL${DOCKER__NOCOLOR})\n" | tee -a "${misscontfpath__input}"
 	fi
 }
 
-docker__src_vs_dst_retrieve_missing_contents() {
+docker__src_vs_dst_show_missing_contents() {
 	#Input args
 	src_containerid__input="${1}"
 	dst_containerid__input="${2}"
@@ -1160,11 +1151,45 @@ docker__src_vs_dst_retrieve_missing_contents() {
 		if [[ ${asterisk_isFound__input} == false ]]; then
 			echo -e "${content}" | tee -a ${misscontfpath__input}
 		else
-			echo -e "${src_path__input}/${content}" | sed 's#//*#/#g' | tee -a ${misscontfpath__input}
+			# echo -e "${src_path__input}/${content}" | sed 's#//*#/#g' | tee -a ${misscontfpath__input}
+			echo -e "$(get_fullpath_by_combining_dir_with_fileorfolder "${src_path__input}" "${content}")" | tee -a ${misscontfpath__input}
 		fi
 	done
 	echo -e "\r"
 }
+
+docker__src_vs_dst_show_total_counts_and_missing_contents() {
+	#Input args
+	local src_containerid__input="${1}"
+	local dst_containerid__input="${2}"
+	local src_dir__input="${3}"
+	local dst_dir_input="${4}"
+	local misscontfpath__input="${5}"
+	local asterisk_isFound__input="${6}"
+    shift 6                 # Shift to skip the first 6 parameters
+    local totalcount_list__input=("$@") 
+
+	#Show total missing contents & counts
+	if [[ ${totalcount_list__input[0]} -ne ${totalcount_list__input[1]} ]]; then
+		#Show total missing contents
+		docker__src_vs_dst_show_missing_contents "${src_containerid__input}" \
+				"${dst_containerid__input}" \
+				"${src_dir__input}" \
+				"${dst_dir_input}" \
+				"${misscontfpath__input}" \
+				"${asterisk_isFound__input}"
+
+		#Show total missing counts
+		echo -e "...Total missing contents count (incl. parent folders):" | tee -a "${misscontfpath__input}"
+		echo -e "......src:dst = ${totalcount_list__input[0]}:${totalcount_list__input[1]}" | tee -a "${misscontfpath__input}"
+		echo -e "...See file: \"${misscontfpath__input}\"\n"
+	else
+		#Show total counts
+		echo -e "...Total contents count (incl. parent folders):"
+		echo -e "......src:dst = ${totalcount_list__input[0]}:${totalcount_list__input[1]}"
+	fi
+}
+
 
 docker__exit__sub() {
 	exit__func "${DOCKER__EXITCODE_0}" "${docker__exit_numOfLines}"

@@ -1886,6 +1886,26 @@ function checkIf_fpaths_are_the_same__func() {
     fi
 }
 
+function get_fullpath_by_combining_dir_with_fileorfolder() {
+    #Input args
+    local dir__input="${1}"
+    local content__input="${2}"
+
+    #Combine 'dir__input' and 'content__input'
+    #***NOTE: double-slashes (//) will be substituted by single-slash (/)
+    #EXPLANATION:
+    #   s: substitute command in sed.
+    #   #//*#/#g: search and replace pattern.
+    #   //: pattern to search for (consecutive forward slashes).
+    #   /: replacement (a single forward slash).
+    #   g: stands for global, meaning that all occurrences of the pattern on each 
+    #       line will be replaced, not just the first one.
+    local ret=$(echo "${dir__input}/${content__input}" | sed 's#//*#/#g')
+
+    #OUTPUT
+    echo "${ret}"
+}
+
 function find_and_remove_all_lines_from_file_forGiven_keyWord__func() {
     #Input args
     local fpath__input=${1}
