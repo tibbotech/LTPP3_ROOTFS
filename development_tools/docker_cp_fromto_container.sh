@@ -896,8 +896,19 @@ docker__copy_from_src_to_dst__sub() {
 		else	#asterisk is NOT found
 			src_copypath="${docker__src_dir}/${docker__src_file}"
 			dst_copypath="${docker__dst_dir}"
+			docker__src_tar_file="${docker__src_file}.tar"
 
-			docker cp ${docker__containerID_chosen}:${src_copypath} ${dst_copypath}
+			#docker cp ${docker__containerID_chosen}:${src_copypath} ${dst_copypath}
+			docker exec ${docker__containerID_chosen} tar -cf ${docker__src_dir}/${docker__src_tar_file} -C ${docker__src_dir} ${docker__src_file}
+
+			#Copy the tar archive from the container to the local destination path
+			docker cp ${docker__containerID_chosen}:${docker__src_dir}/${docker__src_tar_file} ${dst_copypath}/${docker__src_tar_file}
+
+			#Extract the tar archive locally
+			tar -xf ${dst_copypath}/${docker__src_tar_file} -C ${dst_copypath}
+
+			#Remove the tar archive from the local destination path
+			rm ${dst_copypath}/${docker__src_tar_file}
 
 			echo -e "...copied ${DOCKER__FG_LIGHTGREY}${docker__src_file}${DOCKER__NOCOLOR}"
 
