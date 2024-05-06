@@ -284,15 +284,16 @@ docker__load_constants__sub() {
 	DOCKER__READINPUT_C_OPTION="${DOCKER__FG_YELLOW}${DOCKER__SEMICOLON_CLEAR}${DOCKER__NOCOLOR}lear"
 	DOCKER__READINPUT_B_C_OPTIONS="(${DOCKER__READINPUT_B_OPTION} ${DOCKER__READINPUT_C_OPTION})"
 	# DOCKER__READINPUT_H_B_C_OPTIONS="(${DOCKER__READINPUT_H_OPTION} ${DOCKER__READINPUT_B_OPTION} ${DOCKER__READINPUT_C_OPTION})"
-	DOCKER__READINPUT_CONFIRM_OPTIONS="(${DOCKER__FG_YELLOW}y${DOCKER__NOCOLOR}${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}"
+	DOCKER__READINPUT_CONFIRM_SPECIAL_OPTION="${DOCKER__FG_YELLOW}a${DOCKER__NOCOLOR}${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}"
+	DOCKER__READINPUT_CONFIRM_OPTIONS="${DOCKER__FG_YELLOW}y${DOCKER__NOCOLOR}${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}"
 	DOCKER__READINPUT_CONFIRM_OPTIONS+="${DOCKER__FG_YELLOW}n${DOCKER__NOCOLOR}${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}"
 	DOCKER__READINPUT_CONFIRM_OPTIONS+="${DOCKER__FG_YELLOW}p${DOCKER__NOCOLOR}${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}"
 	DOCKER__READINPUT_CONFIRM_OPTIONS+="${DOCKER__FG_YELLOW}i${DOCKER__NOCOLOR}${DOCKER__FG_LIGHTGREY}/${DOCKER__NOCOLOR}"
-	DOCKER__READINPUT_CONFIRM_OPTIONS+="${DOCKER__FG_YELLOW}h${DOCKER__NOCOLOR})"
+	DOCKER__READINPUT_CONFIRM_OPTIONS+="${DOCKER__FG_YELLOW}h${DOCKER__NOCOLOR}"
 
 	DOCKER__READINPUT_CONTAINERID="${DOCKER__FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}${DOCKER__FG_LIGHTGREY}:-:${DOCKER__NOCOLOR}${DOCKER__BG_BRIGHTPRUPLE}ID${DOCKER__NOCOLOR} ${DOCKER__READINPUT_B_C_OPTIONS}: "
 	DOCKER__READINPUT_CONTAINER_SRC="${DOCKER__FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}${DOCKER__FG_LIGHTGREY}:-:${DOCKER__NOCOLOR}${DOCKER__BG_BRIGHTPRUPLE}Src${DOCKER__NOCOLOR}: "
-	DOCKER__READINPUT_DO_YOU_WISH_TO_CONTINUE="Do you wish to continue ${DOCKER__READINPUT_CONFIRM_OPTIONS}?"
+	DOCKER__READINPUT_DO_YOU_WISH_TO_CONTINUE="Do you wish to continue"
 	DOCKER__READINPUT_HOST_DST="${DOCKER__FG_GREEN85}Local${DOCKER__NOCOLOR}${DOCKER__FG_LIGHTGREY}:-:${DOCKER__NOCOLOR}${DOCKER__BG_GREEN85}Dst${DOCKER__NOCOLOR}: "
 	DOCKER__READINPUT_HOST_SRC="${DOCKER__FG_GREEN85}Local${DOCKER__NOCOLOR}${DOCKER__FG_LIGHTGREY}:-:${DOCKER__NOCOLOR}${DOCKER__BG_GREEN85}Src${DOCKER__NOCOLOR}: "
 	DOCKER__READINPUT_CONTAINER_DST="${DOCKER__FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}${DOCKER__FG_LIGHTGREY}:-:${DOCKER__NOCOLOR}${DOCKER__BG_BRIGHTPRUPLE}Dst${DOCKER__NOCOLOR}: "
@@ -301,11 +302,12 @@ docker__load_constants__sub() {
 	DOCKER__DIRECTION_LOCAL_TO_CONTAINER="${DOCKER__FG_GREEN85}Local${DOCKER__NOCOLOR} ${DOCKER__FG_LIGHTGREY}>${DOCKER__NOCOLOR} ${DOCKER__FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}"
 
 	DOCKER__CONFIRMATION_REMARKS="${DOCKER__BG_ORANGE}Remarks:${DOCKER__NOCOLOR}\n"
-	DOCKER__CONFIRMATION_REMARKS+="${DOCKER__FG_YELLOW}y${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}Yes${DOCKER__NOCOLOR}\n"
-	DOCKER__CONFIRMATION_REMARKS+="${DOCKER__FG_YELLOW}n${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}No${DOCKER__NOCOLOR}\n"
-	DOCKER__CONFIRMATION_REMARKS+="${DOCKER__FG_YELLOW}p${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}Reselect Path${DOCKER__NOCOLOR}\n"
-	DOCKER__CONFIRMATION_REMARKS+="${DOCKER__FG_YELLOW}i${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}Reselect containerID${DOCKER__NOCOLOR}\n"
-	DOCKER__CONFIRMATION_REMARKS+="${DOCKER__FG_YELLOW}h${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}Home${DOCKER__NOCOLOR}"
+	DOCKER__CONFIRMATION_REMARKS_SPECIAL_OPTION="${DOCKER__DASH} ${DOCKER__FG_YELLOW}a${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}Yes and create folder${DOCKER__NOCOLOR}\n"
+	DOCKER__CONFIRMATION_REMARKS_OPTIONS="${DOCKER__DASH} ${DOCKER__FG_YELLOW}y${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}Yes${DOCKER__NOCOLOR}\n"
+	DOCKER__CONFIRMATION_REMARKS_OPTIONS+="${DOCKER__DASH} ${DOCKER__FG_YELLOW}n${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}No${DOCKER__NOCOLOR}\n"
+	DOCKER__CONFIRMATION_REMARKS_OPTIONS+="${DOCKER__DASH} ${DOCKER__FG_YELLOW}p${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}Reselect Path${DOCKER__NOCOLOR}\n"
+	DOCKER__CONFIRMATION_REMARKS_OPTIONS+="${DOCKER__DASH} ${DOCKER__FG_YELLOW}i${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}Reselect containerID${DOCKER__NOCOLOR}\n"
+	DOCKER__CONFIRMATION_REMARKS_OPTIONS+="${DOCKER__DASH} ${DOCKER__FG_YELLOW}h${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}Home${DOCKER__NOCOLOR}"
 
 	DOCKER__COPY_DIRECTION_REMARKS="Choose copy direction:\n"
 	DOCKER__COPY_DIRECTION_REMARKS+="${DOCKER__FOURSPACES}1. ${DOCKER__DIRECTION_CONTAINER_TO_LOCAL}\n"
@@ -337,6 +339,9 @@ docker__init_variables__sub() {
 	docker__dst_dir=${DOCKER__EMPTYSTRING}
 	docker__src_dir=${DOCKER__EMPTYSTRING}
 	docker__src_file=${DOCKER__EMPTYSTRING}
+
+	docker__src_parentfolder=${DOCKER__EMPTYSTRING}
+	docker__entire_folder_iscopied=false
 
 	docker__dst_dir_print=${DOCKER__EMPTYSTRING}
 	docker__src_dir_print=${DOCKER__EMPTYSTRING}
@@ -488,6 +493,10 @@ docker__path_selection_handler__sub() {
 	local srcFullpath_print=${DOCKER__EMPTYSTRING}
 	local dstFullpath_print=${DOCKER__EMPTYSTRING}
 
+	#Initialize global variables
+	docker__src_parentfolder=${DOCKER__EMPTYSTRING}
+	docker__entire_folder_iscopied=false
+
 	case "${docker__mycopychoice}" in
 		${DOCKER__CONTAINER_TO_HOST})
 			while true
@@ -605,13 +614,13 @@ docker__src_path_selection__sub() {
 		#	Output file 'dirlist__src_ls_1aA_output__fpath', which holds the contents of
 		#	...of directory 'docker__src_dir', will be used as reference when...
 		#	...copying from source to destination.
-		docker__src_file=`get_basename_from_specified_path__func "${docker__path_output}"`
+		docker__src_file=`get_basename_rev1__func "${docker__path_output}"`
 	else	#no asterisk found
 		#Check if 'docker__path_output' is a file
 		fileExists=`checkIf_file_exists__func "${containerID__input}" "${docker__path_output}"`
 		if [[ ${fileExists} == true ]]; then	#file exists
 			docker__src_dir=`get_dirname_from_specified_path__func "${docker__path_output}"`
-			docker__src_file=`get_basename_from_specified_path__func "${docker__path_output}"`
+			docker__src_file=`get_basename_rev1__func "${docker__path_output}"`
 		else	#file does not exist or not a file
 			#Check if 'docker__path_output' is a directory
 			dirExists=`checkIf_dir_exists__func "${containerID__input}" "${docker__path_output}"`
@@ -718,7 +727,7 @@ docker__dst_path_selection__sub() {
 		docker__dirlist_show_dirContent_handler__sub "${containerID__input}" "${docker__path_output}"
 
 		#Print
-		show_msg_only__func "${DOCKER__ECHOMSG_PLEASE_SELECT_A_VALID_DESTINATIONPATH}" "${DOCKER__NUMOFLINES}"
+		show_msg_only__func "${DOCKER__ECHOMSG_PLEASE_SELECT_A_VALID_DESTINATIONPATH}"
 
 		#Reset variables
 		docker__dst_dir=${DOCKER__EMPTYSTRING}
@@ -735,7 +744,6 @@ docker__dst_path_selection__sub() {
 	#Set case-selection
 	docker__case_option=${DOCKER__CASE_DONE}
 }
-
 
 docker__show_summary__sub() {
 	#Compose 'docker__summaryMsg'
@@ -758,19 +766,42 @@ docker__show_summary__sub() {
 }
 
 docker__confirmation__sub() {
+	#Check if SOURCE PARENT FOLDER is set to be copied to DESTINATION
+	#***NOTE: this function implicitely update the following 2 global variables:
+	#	1. docker__src_parentfolder
+	#	2. docker__entire_folder_iscopied
+	docker__entire_folder_iscopied__sub
+
+	#Compose the REMARK and READINPUT
+	local remark="${DOCKER__CONFIRMATION_REMARKS}"
+	local readmsg="${DOCKER__READINPUT_DO_YOU_WISH_TO_CONTINUE} "
+	if [[ "${docker__entire_folder_iscopied}" == true ]]; then
+		remark+="${DOCKER__CONFIRMATION_REMARKS_SPECIAL_OPTION}"
+		readmsg+="(${DOCKER__READINPUT_CONFIRM_SPECIAL_OPTION}"
+	else
+		readmsg+="("
+	fi
+	remark+="${DOCKER__CONFIRMATION_REMARKS_OPTIONS}"
+	readmsg+="${DOCKER__READINPUT_CONFIRM_OPTIONS})? "
+
 	#Show remarks
-	show_msg_only__func "${DOCKER__CONFIRMATION_REMARKS}" "${DOCKER__NUMOFLINES_0}"
+	show_msg_only__func "${remark}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}" "false" "true"
 
 	while true
 	do
-		read -N1 -p "${DOCKER__READINPUT_DO_YOU_WISH_TO_CONTINUE}" docker__myanswer
+		read -N1 -p "${readmsg}" docker__myanswer
 
 		if [[ ! -z ${docker__myanswer} ]]; then	#contains data
-			if [[ ${docker__myanswer} =~ [ynpih] ]]; then
+			if [[ ${docker__myanswer} =~ [aynpih] ]]; then
 				#Move-down cursor
 				# moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
 				case "${docker__myanswer}" in
+					a)
+						moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+						goto__func PHASE_CREATE_FOLDER_AT_DST
+						;;
 					y)
 						moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
@@ -812,6 +843,38 @@ docker__confirmation__sub() {
 	done
 }
 
+docker__entire_folder_iscopied__sub() {
+	#Check if 'docker__src_file' is an asterisk (*)
+	if [[ "${docker__src_file}" == "${DOCKER__ASTERISK}" ]]; then
+		#Get SOURCE parent folder
+		docker__src_parentfolder=$(get_basename_rev2__func "${docker__src_dir}")
+
+		#Set flag to 'true'
+		docker__entire_folder_iscopied=true
+	else
+		#Reset variable
+		docker__src_parentfolder=${DOCKER__EMPTYSTRING}
+
+		#Set flag to 'false'
+		docker__entire_folder_iscopied=false
+	fi
+}
+
+docker__create_folder_at_dst__sub() {
+	#Update fullpath
+	local new_dst_dir=$(get_fullpath_by_combining_dir_with_fileorfolder "${docker__dst_dir}" "${docker__src_parentfolder}")
+
+	#Create fullpath
+	if [[ ${docker__mycopychoice} -eq ${DOCKER__CONTAINER_TO_HOST} ]]; then	#Container to Host Device
+		mkdir -p "${new_dst_dir}"
+	else	#Host Device to Container
+		docker exec ${docker__containerID_chosen} mkdir -p "${new_dst_dir}"
+	fi
+
+	#***IMPORTANT: Update 'docker__dst_dir'
+	docker__dst_dir="${new_dst_dir}"
+}
+
 docker__copy_from_src_to_dst__sub() {
 	#---------------------------------------------------------------------
 	# PHASE 1: DEFINITION
@@ -819,6 +882,7 @@ docker__copy_from_src_to_dst__sub() {
 	#Define variables
 	local asterisk_isfound=false
 	local line=${DOCKER__EMPTYSTRING}
+	local src_folder=${DOCKER__EMPTYSTRING}
 	local src_copypath=${DOCKER__EMPTYSTRING}
 	local dst_copypath=${DOCKER__EMPTYSTRING}
 
@@ -844,6 +908,7 @@ docker__copy_from_src_to_dst__sub() {
 	docker__copy_msg+="Destination: ${DOCKER__FG_LIGHTGREY}${docker__dst_dir}${DOCKER__NOCOLOR}"
 
 	#Check if 'asterisk' is found (MUST BE DONE HERE!)
+	#***NOTE: 'docker__src_file' could be an 'ASTERISK' or a 'keyword containing an ASTERISK'
 	asterisk_isfound=`checkForMatch_of_a_pattern_within_string__func "${DOCKER__ASTERISK}" "${docker__src_file}"`
 
 	if [[ ${docker__mycopychoice} -eq ${DOCKER__CONTAINER_TO_HOST} ]]; then	#Container to Local Host
@@ -927,6 +992,8 @@ docker__copy_from_src_to_dst__sub() {
 							"${DOCKER__NUMOFLINES_2}"
 
 		if [[ ${asterisk_isfound} == true ]]; then	#asterisk is found
+
+
 			while read -r line
 			do
 				#Define paths
@@ -1063,8 +1130,6 @@ docker__src_vs_dst_show_counts() {
 	#		Count the remaining lines
 	#NOTE:
 	#	if 'src_path__input' and/or 'dst_path__input' is directory, then this directory is NOT INCLUDED in the count!!!
-	# local src_cmd="ls -1aR  \"${src_path__input}\" | grep -vE ':$' | grep -vE '^$' | grep -vE '^\.+$' | wc -l"
-	# local dst_cmd="ls -1aR  \"${dst_path__input}\" | grep -vE ':$' | grep -vE '^$' | grep -vE '^\.+$' | wc -l"
 	local src_cmd="find \"${src_path__input}\" -printf \"${src_path__input}/%P\n\" | wc -l"
 	local dst_cmd="find \"${dst_path__input}\" -printf \"${dst_path__input}/%P\n\" | wc -l"
 	local src_outputfpath="${docker__tmp__dir}/src.out"
@@ -1124,8 +1189,6 @@ docker__src_vs_dst_show_missing_contents() {
 	#		Exclude empty lines
 	#	grep -vE '^\.+$':
 	#		Exclude lines containing only .
-	# local src_cmd="ls -1aR  \"${src_path__input}\" | grep -vE ':$' | grep -vE '^$' | grep -vE '^\.+$'"
-	# local dst_cmd="ls -1aR  \"${dst_path__input}\" | grep -vE ':$' | grep -vE '^$' | grep -vE '^\.+$'"
 	local src_cmd="find \"${src_path__input}\" -printf \"${src_path__input}/%P\n\""
 	local dst_cmd="find \"${dst_path__input}\" -printf \"${dst_path__input}/%P\n\""
 	local src_outputfpath="${docker__tmp__dir}/src.out"
@@ -1262,6 +1325,14 @@ main__sub() {
 
 @PHASE_CONFIRMATION:
 	docker__confirmation__sub
+
+
+
+@PHASE_CREATE_FOLDER_AT_DST:
+	docker__create_folder_at_dst__sub
+
+	#Goto Next-Phase
+	goto__func PHASE_COPY_FROM_SRC_TO_DST
 
 
 

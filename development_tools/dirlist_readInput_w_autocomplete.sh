@@ -69,7 +69,7 @@ function autocomplete__func() {
 
     #Split directory from file/folder
     dir=`get_dirname_from_specified_path__func "${fpath__input}"`
-    keyWord=`get_basename_from_specified_path__func "${fpath__input}"`
+    keyWord=`get_basename_rev1__func "${fpath__input}"`
     
     #Check if 'keyWord' is an Empty String
     #Remark:
@@ -311,7 +311,7 @@ function load_dirlist_into_array__func() {
 
     #Split directory from file/folder
     local dir=`get_dirname_from_specified_path__func "${fpath__input}"`
-    local keyWord=`get_basename_from_specified_path__func "${fpath__input}"`
+    local keyWord=`get_basename_rev1__func "${fpath__input}"`
 
     #Define local variables
     local cachedInputArr_string=${DOCKER__EMPTYSTRING}
@@ -785,6 +785,9 @@ dirlist__readInput_w_autocomplete__sub() {
                 #Show remarks if 'readMsgRemarks__input' is NOT an Empty String
                 if [[ ! -z ${readMsgRemarks__input} ]]; then
                     echo -e "${readMsgRemarks__input}"
+
+                    #Append horizontal line
+                    duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
                 fi
 
                 phase=${PHASE_SHOW_READINPUT}
@@ -1137,7 +1140,7 @@ dirlist__show_dirContent_handler__sub() {
 
     #Split directory from file/folder
     local dir=`get_dirname_from_specified_path__func "${fpath__input}"`
-    local keyWord=`get_basename_from_specified_path__func "${fpath__input}"`
+    local keyWord=`get_basename_rev1__func "${fpath__input}"`
 
     #Move down one line
     if [[ ! -z ${menuTitle__input} ]]; then
