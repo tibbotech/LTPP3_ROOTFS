@@ -906,12 +906,20 @@ dirlist__readInput_w_autocomplete__sub() {
                         moveDown_oneLine_then_moveUp_and_clean__func "${DOCKER__NUMOFLINES_1}"
                         ;;
                     ${DOCKER__TAB})
-                        #Check if 'str' and 'str_prev' are the same?
-                        #Remark:
-                        #   This means that TAB was pressed without new key-input
-                        if [[ "${str}" != "${str_prev}" ]]; then  #false
+                        #Check if 'str' and 'str_prev' are DIFFERENT?
+                        if [[ "${str}" != "${str_prev}" ]]; then  #Yes, they are different
+                            #Check if BOTH an asterisk * and range {.,.} is found
+
+
+
                             #Remove 'asterisk' from 'str' (if any)
+>>>> Check if 'str' contains asterisk
                             str_wo_asterisk=`remove_asterisk_from_string "${str}"`
+
+
+>>>> Check if 'str' contains range
+
+
 
 #---------------------------Load directory content into array
                             #This function directly outputs the following files:
@@ -1014,7 +1022,7 @@ dirlist__readInput_w_autocomplete__sub() {
                                 #Goto 'keyInput = DOCKER__EXIT'
                                 keyInput=${DOCKER__EXIT}
                             fi
-                        else    #str = str_prev (enter was pressed without key-input)
+                        else    #No, they are the same
                             #Goto next-phase
                             phase=${PHASE_SHOW_READINPUT}
                             
