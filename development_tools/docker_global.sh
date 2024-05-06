@@ -1920,12 +1920,23 @@ function find_and_remove_all_lines_from_file_forGiven_keyWord__func() {
     sed -i "/${keyWord__input}/d"  ${fpath__input}
 }
 
-function get_basename_from_specified_path__func() {
+function get_basename_rev1__func() {
     #Input args
     local fpath__input=${1}
 
     #Get basename (which is a file or folder)
     local ret=`echo ${fpath__input} | rev | cut -d"${DOCKER__SLASH}" -f1 | rev`
+
+    #Output
+    echo -e "${ret}"
+}
+
+function get_basename_rev2__func() {
+    #Input args
+    local fpath__input=${1}
+
+    #Get basename (which is a file or folder)
+    local ret=$(basename "${fpath__input}")
 
     #Output
     echo -e "${ret}"
@@ -3068,6 +3079,9 @@ function show_msg_only__func() {
     local msg__input=${1}
     local prepend_numOfLines__input=${2}
     local append_numOfLines__input=${3}
+    local prepend_horizontal_line__input=${4}
+    local append_horizontal_line__input=${5}
+
 
     #Initialization
     if [[ -z ${prepend_numOfLines__input} ]]; then
@@ -3081,8 +3095,22 @@ function show_msg_only__func() {
     #Prepend empty line
     moveDown_and_cleanLines__func "${prepend_numOfLines__input}"
 
+    #Prepend horizontal line
+    if [[ -n ${prepend_horizontal_line__input} ]]; then
+        if [[ ${prepend_horizontal_line__input} == true ]]; then
+            duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+        fi
+    fi
+
     #Print
     echo -e "${msg__input}"
+
+    #Prepend horizontal line
+    if [[ -n ${append_horizontal_line__input} ]]; then
+        if [[ ${append_horizontal_line__input} == true ]]; then
+            duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+        fi
+    fi
 
     #Append empty line
     moveDown_and_cleanLines__func "${append_numOfLines__input}"
