@@ -547,8 +547,10 @@ docker__src_path_selection__sub() {
 	local containerID__input=${1}
 
 	#Define variables
-	local asterisk_isfound=false
+	local asterisk_isFound=false
+	local keywordRange_isFound=false
 	local fileExists=false
+
 
 	#Show and select path
 	${dirlist__readInput_w_autocomplete__fpath} "${containerID__input}" \
@@ -603,10 +605,13 @@ docker__src_path_selection__sub() {
 		goto__func PHASE_CHOOSE_CONTAINERID
 	fi
 
-	#Update 'docker__src_dir' and 'docker__src_file'
-	#Check if 'docker__path_output' contains an 'asterisk'
-	asterisk_isfound=`checkForMatch_of_a_pattern_within_string__func "${DOCKER__ASTERISK}" "${docker__path_output}"`
-	if [[ ${asterisk_isfound} == true ]]; then	#asterisk was found
+	#Check if 'asterisk *' is found
+	asterisk_isFound=$(checkif_asterisk_isvalid "${docker__path_output}")
+	#Check if 'keywordrange {.,.}' is found
+	keywordRange_isFound=$(checkif_keywordrange_isvalid "${docker__path_output}")
+
+
+	if [[ ${asterisk_isFound} == true ]] || [[ ${keywordRange_isFound} == true ]]; then	#asterisk was found
 		docker__src_dir=`get_dirname_from_specified_path__func "${docker__path_output}"`
 
 		#Set 'docker__src_file' to 'asterisk'
@@ -667,7 +672,7 @@ docker__dst_path_selection__sub() {
 	local containerID__input=${1}
 
 	#Define variables
-	# local asterisk_isfound=false
+	# local asterisk_isFound=false
 	# local fileExists=false
 
 	#Show and select path
@@ -880,7 +885,8 @@ docker__copy_from_src_to_dst__sub() {
 	# PHASE 1: DEFINITION
 	#---------------------------------------------------------------------
 	#Define variables
-	local asterisk_isfound=false
+	local asterisk_isFound=false
+	local keywordRange_isFound=false
 	local line=${DOCKER__EMPTYSTRING}
 	local src_folder=${DOCKER__EMPTYSTRING}
 	local src_copypath=${DOCKER__EMPTYSTRING}
@@ -908,8 +914,10 @@ docker__copy_from_src_to_dst__sub() {
 	docker__copy_msg+="Destination: ${DOCKER__FG_LIGHTGREY}${docker__dst_dir}${DOCKER__NOCOLOR}"
 
 	#Check if 'asterisk' is found (MUST BE DONE HERE!)
-	#***NOTE: 'docker__src_file' could be an 'ASTERISK' or a 'keyword containing an ASTERISK'
-	asterisk_isfound=`checkForMatch_of_a_pattern_within_string__func "${DOCKER__ASTERISK}" "${docker__src_file}"`
+	asterisk_isFound=$(checkif_asterisk_isvalid "${docker__src_file}")
+
+	#Check if 'keywordrange' is found (MUST BE DONE HERE!)
+	keywordRange_isFound=$(checkif_keywordrange_isvalid "${docker__src_file}")
 
 	if [[ ${docker__mycopychoice} -eq ${DOCKER__CONTAINER_TO_HOST} ]]; then	#Container to Local Host
 		#Show Title
@@ -921,7 +929,7 @@ docker__copy_from_src_to_dst__sub() {
 							"${DOCKER__NUMOFLINES_0}" \
 							"${DOCKER__NUMOFLINES_2}"
 
-		if [[ ${asterisk_isfound} == true ]]; then	#asterisk is found
+		if [[ ${asterisk_isFound} == true ]]; then	#asterisk is found
 			while read -r line
 			do
 				#Define paths
@@ -945,7 +953,7 @@ docker__copy_from_src_to_dst__sub() {
 						"${src_copypath}"\
 						"${dst_copypath}" \
 						"${misscontfpath}" \
-						"${asterisk_isfound}"
+						"${asterisk_isFound}"
 			done < ${dirlist__src_ls_1aA_output__fpath}
 
 			#Show total missing contents & counts
@@ -954,9 +962,11 @@ docker__copy_from_src_to_dst__sub() {
 					"${docker__src_dir}"\
 					"${docker__dst_dir}" \
 					"${misscontfpath}" \
-					"${asterisk_isfound}" \
+					"${asterisk_isFound}" \
 					"${docker__src_and_dst_totalcount_list[@]}"
-		else	#asterisk is NOT found
+		elif [[ ${keywordRange_isFound} == true ]]; then	#keywordrange is found
+			echo "docker__copy_from_src_to_dst__sub: Container to HOST: in progress"
+		else	#anything else
 			#Define paths
 			src_copypath=$(get_fullpath_by_combining_dir_with_fileorfolder "${docker__src_dir}" "${docker__src_file}")
 			dst_copypath=$(get_fullpath_by_combining_dir_with_fileorfolder "${docker__dst_dir}" "${docker__src_file}")
@@ -979,7 +989,7 @@ docker__copy_from_src_to_dst__sub() {
 					"${src_copypath}" \
 					"${dst_copypath}" \
 					"${misscontfpath}" \
-					"${asterisk_isfound}"
+					"${asterisk_isFound}"
 		fi
 	else	#Local Host to Container
 		#Show Title
@@ -991,9 +1001,7 @@ docker__copy_from_src_to_dst__sub() {
 							"${DOCKER__NUMOFLINES_0}" \
 							"${DOCKER__NUMOFLINES_2}"
 
-		if [[ ${asterisk_isfound} == true ]]; then	#asterisk is found
-
-
+		if [[ ${asterisk_isFound} == true ]]; then	#asterisk is found
 			while read -r line
 			do
 				#Define paths
@@ -1016,7 +1024,7 @@ docker__copy_from_src_to_dst__sub() {
 						"${src_copypath}" \
 						"${dst_copypath}" \
 						"${misscontfpath}" \
-						"${asterisk_isfound}"
+						"${asterisk_isFound}"
 			done < ${dirlist__src_ls_1aA_output__fpath}
 
 
@@ -1026,9 +1034,11 @@ docker__copy_from_src_to_dst__sub() {
 					"${docker__src_dir}"\
 					"${docker__dst_dir}" \
 					"${misscontfpath}" \
-					"${asterisk_isfound}" \
+					"${asterisk_isFound}" \
 					"${docker__src_and_dst_totalcount_list[@]}"
-		else	#asterisk is NOT found
+		elif [[ ${keywordRange_isFound} == true ]]; then	#keywordrange is found
+			echo "docker__copy_from_src_to_dst__sub: HOST to Container: in progress"
+		else	#anything else
 			#Define paths
 			src_copypath=$(get_fullpath_by_combining_dir_with_fileorfolder "${docker__src_dir}" "${docker__src_file}")
 			dst_copypath=$(get_fullpath_by_combining_dir_with_fileorfolder "${docker__dst_dir}" "${docker__src_file}")
@@ -1050,7 +1060,7 @@ docker__copy_from_src_to_dst__sub() {
 					"${src_copypath}" \
 					"${dst_copypath}" \
 					"${misscontfpath}" \
-					"${asterisk_isfound}"
+					"${asterisk_isFound}"
 		fi	
 	fi
 }

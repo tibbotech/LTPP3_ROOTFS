@@ -236,7 +236,8 @@ DOCKER__DIRLIST_REMARKS+="(e.g. ${DOCKER__FG_LIGHTGREY}/etc/${DOCKER__NOCOLOR}${
 
 DOCKER__DIRLIST_REMARKS+="${DOCKER__DASH} append ${DOCKER__FG_YELLOW}{${DOCKER__NOCOLOR}.${DOCKER__FG_YELLOW},${DOCKER__NOCOLOR}.${DOCKER__FG_YELLOW}}${DOCKER__NOCOLOR}: "
 DOCKER__DIRLIST_REMARKS+="${DOCKER__FG_LIGHTGREY}to copy range of files/folders${DOCKER__NOCOLOR} "
-DOCKER__DIRLIST_REMARKS+="(e.g. ${DOCKER__FG_LIGHTGREY}/etc/${DOCKER__NOCOLOR}${DOCKER__FG_YELLOW}{b,m}${DOCKER__NOCOLOR})\n"
+DOCKER__DIRLIST_REMARKS+="(e.g. ${DOCKER__FG_LIGHTGREY}/etc/${DOCKER__NOCOLOR}${DOCKER__FG_YELLOW}{e-n}${DOCKER__NOCOLOR}, "
+DOCKER__DIRLIST_REMARKS+="${DOCKER__FG_LIGHTGREY}/etc/${DOCKER__NOCOLOR}${DOCKER__FG_YELLOW}hi{e-n}${DOCKER__NOCOLOR})\n"
 
 DOCKER__DIRLIST_REMARKS+="  (${DOCKER__FG_BORDEAUX}NOTE:${DOCKER__NOCOLOR} ${DOCKER__FG_LIGHTGREY_250}asterisk and range can${DOCKER__NOCOLOR} "
 DOCKER__DIRLIST_REMARKS+="${DOCKER__FG_RED1}NOT${DOCKER__NOCOLOR} ${DOCKER__FG_LIGHTGREY_250}be used simultanously${DOCKER__NOCOLOR}!)\n"
@@ -514,6 +515,7 @@ DOCKER__STATUS_LNOTPRESENT="${DOCKER__FG_LIGHTRED}not-present${DOCKER__NOCOLOR}"
 DOCKER__STATUS_LNOTPRESENT_IGNORE="${DOCKER__FG_LIGHTRED}not-present${DOCKER__NOCOLOR} (ignore)"
 DOCKER__STATUS_LVALID="${DOCKER__FG_GREEN}valid${DOCKER__NOCOLOR}"
 DOCKER__STATUS_LINVALID="${DOCKER__FG_LIGHTRED}invalid${DOCKER__NOCOLOR}"
+DOCKER__STATUS_LINVALID_KEYINPUT_COMBO="${DOCKER__FG_LIGHTRED}invalid keyinput combo${DOCKER__NOCOLOR}"
 DOCKER__STATUS_LNOMATCHFOUND="${DOCKER__FG_LIGHTRED}no-match found${DOCKER__NOCOLOR}"
 
 DOCKER__NO_ACTION_REQUIRED="No action required"
@@ -1432,7 +1434,8 @@ function checkif_keywordrange_isvalid() {
 
     #CONDITION 1: get the last 5 chars
     local len=${#path__input}
-    local last_five_chars=${path__input:len-FIVE:FIVE}
+    local startpos=$((len - FIVE))
+    local last_five_chars=${path__input:startpos:FIVE}
 
     #CONDITION 2: check if 'last_five_chars' contains '{' and ',' and '}' precisely in that order
     #---------------------------------------------------------------------
@@ -1444,9 +1447,9 @@ function checkif_keywordrange_isvalid() {
     #   .*: matches zero or more of any character
     #   \}: matches }
     #---------------------------------------------------------------------
-    if [[ ${last_five_chars} =~ \{.*\,.*\} ]]; then
+    if [[ ${last_five_chars} =~ \{.*\-.*\} ]]; then
         #CONDITION I: check if the number of chars between '{' and '}' is THREE (3) and NO MORE than that
-        if [[ $a =~ \{...\} ]]; then
+        if [[ ${last_five_chars} =~ \{...\} ]]; then
             echo true
         else
             echo false
@@ -1465,7 +1468,8 @@ function checkif_asterisk_isvalid() {
 
     #CONDITION 1: get the last char
     local len=${#path__input}
-    local last_char=${path__input:len-ONE:ONE}
+    local startpos=$((len - ONE))
+    local last_char=${path__input:startpos:ONE}
 
     #CONDITION 2: check if last char is an asterisk (*)
     if [[ "${last_char}" == "*" ]]; then
@@ -1475,7 +1479,7 @@ function checkif_asterisk_isvalid() {
     fi
 }
 
-function checkif_asterisk_and_keywordrange_isfound() {
+function checkif_both_asterisk_and_keywordrange_are_present() {
     #Input args
     local path__input="${1}"
 
@@ -1484,7 +1488,6 @@ function checkif_asterisk_and_keywordrange_isfound() {
 
     #Get basename
     local basename=$(basename "${path__input}")
-
 
     #CONDITION 1.1: check if 'path__input' contains '{' and ',' and '}' precisely in that order
     #---------------------------------------------------------------------
@@ -1496,9 +1499,9 @@ function checkif_asterisk_and_keywordrange_isfound() {
     #   .*: matches zero or more of any character
     #   \}: matches }
     #---------------------------------------------------------------------
-    if [[ ${basename} =~ \{.*\,.*\} ]]; then
+    if [[ ${basename} =~ \{.*\-.*\} ]]; then
         #CONDITION 1.2: check if the number of chars between '{' and '}' is THREE (3) and NO MORE than that
-        if [[ $a =~ \{...\} ]]; then
+        if [[ ${basename} =~ \{...\} ]]; then
             ((match_ctr++))
         fi
     fi
@@ -1514,6 +1517,23 @@ function checkif_asterisk_and_keywordrange_isfound() {
     else
         echo false
     fi
+}
+
+function remove_trailing_chars_from_path() {
+    #Input args
+    local path__input="${1}"
+    local numof_chars="${2}"
+
+    #Remove the number of char(s)
+    local len=${#path__input}
+    local len_remain=$((len - numof_chars))
+
+    #Get path without asterisk * or keywordrange {.,.}
+    local startpos=0
+    local ret=${path__input:startpos:len_remain}
+
+    #OUTPUT
+    echo "${ret}"
 }
 
 
