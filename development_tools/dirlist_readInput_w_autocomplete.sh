@@ -913,11 +913,11 @@ dirlist__readInput_w_autocomplete__sub() {
 
 
                             #Remove 'asterisk' from 'str' (if any)
->>>> Check if 'str' contains asterisk
+echo "Check if 'str' contains asterisk"
                             str_wo_asterisk=`remove_asterisk_from_string "${str}"`
 
 
->>>> Check if 'str' contains range
+echo "Check if 'str' contains range"
 
 
 
