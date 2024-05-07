@@ -1353,6 +1353,8 @@ function show_array_w_menuTitle_w_confirmation__func() {
                         "${confirmation_append_numOfLines__input}"
 }
 
+
+
 #---BC RELATED FUNCTIONS
 function bc_substract_x_from_y() {
     #Input args
@@ -1387,6 +1389,7 @@ function bc_is_x_greaterthan_zero() {
 }
 
 
+
 #---CONTAINER RELATED FUNCTIONS
 function container_exec_cmd_and_receive_output__func() {
     #Input args
@@ -1416,6 +1419,103 @@ function container_exec_cmd_and_receive_output__func() {
     #OUTPUT
     echo "${ret}" > "${outputfpath__arg}"
 }
+
+
+
+#---COPY RELATED FUNCTIONKS
+function checkif_keywordrange_isvalid() {
+    #Input args
+    local path__input="${1}"
+
+    #Define constants
+    local FIVE=5
+
+    #CONDITION 1: get the last 5 chars
+    local len=${#path__input}
+    local last_five_chars=${path__input:len-FIVE:FIVE}
+
+    #CONDITION 2: check if 'last_five_chars' contains '{' and ',' and '}' precisely in that order
+    #---------------------------------------------------------------------
+    #Explanation:
+    #---------------------------------------------------------------------
+    #   \{: matches {
+    #   .*: Matches zero or more of any character
+    #   \,: matches ,
+    #   .*: matches zero or more of any character
+    #   \}: matches }
+    #---------------------------------------------------------------------
+    if [[ ${last_five_chars} =~ \{.*\,.*\} ]]; then
+        #CONDITION I: check if the number of chars between '{' and '}' is THREE (3) and NO MORE than that
+        if [[ $a =~ \{...\} ]]; then
+            echo true
+        else
+            echo false
+        fi
+    else
+        echo false
+    fi
+}
+
+function checkif_asterisk_isvalid() {
+    #Input args
+    local path__input="${1}"
+
+    #Define constants
+    local ONE=1
+
+    #CONDITION 1: get the last char
+    local len=${#path__input}
+    local last_char=${path__input:len-ONE:ONE}
+
+    #CONDITION 2: check if last char is an asterisk (*)
+    if [[ "${last_char}" == "*" ]]; then
+        echo true
+    else
+        echo false
+    fi
+}
+
+function checkif_asterisk_and_keywordrange_isfound() {
+    #Input args
+    local path__input="${1}"
+
+    #Define variable
+    local match_ctr=0
+
+    #Get basename
+    local basename=$(basename "${path__input}")
+
+
+    #CONDITION 1.1: check if 'path__input' contains '{' and ',' and '}' precisely in that order
+    #---------------------------------------------------------------------
+    #Explanation:
+    #---------------------------------------------------------------------
+    #   \{: matches {
+    #   .*: Matches zero or more of any character
+    #   \,: matches ,
+    #   .*: matches zero or more of any character
+    #   \}: matches }
+    #---------------------------------------------------------------------
+    if [[ ${basename} =~ \{.*\,.*\} ]]; then
+        #CONDITION 1.2: check if the number of chars between '{' and '}' is THREE (3) and NO MORE than that
+        if [[ $a =~ \{...\} ]]; then
+            ((match_ctr++))
+        fi
+    fi
+
+    #CONDITION 2: check if 'path__input' contains an asterisk (*)
+    if [[ ${basename} == *'*'* ]]; then
+        ((match_ctr++))
+    fi
+
+    #OUTPUT
+    if [[ ${match_ctr} -eq 2 ]]; then
+        echo true
+    else
+        echo false
+    fi
+}
+
 
 
 #---DOCKER RELATED FUNCTIONS
@@ -1579,6 +1679,8 @@ function generate_cache_filenames_basedOn_specified_repositoryTag__func() {
     #Output
     echo "${ret}"
 }
+
+
 
 #---ESCAPE-KEY RELATED FUNCTIONS
 function functionKey_detection__func() {
