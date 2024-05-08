@@ -293,10 +293,11 @@ docker__load_constants__sub() {
 
 	DOCKER__READINPUT_CONTAINERID="${DOCKER__FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}${DOCKER__FG_LIGHTGREY}:-:${DOCKER__NOCOLOR}${DOCKER__BG_BRIGHTPRUPLE}ID${DOCKER__NOCOLOR} ${DOCKER__READINPUT_B_C_OPTIONS}: "
 	DOCKER__READINPUT_CONTAINER_SRC="${DOCKER__FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}${DOCKER__FG_LIGHTGREY}:-:${DOCKER__NOCOLOR}${DOCKER__BG_BRIGHTPRUPLE}Src${DOCKER__NOCOLOR}: "
-	DOCKER__READINPUT_DO_YOU_WISH_TO_CONTINUE="Do you wish to continue"
-	DOCKER__READINPUT_HOST_DST="${DOCKER__FG_GREEN85}Local${DOCKER__NOCOLOR}${DOCKER__FG_LIGHTGREY}:-:${DOCKER__NOCOLOR}${DOCKER__BG_GREEN85}Dst${DOCKER__NOCOLOR}: "
-	DOCKER__READINPUT_HOST_SRC="${DOCKER__FG_GREEN85}Local${DOCKER__NOCOLOR}${DOCKER__FG_LIGHTGREY}:-:${DOCKER__NOCOLOR}${DOCKER__BG_GREEN85}Src${DOCKER__NOCOLOR}: "
 	DOCKER__READINPUT_CONTAINER_DST="${DOCKER__FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}${DOCKER__FG_LIGHTGREY}:-:${DOCKER__NOCOLOR}${DOCKER__BG_BRIGHTPRUPLE}Dst${DOCKER__NOCOLOR}: "
+	DOCKER__READINPUT_HOST_SRC="${DOCKER__FG_GREEN85}Local${DOCKER__NOCOLOR}${DOCKER__FG_LIGHTGREY}:-:${DOCKER__NOCOLOR}${DOCKER__BG_GREEN85}Src${DOCKER__NOCOLOR}: "
+	DOCKER__READINPUT_HOST_DST="${DOCKER__FG_GREEN85}Local${DOCKER__NOCOLOR}${DOCKER__FG_LIGHTGREY}:-:${DOCKER__NOCOLOR}${DOCKER__BG_GREEN85}Dst${DOCKER__NOCOLOR}: "
+
+	DOCKER__READINPUT_DO_YOU_WISH_TO_CONTINUE="Do you wish to continue"
 
 	DOCKER__DIRECTION_CONTAINER_TO_LOCAL="${DOCKER__FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR} ${DOCKER__FG_LIGHTGREY}>${DOCKER__NOCOLOR} ${DOCKER__FG_GREEN85}Local${DOCKER__NOCOLOR}"
 	DOCKER__DIRECTION_LOCAL_TO_CONTAINER="${DOCKER__FG_GREEN85}Local${DOCKER__NOCOLOR} ${DOCKER__FG_LIGHTGREY}>${DOCKER__NOCOLOR} ${DOCKER__FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}"
@@ -549,13 +550,20 @@ docker__src_path_selection__sub() {
 	#Define variables
 	local asterisk_isFound=false
 	local keywordRange_isFound=false
-	local fileExists=false
+	local isFile=false
+	local readMsg=${DOCKER__EMPTYSTRING}
 
+	#Depending on the 'containerID__input' value, use the appropriate 'readMsg'
+	if [[ -z "${containerID__input}" ]]; then
+		readMsg="${DOCKER__READINPUT_HOST_SRC}"
+	else
+		readMsg="${DOCKER__READINPUT_CONTAINER_SRC}"
+	fi
 
 	#Show and select path
 	${dirlist__readInput_w_autocomplete__fpath} "${containerID__input}" \
 						"${DOCKER__EMPTYSTRING}" \
-						"${DOCKER__READINPUT_CONTAINER_SRC}" \
+						"${readMsg}" \
 						"${DOCKER__DIRLIST_REMARKS_EXTENDED}" \
                         "${dirlist__src_ls_1aA_output__fpath}" \
                         "${dirlist__src_ls_1aA_tmp__fpath}" \
@@ -622,10 +630,12 @@ docker__src_path_selection__sub() {
 		docker__src_file=`get_basename_rev1__func "${docker__path_output}"`
 	else	#no asterisk found
 		#Check if 'docker__path_output' is a file
-		fileExists=`checkIf_file_exists__func "${containerID__input}" "${docker__path_output}"`
-		if [[ ${fileExists} == true ]]; then	#file exists
+		isFile=`checkIf_file_exists__func "${containerID__input}" "${docker__path_output}"`
+		if [[ ${isFile} == true ]]; then	#file exists
+			#Extract Directory and Filename
 			docker__src_dir=`get_dirname_from_specified_path__func "${docker__path_output}"`
 			docker__src_file=`get_basename_rev1__func "${docker__path_output}"`
+
 		else	#file does not exist or not a file
 			#Check if 'docker__path_output' is a directory
 			dirExists=`checkIf_dir_exists__func "${containerID__input}" "${docker__path_output}"`
@@ -672,13 +682,19 @@ docker__dst_path_selection__sub() {
 	local containerID__input=${1}
 
 	#Define variables
-	# local asterisk_isFound=false
-	# local fileExists=false
+	local readMsg=${DOCKER__EMPTYSTRING}
+
+	#Depending on the 'containerID__input' value, use the appropriate 'readMsg'
+	if [[ -z "${containerID__input}" ]]; then
+		readMsg="${DOCKER__READINPUT_HOST_DST}"
+	else
+		readMsg="${DOCKER__READINPUT_CONTAINER_DST}"
+	fi
 
 	#Show and select path
 	${dirlist__readInput_w_autocomplete__fpath} "${containerID__input}" \
 						"${DOCKER__EMPTYSTRING}" \
-						"${DOCKER__READINPUT_HOST_DST}" \
+						"${readMsg}" \
 						"${DOCKER__DIRLIST_REMARKS_EXTENDED}" \
                         "${dirlist__dst_ls_1aA_output__fpath}" \
                         "${dirlist__dst_ls_1aA_tmp__fpath}" \
@@ -1087,9 +1103,9 @@ docker__copy_from_src_to_dst__sub() {
 			for (( d=leftdec; d<=rightdec; d++ ))
 			do
 				#Convert decimal 'd' to char
-				local d_char=$(dec_to_char)
+				local c=$(dec_to_char "${d}")
 
-				echo $d_char
+				echo $c
 			done
 
 		#---------------------------------------------------------------------

@@ -1547,7 +1547,7 @@ function dec_to_char() {
 	local dec__input="${1}"
 
 	#Convert char to decimal
-	local ret=$(printf "\$(printf '%03o' ${dec__input})")
+	local ret=$(printf "\\$(printf '%03o' "$dec__input")")
 
 	#OUTPUT
 	echo "${ret}"
