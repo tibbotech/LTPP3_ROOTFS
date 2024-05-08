@@ -1405,7 +1405,7 @@ function bc_is_x_greaterthan_zero() {
 
 
 #---CONTAINER RELATED FUNCTIONS
-function container_exec_cmd_and_receive_output__func() {
+function docker_exec_cmd_and_receive_output__func() {
     #Input args
     local containerid__arg="${1}"
     local cmd__arg="${2}"

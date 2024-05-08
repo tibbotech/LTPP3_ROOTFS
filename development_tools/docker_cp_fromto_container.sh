@@ -903,11 +903,16 @@ docker__copy_from_src_to_dst__sub() {
 	#Define variables
 	local asterisk_isFound=false
 	local keywordRange_isFound=false
+
+	local c=${DOCKER__EMPTYSTRING}
 	local line=${DOCKER__EMPTYSTRING}
 	local src_folder=${DOCKER__EMPTYSTRING}
 	local src_copypath=${DOCKER__EMPTYSTRING}
 	local dst_copypath=${DOCKER__EMPTYSTRING}
 
+	local dirlist_ls_1av=()
+	local src_cmd=${DOCKER__EMPTYSTRING}
+	local src_outputfpath=${DOCKER__EMPTYSTRING}
 	local range_notation=${DOCKER__EMPTYSTRING}
 	local leftchar=${DOCKER__EMPTYSTRING}
 	local rightchar=${DOCKER__EMPTYSTRING}
@@ -1000,6 +1005,15 @@ docker__copy_from_src_to_dst__sub() {
 		elif [[ ${keywordRange_isFound} == true ]]; then	#keywordrange is found
 			echo "docker__copy_from_src_to_dst__sub: Container to HOST: in progress"
 
+			#1. Get dir contents
+			#2. Convert 'string' to 'array'
+			dirlist_ls_1av=( $(docker__get_dir_contents "${docker__src_dir}") )
+
+			for d in "${dirlist_ls_1av[@]}"
+			do
+				echo $d
+			done
+
 		#---------------------------------------------------------------------
 		# ALL OTHER
 		#---------------------------------------------------------------------
@@ -1085,12 +1099,23 @@ docker__copy_from_src_to_dst__sub() {
 		# RANGE-NOTATION
 		#---------------------------------------------------------------------
 		elif [[ ${keywordRange_isFound} == true ]]; then	#keywordrange is found
+			#1. Get dir contents
+			#2. Convert 'string' to 'array'
+			dirlist_ls_1av=( $(docker__get_dir_contents "${docker__src_dir}") )
+
+			for d in "${dirlist_ls_1av[@]}"
+			do
+				echo $d
+			done
+
 			#Extract LEFT and RIGHT chars
 			leftchar=$(extract_leftchar_from_range_notation "${docker__src_file}")
 			rightchar=$(extract_rightchar_from_range_notation "${docker__src_file}")
 			#Convert LEFT and RIGHT chars to decimals
 			leftdec=$(char_to_dec "${leftchar}")
 			rightdec=$(char_to_dec "${rightchar}")
+
+
 
 			#SWAP 'leftdec' with 'rightdec' if needed 'leftdec > rightdec'
 			if [[ ${leftdec} -gt ${rightdec} ]]; then
@@ -1102,10 +1127,10 @@ docker__copy_from_src_to_dst__sub() {
 			#Iterate from 'leftdec' until 'rightdec'
 			for (( d=leftdec; d<=rightdec; d++ ))
 			do
-				#Convert decimal 'd' to char
-				local c=$(dec_to_char "${d}")
+				#Convert decimal 'd' to char 'c'
+				c=$(dec_to_char "${d}")
 
-				echo $c
+				
 			done
 
 		#---------------------------------------------------------------------
@@ -1136,6 +1161,24 @@ docker__copy_from_src_to_dst__sub() {
 					"${asterisk_isFound}"
 		fi	
 	fi
+}
+
+docker__get_dir_contents() {
+	#Input args
+	local dir__input="${1}"
+
+	#Get directory list of contents
+	local src_cmd="ls -1av \"${dir__input}\" | grep -Ev '^\.\.?$'"
+	local src_outputfpath="${docker__tmp__dir}/src.out"
+	
+	#Execute command
+	#***NOTE: this function pass the result to file 'src_outputfpath'
+	docker_exec_cmd_and_receive_output__func "${DOCKER__EMPTYSTRING}" "${src_cmd}" "${src_outputfpath}"
+	#Retrieve result from file 'src_outputfpath'
+	local src_output=$(cat "${src_outputfpath}")
+
+	#OUTPUT
+	echo -e "${src_output}"
 }
 
 docker__copy_tar_from_src_to_dst__sub() {
@@ -1219,13 +1262,13 @@ docker__src_vs_dst_show_counts() {
 	local dst_outputfpath="${docker__tmp__dir}/dst.out"
 
 	#Execute commands
-	container_exec_cmd_and_receive_output__func "${src_containerid__input}" "${src_cmd}" "${src_outputfpath}"
+	docker_exec_cmd_and_receive_output__func "${src_containerid__input}" "${src_cmd}" "${src_outputfpath}"
 	local src_output=$(cat "${src_outputfpath}")
 	if [[ -z "${src_output}" ]]; then
 		src_output=0
 	fi
 
-	container_exec_cmd_and_receive_output__func "${dst_containerid__input}" "${dst_cmd}" "${dst_outputfpath}"
+	docker_exec_cmd_and_receive_output__func "${dst_containerid__input}" "${dst_cmd}" "${dst_outputfpath}"
 	local dst_output=$(cat "${dst_outputfpath}")
 	if [[ -z "${dst_output}" ]]; then
 		dst_output=0
@@ -1278,10 +1321,10 @@ docker__src_vs_dst_show_missing_contents() {
 	local dst_outputfpath="${docker__tmp__dir}/dst.out"
 
 	#Execute commands
-	container_exec_cmd_and_receive_output__func "${src_containerid__input}" "${src_cmd}" "${src_outputfpath}"
+	docker_exec_cmd_and_receive_output__func "${src_containerid__input}" "${src_cmd}" "${src_outputfpath}"
 	local src_output=$(cat "${src_outputfpath}")
 
-	container_exec_cmd_and_receive_output__func "${dst_containerid__input}" "${dst_cmd}" "${dst_outputfpath}"
+	docker_exec_cmd_and_receive_output__func "${dst_containerid__input}" "${dst_cmd}" "${dst_outputfpath}"
 	local dst_output=$(cat "${dst_outputfpath}")
 
 	#1. Find elements in 'src_output' that are not in 'dst_output'
