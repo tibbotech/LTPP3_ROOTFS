@@ -214,7 +214,7 @@ function autocomplete__func() {
                 col2=${numOfMatch_init}
                 col3=${numOfMatch}
 
-                ret="${col1},${col2},${col3}"
+                ret="${col1}${DOCKER__STX}${col2}${DOCKER__STX}${col3}"
 
                 #Exit while-loop
                 break
@@ -333,45 +333,6 @@ function load_dirlist_into_array__func() {
     if [[ -z ${dir} ]]; then
         dir=${DOCKER__SLASH}
     fi
-
-    #Get directory content
-    #Explanation:
-    #ls:
-    #   The order in which the switches (A,C,x) are applied MATTERS!!!
-    #   1: List all in 1 column
-    #   a: List hidden files/folders as well
-    #   A: List all entries including those starting with a dot '.', except for '.' and '..' (implied)
-    #   --group-directories-first: show directories first
-    #   head -${listView_numOfRows_input}": show a specified number of rows
-    #   tr -d $'\r': (IMPORTANT) trim all carriage returns which is caused by executing 'docker exec -t <containerID> /bin/bash -c'
-    #REMARK: For more info see: ls manual
-    #
-    #awk:
-    #   awk '!a[$0]++': get unique values
-
-#---This part may be removed once everything works----------------------------------
-    # if [[ -z ${keyWord} ]]; then
-    #     if [[ -z ${containerID__input} ]]; then
-    #         cachedInputArr_raw_string=`ls -1aA ${dir}`
-    #     else
-    #         cachedInputArr_raw_string=`${docker__exec_cmd} "ls -1aA ${dir}" | tr -d $'\r'`
-    #     fi
-    # else
-    #     if [[ -z ${containerID__input} ]]; then
-    #         cachedInputArr_raw_string=`ls -1aA ${dir} | grep "^${keyWord}"`
-    #     else
-    #         cachedInputArr_raw_string=`${docker__exec_cmd} "ls -1aA ${dir} | grep "^${keyWord}"" | tr -d $'\r'`
-    #     fi
-    # fi
-
-    # #Get only UNIQUE values
-    # cachedInputArr_string=`echo ${cachedInputArr_raw_string} | tr ' ' '\n' | awk '!a[$0]++'`
-
-    
-    # #Convert string to array
-    # cachedInput_Arr=(`echo ${cachedInputArr_string}`)
-#---This part may be removed once everything works----------------------------------
-
 
     #Get result and put in array
     if [[ -z ${keyWord} ]]; then
@@ -772,6 +733,7 @@ dirlist__readInput_w_autocomplete__sub() {
     local noMatchIsFound=false
     local onEnterPressed=false
     local onExit_moveDown_isEnabled=false
+    local onExit_show_readInput_message=false
 
 
 
@@ -782,7 +744,7 @@ dirlist__readInput_w_autocomplete__sub() {
         str=${DOCKER__SLASH}
     fi
     keyInput=${DOCKER__TAB}
-    phase=${PHASE_SHOW_KEYINPUT_HANDLER}
+    phase=${PHASE_KEYINPUT_HANDLER}
 
     while true
     do
@@ -840,9 +802,9 @@ dirlist__readInput_w_autocomplete__sub() {
                 #Read-input
                 read -N1 -rs -p "" keyInput
 
-                phase=${PHASE_SHOW_KEYINPUT_HANDLER}
+                phase=${PHASE_KEYINPUT_HANDLER}
             ;;
-            ${PHASE_SHOW_KEYINPUT_HANDLER})
+            ${PHASE_KEYINPUT_HANDLER})
                 #Select case based on 'keyInput'
                 case "${keyInput}" in
                     ${DOCKER__ENTER})
@@ -878,7 +840,7 @@ dirlist__readInput_w_autocomplete__sub() {
                                 onEnterPressed=true
 
                                 #Goto next-phase
-                                phase=${PHASE_SHOW_KEYINPUT_HANDLER}
+                                phase=${PHASE_KEYINPUT_HANDLER}
 
                                 #Check if new read-input value 'str' is different from the previous value 'str_prev'. 
                                 #Remark:
@@ -888,16 +850,24 @@ dirlist__readInput_w_autocomplete__sub() {
                                 #   2. after that, exit the loop
                                 #   3. output 'ret'
                                 if [[ ${str} != ${str_prev} ]]; then
-                                    str="${str}"
+                                    # str="${str}"
 
                                     #Goto 'keyInput = DOCKER__TAB'.
                                     #Remark:
                                     #   skip read-input dialog.
                                     keyInput=${DOCKER__TAB}
+
+                                    #Set flag to 'true'
+                                    #***NOTE: this is a CORRECTIVE ACTION to show the read-input message, because
+                                    #       without this corrective action, NO read-input message is shown AFTER
+                                    #       the 'DOCKER__TAB' is processed
+                                    onExit_show_readInput_message=true
+
                                 else    #the new read-input value 'str' is the same as the previous value 'str_prev'.
                                     ret=${ret_tmp}
 
-                                    #This flag is required for corrective move-down cursor 
+                                    #Set flag to 'true'
+                                    #***NOTE: this is a CORRECTIVE ACTION to move-down cursor.
                                     onExit_moveDown_isEnabled=true
 
                                     #Goto 'keyInput = DOCKER__EXIT'.
@@ -1014,47 +984,43 @@ dirlist__readInput_w_autocomplete__sub() {
                                         autocomplete_output=`autocomplete__func "${str_trimmed}" "${cachedInput_Arr[@]}"`
 
                                         #Separate each output element:
-                                        str_autocompleted=`echo "${autocomplete_output}" | cut -d"," -f1`
-                                        autocomplete_numOfMatches_init=`echo "${autocomplete_output}" | cut -d"," -f2`
-                                        autocomplete_numOfMatches=`echo "${autocomplete_output}" | cut -d"," -f3`
-                                        #Check if 'autocomplete_numOfMatches_init' is numerical
-                                        #***NOTE:
-                                        #   One of the reasons why 'autocomplete_numOfMatches_init' is NOT numerical is
-                                        #       because 'str_trimmed' contains a comma (,).
-                                        #   In other words, an error occurred.
-                                        if [[ $(isNumeric__func "${autocomplete_numOfMatches_init}") == false ]] || \
-                                                [[ $(isNumeric__func "${autocomplete_numOfMatches}") == false ]]; then
-                                            #Reset variables to '0'
-                                            autocomplete_numOfMatches_init=0
-                                            autocomplete_numOfMatches=0
+                                        str_autocompleted=`echo "${autocomplete_output}" | cut -d"${DOCKER__STX}" -f1`
+                                        autocomplete_numOfMatches_init=`echo "${autocomplete_output}" | cut -d"${DOCKER__STX}" -f2`
+                                        autocomplete_numOfMatches=`echo "${autocomplete_output}" | cut -d"${DOCKER__STX}" -f3`
 
-                                            #Exit this while-loop
-                                            subphase="${SUBPHASE_EXIT}"
+ #--------------------------------------Reload directory content into array if necessary
+                                        #This function indirectly outputs the following file ONLY:
+                                        #   output_fPath__input
+                                        #Remark:
+                                        #   Make sure to set 'backupIsEnabled' to 'false'
+                                        dirlist__reload_dirlist_into_array__sub "${str_autocompleted}" \
+                                                "${str}" \
+                                                "${autocomplete_numOfMatches_init}" \
+                                                "${autocomplete_numOfMatches}" \
+                                                "false"
+                                    
 
-                                            #Goto next-phase
-                                            phase=${PHASE_SHOW_READINPUT}
+#----------------------------------------Show directory content based on the specified 'containerID__input, str_autocompleted, output_fPath__input'
+                                        #Only handle this condition if 'autocomplete_numOfMatches > 0'
+                                        if [[ ${autocomplete_numOfMatches} -ne ${DOCKER__NUMOFMATCH_0} ]]; then
+                                            #Check if the file contents are different
+                                            files_areDifferent=`checkIf_files_are_different__func ${output_fPath__input} ${tmp_fPath__input}`
+                                            if [[ "${files_areDifferent}" == true ]]; then   #file contents are different
+                                                dirlist__show_dirContent_handler__sub "${containerID__input}" \
+                                                        "${str_autocompleted}" \
+                                                        "${output_fPath__input}" \
+                                                        "${dir_menuTitle__input}" \
+                                                        "${tibboHeader_prepend_numOfLines__input}"
 
-                                            #First Move-down, then Move-up, after that clean line
-                                            moveDown_oneLine_then_moveUp_and_clean__func "${DOCKER__NUMOFLINES_1}"
-                                        else
-#-------------------------------------------Reload directory content into array if necessary
-                                            #This function indirectly outputs the following file ONLY:
-                                            #   output_fPath__input
-                                            #Remark:
-                                            #   Make sure to set 'backupIsEnabled' to 'false'
-                                            dirlist__reload_dirlist_into_array__sub "${str_autocompleted}" \
-                                                    "${str}" \
-                                                    "${autocomplete_numOfMatches_init}" \
-                                                    "${autocomplete_numOfMatches}" \
-                                                    "false"
-                                        
+                                                #Update 'str_shown'
+                                                str_shown=${str_autocompleted}
 
-#-------------------------------------------Show directory content based on the specified 'containerID__input, str_autocompleted, output_fPath__input'
-                                            #Only handle this condition if 'autocomplete_numOfMatches > 0'
-                                            if [[ ${autocomplete_numOfMatches} -ne ${DOCKER__NUMOFMATCH_0} ]]; then
-                                                #Check if the file contents are different
-                                                files_areDifferent=`checkIf_files_are_different__func ${output_fPath__input} ${tmp_fPath__input}`
-                                                if [[ "${files_areDifferent}" == true ]]; then   #file contents are different
+                                                #Goto next-phase
+                                                phase=${PHASE_SHOW_REMARKS}
+                                            else    #file contents are the same
+                                                #Check whether 'str_autocompleted != str_shown'
+                                                fpaths_areSame=`checkIf_fpaths_are_the_same__func "${str_autocompleted}" "${str_shown}"`
+                                                if [[ ${fpaths_areSame} == false ]]; then #fullpaths are not the same
                                                     dirlist__show_dirContent_handler__sub "${containerID__input}" \
                                                             "${str_autocompleted}" \
                                                             "${output_fPath__input}" \
@@ -1063,36 +1029,21 @@ dirlist__readInput_w_autocomplete__sub() {
 
                                                     #Update 'str_shown'
                                                     str_shown=${str_autocompleted}
-
+                                                    
                                                     #Goto next-phase
                                                     phase=${PHASE_SHOW_REMARKS}
-                                                else    #file contents are the same
-                                                    #Check whether 'str_autocompleted != str_shown'
-                                                    fpaths_areSame=`checkIf_fpaths_are_the_same__func "${str_autocompleted}" "${str_shown}"`
-                                                    if [[ ${fpaths_areSame} == false ]]; then #fullpaths are not the same
-                                                        dirlist__show_dirContent_handler__sub "${containerID__input}" \
-                                                                "${str_autocompleted}" \
-                                                                "${output_fPath__input}" \
-                                                                "${dir_menuTitle__input}" \
-                                                                "${tibboHeader_prepend_numOfLines__input}"
+                                                else
+                                                    #Goto next-phase
+                                                    phase=${PHASE_SHOW_READINPUT}
 
-                                                        #Update 'str_shown'
-                                                        str_shown=${str_autocompleted}
-                                                        
-                                                        #Goto next-phase
-                                                        phase=${PHASE_SHOW_REMARKS}
-                                                    else
-                                                        #Goto next-phase
-                                                        phase=${PHASE_SHOW_READINPUT}
-
-                                                        #First Move-down, then Move-up, after that clean line
-                                                        moveDown_oneLine_then_moveUp_and_clean__func "${DOCKER__NUMOFLINES_1}"
-                                                    fi
+                                                    #First Move-down, then Move-up, after that clean line
+                                                    moveDown_oneLine_then_moveUp_and_clean__func "${DOCKER__NUMOFLINES_1}"
                                                 fi
                                             fi
-
-                                            subphase="${SUBPHASE_FINALIZE}"
                                         fi
+
+                                        subphase="${SUBPHASE_FINALIZE}"
+                                        # fi
 
 #---------------------------------------Set 'tibboHeader_prepend_numOfLines__input' (MUST BE SET AT THIS POSITION!!!)
                                         if [[ ! -z ${tibboHeader_prepend_numOfLines__input} ]]; then
@@ -1116,7 +1067,7 @@ dirlist__readInput_w_autocomplete__sub() {
                                             ret="${str}"
 
                                             #Goto next-phase
-                                            phase=${PHASE_SHOW_KEYINPUT_HANDLER}
+                                            phase=${PHASE_KEYINPUT_HANDLER}
                                         
                                             #Goto 'keyInput = DOCKER__EXIT'
                                             keyInput=${DOCKER__EXIT}
@@ -1144,6 +1095,7 @@ dirlist__readInput_w_autocomplete__sub() {
                                 #Check if an asterisk is already present
                                 local atExit_asterisk_isFound=`checkForMatch_of_a_pattern_within_string__func "${DOCKER__ASTERISK}" "${ret}"`
 
+                                #***NOTE: if asterisk (*) is found then do NOTHING.
                                 if [[ ${atExit_asterisk_isFound} == false ]]; then  #asterisk was NOT found
                                     #Check if 'ret' is a file
                                     isFile=$(checkIf_file_exists__func "${containerID__input}" "${ret}")
@@ -1154,6 +1106,10 @@ dirlist__readInput_w_autocomplete__sub() {
                                         ret="${ret}${DOCKER__ASTERISK}" #append asterisk
                                     fi
                                 fi
+                            fi
+
+                            if [[ ${onExit_show_readInput_message} == true ]]; then
+                                echo -e "${readMsg__input}${ret}"
                             fi
 
                             if [[ ${onExit_moveDown_isEnabled} == true ]]; then

@@ -66,6 +66,7 @@ DOCKER__CR="$'\r'"
 DOCKER__DEL=$'\x7e'
 DOCKER__ENTER=$'\x0a'
 DOCKER__ESCAPEKEY=$'\x1b'   #note: this escape key is ^[
+DOCKER__STX=$(printf "\002")
 DOCKER__TAB=$'\t'
 
 DOCKER__CARET_C="^C"
@@ -89,6 +90,7 @@ DOCKER__FG_BRIGHTLIGHTPURPLE=$'\e[30;38;5;147m'
 DOCKER__FG_BROWN94=$'\e[30;38;5;94m'
 DOCKER__FG_BROWN137=$'\e[30;38;5;137m'
 DOCKER__FG_DARKBLUE=$'\e[30;38;5;33m'
+DOCKER__FG_DARKGREY=$'\e[30;38;5;240m'
 DOCKER__FG_RED1=$'\e[30;38;5;1m'
 DOCKER__FG_RED9=$'\e[30;38;5;9m'
 DOCKER__FG_RED125=$'\e[30;38;5;125m'
@@ -225,23 +227,33 @@ DOCKER__DOCKERFILE="dockerfile"
 DOCKER__LINK="link"
 DOCKER__LINKCHECKOUT_PROFILE="linkcheckout_profile"
 
-DOCKER__DIRLIST_REMARKS="${DOCKER__BG_ORANGE}Remarks:${DOCKER__NOCOLOR}\n"
+DOCKER__DIRLIST_REMARKS="${DOCKER__BG_ORANGE}Features:${DOCKER__NOCOLOR}\n"
 DOCKER__DIRLIST_REMARKS+="${DOCKER__DASH} append ${DOCKER__FG_YELLOW}/${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}to list directory${DOCKER__NOCOLOR} "
 DOCKER__DIRLIST_REMARKS+="(e.g. ${DOCKER__FG_LIGHTGREY}/etc${DOCKER__NOCOLOR}${DOCKER__FG_YELLOW}/${DOCKER__NOCOLOR})\n"
 
 DOCKER__DIRLIST_REMARKS+="${DOCKER__DASH} append ${DOCKER__FG_YELLOW}*${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}to copy entire folder${DOCKER__NOCOLOR} "
 DOCKER__DIRLIST_REMARKS+="(e.g. ${DOCKER__FG_LIGHTGREY}/etc/${DOCKER__NOCOLOR}${DOCKER__FG_YELLOW}*${DOCKER__NOCOLOR})\n"
-DOCKER__DIRLIST_REMARKS+="            ${DOCKER__FG_LIGHTGREY}to copy files & folders based on keyword${DOCKER__NOCOLOR} "
+DOCKER__DIRLIST_REMARKS+="            ${DOCKER__FG_LIGHTGREY}to copy files/folders based on keyword${DOCKER__NOCOLOR} "
 DOCKER__DIRLIST_REMARKS+="(e.g. ${DOCKER__FG_LIGHTGREY}/etc/${DOCKER__NOCOLOR}${DOCKER__FG_YELLOW}rc*${DOCKER__NOCOLOR})\n"
 
-DOCKER__DIRLIST_REMARKS+="${DOCKER__DASH} append ${DOCKER__FG_YELLOW}{${DOCKER__NOCOLOR}.${DOCKER__FG_YELLOW},${DOCKER__NOCOLOR}.${DOCKER__FG_YELLOW}}${DOCKER__NOCOLOR}: "
+DOCKER__DIRLIST_REMARKS+="${DOCKER__DASH} append ${DOCKER__FG_YELLOW}{${DOCKER__NOCOLOR}.${DOCKER__FG_YELLOW}-${DOCKER__NOCOLOR}.${DOCKER__FG_YELLOW}}${DOCKER__NOCOLOR}: "
 DOCKER__DIRLIST_REMARKS+="${DOCKER__FG_LIGHTGREY}to copy range of files/folders${DOCKER__NOCOLOR} "
-DOCKER__DIRLIST_REMARKS+="(e.g. ${DOCKER__FG_LIGHTGREY}/etc/${DOCKER__NOCOLOR}${DOCKER__FG_YELLOW}{e-n}${DOCKER__NOCOLOR}, "
-DOCKER__DIRLIST_REMARKS+="${DOCKER__FG_LIGHTGREY}/etc/${DOCKER__NOCOLOR}${DOCKER__FG_YELLOW}hi{e-n}${DOCKER__NOCOLOR})\n"
+DOCKER__DIRLIST_REMARKS+="(e.g. ${DOCKER__FG_LIGHTGREY}/etc/${DOCKER__NOCOLOR}"
+DOCKER__DIRLIST_REMARKS+="${DOCKER__FG_YELLOW}{${DOCKER__NOCOLOR}3${DOCKER__FG_YELLOW}-${DOCKER__NOCOLOR}N${DOCKER__FG_YELLOW}}${DOCKER__NOCOLOR}, "
+DOCKER__DIRLIST_REMARKS+="${DOCKER__FG_LIGHTGREY}/etc/hi${DOCKER__NOCOLOR}"
+DOCKER__DIRLIST_REMARKS+="${DOCKER__FG_YELLOW}{${DOCKER__NOCOLOR}e${DOCKER__FG_YELLOW}-${DOCKER__NOCOLOR}n${DOCKER__FG_YELLOW}}${DOCKER__NOCOLOR})\n"
 
-DOCKER__DIRLIST_REMARKS+="  (${DOCKER__FG_BORDEAUX}NOTE:${DOCKER__NOCOLOR} ${DOCKER__FG_LIGHTGREY_250}asterisk and range can${DOCKER__NOCOLOR} "
-DOCKER__DIRLIST_REMARKS+="${DOCKER__FG_RED1}NOT${DOCKER__NOCOLOR} ${DOCKER__FG_LIGHTGREY_250}be used simultanously${DOCKER__NOCOLOR}!)\n"
+DOCKER__DIRLIST_REMARKS+="${DOCKER__BG_LIGHTGREY}Remarks:${DOCKER__NOCOLOR}\n"
+DOCKER__DIRLIST_REMARKS+="    ${DOCKER__DASH} ${DOCKER__FG_DARKGREY}can not use asterisk ${DOCKER__FG_YELLOW}*${DOCKER__NOCOLOR} "
+DOCKER__DIRLIST_REMARKS+="${DOCKER__FG_DARKGREY}and range-notation${DOCKER__NOCOLOR} "
+DOCKER__DIRLIST_REMARKS+="${DOCKER__FG_YELLOW}{${DOCKER__NOCOLOR}.${DOCKER__FG_YELLOW}-${DOCKER__NOCOLOR}.${DOCKER__FG_YELLOW}}${DOCKER__NOCOLOR} "
+DOCKER__DIRLIST_REMARKS+="${DOCKER__FG_DARKGREY}simultaneously${DOCKER__NOCOLOR}\n"
 
+DOCKER__DIRLIST_REMARKS+="    ${DOCKER__DASH} ${DOCKER__FG_DARKGREY}use range-notation  "
+DOCKER__DIRLIST_REMARKS+="${DOCKER__FG_YELLOW}{${DOCKER__NOCOLOR}.${DOCKER__FG_YELLOW}-${DOCKER__NOCOLOR}.${DOCKER__FG_YELLOW}}${DOCKER__NOCOLOR} "
+DOCKER__DIRLIST_REMARKS+="${DOCKER__FG_DARKGREY}according to ASCII-table${DOCKER__NOCOLOR}\n"
+
+DOCKER__DIRLIST_REMARKS+="${DOCKER__BG_LIGHTSOFTYELLOW}Options:${DOCKER__NOCOLOR}\n"
 DOCKER__DIRLIST_REMARKS+="${DOCKER__DASH} ${DOCKER__FG_YELLOW}ENTER${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}to confirm${DOCKER__NOCOLOR}\n"
 DOCKER__DIRLIST_REMARKS+="${DOCKER__DASH} ${DOCKER__FG_YELLOW}TAB${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}auto-complete${DOCKER__NOCOLOR}\n"
 DOCKER__DIRLIST_REMARKS+="${DOCKER__DASH} ${DOCKER__FG_YELLOW}Ctrl+C${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}quit${DOCKER__NOCOLOR}"
@@ -1517,6 +1529,50 @@ function checkif_both_asterisk_and_keywordrange_are_present() {
     else
         echo false
     fi
+}
+
+function char_to_dec() {
+	#Input args
+	local char__input="${1}"
+
+	#Convert char to decimal
+	local ret=$(printf "%d" "'${char__input}")
+
+	#OUTPUT
+	echo "${ret}"
+}
+
+function dec_to_char() {
+	#Input args
+	local dec__input="${1}"
+
+	#Convert char to decimal
+	local ret=$(printf "\$(printf '%03o' ${dec__input})")
+
+	#OUTPUT
+	echo "${ret}"
+}
+
+function extract_leftchar_from_range_notation() {
+	#Input args
+	local range_notation__input="${1}"
+
+	#Extract chars
+	local leftchar=$(echo ${range_notation__input} | cut -d"{" -f2 | cut -d"-" -f1)
+
+	#OUTPUT
+    echo -e "${leftchar}"
+}
+
+function extract_rightchar_from_range_notation() {
+	#Input args
+	local range_notation__input="${1}"
+
+	#Extract chars
+	local rightchar=$(echo ${range_notation__input} | cut -d"}" -f1 | cut -d"-" -f2)
+
+	#OUTPUT
+    echo -e "${rightchar}"
 }
 
 function remove_trailing_chars_from_path() {

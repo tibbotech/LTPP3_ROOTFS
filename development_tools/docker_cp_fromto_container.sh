@@ -892,6 +892,13 @@ docker__copy_from_src_to_dst__sub() {
 	local src_copypath=${DOCKER__EMPTYSTRING}
 	local dst_copypath=${DOCKER__EMPTYSTRING}
 
+	local range_notation=${DOCKER__EMPTYSTRING}
+	local leftchar=${DOCKER__EMPTYSTRING}
+	local rightchar=${DOCKER__EMPTYSTRING}
+	local leftdec=${DOCKER__EMPTYSTRING}
+	local leftdec_tmp=${DOCKER__EMPTYSTRING}
+	local rightdec=${DOCKER__EMPTYSTRING}
+
 	#Define paths
 	local datetime=$(date +"%Y%b%d_%Hh%Mm%Ss")
 	local misscontfilename="missing_contents_list"
@@ -919,6 +926,9 @@ docker__copy_from_src_to_dst__sub() {
 	#Check if 'keywordrange' is found (MUST BE DONE HERE!)
 	keywordRange_isFound=$(checkif_keywordrange_isvalid "${docker__src_file}")
 
+	#---------------------------------------------------------------------
+	# CONTAINER TO HOST
+	#---------------------------------------------------------------------
 	if [[ ${docker__mycopychoice} -eq ${DOCKER__CONTAINER_TO_HOST} ]]; then	#Container to Local Host
 		#Show Title
 		show_msg_w_menuTitle_only_func "${DOCKER__DIRECTION_CONTAINER_TO_LOCAL}" \
@@ -929,6 +939,9 @@ docker__copy_from_src_to_dst__sub() {
 							"${DOCKER__NUMOFLINES_0}" \
 							"${DOCKER__NUMOFLINES_2}"
 
+		#---------------------------------------------------------------------
+		# ASTERISK
+		#---------------------------------------------------------------------
 		if [[ ${asterisk_isFound} == true ]]; then	#asterisk is found
 			while read -r line
 			do
@@ -964,8 +977,16 @@ docker__copy_from_src_to_dst__sub() {
 					"${misscontfpath}" \
 					"${asterisk_isFound}" \
 					"${docker__src_and_dst_totalcount_list[@]}"
+
+		#---------------------------------------------------------------------
+		# RANGE-NOTATION
+		#---------------------------------------------------------------------
 		elif [[ ${keywordRange_isFound} == true ]]; then	#keywordrange is found
 			echo "docker__copy_from_src_to_dst__sub: Container to HOST: in progress"
+
+		#---------------------------------------------------------------------
+		# ALL OTHER
+		#---------------------------------------------------------------------
 		else	#anything else
 			#Define paths
 			src_copypath=$(get_fullpath_by_combining_dir_with_fileorfolder "${docker__src_dir}" "${docker__src_file}")
@@ -991,7 +1012,11 @@ docker__copy_from_src_to_dst__sub() {
 					"${misscontfpath}" \
 					"${asterisk_isFound}"
 		fi
-	else	#Local Host to Container
+
+	#---------------------------------------------------------------------
+	# HOST TO CONTAINER
+	#---------------------------------------------------------------------
+	else
 		#Show Title
 		show_msg_w_menuTitle_only_func "${DOCKER__DIRECTION_LOCAL_TO_CONTAINER}" \
 							"${docker__copy_msg}" \
@@ -1001,6 +1026,9 @@ docker__copy_from_src_to_dst__sub() {
 							"${DOCKER__NUMOFLINES_0}" \
 							"${DOCKER__NUMOFLINES_2}"
 
+		#---------------------------------------------------------------------
+		# ASTERISK
+		#---------------------------------------------------------------------
 		if [[ ${asterisk_isFound} == true ]]; then	#asterisk is found
 			while read -r line
 			do
@@ -1036,8 +1064,37 @@ docker__copy_from_src_to_dst__sub() {
 					"${misscontfpath}" \
 					"${asterisk_isFound}" \
 					"${docker__src_and_dst_totalcount_list[@]}"
+
+		#---------------------------------------------------------------------
+		# RANGE-NOTATION
+		#---------------------------------------------------------------------
 		elif [[ ${keywordRange_isFound} == true ]]; then	#keywordrange is found
-			echo "docker__copy_from_src_to_dst__sub: HOST to Container: in progress"
+			#Extract LEFT and RIGHT chars
+			leftchar=$(extract_leftchar_from_range_notation "${docker__src_file}")
+			rightchar=$(extract_rightchar_from_range_notation "${docker__src_file}")
+			#Convert LEFT and RIGHT chars to decimals
+			leftdec=$(char_to_dec "${leftchar}")
+			rightdec=$(char_to_dec "${rightchar}")
+
+			#SWAP 'leftdec' with 'rightdec' if needed 'leftdec > rightdec'
+			if [[ ${leftdec} -gt ${rightdec} ]]; then
+				leftdec_tmp=${leftdec}
+				leftdec=${rightdec}
+				rightdec=${leftdec_tmp}
+			fi 
+
+			#Iterate from 'leftdec' until 'rightdec'
+			for (( d=leftdec; d<=rightdec; d++ ))
+			do
+				#Convert decimal 'd' to char
+				local d_char=$(dec_to_char)
+
+				echo $d_char
+			done
+
+		#---------------------------------------------------------------------
+		# ALL OTHER
+		#---------------------------------------------------------------------
 		else	#anything else
 			#Define paths
 			src_copypath=$(get_fullpath_by_combining_dir_with_fileorfolder "${docker__src_dir}" "${docker__src_file}")
