@@ -66,6 +66,7 @@ DOCKER__CR="$'\r'"
 DOCKER__DEL=$'\x7e'
 DOCKER__ENTER=$'\x0a'
 DOCKER__ESCAPEKEY=$'\x1b'   #note: this escape key is ^[
+DOCKER__STX=$(printf "\002")
 DOCKER__TAB=$'\t'
 
 DOCKER__CARET_C="^C"
@@ -89,6 +90,7 @@ DOCKER__FG_BRIGHTLIGHTPURPLE=$'\e[30;38;5;147m'
 DOCKER__FG_BROWN94=$'\e[30;38;5;94m'
 DOCKER__FG_BROWN137=$'\e[30;38;5;137m'
 DOCKER__FG_DARKBLUE=$'\e[30;38;5;33m'
+DOCKER__FG_DARKGREY=$'\e[30;38;5;240m'
 DOCKER__FG_RED1=$'\e[30;38;5;1m'
 DOCKER__FG_RED9=$'\e[30;38;5;9m'
 DOCKER__FG_RED125=$'\e[30;38;5;125m'
@@ -225,16 +227,44 @@ DOCKER__DOCKERFILE="dockerfile"
 DOCKER__LINK="link"
 DOCKER__LINKCHECKOUT_PROFILE="linkcheckout_profile"
 
-DOCKER__DIRLIST_REMARKS="${DOCKER__BG_ORANGE}Remarks:${DOCKER__NOCOLOR}\n"
-DOCKER__DIRLIST_REMARKS+="${DOCKER__DASH} append ${DOCKER__FG_YELLOW}/${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}to list directory${DOCKER__NOCOLOR} (e.g. ${DOCKER__FG_LIGHTGREY}/etc${DOCKER__NOCOLOR}${DOCKER__FG_YELLOW}/${DOCKER__NOCOLOR})\n"
+DOCKER__DIRLIST_REMARKS="${DOCKER__BG_ORANGE}Features:${DOCKER__NOCOLOR}\n"
+DOCKER__DIRLIST_REMARKS+="${DOCKER__DASH} append ${DOCKER__FG_YELLOW}/${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}to list directory${DOCKER__NOCOLOR} "
+DOCKER__DIRLIST_REMARKS+="(e.g. ${DOCKER__FG_LIGHTGREY}/etc${DOCKER__NOCOLOR}${DOCKER__FG_YELLOW}/${DOCKER__NOCOLOR})\n"
+
+DOCKER__DIRLIST_REMARKS+="${DOCKER__DASH} append ${DOCKER__FG_YELLOW}*${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}to copy entire folder${DOCKER__NOCOLOR} "
+DOCKER__DIRLIST_REMARKS+="(e.g. ${DOCKER__FG_LIGHTGREY}/etc/${DOCKER__NOCOLOR}${DOCKER__FG_YELLOW}*${DOCKER__NOCOLOR})\n"
+DOCKER__DIRLIST_REMARKS+="            ${DOCKER__FG_LIGHTGREY}to copy files/folders based on keyword${DOCKER__NOCOLOR} "
+DOCKER__DIRLIST_REMARKS+="(e.g. ${DOCKER__FG_LIGHTGREY}/etc/${DOCKER__NOCOLOR}${DOCKER__FG_YELLOW}rc*${DOCKER__NOCOLOR})\n"
+
+DOCKER__DIRLIST_REMARKS+="${DOCKER__DASH} append ${DOCKER__FG_YELLOW}{${DOCKER__NOCOLOR}.${DOCKER__FG_YELLOW}-${DOCKER__NOCOLOR}.${DOCKER__FG_YELLOW}}${DOCKER__NOCOLOR}: "
+DOCKER__DIRLIST_REMARKS+="${DOCKER__FG_LIGHTGREY}to copy range of files/folders${DOCKER__NOCOLOR} "
+DOCKER__DIRLIST_REMARKS+="(e.g. ${DOCKER__FG_LIGHTGREY}/etc/${DOCKER__NOCOLOR}"
+DOCKER__DIRLIST_REMARKS+="${DOCKER__FG_YELLOW}{${DOCKER__NOCOLOR}3${DOCKER__FG_YELLOW}-${DOCKER__NOCOLOR}N${DOCKER__FG_YELLOW}}${DOCKER__NOCOLOR}, "
+DOCKER__DIRLIST_REMARKS+="${DOCKER__FG_LIGHTGREY}/etc/hi${DOCKER__NOCOLOR}"
+DOCKER__DIRLIST_REMARKS+="${DOCKER__FG_YELLOW}{${DOCKER__NOCOLOR}e${DOCKER__FG_YELLOW}-${DOCKER__NOCOLOR}n${DOCKER__FG_YELLOW}}${DOCKER__NOCOLOR})\n"
+
+DOCKER__DIRLIST_REMARKS+="${DOCKER__BG_LIGHTGREY}Remarks:${DOCKER__NOCOLOR}\n"
+DOCKER__DIRLIST_REMARKS+="    ${DOCKER__DASH} ${DOCKER__FG_DARKGREY}can not use asterisk ${DOCKER__FG_YELLOW}*${DOCKER__NOCOLOR} "
+DOCKER__DIRLIST_REMARKS+="${DOCKER__FG_DARKGREY}and range-notation${DOCKER__NOCOLOR} "
+DOCKER__DIRLIST_REMARKS+="${DOCKER__FG_YELLOW}{${DOCKER__NOCOLOR}.${DOCKER__FG_YELLOW}-${DOCKER__NOCOLOR}.${DOCKER__FG_YELLOW}}${DOCKER__NOCOLOR} "
+DOCKER__DIRLIST_REMARKS+="${DOCKER__FG_DARKGREY}simultaneously${DOCKER__NOCOLOR}\n"
+
+DOCKER__DIRLIST_REMARKS+="    ${DOCKER__DASH} ${DOCKER__FG_DARKGREY}range-notation "
+DOCKER__DIRLIST_REMARKS+="${DOCKER__FG_YELLOW}{${DOCKER__NOCOLOR}.${DOCKER__FG_YELLOW}-${DOCKER__NOCOLOR}.${DOCKER__FG_YELLOW}}${DOCKER__NOCOLOR} "
+DOCKER__DIRLIST_REMARKS+="${DOCKER__FG_DARKGREY}follows the${DOCKER__NOCOLOR} ${DOCKER__FG_LIGHTGREY}ASCII${DOCKER__NOCOLOR} "
+DOCKER__DIRLIST_REMARKS+="${DOCKER__FG_DARKGREY}numbering order${DOCKER__NOCOLOR}\n"
+
+DOCKER__DIRLIST_REMARKS+="    ${DOCKER__DASH} ${DOCKER__FG_DARKGREY}auto-complete is not available with range-notation${DOCKER__NOCOLOR}\n"
+
+DOCKER__DIRLIST_REMARKS+="${DOCKER__BG_LIGHTSOFTYELLOW}Options:${DOCKER__NOCOLOR}\n"
 DOCKER__DIRLIST_REMARKS+="${DOCKER__DASH} ${DOCKER__FG_YELLOW}ENTER${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}to confirm${DOCKER__NOCOLOR}\n"
 DOCKER__DIRLIST_REMARKS+="${DOCKER__DASH} ${DOCKER__FG_YELLOW}TAB${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}auto-complete${DOCKER__NOCOLOR}\n"
 DOCKER__DIRLIST_REMARKS+="${DOCKER__DASH} ${DOCKER__FG_YELLOW}Ctrl+C${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}quit${DOCKER__NOCOLOR}"
 
 DOCKER__DIRLIST_REMARKS_EXTENDED="${DOCKER__DIRLIST_REMARKS}\n"
-DOCKER__DIRLIST_REMARKS_EXTENDED+="${DOCKER__DASH} ${DOCKER__FG_YELLOW};b${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}back${DOCKER__NOCOLOR}\n"
-DOCKER__DIRLIST_REMARKS_EXTENDED+="${DOCKER__DASH} ${DOCKER__FG_YELLOW};c${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}clear${DOCKER__NOCOLOR}\n"
-DOCKER__DIRLIST_REMARKS_EXTENDED+="${DOCKER__DASH} ${DOCKER__FG_YELLOW};h${DOCKER__NOCOLOR}: ${DOCKER__FG_LIGHTGREY}home${DOCKER__NOCOLOR}"
+DOCKER__DIRLIST_REMARKS_EXTENDED+="${DOCKER__DASH} ${DOCKER__FG_YELLOW};b${DOCKER__NOCOLOR}${DOCKER__FG_LIGHTGREY}ack${DOCKER__NOCOLOR} "
+DOCKER__DIRLIST_REMARKS_EXTENDED+="${DOCKER__FG_YELLOW};c${DOCKER__NOCOLOR}${DOCKER__FG_LIGHTGREY}lear${DOCKER__NOCOLOR} "
+DOCKER__DIRLIST_REMARKS_EXTENDED+="${DOCKER__FG_YELLOW};h${DOCKER__NOCOLOR}${DOCKER__FG_LIGHTGREY}ome${DOCKER__NOCOLOR}"
 
 
 
@@ -500,6 +530,7 @@ DOCKER__STATUS_LNOTPRESENT="${DOCKER__FG_LIGHTRED}not-present${DOCKER__NOCOLOR}"
 DOCKER__STATUS_LNOTPRESENT_IGNORE="${DOCKER__FG_LIGHTRED}not-present${DOCKER__NOCOLOR} (ignore)"
 DOCKER__STATUS_LVALID="${DOCKER__FG_GREEN}valid${DOCKER__NOCOLOR}"
 DOCKER__STATUS_LINVALID="${DOCKER__FG_LIGHTRED}invalid${DOCKER__NOCOLOR}"
+DOCKER__STATUS_LINVALID_KEYINPUT_COMBO="${DOCKER__FG_LIGHTRED}invalid keyinput combo${DOCKER__NOCOLOR}"
 DOCKER__STATUS_LNOMATCHFOUND="${DOCKER__FG_LIGHTRED}no-match found${DOCKER__NOCOLOR}"
 
 DOCKER__NO_ACTION_REQUIRED="No action required"
@@ -1339,6 +1370,8 @@ function show_array_w_menuTitle_w_confirmation__func() {
                         "${confirmation_append_numOfLines__input}"
 }
 
+
+
 #---BC RELATED FUNCTIONS
 function bc_substract_x_from_y() {
     #Input args
@@ -1373,8 +1406,9 @@ function bc_is_x_greaterthan_zero() {
 }
 
 
+
 #---CONTAINER RELATED FUNCTIONS
-function container_exec_cmd_and_receive_output__func() {
+function docker_exec_cmd_and_receive_output__func() {
     #Input args
     local containerid__arg="${1}"
     local cmd__arg="${2}"
@@ -1402,6 +1436,165 @@ function container_exec_cmd_and_receive_output__func() {
     #OUTPUT
     echo "${ret}" > "${outputfpath__arg}"
 }
+
+
+
+#---COPY RELATED FUNCTIONKS
+function checkif_keywordrange_isvalid() {
+    #Input args
+    local path__input="${1}"
+
+    #Define constants
+    local FIVE=5
+
+    #CONDITION 1: get the last 5 chars
+    local len=${#path__input}
+    local startpos=$((len - FIVE))
+    local last_five_chars=${path__input:startpos:FIVE}
+
+    #CONDITION 2: check if 'last_five_chars' contains '{' and ',' and '}' precisely in that order
+    #---------------------------------------------------------------------
+    #Explanation:
+    #---------------------------------------------------------------------
+    #   \{: matches {
+    #   .*: Matches zero or more of any character
+    #   \,: matches ,
+    #   .*: matches zero or more of any character
+    #   \}: matches }
+    #---------------------------------------------------------------------
+    if [[ ${last_five_chars} =~ \{.*\-.*\} ]]; then
+        #CONDITION I: check if the number of chars between '{' and '}' is THREE (3) and NO MORE than that
+        if [[ ${last_five_chars} =~ \{...\} ]]; then
+            echo true
+        else
+            echo false
+        fi
+    else
+        echo false
+    fi
+}
+
+function checkif_asterisk_isvalid() {
+    #Input args
+    local path__input="${1}"
+
+    #Define constants
+    local ONE=1
+
+    #CONDITION 1: get the last char
+    local len=${#path__input}
+    local startpos=$((len - ONE))
+    local last_char=${path__input:startpos:ONE}
+
+    #CONDITION 2: check if last char is an asterisk (*)
+    if [[ "${last_char}" == "*" ]]; then
+        echo true
+    else
+        echo false
+    fi
+}
+
+function checkif_both_asterisk_and_keywordrange_are_present() {
+    #Input args
+    local path__input="${1}"
+
+    #Define variable
+    local match_ctr=0
+
+    #Get basename
+    local basename=$(basename "${path__input}")
+
+    #CONDITION 1.1: check if 'path__input' contains '{' and ',' and '}' precisely in that order
+    #---------------------------------------------------------------------
+    #Explanation:
+    #---------------------------------------------------------------------
+    #   \{: matches {
+    #   .*: Matches zero or more of any character
+    #   \,: matches ,
+    #   .*: matches zero or more of any character
+    #   \}: matches }
+    #---------------------------------------------------------------------
+    if [[ ${basename} =~ \{.*\-.*\} ]]; then
+        #CONDITION 1.2: check if the number of chars between '{' and '}' is THREE (3) and NO MORE than that
+        if [[ ${basename} =~ \{...\} ]]; then
+            ((match_ctr++))
+        fi
+    fi
+
+    #CONDITION 2: check if 'path__input' contains an asterisk (*)
+    if [[ ${basename} == *'*'* ]]; then
+        ((match_ctr++))
+    fi
+
+    #OUTPUT
+    if [[ ${match_ctr} -eq 2 ]]; then
+        echo true
+    else
+        echo false
+    fi
+}
+
+function char_to_dec() {
+	#Input args
+	local char__input="${1}"
+
+	#Convert char to decimal
+	local ret=$(printf "%d" "'${char__input}")
+
+	#OUTPUT
+	echo "${ret}"
+}
+
+function dec_to_char() {
+	#Input args
+	local dec__input="${1}"
+
+	#Convert char to decimal
+	local ret=$(printf "\\$(printf '%03o' "$dec__input")")
+
+	#OUTPUT
+	echo "${ret}"
+}
+
+function extract_leftchar_from_range_notation() {
+	#Input args
+	local range_notation__input="${1}"
+
+	#Extract chars
+	local leftchar=$(echo ${range_notation__input} | cut -d"{" -f2 | cut -d"-" -f1)
+
+	#OUTPUT
+    echo -e "${leftchar}"
+}
+
+function extract_rightchar_from_range_notation() {
+	#Input args
+	local range_notation__input="${1}"
+
+	#Extract chars
+	local rightchar=$(echo ${range_notation__input} | cut -d"}" -f1 | cut -d"-" -f2)
+
+	#OUTPUT
+    echo -e "${rightchar}"
+}
+
+function remove_trailing_chars_from_path() {
+    #Input args
+    local path__input="${1}"
+    local numof_chars="${2}"
+
+    #Remove the number of char(s)
+    local len=${#path__input}
+    local len_remain=$((len - numof_chars))
+
+    #Get path without asterisk * or keywordrange {.,.}
+    local startpos=0
+    local ret=${path__input:startpos:len_remain}
+
+    #OUTPUT
+    echo "${ret}"
+}
+
 
 
 #---DOCKER RELATED FUNCTIONS
@@ -1565,6 +1758,8 @@ function generate_cache_filenames_basedOn_specified_repositoryTag__func() {
     #Output
     echo "${ret}"
 }
+
+
 
 #---ESCAPE-KEY RELATED FUNCTIONS
 function functionKey_detection__func() {

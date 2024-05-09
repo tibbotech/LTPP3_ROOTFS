@@ -133,3 +133,13 @@
 #   3. tar files and folders FIRST before copying it from source to destination. This way, errors can be avoided when copying
 #       RELATIVE SYMLINKS from source to destination. 
 #
+#---:9 May 2024:---
+#Affected file(s): 
+#   docker_cp_fromto_container.sh
+#   docker_global.sh
+#   dirlist_readInput_w_autocomplete.sh
+#Implementation:
+#   Copy files/folders from CONTAINER to HOST device (or vice versa) with:
+#   1. range-notation (e.g. /etc/hi{e-n})
+#   2. range-notation follows the ASCII numbering order
+#

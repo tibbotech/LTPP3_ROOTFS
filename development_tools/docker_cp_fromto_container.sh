@@ -293,10 +293,11 @@ docker__load_constants__sub() {
 
 	DOCKER__READINPUT_CONTAINERID="${DOCKER__FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}${DOCKER__FG_LIGHTGREY}:-:${DOCKER__NOCOLOR}${DOCKER__BG_BRIGHTPRUPLE}ID${DOCKER__NOCOLOR} ${DOCKER__READINPUT_B_C_OPTIONS}: "
 	DOCKER__READINPUT_CONTAINER_SRC="${DOCKER__FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}${DOCKER__FG_LIGHTGREY}:-:${DOCKER__NOCOLOR}${DOCKER__BG_BRIGHTPRUPLE}Src${DOCKER__NOCOLOR}: "
-	DOCKER__READINPUT_DO_YOU_WISH_TO_CONTINUE="Do you wish to continue"
-	DOCKER__READINPUT_HOST_DST="${DOCKER__FG_GREEN85}Local${DOCKER__NOCOLOR}${DOCKER__FG_LIGHTGREY}:-:${DOCKER__NOCOLOR}${DOCKER__BG_GREEN85}Dst${DOCKER__NOCOLOR}: "
-	DOCKER__READINPUT_HOST_SRC="${DOCKER__FG_GREEN85}Local${DOCKER__NOCOLOR}${DOCKER__FG_LIGHTGREY}:-:${DOCKER__NOCOLOR}${DOCKER__BG_GREEN85}Src${DOCKER__NOCOLOR}: "
 	DOCKER__READINPUT_CONTAINER_DST="${DOCKER__FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}${DOCKER__FG_LIGHTGREY}:-:${DOCKER__NOCOLOR}${DOCKER__BG_BRIGHTPRUPLE}Dst${DOCKER__NOCOLOR}: "
+	DOCKER__READINPUT_HOST_SRC="${DOCKER__FG_GREEN85}Local${DOCKER__NOCOLOR}${DOCKER__FG_LIGHTGREY}:-:${DOCKER__NOCOLOR}${DOCKER__BG_GREEN85}Src${DOCKER__NOCOLOR}: "
+	DOCKER__READINPUT_HOST_DST="${DOCKER__FG_GREEN85}Local${DOCKER__NOCOLOR}${DOCKER__FG_LIGHTGREY}:-:${DOCKER__NOCOLOR}${DOCKER__BG_GREEN85}Dst${DOCKER__NOCOLOR}: "
+
+	DOCKER__READINPUT_DO_YOU_WISH_TO_CONTINUE="Do you wish to continue"
 
 	DOCKER__DIRECTION_CONTAINER_TO_LOCAL="${DOCKER__FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR} ${DOCKER__FG_LIGHTGREY}>${DOCKER__NOCOLOR} ${DOCKER__FG_GREEN85}Local${DOCKER__NOCOLOR}"
 	DOCKER__DIRECTION_LOCAL_TO_CONTAINER="${DOCKER__FG_GREEN85}Local${DOCKER__NOCOLOR} ${DOCKER__FG_LIGHTGREY}>${DOCKER__NOCOLOR} ${DOCKER__FG_BRIGHTPRUPLE}Container${DOCKER__NOCOLOR}"
@@ -547,13 +548,22 @@ docker__src_path_selection__sub() {
 	local containerID__input=${1}
 
 	#Define variables
-	local asterisk_isfound=false
-	local fileExists=false
+	local asterisk_isFound=false
+	local keywordRange_isFound=false
+	local isFile=false
+	local readMsg=${DOCKER__EMPTYSTRING}
+
+	#Depending on the 'containerID__input' value, use the appropriate 'readMsg'
+	if [[ -z "${containerID__input}" ]]; then
+		readMsg="${DOCKER__READINPUT_HOST_SRC}"
+	else
+		readMsg="${DOCKER__READINPUT_CONTAINER_SRC}"
+	fi
 
 	#Show and select path
 	${dirlist__readInput_w_autocomplete__fpath} "${containerID__input}" \
 						"${DOCKER__EMPTYSTRING}" \
-						"${DOCKER__READINPUT_CONTAINER_SRC}" \
+						"${readMsg}" \
 						"${DOCKER__DIRLIST_REMARKS_EXTENDED}" \
                         "${dirlist__src_ls_1aA_output__fpath}" \
                         "${dirlist__src_ls_1aA_tmp__fpath}" \
@@ -603,10 +613,13 @@ docker__src_path_selection__sub() {
 		goto__func PHASE_CHOOSE_CONTAINERID
 	fi
 
-	#Update 'docker__src_dir' and 'docker__src_file'
-	#Check if 'docker__path_output' contains an 'asterisk'
-	asterisk_isfound=`checkForMatch_of_a_pattern_within_string__func "${DOCKER__ASTERISK}" "${docker__path_output}"`
-	if [[ ${asterisk_isfound} == true ]]; then	#asterisk was found
+	#Check if 'asterisk *' is found
+	asterisk_isFound=$(checkif_asterisk_isvalid "${docker__path_output}")
+	#Check if 'keywordrange {.,.}' is found
+	keywordRange_isFound=$(checkif_keywordrange_isvalid "${docker__path_output}")
+
+
+	if [[ ${asterisk_isFound} == true ]] || [[ ${keywordRange_isFound} == true ]]; then	#asterisk was found
 		docker__src_dir=`get_dirname_from_specified_path__func "${docker__path_output}"`
 
 		#Set 'docker__src_file' to 'asterisk'
@@ -617,10 +630,12 @@ docker__src_path_selection__sub() {
 		docker__src_file=`get_basename_rev1__func "${docker__path_output}"`
 	else	#no asterisk found
 		#Check if 'docker__path_output' is a file
-		fileExists=`checkIf_file_exists__func "${containerID__input}" "${docker__path_output}"`
-		if [[ ${fileExists} == true ]]; then	#file exists
+		isFile=`checkIf_file_exists__func "${containerID__input}" "${docker__path_output}"`
+		if [[ ${isFile} == true ]]; then	#file exists
+			#Extract Directory and Filename
 			docker__src_dir=`get_dirname_from_specified_path__func "${docker__path_output}"`
 			docker__src_file=`get_basename_rev1__func "${docker__path_output}"`
+
 		else	#file does not exist or not a file
 			#Check if 'docker__path_output' is a directory
 			dirExists=`checkIf_dir_exists__func "${containerID__input}" "${docker__path_output}"`
@@ -667,13 +682,19 @@ docker__dst_path_selection__sub() {
 	local containerID__input=${1}
 
 	#Define variables
-	# local asterisk_isfound=false
-	# local fileExists=false
+	local readMsg=${DOCKER__EMPTYSTRING}
+
+	#Depending on the 'containerID__input' value, use the appropriate 'readMsg'
+	if [[ -z "${containerID__input}" ]]; then
+		readMsg="${DOCKER__READINPUT_HOST_DST}"
+	else
+		readMsg="${DOCKER__READINPUT_CONTAINER_DST}"
+	fi
 
 	#Show and select path
 	${dirlist__readInput_w_autocomplete__fpath} "${containerID__input}" \
 						"${DOCKER__EMPTYSTRING}" \
-						"${DOCKER__READINPUT_HOST_DST}" \
+						"${readMsg}" \
 						"${DOCKER__DIRLIST_REMARKS_EXTENDED}" \
                         "${dirlist__dst_ls_1aA_output__fpath}" \
                         "${dirlist__dst_ls_1aA_tmp__fpath}" \
@@ -880,11 +901,15 @@ docker__copy_from_src_to_dst__sub() {
 	# PHASE 1: DEFINITION
 	#---------------------------------------------------------------------
 	#Define variables
-	local asterisk_isfound=false
+	local asterisk_isFound=false
+	local keywordRange_isFound=false
+
 	local line=${DOCKER__EMPTYSTRING}
 	local src_folder=${DOCKER__EMPTYSTRING}
 	local src_copypath=${DOCKER__EMPTYSTRING}
 	local dst_copypath=${DOCKER__EMPTYSTRING}
+
+	local range_notation_matchItems_list=()
 
 	#Define paths
 	local datetime=$(date +"%Y%b%d_%Hh%Mm%Ss")
@@ -908,9 +933,14 @@ docker__copy_from_src_to_dst__sub() {
 	docker__copy_msg+="Destination: ${DOCKER__FG_LIGHTGREY}${docker__dst_dir}${DOCKER__NOCOLOR}"
 
 	#Check if 'asterisk' is found (MUST BE DONE HERE!)
-	#***NOTE: 'docker__src_file' could be an 'ASTERISK' or a 'keyword containing an ASTERISK'
-	asterisk_isfound=`checkForMatch_of_a_pattern_within_string__func "${DOCKER__ASTERISK}" "${docker__src_file}"`
+	asterisk_isFound=$(checkif_asterisk_isvalid "${docker__src_file}")
 
+	#Check if 'keywordrange' is found (MUST BE DONE HERE!)
+	keywordRange_isFound=$(checkif_keywordrange_isvalid "${docker__src_file}")
+
+	#---------------------------------------------------------------------
+	# CONTAINER TO HOST
+	#---------------------------------------------------------------------
 	if [[ ${docker__mycopychoice} -eq ${DOCKER__CONTAINER_TO_HOST} ]]; then	#Container to Local Host
 		#Show Title
 		show_msg_w_menuTitle_only_func "${DOCKER__DIRECTION_CONTAINER_TO_LOCAL}" \
@@ -921,7 +951,10 @@ docker__copy_from_src_to_dst__sub() {
 							"${DOCKER__NUMOFLINES_0}" \
 							"${DOCKER__NUMOFLINES_2}"
 
-		if [[ ${asterisk_isfound} == true ]]; then	#asterisk is found
+		#---------------------------------------------------------------------
+		# ASTERISK
+		#---------------------------------------------------------------------
+		if [[ ${asterisk_isFound} == true ]]; then	#asterisk is found
 			while read -r line
 			do
 				#Define paths
@@ -945,7 +978,7 @@ docker__copy_from_src_to_dst__sub() {
 						"${src_copypath}"\
 						"${dst_copypath}" \
 						"${misscontfpath}" \
-						"${asterisk_isfound}"
+						"${asterisk_isFound}"
 			done < ${dirlist__src_ls_1aA_output__fpath}
 
 			#Show total missing contents & counts
@@ -954,9 +987,59 @@ docker__copy_from_src_to_dst__sub() {
 					"${docker__src_dir}"\
 					"${docker__dst_dir}" \
 					"${misscontfpath}" \
-					"${asterisk_isfound}" \
+					"${asterisk_isFound}" \
 					"${docker__src_and_dst_totalcount_list[@]}"
-		else	#asterisk is NOT found
+
+		#---------------------------------------------------------------------
+		# RANGE-NOTATION
+		#---------------------------------------------------------------------
+		elif [[ ${keywordRange_isFound} == true ]]; then	#keywordrange is found
+			#1. Get the STRING containing all matching files and folders based on the provided range-notation,
+			#	which is stored in variable 'docker__src_file'
+			#2. Convert this STRING to ARRAY by using (..) 
+			range_notation_matchItems_list=( $(docker__get_range_notation_matchItems_list "${docker__containerID_chosen}" \
+					"${docker__src_dir}" \
+					"${docker__src_file}") )
+
+			#Iterate thru elements of array 'range_notation_matchItems_list'
+			for matchItem in "${range_notation_matchItems_list[@]}"
+			do
+				#Define paths
+				src_copypath=$(get_fullpath_by_combining_dir_with_fileorfolder "${docker__src_dir}" "${matchItem}")
+				dst_copypath=$(get_fullpath_by_combining_dir_with_fileorfolder "${docker__dst_dir}" "${matchItem}")
+
+				#Copy from source to destination
+				docker__copy_tar_from_src_to_dst__sub "${docker__containerID_chosen}" \
+						"${DOCKER__EMPTYSTRING}" \
+						"${matchItem}" \
+						"${docker__src_dir}" \
+						"${docker__dst_dir}"
+
+				#Print
+				echo -e "...copied ${DOCKER__FG_LIGHTGREY}${matchItem}${DOCKER__NOCOLOR}"
+
+				#Show total missing contents & counts
+				docker__src_vs_dst_show_counts "${docker__containerID_chosen}" \
+						"${DOCKER__EMPTYSTRING}" \
+						"${src_copypath}" \
+						"${dst_copypath}" \
+						"${misscontfpath}" \
+						"${asterisk_isFound}"
+			done
+
+			#Show total missing contents & counts
+			docker__src_vs_dst_show_total_counts_and_missing_contents "${docker__containerID_chosen}" \
+					"${DOCKER__EMPTYSTRING}" \
+					"${docker__src_dir}"\
+					"${docker__dst_dir}" \
+					"${misscontfpath}" \
+					"${asterisk_isFound}" \
+					"${docker__src_and_dst_totalcount_list[@]}"
+
+		#---------------------------------------------------------------------
+		# ALL OTHER
+		#---------------------------------------------------------------------
+		else	#anything else
 			#Define paths
 			src_copypath=$(get_fullpath_by_combining_dir_with_fileorfolder "${docker__src_dir}" "${docker__src_file}")
 			dst_copypath=$(get_fullpath_by_combining_dir_with_fileorfolder "${docker__dst_dir}" "${docker__src_file}")
@@ -979,9 +1062,13 @@ docker__copy_from_src_to_dst__sub() {
 					"${src_copypath}" \
 					"${dst_copypath}" \
 					"${misscontfpath}" \
-					"${asterisk_isfound}"
+					"${asterisk_isFound}"
 		fi
-	else	#Local Host to Container
+
+	#---------------------------------------------------------------------
+	# HOST TO CONTAINER
+	#---------------------------------------------------------------------
+	else
 		#Show Title
 		show_msg_w_menuTitle_only_func "${DOCKER__DIRECTION_LOCAL_TO_CONTAINER}" \
 							"${docker__copy_msg}" \
@@ -991,9 +1078,10 @@ docker__copy_from_src_to_dst__sub() {
 							"${DOCKER__NUMOFLINES_0}" \
 							"${DOCKER__NUMOFLINES_2}"
 
-		if [[ ${asterisk_isfound} == true ]]; then	#asterisk is found
-
-
+		#---------------------------------------------------------------------
+		# ASTERISK
+		#---------------------------------------------------------------------
+		if [[ ${asterisk_isFound} == true ]]; then	#asterisk is found
 			while read -r line
 			do
 				#Define paths
@@ -1016,7 +1104,7 @@ docker__copy_from_src_to_dst__sub() {
 						"${src_copypath}" \
 						"${dst_copypath}" \
 						"${misscontfpath}" \
-						"${asterisk_isfound}"
+						"${asterisk_isFound}"
 			done < ${dirlist__src_ls_1aA_output__fpath}
 
 
@@ -1026,9 +1114,59 @@ docker__copy_from_src_to_dst__sub() {
 					"${docker__src_dir}"\
 					"${docker__dst_dir}" \
 					"${misscontfpath}" \
-					"${asterisk_isfound}" \
+					"${asterisk_isFound}" \
 					"${docker__src_and_dst_totalcount_list[@]}"
-		else	#asterisk is NOT found
+
+		#---------------------------------------------------------------------
+		# RANGE-NOTATION
+		#---------------------------------------------------------------------
+		elif [[ ${keywordRange_isFound} == true ]]; then	#keywordrange is found
+			#1. Get the STRING containing all matching files and folders based on the provided range-notation,
+			#	which is stored in variable 'docker__src_file'
+			#2. Convert this STRING to ARRAY by using (..) 
+			range_notation_matchItems_list=( $(docker__get_range_notation_matchItems_list "${DOCKER__EMPTYSTRING}" \
+					"${docker__src_dir}" \
+					"${docker__src_file}") )
+
+			#Iterate thru elements of array 'range_notation_matchItems_list'
+			for matchItem in "${range_notation_matchItems_list[@]}"
+			do
+				#Define paths
+				src_copypath=$(get_fullpath_by_combining_dir_with_fileorfolder "${docker__src_dir}" "${matchItem}")
+				dst_copypath=$(get_fullpath_by_combining_dir_with_fileorfolder "${docker__dst_dir}" "${matchItem}")
+
+				#Copy from source to destination
+				docker__copy_tar_from_src_to_dst__sub "${DOCKER__EMPTYSTRING}" \
+						"${docker__containerID_chosen}" \
+						"${matchItem}" \
+						"${docker__src_dir}" \
+						"${docker__dst_dir}"
+
+				#Print
+				echo -e "...copied ${DOCKER__FG_LIGHTGREY}${matchItem}${DOCKER__NOCOLOR}"
+
+				#Show total missing contents & counts
+				docker__src_vs_dst_show_counts "${DOCKER__EMPTYSTRING}" \
+						"${docker__containerID_chosen}" \
+						"${src_copypath}" \
+						"${dst_copypath}" \
+						"${misscontfpath}" \
+						"${asterisk_isFound}"
+			done
+
+			#Show total missing contents & counts
+			docker__src_vs_dst_show_total_counts_and_missing_contents "${DOCKER__EMPTYSTRING}" \
+					"${docker__containerID_chosen}" \
+					"${docker__src_dir}"\
+					"${docker__dst_dir}" \
+					"${misscontfpath}" \
+					"${asterisk_isFound}" \
+					"${docker__src_and_dst_totalcount_list[@]}"
+
+		#---------------------------------------------------------------------
+		# ALL OTHER
+		#---------------------------------------------------------------------
+		else	#anything else
 			#Define paths
 			src_copypath=$(get_fullpath_by_combining_dir_with_fileorfolder "${docker__src_dir}" "${docker__src_file}")
 			dst_copypath=$(get_fullpath_by_combining_dir_with_fileorfolder "${docker__dst_dir}" "${docker__src_file}")
@@ -1050,10 +1188,95 @@ docker__copy_from_src_to_dst__sub() {
 					"${src_copypath}" \
 					"${dst_copypath}" \
 					"${misscontfpath}" \
-					"${asterisk_isfound}"
+					"${asterisk_isFound}"
 		fi	
 	fi
 }
+
+docker__get_dir_contents() {
+	#Input args
+	local containerID__input="${1}"
+	local dir__input="${2}"
+
+	#Get directory list of contents
+	local src_cmd="ls -1av \"${dir__input}\" | grep -Ev '^\.\.?$'"
+	local src_outputfpath="${docker__tmp__dir}/src.out"
+	
+	#Execute command
+	#***NOTE: this function pass the result to file 'src_outputfpath'
+	docker_exec_cmd_and_receive_output__func "${containerID__input}" "${src_cmd}" "${src_outputfpath}"
+	#Retrieve result from file 'src_outputfpath'
+	local src_output=$(cat "${src_outputfpath}")
+
+	#OUTPUT
+	echo -e "${src_output[@]}"
+}
+
+docker__get_range_notation_matchItems_list() {
+	local containerID__input="${1}"
+	local src_dir__input="${2}"
+	local range_notation__input="${3}"
+
+	#1. Get dir contents
+	#2. Convert 'string' to 'array'
+	local dirlist_ls_1av=( $(docker__get_dir_contents "${containerID__input}" "${src_dir__input}") )
+
+	#Extract LEFT and RIGHT chars
+	local leftchar=$(extract_leftchar_from_range_notation "${range_notation__input}")
+	local rightchar=$(extract_rightchar_from_range_notation "${range_notation__input}")
+	#Convert LEFT and RIGHT chars to decimals
+	local leftdec=$(char_to_dec "${leftchar}")
+	local rightdec=$(char_to_dec "${rightchar}")
+
+	#SWAP 'leftdec' with 'rightdec' if needed 'leftdec > rightdec'
+	local leftdec_tmp=${leftdec}
+	if [[ ${leftdec} -gt ${rightdec} ]]; then
+		leftdec=${rightdec}
+		rightdec=${leftdec_tmp}
+	fi 
+
+	#Get the list with all files and folders matching the range-notation
+	local char=${DOCKER__EMPTYSTRING}
+	local dirlistitem_firstchar=${DOCKER__EMPTYSTRING}
+	local match_isFound=false
+	local ret=()
+
+	#Iterate from decimal 'leftdec' until 'rightdec'
+	for (( dec=leftdec; dec<=rightdec; dec++ ))
+	do
+		#Convert decimal 'd' to char 'c'
+		char=$(dec_to_char "${dec}")
+
+		#***IMPORTANT: Reset flag to 'false'
+		match_isFound=false
+
+		#Iterate thru array 'dirlistitem'
+		for dirlistitem in "${dirlist_ls_1av[@]}"; do
+			#Get the first character
+			dirlistitem_firstchar="${dirlistitem:0:1}"
+			#Check if there is match between 'dirlistitem_firstchar' and 'char'
+			if [[ "${dirlistitem_firstchar}" == "${char}" ]]; then
+				#Add 'dirlistitem' to array
+				ret+=("${dirlistitem}")
+
+				#Set flag to 'true'
+				match_isFound=true
+			else
+				#Previously at least one match was found. As soon as
+				#	no match is found, break this for-loop immediately.
+				#***NOTE: this flag avoids the loop to continue unnecessarily
+				#	while there is NO MATCH anymore.
+				if [[ ${match_isFound} == true ]]; then
+					break
+				fi
+			fi
+		done
+	done
+
+	#OUTPUT
+	echo "${ret[@]}"
+}
+
 
 docker__copy_tar_from_src_to_dst__sub() {
 	#Input args
@@ -1136,13 +1359,13 @@ docker__src_vs_dst_show_counts() {
 	local dst_outputfpath="${docker__tmp__dir}/dst.out"
 
 	#Execute commands
-	container_exec_cmd_and_receive_output__func "${src_containerid__input}" "${src_cmd}" "${src_outputfpath}"
+	docker_exec_cmd_and_receive_output__func "${src_containerid__input}" "${src_cmd}" "${src_outputfpath}"
 	local src_output=$(cat "${src_outputfpath}")
 	if [[ -z "${src_output}" ]]; then
 		src_output=0
 	fi
 
-	container_exec_cmd_and_receive_output__func "${dst_containerid__input}" "${dst_cmd}" "${dst_outputfpath}"
+	docker_exec_cmd_and_receive_output__func "${dst_containerid__input}" "${dst_cmd}" "${dst_outputfpath}"
 	local dst_output=$(cat "${dst_outputfpath}")
 	if [[ -z "${dst_output}" ]]; then
 		dst_output=0
@@ -1195,10 +1418,10 @@ docker__src_vs_dst_show_missing_contents() {
 	local dst_outputfpath="${docker__tmp__dir}/dst.out"
 
 	#Execute commands
-	container_exec_cmd_and_receive_output__func "${src_containerid__input}" "${src_cmd}" "${src_outputfpath}"
+	docker_exec_cmd_and_receive_output__func "${src_containerid__input}" "${src_cmd}" "${src_outputfpath}"
 	local src_output=$(cat "${src_outputfpath}")
 
-	container_exec_cmd_and_receive_output__func "${dst_containerid__input}" "${dst_cmd}" "${dst_outputfpath}"
+	docker_exec_cmd_and_receive_output__func "${dst_containerid__input}" "${dst_cmd}" "${dst_outputfpath}"
 	local dst_output=$(cat "${dst_outputfpath}")
 
 	#1. Find elements in 'src_output' that are not in 'dst_output'
