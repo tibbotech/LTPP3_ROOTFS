@@ -1001,8 +1001,40 @@ docker__copy_from_src_to_dst__sub() {
 					"${docker__src_dir}" \
 					"${docker__src_file}") )
 
-			printf '%s\n' "${range_notation_matchItems_list[@]}"
-			echo "CONTAINER TO HOST: CONTINUE FROM HERE!!!"
+			#Iterate thru elements of array 'range_notation_matchItems_list'
+			for matchItem in "${range_notation_matchItems_list[@]}"
+			do
+				#Define paths
+				src_copypath=$(get_fullpath_by_combining_dir_with_fileorfolder "${docker__src_dir}" "${matchItem}")
+				dst_copypath=$(get_fullpath_by_combining_dir_with_fileorfolder "${docker__dst_dir}" "${matchItem}")
+
+				#Copy from source to destination
+				docker__copy_tar_from_src_to_dst__sub "${docker__containerID_chosen}" \
+						"${DOCKER__EMPTYSTRING}" \
+						"${matchItem}" \
+						"${docker__src_dir}" \
+						"${docker__dst_dir}"
+
+				#Print
+				echo -e "...copied ${DOCKER__FG_LIGHTGREY}${matchItem}${DOCKER__NOCOLOR}"
+
+				#Show total missing contents & counts
+				docker__src_vs_dst_show_counts "${docker__containerID_chosen}" \
+						"${DOCKER__EMPTYSTRING}" \
+						"${src_copypath}" \
+						"${dst_copypath}" \
+						"${misscontfpath}" \
+						"${asterisk_isFound}"
+			done
+
+			#Show total missing contents & counts
+			docker__src_vs_dst_show_total_counts_and_missing_contents "${docker__containerID_chosen}" \
+					"${DOCKER__EMPTYSTRING}" \
+					"${docker__src_dir}"\
+					"${docker__dst_dir}" \
+					"${misscontfpath}" \
+					"${asterisk_isFound}" \
+					"${docker__src_and_dst_totalcount_list[@]}"
 
 		#---------------------------------------------------------------------
 		# ALL OTHER
@@ -1096,8 +1128,40 @@ docker__copy_from_src_to_dst__sub() {
 					"${docker__src_dir}" \
 					"${docker__src_file}") )
 
-			printf '%s\n' "${range_notation_matchItems_list[@]}"
-			echo "HOST TO CONTAINER: CONTINUE FROM HERE!!!"
+			#Iterate thru elements of array 'range_notation_matchItems_list'
+			for matchItem in "${range_notation_matchItems_list[@]}"
+			do
+				#Define paths
+				src_copypath=$(get_fullpath_by_combining_dir_with_fileorfolder "${docker__src_dir}" "${matchItem}")
+				dst_copypath=$(get_fullpath_by_combining_dir_with_fileorfolder "${docker__dst_dir}" "${matchItem}")
+
+				#Copy from source to destination
+				docker__copy_tar_from_src_to_dst__sub "${DOCKER__EMPTYSTRING}" \
+						"${docker__containerID_chosen}" \
+						"${matchItem}" \
+						"${docker__src_dir}" \
+						"${docker__dst_dir}"
+
+				#Print
+				echo -e "...copied ${DOCKER__FG_LIGHTGREY}${matchItem}${DOCKER__NOCOLOR}"
+
+				#Show total missing contents & counts
+				docker__src_vs_dst_show_counts "${DOCKER__EMPTYSTRING}" \
+						"${docker__containerID_chosen}" \
+						"${src_copypath}" \
+						"${dst_copypath}" \
+						"${misscontfpath}" \
+						"${asterisk_isFound}"
+			done
+
+			#Show total missing contents & counts
+			docker__src_vs_dst_show_total_counts_and_missing_contents "${DOCKER__EMPTYSTRING}" \
+					"${docker__containerID_chosen}" \
+					"${docker__src_dir}"\
+					"${docker__dst_dir}" \
+					"${misscontfpath}" \
+					"${asterisk_isFound}" \
+					"${docker__src_and_dst_totalcount_list[@]}"
 
 		#---------------------------------------------------------------------
 		# ALL OTHER
@@ -1174,6 +1238,7 @@ docker__get_range_notation_matchItems_list() {
 	#Get the list with all files and folders matching the range-notation
 	local char=${DOCKER__EMPTYSTRING}
 	local dirlistitem_firstchar=${DOCKER__EMPTYSTRING}
+	local match_isFound=false
 	local ret=()
 
 	#Iterate from decimal 'leftdec' until 'rightdec'
@@ -1181,6 +1246,9 @@ docker__get_range_notation_matchItems_list() {
 	do
 		#Convert decimal 'd' to char 'c'
 		char=$(dec_to_char "${dec}")
+
+		#***IMPORTANT: Reset flag to 'false'
+		match_isFound=false
 
 		#Iterate thru array 'dirlistitem'
 		for dirlistitem in "${dirlist_ls_1av[@]}"; do
@@ -1190,6 +1258,17 @@ docker__get_range_notation_matchItems_list() {
 			if [[ "${dirlistitem_firstchar}" == "${char}" ]]; then
 				#Add 'dirlistitem' to array
 				ret+=("${dirlistitem}")
+
+				#Set flag to 'true'
+				match_isFound=true
+			else
+				#Previously at least one match was found. As soon as
+				#	no match is found, break this for-loop immediately.
+				#***NOTE: this flag avoids the loop to continue unnecessarily
+				#	while there is NO MATCH anymore.
+				if [[ ${match_isFound} == true ]]; then
+					break
+				fi
 			fi
 		done
 	done
@@ -1197,7 +1276,6 @@ docker__get_range_notation_matchItems_list() {
 	#OUTPUT
 	echo "${ret[@]}"
 }
-
 
 
 docker__copy_tar_from_src_to_dst__sub() {
