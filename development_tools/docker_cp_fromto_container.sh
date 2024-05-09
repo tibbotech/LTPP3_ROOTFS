@@ -1199,6 +1199,7 @@ docker__get_dir_contents() {
 	local dir__input="${2}"
 
 	#Get directory list of contents
+	#***NOTE: the list order follows the ASCII numbering
 	local src_cmd="ls -1av \"${dir__input}\" | grep -Ev '^\.\.?$'"
 	local src_outputfpath="${docker__tmp__dir}/src.out"
 	
