@@ -258,7 +258,7 @@ function remove_asterisk_from_string() {
     local isFile=false
 
     #Check if asterisk is present in 'str__input'
-    asterisk_isFound=`checkForMatch_of_a_pattern_within_string__func "${DOCKER__ASTERISK}" "${str__input}"`
+    asterisk_isFound=$(checkif_asterisk_isvalid "${str__input}")
     if [[ ${asterisk_isFound} == true ]]; then  #match found
         str_len=${#str__input}  #get length
 
@@ -279,21 +279,21 @@ function process_str_basedOn_numOf_results__func() {
     local str__input="${2}"
     local autocomplete_numOfMatches__input="${3}"
     local asterisk_isfound__input="${4}"
-    local keywordrange_isfound__input="${5}"
+    local rangeNotation_isFound__input="${5}"
 
     #Define variables
     local ret="${DOCKER__EMPTYSTRING}"
 
     #Check the number of matches
-    if [[ ${keywordrange_isfound__input} == true ]]; then   #asterisk or keywordrange found
+    if [[ ${rangeNotation_isFound__input} == true ]]; then   #asterisk or range-notation found
         ret="${str__input}"
     else
         if [[ ${autocomplete_numOfMatches__input} -eq ${DOCKER__NUMOFMATCH_1} ]]; then  #autocomplete only found 1 match
             ret="${str_autocompleted__input}"
         else    #autocomplete found multiple matches
-            if [[ ${asterisk_isfound__input} == true ]]; then   #asterisk or keywordrange found
+            if [[ ${asterisk_isfound__input} == true ]]; then   #asterisk or range-notation found
                 ret="${str__input}"
-            else    #no asterisk or keywordrange is present
+            else    #no asterisk or range-notation is present
                 ret="${str_autocompleted__input}"
             fi
         fi
@@ -901,29 +901,29 @@ dirlist__readInput_w_autocomplete__sub() {
                         #***NOTE: this check is done to avoid processing the same task again.
                         if [[ "${str}" != "${str_prev}" ]]; then  #Yes, they are different
                             #Define constants
-                            local SUBPHASE_CHECKIF_ASTERISK_AND_KEYWORDRANGE_ARE_PRESENT="1"
+                            local SUBPHASE_CHECKIF_ASTERISK_AND_RANGENOTATION_ARE_PRESENT="1"
                             local SUBPHASE_CHECKIF_ASTERISK_IS_PRESENT="2"
-                            local SUBPPHASE_CHECKIF_KEYWORDRANGE_IS_PRESENT="3"
+                            local SUBPPHASE_CHECKIF_RANGENOTATION_IS_PRESENT="3"
                             local SUBPHASE_AUTOCOMPLETE="4"
                             local SUBPHASE_FINALIZE="5"
                             local SUBPHASE_EXIT="100"
 
                             #Define and set subphase
-                            local subphase="${SUBPHASE_CHECKIF_ASTERISK_AND_KEYWORDRANGE_ARE_PRESENT}"
+                            local subphase="${SUBPHASE_CHECKIF_ASTERISK_AND_RANGENOTATION_ARE_PRESENT}"
 
                             #Define variables
                             local str_trimmed=${DOCKER__EMPTYSTRING}
 
                             #Define flags
                             local atTab_asterisk_isFound=false
-                            local atTab_keywordRange_isFound=false
+                            local atTab_rangeNotation_isFound=false
 
                             #Start loop
                             while [[ true ]]
                             do
                                 case ${subphase} in
-                                    "${SUBPHASE_CHECKIF_ASTERISK_AND_KEYWORDRANGE_ARE_PRESENT}")
-                                        if [[ $(checkif_both_asterisk_and_keywordrange_are_present "${str}") == true ]]; then
+                                    "${SUBPHASE_CHECKIF_ASTERISK_AND_RANGENOTATION_ARE_PRESENT}")
+                                        if [[ $(CheckIf_Both_Asterisk_And_RangeNotation_ArePresent "${str}") == true ]]; then
                                             invalidKeyInputIsFound=true
 
                                             subphase="${SUBPHASE_EXIT}"
@@ -947,18 +947,18 @@ dirlist__readInput_w_autocomplete__sub() {
                                         else
                                             atTab_asterisk_isFound=false
 
-                                            subphase="${SUBPPHASE_CHECKIF_KEYWORDRANGE_IS_PRESENT}"
+                                            subphase="${SUBPPHASE_CHECKIF_RANGENOTATION_IS_PRESENT}"
                                         fi
                                         ;;
-                                    "${SUBPPHASE_CHECKIF_KEYWORDRANGE_IS_PRESENT}")
-                                        if [[ $(checkif_keywordrange_isvalid "${str}") == true ]]; then
+                                    "${SUBPPHASE_CHECKIF_RANGENOTATION_IS_PRESENT}")
+                                        if [[ $(CheckIf_RangeNotation_IsValid "${str}") == true ]]; then
                                             str_trimmed=$(remove_trailing_chars_from_path "${str}" "${DOCKER__NUMOFCHARS_5}")
 
-                                            atTab_keywordRange_isFound=true
+                                            atTab_rangeNotation_isFound=true
                                         else
                                             str_trimmed="${str}"
 
-                                            atTab_keywordRange_isFound=false
+                                            atTab_rangeNotation_isFound=false
                                         fi
 
                                         subphase="${SUBPHASE_AUTOCOMPLETE}"
@@ -1055,7 +1055,7 @@ dirlist__readInput_w_autocomplete__sub() {
                                                 "${str}" \
                                                 "${autocomplete_numOfMatches}" \
                                                 "${atTab_asterisk_isFound}" \
-                                                "${atTab_keywordRange_isFound}")
+                                                "${atTab_rangeNotation_isFound}")
 
 #---------------------------------------Backup 'str'
                                         str_prev=${str}
@@ -1090,19 +1090,26 @@ dirlist__readInput_w_autocomplete__sub() {
                     ${DOCKER__EXIT})
                         #Check if at least one match is found
                         if [[ ${autocomplete_numOfMatches} -ne ${DOCKER__NUMOFMATCH_0} ]]; then #at least one match is found
-                            if [[ ${autocomplete_numOfMatches} -gt ${DOCKER__NUMOFMATCH_1} ]]; then #at least two matches were found
-                                #Check if an asterisk is already present
-                                local atExit_asterisk_isFound=`checkForMatch_of_a_pattern_within_string__func "${DOCKER__ASTERISK}" "${ret}"`
+                            #Check if 'ret' is ends with a range-notation {.-.}
+                            local atExit_rangeNotation_isFound=$(CheckIf_RangeNotation_IsValid "${ret}")
+                            
+                            if [[ ${atExit_rangeNotation_isFound} == false ]]; then  #Yes, range-notiation is present
+                                if [[ ${autocomplete_numOfMatches} -gt ${DOCKER__NUMOFMATCH_1} ]]; then #at least two matches were found
+                                    #Check if 'ret' is ends with an asterisk (*)
+                                    local atExit_asterisk_isFound=$(checkif_asterisk_isvalid "${ret}")
 
-                                #***NOTE: if asterisk (*) is found then do NOTHING.
-                                if [[ ${atExit_asterisk_isFound} == false ]]; then  #asterisk was NOT found
-                                    #Check if 'ret' is a file
-                                    isFile=$(checkIf_file_exists__func "${containerID__argv}" "${ret}")
-                                    #NOTE:
-                                    #   a. if True, then DO NOTHING.
-                                    #   b. if False, then proceed and process the commands within the if-condition.
-                                    if [[ ${isFile} == false ]]; then    #No, is NOT a file
-                                        ret="${ret}${DOCKER__ASTERISK}" #append asterisk
+                                    #***NOTE: if asterisk (*) is found then do NOTHING.
+                                    if [[ ${atExit_asterisk_isFound} == false ]]; then  #asterisk was NOT found
+                                        #Check if 'ret' is a file
+                                        isFile=$(checkIf_file_exists__func "${containerID__argv}" "${ret}")
+                                        #NOTE:
+                                        #   a. if True, then DO NOTHING. It means that a file is really present with that name.
+                                        #   ***NOTE: should you want to not copy only this file, but a number of files from which
+                                        #       the 'keyword' is the SAME as this file, then append an asterisk(*) at the end.
+                                        #   b. if False, then proceed and process the commands within the if-condition.
+                                        if [[ ${isFile} == false ]]; then    #No, is NOT a file
+                                            ret="${ret}${DOCKER__ASTERISK}" #append asterisk
+                                        fi
                                     fi
                                 fi
                             fi

@@ -549,7 +549,7 @@ docker__src_path_selection__sub() {
 
 	#Define variables
 	local asterisk_isFound=false
-	local keywordRange_isFound=false
+	local rangeNotation_isFound=false
 	local isFile=false
 	local readMsg=${DOCKER__EMPTYSTRING}
 
@@ -615,11 +615,10 @@ docker__src_path_selection__sub() {
 
 	#Check if 'asterisk *' is found
 	asterisk_isFound=$(checkif_asterisk_isvalid "${docker__path_output}")
-	#Check if 'keywordrange {.,.}' is found
-	keywordRange_isFound=$(checkif_keywordrange_isvalid "${docker__path_output}")
+	#Check if 'range-notation {.,.}' is found
+	rangeNotation_isFound=$(CheckIf_RangeNotation_IsValid "${docker__path_output}")
 
-
-	if [[ ${asterisk_isFound} == true ]] || [[ ${keywordRange_isFound} == true ]]; then	#asterisk was found
+	if [[ ${asterisk_isFound} == true ]] || [[ ${rangeNotation_isFound} == true ]]; then	#asterisk was found
 		docker__src_dir=`get_dirname_from_specified_path__func "${docker__path_output}"`
 
 		#Set 'docker__src_file' to 'asterisk'
@@ -902,14 +901,14 @@ docker__copy_from_src_to_dst__sub() {
 	#---------------------------------------------------------------------
 	#Define variables
 	local asterisk_isFound=false
-	local keywordRange_isFound=false
+	local rangeNotation_isFound=false
 
 	local line=${DOCKER__EMPTYSTRING}
 	local src_folder=${DOCKER__EMPTYSTRING}
 	local src_copypath=${DOCKER__EMPTYSTRING}
 	local dst_copypath=${DOCKER__EMPTYSTRING}
 
-	local range_notation_matchItems_list=()
+	local rangeNotation_matchItems_list=()
 
 	#Define paths
 	local datetime=$(date +"%Y%b%d_%Hh%Mm%Ss")
@@ -935,8 +934,8 @@ docker__copy_from_src_to_dst__sub() {
 	#Check if 'asterisk' is found (MUST BE DONE HERE!)
 	asterisk_isFound=$(checkif_asterisk_isvalid "${docker__src_file}")
 
-	#Check if 'keywordrange' is found (MUST BE DONE HERE!)
-	keywordRange_isFound=$(checkif_keywordrange_isvalid "${docker__src_file}")
+	#Check if 'range-notation' is found (MUST BE DONE HERE!)
+	rangeNotation_isFound=$(CheckIf_RangeNotation_IsValid "${docker__src_file}")
 
 	#---------------------------------------------------------------------
 	# CONTAINER TO HOST
@@ -993,16 +992,16 @@ docker__copy_from_src_to_dst__sub() {
 		#---------------------------------------------------------------------
 		# RANGE-NOTATION
 		#---------------------------------------------------------------------
-		elif [[ ${keywordRange_isFound} == true ]]; then	#keywordrange is found
+		elif [[ ${rangeNotation_isFound} == true ]]; then	#range-notation is found
 			#1. Get the STRING containing all matching files and folders based on the provided range-notation,
 			#	which is stored in variable 'docker__src_file'
 			#2. Convert this STRING to ARRAY by using (..) 
-			range_notation_matchItems_list=( $(docker__get_range_notation_matchItems_list "${docker__containerID_chosen}" \
+			rangeNotation_matchItems_list=( $(docker__get_rangeNotation_matchItems_list "${docker__containerID_chosen}" \
 					"${docker__src_dir}" \
 					"${docker__src_file}") )
 
-			#Iterate thru elements of array 'range_notation_matchItems_list'
-			for matchItem in "${range_notation_matchItems_list[@]}"
+			#Iterate thru elements of array 'rangeNotation_matchItems_list'
+			for matchItem in "${rangeNotation_matchItems_list[@]}"
 			do
 				#Define paths
 				src_copypath=$(get_fullpath_by_combining_dir_with_fileorfolder "${docker__src_dir}" "${matchItem}")
@@ -1120,16 +1119,16 @@ docker__copy_from_src_to_dst__sub() {
 		#---------------------------------------------------------------------
 		# RANGE-NOTATION
 		#---------------------------------------------------------------------
-		elif [[ ${keywordRange_isFound} == true ]]; then	#keywordrange is found
+		elif [[ ${rangeNotation_isFound} == true ]]; then	#range-notation is found
 			#1. Get the STRING containing all matching files and folders based on the provided range-notation,
 			#	which is stored in variable 'docker__src_file'
 			#2. Convert this STRING to ARRAY by using (..) 
-			range_notation_matchItems_list=( $(docker__get_range_notation_matchItems_list "${DOCKER__EMPTYSTRING}" \
+			rangeNotation_matchItems_list=( $(docker__get_rangeNotation_matchItems_list "${DOCKER__EMPTYSTRING}" \
 					"${docker__src_dir}" \
 					"${docker__src_file}") )
 
-			#Iterate thru elements of array 'range_notation_matchItems_list'
-			for matchItem in "${range_notation_matchItems_list[@]}"
+			#Iterate thru elements of array 'rangeNotation_matchItems_list'
+			for matchItem in "${rangeNotation_matchItems_list[@]}"
 			do
 				#Define paths
 				src_copypath=$(get_fullpath_by_combining_dir_with_fileorfolder "${docker__src_dir}" "${matchItem}")
@@ -1213,18 +1212,49 @@ docker__get_dir_contents() {
 	echo -e "${src_output[@]}"
 }
 
-docker__get_range_notation_matchItems_list() {
+docker__get_rangeNotation_matchItems_list() {
 	local containerID__input="${1}"
 	local src_dir__input="${2}"
-	local range_notation__input="${3}"
+	#***NOTE:
+	#	src_content__input could be:
+	#	a. ONLY a range-notation (e.g. {h-n})
+	#	b. a keyword (e.g. hi) and range-notation (e.g. {i-n}) -> combined (e.g. hi{e-n})
+	local src_content__input="${3}"
 
-	#1. Get dir contents
-	#2. Convert 'string' to 'array'
-	local dirlist_ls_1av=( $(docker__get_dir_contents "${containerID__input}" "${src_dir__input}") )
+#---- PROBABLY NOT NEEDED ANYMORE ------------------------------------
+# #1. Get dir contents
+# #2. Convert 'string' to 'array'
+# local dirlist_ls_1av=( $(docker__get_dir_contents "${containerID__input}" "${src_dir__input}") )
+#---- PROBABLY NOT NEEDED ANYMORE ------------------------------------
+
+	#Define variables
+	local line_charPos=0
+	local keyWord=${DOCKER__EMPTYSTRING}
+	local keyWord_len=0
+	local rangeNotation=${DOCKER__EMPTYSTRING}
+
+	#Check if 'src_content__input' is '5 chars long'
+	local src_content_len=${#src_content__input}
+	if [[ ${src_content_len} -eq ${DOCKER__NUMOFCHARS_5} ]]; then
+		rangeNotation="${src_content__input}"
+	else
+		keyWord_len=$((src_content_len -DOCKER__NUMOFCHARS_5))
+		keyWord="${src_content__input:0:$keyWord_len}"
+		rangeNotation="${src_content__input:$keyWord_len}"
+	fi
+
+	#Update 'line_charPos'
+	#***NOTE: 'line_charPos' is the position of 'line_char' at position (keyWord_len), 
+	#	which is in fact the desired character to-be examined whether it is included in
+	#	the range-notation or not.
+	#***NOTE: because the POSITION of a CHARACTER within a STRING starts with '0', the 
+	#	position of the 'line_char' is NOT (keyWord_len + 1), but (keyWord_len)!!!
+	line_charPos=${keyWord_len}
+
 
 	#Extract LEFT and RIGHT chars
-	local leftchar=$(extract_leftchar_from_range_notation "${range_notation__input}")
-	local rightchar=$(extract_rightchar_from_range_notation "${range_notation__input}")
+	local leftchar=$(extract_leftchar_from_rangeNotation "${rangeNotation}")
+	local rightchar=$(extract_rightchar_from_rangeNotation "${rangeNotation}")
 	#Convert LEFT and RIGHT chars to decimals
 	local leftdec=$(char_to_dec "${leftchar}")
 	local rightdec=$(char_to_dec "${rightchar}")
@@ -1251,14 +1281,15 @@ docker__get_range_notation_matchItems_list() {
 		#***IMPORTANT: Reset flag to 'false'
 		match_isFound=false
 
-		#Iterate thru array 'dirlistitem'
-		for dirlistitem in "${dirlist_ls_1av[@]}"; do
-			#Get the first character
-			dirlistitem_firstchar="${dirlistitem:0:1}"
-			#Check if there is match between 'dirlistitem_firstchar' and 'char'
-			if [[ "${dirlistitem_firstchar}" == "${char}" ]]; then
+		while read -r line
+		do
+			#Get 'line_char' at position 'line_charPos'
+			line_char=${line:line_charPos:1}
+
+			#Check if there is match between 'line_char' and 'char'
+			if [[ "${line_char}" == "${char}" ]]; then
 				#Add 'dirlistitem' to array
-				ret+=("${dirlistitem}")
+				ret+=("${line}")
 
 				#Set flag to 'true'
 				match_isFound=true
@@ -1271,7 +1302,7 @@ docker__get_range_notation_matchItems_list() {
 					break
 				fi
 			fi
-		done
+		done < ${dirlist__src_ls_1aA_output__fpath}
 	done
 
 	#OUTPUT
