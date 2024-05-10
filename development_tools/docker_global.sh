@@ -1440,7 +1440,7 @@ function docker_exec_cmd_and_receive_output__func() {
 
 
 #---COPY RELATED FUNCTIONKS
-function checkif_keywordrange_isvalid() {
+function CheckIf_RangeNotation_IsValid() {
     #Input args
     local path__input="${1}"
 
@@ -1494,7 +1494,7 @@ function checkif_asterisk_isvalid() {
     fi
 }
 
-function checkif_both_asterisk_and_keywordrange_are_present() {
+function CheckIf_Both_Asterisk_And_RangeNotation_ArePresent() {
     #Input args
     local path__input="${1}"
 
@@ -1556,7 +1556,7 @@ function dec_to_char() {
 	echo "${ret}"
 }
 
-function extract_leftchar_from_range_notation() {
+function extract_leftchar_from_rangeNotation() {
 	#Input args
 	local range_notation__input="${1}"
 
@@ -1567,7 +1567,7 @@ function extract_leftchar_from_range_notation() {
     echo -e "${leftchar}"
 }
 
-function extract_rightchar_from_range_notation() {
+function extract_rightchar_from_rangeNotation() {
 	#Input args
 	local range_notation__input="${1}"
 
@@ -1587,7 +1587,7 @@ function remove_trailing_chars_from_path() {
     local len=${#path__input}
     local len_remain=$((len - numof_chars))
 
-    #Get path without asterisk * or keywordrange {.,.}
+    #Get path without asterisk * or range-notation {.,.}
     local startpos=0
     local ret=${path__input:startpos:len_remain}
 
