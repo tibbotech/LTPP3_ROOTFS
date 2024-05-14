@@ -96,6 +96,7 @@ isp_c_filename="isp.c"
 isp_c_patch_filename="isp.c.patch"
 Kconfig_filename="Kconfig"
 Kconfig_patch_filename="Kconfig.patch"
+libpmux_py_filename="libpmux.py"
 makefile_filename="Makefile"
 makefile_patch_filename="Makefile.patch"
 make_menuconfig_filename="armhf_kernel.config"
@@ -191,7 +192,10 @@ home_lttp3rootfs_kernel_drivers_serial_dir=${home_lttp3rootfs_kernel_dir}/driver
 home_lttp3rootfs_kernel_drivers_wifi_dir=${home_lttp3rootfs_kernel_dir}/drivers/wifi
 home_lttp3rootfs_kernel_dts_dir=${home_lttp3rootfs_kernel_dir}/dts
 home_lttp3rootfs_kernel_modules_load_d_dir=${home_lttp3rootfs_kernel_dir}/modules-load.d
-home_lttp3rootfs_usr_bin_dir=${home_lttp3rootfs_dir}/usr/bin
+home_lttp3rootfs_usr_dir=${home_lttp3rootfs_dir}/usr
+home_lttp3rootfs_usr_bin_dir=${home_lttp3rootfs_usr_dir}/bin
+home_lttp3rootfs_usr_lib_dir=${home_lttp3rootfs_usr_dir}/lib
+home_lttp3rootfs_usr_lib_pmux_dir=${home_lttp3rootfs_usr_lib_dir}/pmux
 SP7xxx_dir=${home_dir}/SP7021
 SP7xxx_boot_uboot_include_configs_dir=${SP7xxx_dir}/boot/uboot/include/configs
 SP7xxx_boot_uboot_board_sunplus_pentagram_board_dir=${SP7xxx_dir}/boot/uboot/board/sunplus/pentagram_board
@@ -213,6 +217,7 @@ SP7xxx_linux_rootfs_initramfs_dir=${SP7xxx_dir}/linux/rootfs/initramfs
 SP7xxx_linux_rootfs_initramfs_disk_dir=${SP7xxx_linux_rootfs_initramfs_dir}/${disk_foldername}
 SP7xxx_linux_rootfs_initramfs_disk_etc_dir=${SP7xxx_linux_rootfs_initramfs_disk_dir}/etc
 SP7xxx_linux_rootfs_initramfs_disk_lib_dir=${SP7xxx_linux_rootfs_initramfs_disk_dir}/lib
+SP7xxx_linux_rootfs_initramfs_disk_lib_python3_ntios_pmux_dir=${SP7xxx_linux_rootfs_initramfs_disk_lib_dir}/python3/ntios/pmux
 SP7xxx_linux_rootfs_initramfs_disk_etc_update_motd_d_dir=${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}/update-motd.d
 SP7xxx_linux_rootfs_initramfs_disk_usr_bin_dir=${SP7xxx_linux_rootfs_initramfs_disk_dir}/usr/bin
 SP7xxx_linux_rootfs_initramfs_disk_var_backups_gpio_dir=${SP7xxx_linux_rootfs_initramfs_disk_dir}/var/backups/gpio
@@ -280,6 +285,9 @@ dst_hosts_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}/${hosts_filename}
 
 src_ispboootbin_version_txt_fpath=${home_lttp3rootfs_docker_version_dir}/${ispboootbin_version_txt_filename}
 dst_ispboootbin_version_txt_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_tibbo_version_dir}/${ispboootbin_version_txt_filename}
+
+src_libpmux_py_fpath=${home_lttp3rootfs_usr_lib_pmux_dir}/${libpmux_py_filename}
+dst_libpmux_py_fpath=${SP7xxx_linux_rootfs_initramfs_disk_lib_python3_ntios_pmux_dir}/${libpmux_py_filename}
 
 src_make_menuconfig_fpath=${home_lttp3rootfs_kernel_makeconfig_dir}/${make_menuconfig_filename}
 dst_make_menuconfig_fpath=${SP7xxx_linux_kernel_dir}/${make_menuconfig_default_filename}
@@ -805,7 +813,6 @@ else
 	echo -e "\r"
 	echo -e ">>>>>Creating directory <${SP7xxx_linux_rootfs_initramfs_disk_var_backups_gpio_dir}>"
 		mkdir -p ${SP7xxx_linux_rootfs_initramfs_disk_var_backups_gpio_dir}
-
 fi
 
 echo -e "\r"
@@ -1328,6 +1335,28 @@ chmod +x ${build_disk_fpath}
 
 
 
+#NTIOS
+press_any_key__func
+if [[ ! -d "${SP7xxx_linux_rootfs_initramfs_disk_lib_python3_ntios_pmux_dir}" ]]; then
+	mkdir -p "${SP7xxx_linux_rootfs_initramfs_disk_lib_python3_ntios_pmux_dir}"
+fi
+
+echo -e "\r"
+echo -e ">Copying: ${libpmux_py_filename}"
+echo -e ">from: ${home_lttp3rootfs_usr_lib_pmux_dir}"
+echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_lib_python3_ntios_pmux_dir}"
+	cp -rf ${src_libpmux_py_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_lib_python3_ntios_pmux_dir}
+
+echo -e "\r"
+echo -e ">>>Change ownership to <root> for folder: ${libpmux_py_filename}"
+	chown -R root:root ${dst_libpmux_py_fpath}
+
+echo -e "\r"
+echo -e ">>>Change permission to <-rw-r-xr-x> for folder: ${libpmux_py_filename}"
+	chmod -R 755 ${dst_libpmux_py_fpath}
+
+
+
 #UPDATE-MOTD-D
 press_any_key__func
 echo -e "\r"
@@ -1346,7 +1375,7 @@ echo -e ">>>Change permission to <-rw-r-xr-x> for folder: ${ninetynine_wlan_noti
 
 
 
-###APPLYIBG PATCHES###
+###APPLYING PATCHES###
 press_any_key__func
 ehci_sched_c_diff=$(diff ${old_ehci_sched_c_fpath} ${new_ehci_sched_c_fpath})
 if [[ -n "${ehci_sched_c_diff}" ]]; then
