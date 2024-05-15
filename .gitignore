@@ -3,6 +3,7 @@
 *-workspace
 *mytest
 *newtest
+*ispboootbin_version.txt
 
 #ignore the users local environmet variables. 
 */docker/environment/exported_env_var.txt

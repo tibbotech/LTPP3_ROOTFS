@@ -53,6 +53,9 @@ function create_image__func() {
         container_env3_isfound=$(grep -F "${DOCKER__PATTERN_DOCKERFILE_ENV1}" "${dockerfile_fpath}")
         container_env4_isfound=$(grep -F "${DOCKER__PATTERN_CONTAINER_ENV4}" "${dockerfile_fpath}")
 
+        #---------------------------------------------------------------------
+        # sunplus_inst.sh & sunplus_inst_for_sd_boot.sh: CONTAINER_ENV1, CONTAINER_ENV2, DOCKERFILE_ENV1
+        #---------------------------------------------------------------------
         #Check if 'dockerfile_fpath' contains 'DOCKER__PATTERN_CONTAINER_ENV1', 'DOCKER__PATTERN_CONTAINER_ENV2', and 'DOCKER__PATTERN_DOCKERFILE_ENV1' are present in file 'dockerfile_fpath'?
         if [[ -n "${container_env1_isfound}" ]] && [[ -n "${container_env2_isfound}" ]] && [[ -n "${container_env3_isfound}" ]]; then   #Yes, patterns are present
             #Retrieve to-be-exported Environment variables 'CONTAINER_ENV1', 'CONTAINER_ENV2', and 'DOCKERFILE_ENV1'
@@ -107,6 +110,10 @@ function create_image__func() {
 
                 exported_env_var3="--branch ${git_branch} ${exported_env_var3}"
             fi
+        
+        #---------------------------------------------------------------------
+        # disk_preprep.sh: CONTAINER_ENV4
+        #---------------------------------------------------------------------
         elif [[ -n "${container_env4_isfound}" ]]; then
             #Retrieve ISPBOOOT.BIN version from file
             exported_env_var4=$(cat "${docker__ispboootbin_version_txt__fpath}")
