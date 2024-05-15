@@ -6685,6 +6685,8 @@ docker__get_source_fullpath__sub() {
     docker__LTPP3_ROOTFS_docker_version__dir=${docker__LTPP3_ROOTFS_docker__dir}/version
     docker__ispboootbin_version_txt__filename="ispboootbin_version.txt"
     docker__ispboootbin_version_txt__fpath=${docker__LTPP3_ROOTFS_docker_version__dir}/${docker__ispboootbin_version_txt__filename}
+    docker__ispboootbin_version_default_txt__filename="ispboootbin_version_default.txt"
+    docker__ispboootbin_version_default_txt__fpath=${docker__LTPP3_ROOTFS_docker_version__dir}/${docker__ispboootbin_version_default_txt__filename}
 
 #---docker__LTPP3_ROOTFS_linux_scripts__dir - contents
     docker__LTPP3_ROOTFS_linux_scripts_tb_init_sh__fpath=${docker__LTPP3_ROOTFS_linux_scripts__dir}/${docker__tb_init_sh__filename}

@@ -5,4 +5,5 @@
 *newtest
 
 #ignore the users local environmet variables. 
-/docker/environment/exported_env_var.txt
+*/docker/environment/exported_env_var.txt
+*/docker/version/ispboootbin_version.txt

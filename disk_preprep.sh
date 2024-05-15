@@ -166,7 +166,7 @@ home_lttp3rootfs_dir=${home_dir}/LTPP3_ROOTFS
 home_lttp3rootfs_boot_configs_dir=${home_lttp3rootfs_dir}/boot/configs
 home_lttp3rootfs_boot_drivers_dir=${home_lttp3rootfs_dir}/boot/drivers
 home_lttp3rootfs_build_drivers_dir=${home_lttp3rootfs_dir}/build/drivers
-home_lttp3rootfs_docker_version_dir=${home_lttp3rootfs_dir}/docker/version
+# home_lttp3rootfs_docker_version_dir=${home_lttp3rootfs_dir}/docker/version
 home_lttp3rootfs_motd_update_motd_d_dir=${home_lttp3rootfs_dir}/motd/update-motd.d
 home_lttp3rootfs_rootfs_initramfs_dir=${home_lttp3rootfs_dir}/rootfs/initramfs
 home_lttp3rootfs_rootfs_initramfs_disk_etc_dir=${home_lttp3rootfs_rootfs_initramfs_dir}/disk/etc
@@ -283,7 +283,7 @@ dst_hostname_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}/${hostname_file
 src_hosts_fpath=${home_lttp3rootfs_rootfs_initramfs_disk_etc_dir}/${hosts_filename}
 dst_hosts_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}/${hosts_filename}
 
-src_ispboootbin_version_txt_fpath=${home_lttp3rootfs_docker_version_dir}/${ispboootbin_version_txt_filename}
+# src_ispboootbin_version_txt_fpath=${home_lttp3rootfs_docker_version_dir}/${ispboootbin_version_txt_filename}
 dst_ispboootbin_version_txt_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_tibbo_version_dir}/${ispboootbin_version_txt_filename}
 
 src_libpmux_py_fpath=${home_lttp3rootfs_usr_lib_pmux_dir}/${libpmux_py_filename}
@@ -1145,11 +1145,14 @@ echo -e ">>>Change permission to <-rwxr-xr-x> for file: ${one_time_exec_before_l
 
 
 #---DOCKER
+press_any_key__func
 echo -e "\r"
-echo -e ">Copying: ${ispboootbin_version_txt_filename}>"
-echo -e ">from: ${home_lttp3rootfs_docker_version_dir}"
-echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_etc_tibbo_version_dir}"
-	cp ${src_ispboootbin_version_txt_fpath} ${dst_ispboootbin_version_txt_fpath}
+echo "---ISPBOOOT.BIN version---"
+echo -e "\r"
+echo ">retrieving from environment variable 'CONTAINER_ENV4': ${CONTAINER_ENV4}"
+echo ">write to file: ${ispboootbin_version_txt_filename}"
+echo ">at: ${SP7xxx_linux_rootfs_initramfs_disk_etc_tibbo_version_dir}"
+echo "${CONTAINER_ENV4}" > "${dst_ispboootbin_version_txt_fpath}"
 
 echo -e "\r"
 echo -e ">>>Change ownership to <root> for file: ${ispboootbin_version_txt_filename}"

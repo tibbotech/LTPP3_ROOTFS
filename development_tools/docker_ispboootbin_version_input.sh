@@ -298,13 +298,13 @@ docker__ispboootbin_version_input__sub() {
 
     #Get version from file '/<topdir>/LTPP3_ROOTFS/docker/version/ispboootbin_version.txt'
     #NOTE: will read ONLY the FIRST line of the file
-    ispboootbin_version_current=$(cat ${docker__ispboootbin_version_txt__fpath} | head -n1)
+    local ispboootbin_version_default=$(cat ${docker__ispboootbin_version_default_txt__fpath} | head -n1)
 
     #Start loop
     while true
     do
         #Show read-dialog
-        read -e -p "${DOCKER__READ_DIALOG}" -i "${ispboootbin_version_current}" ispboootbin_version_input
+        read -e -p "${DOCKER__READ_DIALOG}" -i "${ispboootbin_version_default}" ispboootbin_version_input
 
         #Check if input 'ispboootbin_version_input' is a valid string, which means
         #   whether this string only contains numbers and dots
