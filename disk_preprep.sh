@@ -1359,7 +1359,7 @@ echo -e ">>>Change ownership to <root> for folder: ${libpmux_py_filename}"
 	chown -R root:root ${dst_libpmux_py_fpath}
 
 echo -e "\r"
-echo -e ">>>Change permission to <-rw-r-xr-x> for folder: ${libpmux_py_filename}"
+echo -e ">>>Change permission to <-rwx-r-xr-x> for folder: ${libpmux_py_filename}"
 	chmod -R 755 ${dst_libpmux_py_fpath}
 
 
@@ -1377,7 +1377,7 @@ echo -e ">>>Change ownership to <root> for folder: ${ninetyfive_ispboootversion_
 	chown -R root:root ${dst_ninetyfive_ispboootversion_notice_fpath}
 
 echo -e "\r"
-echo -e ">>>Change permission to <-rw-r-xr-x> for folder: ${ninetyfive_ispboootversion_notice_filename}"
+echo -e ">>>Change permission to <-rwx-r-xr-x> for folder: ${ninetyfive_ispboootversion_notice_filename}"
 	chmod -R 755 ${dst_ninetyfive_ispboootversion_notice_fpath}
 
 echo -e "\r"
@@ -1391,7 +1391,7 @@ echo -e ">>>Change ownership to <root> for folder: ${ninetynine_wlan_notice_file
 	chown -R root:root ${dst_ninetynine_wlan_notice_fpath}
 
 echo -e "\r"
-echo -e ">>>Change permission to <-rw-r-xr-x> for folder: ${ninetynine_wlan_notice_filename}"
+echo -e ">>>Change permission to <-rwx-r-xr-x> for folder: ${ninetynine_wlan_notice_filename}"
 	chmod -R 755 ${dst_ninetynine_wlan_notice_fpath}
 
 
