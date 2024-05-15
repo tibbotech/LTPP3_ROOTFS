@@ -4,7 +4,6 @@ FG_RESET="\e[0;0m"
 FG_LIGHTBLUE="\e[30;38;5;45m"
 FG_GREY="\e[30;38;5;246m"
 FG_RED9="\e[30;38;5;9m"
-BLINK="\e[5m"
 
 #---ISPBOOOT.BIN VERSION
 ispboootbin_version_txt_fpath="/etc/tibbo/version/ispboootbin_version.txt"
