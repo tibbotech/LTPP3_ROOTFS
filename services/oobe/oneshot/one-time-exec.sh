@@ -120,7 +120,10 @@ chmod 600 "${swapfile_fpath}"
 echo -e ":-->${FG_ORANGE}STATUS${NOCOLOR}: chmod ${FG_LIGHTGREY}600 ${swapfile_fpath}${NOCOLOR}"
 
 mkswap "${swapfile_fpath}"
-echo -e ":-->${FG_ORANGE}STATUS${NOCOLOR}: INITIALIZED ${FG_LIGHTGREY}${swapfile_fpath}${NOCOLOR} as SWAP SPACE"
+echo -e ":-->${FG_ORANGE}STATUS${NOCOLOR}: mkswap ${FG_LIGHTGREY}${swapfile_fpath}${NOCOLOR}"
+
+swapon "${swapfile_fpath}"
+echo -e ":-->${FG_ORANGE}STATUS${NOCOLOR}: swapon ${FG_LIGHTGREY}${swapfile_fpath}${NOCOLOR}"
 
 echo "${swapfile_fpath} none swap sw 0 0" | tee -a "${fstab_fpath}"
 echo -e ":-->${FG_ORANGE}STATUS${NOCOLOR}: ADDED ENTRY TO ${FG_LIGHTGREY}${fstab_fpath}${NOCOLOR} TO ENABLE SWAP ON BOOT-TIME"
