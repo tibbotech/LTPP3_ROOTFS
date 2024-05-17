@@ -305,7 +305,10 @@ docker__swapfilesize_input__sub() {
         read -e -p "${DOCKER__READ_DIALOG}" swapfilesize_mb_input
 
         #Remove all PREPENDED zeros
-        swapfilesize_mb_input=$(echo "${swapfilesize_mb_input}" | sed 's/^0*//')
+        swapfilesize_mb_input_len=${#swapfilesize_mb_input}
+        if [[ ${swapfilesize_mb_input_len} -gt ${DOCKER__NUMOFCHARS_1} ]]; then
+            swapfilesize_mb_input=$(echo "${swapfilesize_mb_input}" | sed 's/^0*//')
+        fi
 
         #Check if is-numeric
         isnumeric=$(isNumeric__func "${swapfilesize_mb_input}")
