@@ -112,10 +112,11 @@ echo -e ":-->${FG_ORANGE}STATUS${NOCOLOR}: MOUNTED ${FG_LIGHTGREY}${dev_mqueue_d
 
 
 #---ENABLE SWAP
-swapfilesize_mb=0
-if [[ ${swapfilesize_mb} -gt 0 ]]; then
-    fallocate -l "${swapfilesize_mb}" "${swapfile_fpath}"
-    echo -e ":-->${FG_ORANGE}STATUS${NOCOLOR}: ALLOCATED ${FG_LIGHTGREY}${swapfilesize_mb}${NOCOLOR} TO ${FG_LIGHTGREY}${swapfile_fpath}${NOCOLOR}"
+swapfilesize=0
+if [[ ${swapfilesize} -gt 0 ]]; then
+    swapfilesize_M="${swapfilesize}M"
+    fallocate -l "${swapfilesize_M}" "${swapfile_fpath}"
+    echo -e ":-->${FG_ORANGE}STATUS${NOCOLOR}: ALLOCATED ${FG_LIGHTGREY}${swapfilesize_M}${NOCOLOR} TO ${FG_LIGHTGREY}${swapfile_fpath}${NOCOLOR}"
 
     chmod 600 "${swapfile_fpath}"
     echo -e ":-->${FG_ORANGE}STATUS${NOCOLOR}: chmod ${FG_LIGHTGREY}600 ${swapfile_fpath}${NOCOLOR}"

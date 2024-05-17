@@ -1373,24 +1373,28 @@ echo -e ">>>Change permission to <-rwx-r-xr-x> for folder: ${libpmux_py_filename
 
 
 #ONE-TIME-EXEC
-press_any_key__func
-echo -e "\r"
-echo -e "\r"
-echo "---swapfile---"
-SED_PATTERN_SWAPFILESIZE_MB_IS="swapfilesize_mb="
-echo ">Defined constant SED_PATTERN_SWAPFILESIZE_MB_IS"
-echo -e "\r"
-echo ">Get environment variable 'CONTAINER_ENV5': ${CONTAINER_ENV5}"
-echo -e "\r"
-sed -i "/${SED_PATTERN_SWAPFILESIZE_MB_IS}/c\\${SED_PATTERN_SWAPFILESIZE_MB_IS}${CONTAINER_ENV5}" "${dst_one_time_exec_sh_fpath}"
-echo ">Set '${SED_PATTERN_SWAPFILESIZE_MB_IS}${CONTAINER_ENV5}'"
-echo ">in: ${dst_one_time_exec_sh_fpath}"
-echo -e "\r"
+if [[ ${CONTAINER_ENV5} -gt 0 ]]; then
+	press_any_key__func
+	echo -e "\r"
+	echo -e "\r"
+	echo "---swapfile---"
+	SED_PATTERN_SWAPFILESIZE_IS="swapfilesize="
+	echo ">Defined constant 'SED_PATTERN_SWAPFILESIZE_IS=\"${SED_PATTERN_SWAPFILESIZE_IS}'\""
+	echo -e "\r"
+	echo ">Get environment variable 'CONTAINER_ENV5': ${CONTAINER_ENV5}"
+
+	echo -e "\r"
+	sed -i "/${SED_PATTERN_SWAPFILESIZE_IS}/c\\${SED_PATTERN_SWAPFILESIZE_IS}${CONTAINER_ENV5}" "${dst_one_time_exec_sh_fpath}"
+	echo ">Set '${SED_PATTERN_SWAPFILESIZE_IS}${CONTAINER_ENV5}M'"
+	echo ">in: ${dst_one_time_exec_sh_fpath}"
+	echo -e "\r"
+fi
 
 
 
 #UPDATE-MOTD-D
 press_any_key__func
+echo -e "\r"
 echo -e "\r"
 echo -e ">Copying: ${ninetyfive_ispboootversion_notice_filename}"
 echo -e ">from: ${home_lttp3rootfs_motd_update_motd_d_dir}"
@@ -1425,6 +1429,7 @@ echo -e ">>>Change permission to <-rwx-r-xr-x> for folder: ${ninetynine_wlan_not
 #%%% APPLYING PATCHES %%%
 #%%%%%%%%%%%%%%%%%%%%%%%%
 press_any_key__func
+echo -e "\r"
 ehci_sched_c_diff=$(diff ${old_ehci_sched_c_fpath} ${new_ehci_sched_c_fpath})
 if [[ -n "${ehci_sched_c_diff}" ]]; then
 	echo -e "\r"
@@ -1609,6 +1614,7 @@ fi
 
 #PATCH: 'BCMDHD'
 press_any_key__func
+echo -e "\r"
 if [[ -d "${SP7xxx_linux_kernel_drivers_net_wireless_bcmdhd_dir}" ]]; then
 	echo -e "\r"
 	echo -e ">Remove folder ${bcmdhd_foldername}"
