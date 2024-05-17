@@ -6444,6 +6444,7 @@ docker__get_source_fullpath__sub() {
     docker__isp_c_overlaybck__filename="isp.c.overlaybck"
     docker__isp_sh__filename="isp.sh"
     docker__isp_sh_overlaybck__filename="isp.sh.overlaybck"
+    docker__ispboootbin_version_txt__filename="ispboootbin_version.txt"
     docker__pentagram_common_h__filename="pentagram_common.h"
     docker__pentagram_common_h_overlaybck__filename="pentagram_common.h.overlaybck"
     docker__swapfilesize_mb_txt__filename="swapfilesize_mb.txt"
@@ -6471,6 +6472,7 @@ docker__get_source_fullpath__sub() {
     docker__docker_images__dir=${docker__docker__dir}/images
     docker__docker_overlayfs__dir=${docker__docker__dir}/overlayfs
     docker__docker_swap__dir=${docker__docker__dir}/swap
+    docker__docker_version__dir=${docker__docker__dir}/version
 
     docker__docker_overlayfs_cmdline__fpath=${docker__docker_overlayfs__dir}/${docker__cmdline__filename}
     docker__docker_overlayfs_fstab__fpath=${docker__docker_overlayfs__dir}/${docker__fstab__filename}
@@ -6487,6 +6489,7 @@ docker__get_source_fullpath__sub() {
     docker__docker_overlayfs_96_overlayboot_notice__fpath=${docker__docker_overlayfs__dir}/${docker__96_overlayboot_notice__filename}
     docker__docker_overlayfs_98_normalboot_notice__fpath=${docker__docker_overlayfs__dir}/${docker__98_normalboot_notice__filename}
 
+    docker__ispboootbin_version_txt__fpath=${docker__docker_version__dir}/${docker__ispboootbin_version_txt__filename}
     docker__docker_swap_swapfilesize_mb_txt__fpath=${docker__docker_swap__dir}/${docker__swapfilesize_mb_txt__filename}
 
 
@@ -6624,6 +6627,9 @@ docker__get_source_fullpath__sub() {
     docker__ssh_to_host__filename="docker_ssh_to_host.sh"
     docker__ssh_to_host__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__ssh_to_host__filename}
 
+    docker__swapfilesize_input_sh__filename="docker_swapfilesize_input.sh"
+    docker__swapfilesize_input_sh__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__swapfilesize_input_sh__filename}
+
     git__git_create_checkout_local_branch__filename="git_create_checkout_local_branch.sh"
     git__git_create_checkout_local_branch__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${git__git_create_checkout_local_branch__filename}
 
@@ -6688,8 +6694,6 @@ docker__get_source_fullpath__sub() {
     docker__LTPP3_ROOTFS_boot_configs_pentagram_common_h__fpath=${docker__LTPP3_ROOTFS_boot_configs__dir}/${docker__pentagram_common_h__filename}
 
     docker__LTPP3_ROOTFS_docker_version__dir=${docker__LTPP3_ROOTFS_docker__dir}/version
-    docker__ispboootbin_version_txt__filename="ispboootbin_version.txt"
-    docker__ispboootbin_version_txt__fpath=${docker__LTPP3_ROOTFS_docker_version__dir}/${docker__ispboootbin_version_txt__filename}
     docker__ispboootbin_version_default_txt__filename="ispboootbin_version_default.txt"
     docker__ispboootbin_version_default_txt__fpath=${docker__LTPP3_ROOTFS_docker_version__dir}/${docker__ispboootbin_version_default_txt__filename}
 

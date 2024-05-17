@@ -1148,23 +1148,39 @@ echo -e ">>>Change permission to <-rwxr-xr-x> for file: ${one_time_exec_before_l
 
 
 
-#---DOCKER
+#---FIRMWARE
 press_any_key__func
 echo -e "\r"
-echo "---ISPBOOOT.BIN version---"
-echo -e "\r"
-echo ">retrieving from environment variable 'CONTAINER_ENV4': ${CONTAINER_ENV4}"
-echo ">write to file: ${ispboootbin_version_txt_filename}"
-echo ">at: ${SP7xxx_linux_rootfs_initramfs_disk_etc_tibbo_version_dir}"
-echo "${CONTAINER_ENV4}" > "${dst_ispboootbin_version_txt_fpath}"
+echo -e ">Copying: ${firmware_foldername}"
+echo -e ">from: ${home_lttp3rootfs_rootfs_initramfs_disk_etc_dir}"
+echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}"
+	cp -rf ${src_firmware_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}
 
 echo -e "\r"
-echo -e ">>>Change ownership to <root> for file: ${ispboootbin_version_txt_filename}"
-	chown root:root ${dst_ispboootbin_version_txt_fpath}
+echo -e ">>>Change ownership to <root> for folder: ${firmware_foldername}"
+	chown -R root:root ${dst_firmware_fpath}
 
 echo -e "\r"
-echo -e ">>>Change permission to <-rwxr-xr-x> for file: ${ispboootbin_version_txt_filename}"
-	chmod 644 ${dst_ispboootbin_version_txt_fpath}
+echo -e ">>>Change permission to <-rw-r--r--> for folder: ${firmware_foldername}"
+	chmod -R 644 ${dst_firmware_fpath}
+
+
+
+#---BRCM_PATCHRAM_PLUS
+press_any_key__func
+echo -e "\r"
+echo -e ">Copying: ${brcm_patchram_plus_filename}"
+echo -e ">from: ${home_lttp3rootfs_usr_bin_dir}"
+echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_usr_bin_dir}"
+	cp ${src_brcm_patchram_plus_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_usr_bin_dir}
+
+echo -e "\r"
+echo -e ">>>Change ownership to <root> for file: ${brcm_patchram_plus_filename}"
+	chown root:root ${dst_brcm_patchram_plus_fpath}
+
+echo -e "\r"
+echo -e ">>>Change permission to <-rwxr-xr-x> for file: ${brcm_patchram_plus_filename}"
+	chmod 755 ${dst_brcm_patchram_plus_fpath}
 
 
 
@@ -1201,24 +1217,27 @@ echo -e ">>>Change permission to <-rw-r--r--> for file: ${hosts_filename}"
 
 
 
-#---FIRMWARE FOLDER
+#---ISPBOOOT.BIN
 press_any_key__func
 echo -e "\r"
-echo -e ">Copying: ${firmware_foldername}"
-echo -e ">from: ${home_lttp3rootfs_rootfs_initramfs_disk_etc_dir}"
-echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}"
-	cp -rf ${src_firmware_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}
+echo "---ISPBOOOT.BIN version---"
+echo -e "\r"
+echo ">Get environment variable 'CONTAINER_ENV4': ${CONTAINER_ENV4}"
+echo ">write to file: ${ispboootbin_version_txt_filename}"
+echo ">at: ${SP7xxx_linux_rootfs_initramfs_disk_etc_tibbo_version_dir}"
+echo "${CONTAINER_ENV4}" > "${dst_ispboootbin_version_txt_fpath}"
 
 echo -e "\r"
-echo -e ">>>Change ownership to <root> for folder: ${firmware_foldername}"
-	chown -R root:root ${dst_firmware_fpath}
+echo -e ">>>Change ownership to <root> for file: ${ispboootbin_version_txt_filename}"
+	chown root:root ${dst_ispboootbin_version_txt_fpath}
 
 echo -e "\r"
-echo -e ">>>Change permission to <-rw-r--r--> for folder: ${firmware_foldername}"
-	chmod -R 644 ${dst_firmware_fpath}
+echo -e ">>>Change permission to <-rwxr-xr-x> for file: ${ispboootbin_version_txt_filename}"
+	chmod 644 ${dst_ispboootbin_version_txt_fpath}
 
 
-#---FILE: clk-sp-q628.c
+
+#---CLK_SP-Q628
 #press_any_key__func
 #echo -e "\r"
 #echo -e ">Copying: ${clkspq628c_filename}"
@@ -1236,26 +1255,9 @@ echo -e ">>>Change permission to <-rw-r--r--> for folder: ${firmware_foldername}
 
 
 
-#---FILE: brcm_patchram_plus
-press_any_key__func
-echo -e "\r"
-echo -e ">Copying: ${brcm_patchram_plus_filename}"
-echo -e ">from: ${home_lttp3rootfs_usr_bin_dir}"
-echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_usr_bin_dir}"
-	cp ${src_brcm_patchram_plus_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_usr_bin_dir}
-
-echo -e "\r"
-echo -e ">>>Change ownership to <root> for file: ${brcm_patchram_plus_filename}"
-	chown root:root ${dst_brcm_patchram_plus_fpath}
-
-echo -e "\r"
-echo -e ">>>Change permission to <-rwxr-xr-x> for file: ${brcm_patchram_plus_filename}"
-	chmod 755 ${dst_brcm_patchram_plus_fpath}
-
-
-
 #---KERNEL
 press_any_key__func
+echo -e "\r"
 echo -e "\r"
 echo -e ">Copy contents of folder: ${tpd_foldername}"
 echo -e ">from: ${home_lttp3rootfs_kernel_scripts_tpd_dir}"
@@ -1266,6 +1268,9 @@ echo -e "\r"
 echo -e ">>>Change ownership to <root> for this folder and its contents: ${tpd_foldername}"
 	chown root:root -R ${dst_tpd_dir}
 
+
+press_any_key__func
+echo -e "\r"
 echo -e "\r"
 echo -e "---Kernel Configuration File"
 echo -e ">Copying: ${make_menuconfig_filename}"
@@ -1276,13 +1281,17 @@ echo -e "\r"
 echo -e "\r"
 	cp ${src_make_menuconfig_fpath} ${dst_make_menuconfig_fpath}
 
+
 # press_any_key__func
+# echo -e "\r"
 # echo -e "\r"
 # echo -e ">>>Navigate to ${SP7xxx_linux_kernel_dir}"
 # 	cd ${SP7xxx_linux_kernel_dir}
 
-#press_any_key__func
-#echo -e "\r"
+
+# press_any_key__func
+# echo -e "\r"
+# echo -e "\r"
 #echo -e ">>>>>Importing Kernel config-file: ${make_menuconfig_default_filename}"
 #echo -e ">from: ${SP7xxx_linux_kernel_dir}"
 #	make olddefconfig
@@ -1293,12 +1302,12 @@ echo -e "\r"
 
 ###FIX error messages:
 #	WARN:	uid is 0 but '/etc' is owned by 1000
+press_any_key__func
+echo -e "\r"
 echo -e "\r"
 echo -e ">chown root:root ${etc_dir}"
 echo -e ">in: ${SP7xxx_linux_rootfs_initramfs_extra_dir}"
 	chown root:root ${SP7xxx_linux_rootfs_initramfs_extra_etc_dir}
-
-
 
 ###FIX error messages:
 #	WARN:	owner has write permission for '/etc' folder
@@ -1308,8 +1317,6 @@ echo -e ">in: ${SP7xxx_linux_rootfs_initramfs_extra_dir}"
 echo -e ">to: drwxr-xr-x"
 	chmod 755 ${SP7xxx_linux_rootfs_initramfs_extra_etc_dir}
 
-
-press_any_key__func
 echo -e "\r"
 echo -e ">Backup '${build_disk_filename}' by renaming" 
 echo -e ">to: ${build_disk_bck_filename}"
@@ -1322,6 +1329,7 @@ mv ${build_disk_fpath} ${build_disk_bck_fpath}
 #Copy modified file to location: ~/SP7021/linux/rootfs/initramfs
 press_any_key__func
 echo -e "\r"
+echo -e "\r"
 echo -e ">Copying ${build_disk_mod_filename}" 
 echo -e ">as: ${build_disk_filename}"
 echo -e ">from: ${home_lttp3rootfs_rootfs_initramfs_dir}"
@@ -1331,7 +1339,7 @@ cp ${build_disk_mod_fpath}  ${build_disk_fpath}
 
 
 
-#Make file "build_disk.sh" executable
+#BUILD_DISK
 press_any_key__func
 echo -e "\r"
 echo -e ">Changing permission of ${build_disk_filename}"
@@ -1361,6 +1369,23 @@ echo -e ">>>Change ownership to <root> for folder: ${libpmux_py_filename}"
 echo -e "\r"
 echo -e ">>>Change permission to <-rwx-r-xr-x> for folder: ${libpmux_py_filename}"
 	chmod -R 755 ${dst_libpmux_py_fpath}
+
+
+
+#ONE-TIME-EXEC
+press_any_key__func
+echo -e "\r"
+echo -e "\r"
+echo "---swapfile---"
+SED_PATTERN_SWAPFILESIZE_MB_IS="swapfilesize_mb="
+echo ">Defined constant SED_PATTERN_SWAPFILESIZE_MB_IS"
+echo -e "\r"
+echo ">Get environment variable 'CONTAINER_ENV5': ${CONTAINER_ENV5}"
+echo -e "\r"
+sed -i "/${SED_PATTERN_SWAPFILESIZE_MB_IS}/c\\${SED_PATTERN_SWAPFILESIZE_MB_IS}${CONTAINER_ENV5}" "${dst_one_time_exec_sh_fpath}"
+echo ">Set '${SED_PATTERN_SWAPFILESIZE_MB_IS}${CONTAINER_ENV5}'"
+echo ">in: ${dst_one_time_exec_sh_fpath}"
+echo -e "\r"
 
 
 
@@ -1396,7 +1421,9 @@ echo -e ">>>Change permission to <-rwx-r-xr-x> for folder: ${ninetynine_wlan_not
 
 
 
-###APPLYING PATCHES###
+#%%%%%%%%%%%%%%%%%%%%%%%%
+#%%% APPLYING PATCHES %%%
+#%%%%%%%%%%%%%%%%%%%%%%%%
 press_any_key__func
 ehci_sched_c_diff=$(diff ${old_ehci_sched_c_fpath} ${new_ehci_sched_c_fpath})
 if [[ -n "${ehci_sched_c_diff}" ]]; then

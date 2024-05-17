@@ -15,11 +15,13 @@ ARG DEBIAN_FRONTEND=noninteractive
 #---1. docker_create_an_image_from_dockerfile.sh -> function: create_image__func
 #---2. docker_create_images_from_dockerlist.sh -> function: create_image__func
 ARG DOCKER_ARG4
+ARG DOCKER_ARG5
 #---Set ENVIRONMENT VARIABLE TO BE PASSED INTO CONTAINER
 #---The NAME of the defined environment variable(s) MUST be the same as
 #   the variable(s) names which is(are) used in the script (e.g. sunplus_inst.sh)
 #   to be run in the container
 ENV CONTAINER_ENV4=${DOCKER_ARG4}
+ENV CONTAINER_ENV5=${DOCKER_ARG5}
 
 #---Update local Git repository
 RUN cd ~/LTPP3_ROOTFS && git pull

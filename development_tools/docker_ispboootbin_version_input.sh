@@ -296,6 +296,17 @@ docker__ispboootbin_version_input__sub() {
     #Load header
     load_tibbo_title__func "${docker__tibboHeader_prepend_numOfLines}"
 
+
+    #Create directory (if not present)
+    if [[ ! -d "${docker__docker_version__dir}" ]]; then
+        mkdir -p "${docker__docker_version__dir}"
+    else
+        if [[ -f "${docker__ispboootbin_version_txt__fpath}" ]]; then
+            rm "${docker__ispboootbin_version_txt__fpath}"
+        fi
+    fi
+
+
     #Get version from file '/<topdir>/LTPP3_ROOTFS/docker/version/ispboootbin_version.txt'
     #NOTE: will read ONLY the FIRST line of the file
     local ispboootbin_version_default=$(cat ${docker__ispboootbin_version_default_txt__fpath} | head -n1)
