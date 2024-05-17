@@ -2,27 +2,6 @@
 #Remark: by using '-m' the INTERRUPT executed here will NOT propagate to the UPPERLAYER scripts
 
 #---FUNCTIONS
-String_IsValid() {
-    #Input args
-    local argv1="${1}"
-    
-    #Regular expression to match only numbers and/or dots
-    #EXPLANATION:
-    #   ^[0-9]+:
-    #        matches one or more digits at the BEGINNING of the STRING.
-    #   (\.[0-9]+)*:
-    #       matches NONE or ONE DOT FOLLOWED BY ONE or MORE DIGITS. 
-    #       This ensures that each dot in the string is followed by at least one digit, 
-    #       effectively DISALLOWING CONSECUTIVE dots.
-    local regex='^[0-9]+(\.[0-9]+)*$'
-
-    # Check if the input matches the regex pattern
-    if [[ $argv1 =~ $regex ]]; then
-        echo "true"
-    else
-        echo "false"
-    fi
-}
 
 
 
@@ -285,53 +264,78 @@ docker__load_global_fpath_paths__sub() {
 }
 
 docker__load_constants__sub() {
-    DOCKER__READ_DIALOG="(${DOCKER__FG_BORDEAUX}MANDATORY${DOCKER__NOCOLOR}) Input ISPBOOOT.BIN Version ${DOCKER__FG_LIGHTGREY}(Ctrl+C: Cancel)${DOCKER__NOCOLOR}: "
+    DOCKER__SWAPFILESIZE_MB_LOWERBOUND=0
+    DOCKER__SWAPFILESIZE_MB_UPPERBOUND=1000
+
+    DOCKER__SWAPFILESIZE_MB_IS_PATTERN="swapfilesize_mb="
+
+    DOCKER__REMARK_PRINT="(${DOCKER__FG_LIGHTBLUE}REMARK${DOCKER__NOCOLOR}) Input range ${DOCKER__FG_LIGHTGREY}(MB)${DOCKER__NOCOLOR}: "
+    DOCKER__REMARK_PRINT+="${DOCKER__FG_LIGHTGREY}${DOCKER__SWAPFILESIZE_MB_LOWERBOUND}${DOCKER__NOCOLOR} - ${DOCKER__FG_LIGHTGREY}${DOCKER__SWAPFILESIZE_MB_UPPERBOUND}${DOCKER__NOCOLOR}"
+
+    DOCKER__READ_DIALOG="(${DOCKER__FG_BORDEAUX}MANDATORY${DOCKER__NOCOLOR}) Input Swapfile-Size "
+    DOCKER__READ_DIALOG+="${DOCKER__FG_LIGHTGREY}(0: Disable${DOCKER__NOCOLOR}, ${DOCKER__FG_LIGHTGREY}Ctrl+C: Cancel)${DOCKER__NOCOLOR}: "
 }
 
 docker__init_variables__sub() {
     docker__tibboHeader_prepend_numOfLines=${DOCKER__NUMOFLINES_2}
 }
 
-docker__ispboootbin_version_input__sub() {
+docker__swapfilesize_input__sub() {
     #Load header
     load_tibbo_title__func "${docker__tibboHeader_prepend_numOfLines}"
 
-    #Get version from file '/<topdir>/LTPP3_ROOTFS/docker/version/ispboootbin_version.txt'
-    #NOTE: will read ONLY the FIRST line of the file
-    local ispboootbin_version_default=$(cat ${docker__ispboootbin_version_default_txt__fpath} | head -n1)
+
+    #Create directory (if not present)
+    if [[ ! -d "${docker__docker_swap__dir}" ]]; then
+        mkdir -p "${docker__docker_swap__dir}"
+    else
+        if [[ -f "${docker__docker_swap_swapfilesize_mb_txt__fpath}" ]]; then
+            rm "${docker__docker_swap_swapfilesize_mb_txt__fpath}"
+        fi
+    fi
+
+
+    #Print REMARK
+    echo -e "${DOCKER__REMARK_PRINT}"
 
     #Start loop
     while true
     do
         #Show read-dialog
-        read -e -p "${DOCKER__READ_DIALOG}" -i "${ispboootbin_version_default}" ispboootbin_version_input
+        read -e -p "${DOCKER__READ_DIALOG}" swapfilesize_mb_input
 
-        #Check if input 'ispboootbin_version_input' is a valid string, which means
-        #   whether this string only contains numbers and dots
-        #NOTE 1:
-        #   String 'ispboootbin_version_input' MUST:
-        #   a. start with one or more digits
-        #   b. if followed by a DOT, then only 1 dot is allowed,
-        #   c. after this 1 dot, followed by one or more digits
-        #   d. and so on...
-        #NOTE 2:
-        #   It is NOT allowed to END with a DOT.
-        isvalid=$(String_IsValid "${ispboootbin_version_input}")
-        if [[ ${isvalid} == true ]]; then   #is a valid string
-            #Break loop
-            break
+        #Remove all PREPENDED zeros
+        swapfilesize_mb_input=$(echo "${swapfilesize_mb_input}" | sed 's/^0*//')
+
+        #Check if is-numeric
+        isnumeric=$(isNumeric__func "${swapfilesize_mb_input}")
+        if [[ ${isnumeric} == true ]]; then   #is a valid string
+            if [[ ${swapfilesize_mb_input} -ge ${DOCKER__SWAPFILESIZE_MB_LOWERBOUND} ]] && \
+                    [[ ${swapfilesize_mb_input} -le ${DOCKER__SWAPFILESIZE_MB_UPPERBOUND} ]]; then
+                #Break loop
+                break
+            else
+                #Move-up one line and clean this line
+                moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+                #Show 'invalid' behind the input string
+                echo "${DOCKER__READ_DIALOG}${swapfilesize_mb_input} (${DOCKER__STATUS_LINVALID})"
+            fi
         else    #is NOT a valid string
             #Move-up one line and clean this line
             moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
             #Show 'invalid' behind the input string
-            echo "${DOCKER__READ_DIALOG}${ispboootbin_version_input} (${DOCKER__STATUS_LINVALID})"
+            if [[ -n "${swapfilesize_mb_input}" ]]; then
+                echo "${DOCKER__READ_DIALOG}${swapfilesize_mb_input} (${DOCKER__STATUS_LINVALID})"
+            fi
         fi
     done
 
+
     #Write to file
-    #NOTE: this will replace the current value in this file.
-    echo "${ispboootbin_version_input}" > "${docker__ispboootbin_version_txt__fpath}"
+    #***NOTE: this will replace the current value in this file.
+    echo "${swapfilesize_mb_input}" > "${docker__docker_swap_swapfilesize_mb_txt__fpath}"
 }
 
 
@@ -345,7 +349,7 @@ main__sub() {
 
     docker__init_variables__sub
 
-    docker__ispboootbin_version_input__sub
+    docker__swapfilesize_input__sub
 }
 
 

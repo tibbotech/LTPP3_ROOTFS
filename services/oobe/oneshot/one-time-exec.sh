@@ -112,18 +112,20 @@ echo -e ":-->${FG_ORANGE}STATUS${NOCOLOR}: MOUNTED ${FG_LIGHTGREY}${dev_mqueue_d
 
 
 #---ENABLE SWAP
-SWAPFILE_1G="1G"
-fallocate -l "${SWAPFILE_1G}" "${swapfile_fpath}"
-echo -e ":-->${FG_ORANGE}STATUS${NOCOLOR}: ALLOCATED ${FG_LIGHTGREY}${SWAPFILE_1G}${NOCOLOR} TO ${FG_LIGHTGREY}${swapfile_fpath}${NOCOLOR}"
+swapfilesize_mb=0
+if [[ ${swapfilesize_mb} -gt 0 ]]; then
+    fallocate -l "${swapfilesize_mb}" "${swapfile_fpath}"
+    echo -e ":-->${FG_ORANGE}STATUS${NOCOLOR}: ALLOCATED ${FG_LIGHTGREY}${swapfilesize_mb}${NOCOLOR} TO ${FG_LIGHTGREY}${swapfile_fpath}${NOCOLOR}"
 
-chmod 600 "${swapfile_fpath}"
-echo -e ":-->${FG_ORANGE}STATUS${NOCOLOR}: chmod ${FG_LIGHTGREY}600 ${swapfile_fpath}${NOCOLOR}"
+    chmod 600 "${swapfile_fpath}"
+    echo -e ":-->${FG_ORANGE}STATUS${NOCOLOR}: chmod ${FG_LIGHTGREY}600 ${swapfile_fpath}${NOCOLOR}"
 
-mkswap "${swapfile_fpath}"
-echo -e ":-->${FG_ORANGE}STATUS${NOCOLOR}: mkswap ${FG_LIGHTGREY}${swapfile_fpath}${NOCOLOR}"
+    mkswap "${swapfile_fpath}"
+    echo -e ":-->${FG_ORANGE}STATUS${NOCOLOR}: mkswap ${FG_LIGHTGREY}${swapfile_fpath}${NOCOLOR}"
 
-swapon "${swapfile_fpath}"
-echo -e ":-->${FG_ORANGE}STATUS${NOCOLOR}: swapon ${FG_LIGHTGREY}${swapfile_fpath}${NOCOLOR}"
+    swapon "${swapfile_fpath}"
+    echo -e ":-->${FG_ORANGE}STATUS${NOCOLOR}: swapon ${FG_LIGHTGREY}${swapfile_fpath}${NOCOLOR}"
 
-echo "${swapfile_fpath} none swap sw 0 0" | tee -a "${fstab_fpath}"
-echo -e ":-->${FG_ORANGE}STATUS${NOCOLOR}: ADDED ENTRY TO ${FG_LIGHTGREY}${fstab_fpath}${NOCOLOR} TO ENABLE SWAP ON BOOT-TIME"
+    echo "${swapfile_fpath} none swap sw 0 0" | tee -a "${fstab_fpath}"
+    echo -e ":-->${FG_ORANGE}STATUS${NOCOLOR}: ADDED ENTRY TO ${FG_LIGHTGREY}${fstab_fpath}${NOCOLOR} TO ENABLE SWAP ON BOOT-TIME"
+fi

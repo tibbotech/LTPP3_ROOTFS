@@ -6446,6 +6446,7 @@ docker__get_source_fullpath__sub() {
     docker__isp_sh_overlaybck__filename="isp.sh.overlaybck"
     docker__pentagram_common_h__filename="pentagram_common.h"
     docker__pentagram_common_h_overlaybck__filename="pentagram_common.h.overlaybck"
+    docker__swapfilesize_mb_txt__filename="swapfilesize_mb.txt"
     docker__tb_init_sh__filename="tb_init.sh"
     docker__tb_init_bootmenu__filename="tb_init_bootmenu"
     docker__96_overlayboot_notice__filename="96-overlayboot-notice"
@@ -6469,6 +6470,7 @@ docker__get_source_fullpath__sub() {
     docker__docker_dockerfiles__dir=${docker__docker__dir}/dockerfiles
     docker__docker_images__dir=${docker__docker__dir}/images
     docker__docker_overlayfs__dir=${docker__docker__dir}/overlayfs
+    docker__docker_swap__dir=${docker__docker__dir}/swap
 
     docker__docker_overlayfs_cmdline__fpath=${docker__docker_overlayfs__dir}/${docker__cmdline__filename}
     docker__docker_overlayfs_fstab__fpath=${docker__docker_overlayfs__dir}/${docker__fstab__filename}
@@ -6484,6 +6486,9 @@ docker__get_source_fullpath__sub() {
     docker__docker_overlayfs_tb_init_bootmenu__fpath=${docker__docker_overlayfs__dir}/${docker__tb_init_bootmenu__filename}
     docker__docker_overlayfs_96_overlayboot_notice__fpath=${docker__docker_overlayfs__dir}/${docker__96_overlayboot_notice__filename}
     docker__docker_overlayfs_98_normalboot_notice__fpath=${docker__docker_overlayfs__dir}/${docker__98_normalboot_notice__filename}
+
+    docker__docker_swap_swapfilesize_mb_txt__fpath=${docker__docker_swap__dir}/${docker__swapfilesize_mb_txt__filename}
+
 
 #---docker__docker_config__dir - contents
     docker__export_env_var_menu_cfg__filename="docker_export_env_var_menu.cfg"
@@ -6697,6 +6702,15 @@ docker__get_source_fullpath__sub() {
     docker__LTPP3_ROOTFS_motd_update_motd_96_overlayboot_notice__fpath=${docker__LTPP3_ROOTFS_motd_update_motd__dir}/${docker__96_overlayboot_notice__filename}
     docker__LTPP3_ROOTFS_motd_update_motd_98_normalboot_notice__fpath=${docker__LTPP3_ROOTFS_motd_update_motd__dir}/${docker__98_normalboot_notice__filename}
     docker__LTPP3_ROOTFS_motd_update_motd_99_wlan_notice__fpath=${docker__LTPP3_ROOTFS_motd_update_motd__dir}/${docker__99_wlan_notice__filename}
+
+
+#---docker__LTPP3_ROOTFS_services__dir - contents
+    docker__LTPP3_ROOTFS_services__dir=${docker__LTPP3_ROOTFS__dir}/services
+    docker__LTPP3_ROOTFS_services_oobe__dir=${docker__LTPP3_ROOTFS_services__dir}/oobe
+    docker__LTPP3_ROOTFS_services_oobe_oneshot__dir=${docker__LTPP3_ROOTFS_services_oobe__dir}/oneshot
+    docker__one_time_exec_sh__filename="one-time-exec.sh"
+    docker__one_time_exec_sh__fpath="${docker__LTPP3_ROOTFS_services_oobe_oneshot__dir}/${docker__one_time_exec_sh__filename}"
+
 
 #---docker__SP7021__dir - contents
     #Note: this directory MUST be the same as the 'SP7021_dir' which is defined in 'sunplus_inst.sh'
