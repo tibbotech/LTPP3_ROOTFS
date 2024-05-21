@@ -363,9 +363,9 @@ docker__menu__sub() {
         echo -e "${DOCKER__BG_ORANGE}Remarks:${DOCKER__NOCOLOR}"
         local remarks_print="${DOCKER__FOURSPACES}${DOCKER__FG_BORDEAUX}${DOCKER__ASTERISK}${DOCKER__NOCOLOR}${DOCKER__FG_LIGHTGREY}:${DOCKER__NOCOLOR} "
         if [[ "${docker__isRunning_inside_container}" == false ]]; then
-            remarks_print+="${DOCKER__FG_LIGHTGREY}may need to deduct swapfile-size${DOCKER__NOCOLOR}"
+            remarks_print+="${DOCKER__FG_LIGHTGREY}EXcluded swapfile-size deduction (if any)${DOCKER__NOCOLOR}"
         else
-            remarks_print+="${DOCKER__FG_LIGHTGREY}included swapfile-size deduction${DOCKER__NOCOLOR}"
+            remarks_print+="${DOCKER__FG_LIGHTGREY}INcluded swapfile-size deduction (if any)${DOCKER__NOCOLOR}"
         fi
         echo -e "${remarks_print}"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
