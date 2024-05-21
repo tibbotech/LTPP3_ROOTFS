@@ -105,8 +105,7 @@ media_sync_sh_filename="media_sync.sh"
 media_sync_service_filename="media_sync.service"
 media_sync_timer_filename="media_sync.timer"
 modules_filename="modules"
-ninetyfive_ispboootversion_notice_filename="95-ispboootversion-notice"
-ninetynine_wlan_notice_filename="99-wlan-notice"
+ninetyfive_ltpp3g2_notice_filename="95-ltpp3g2-notice"
 ntios_su_add_filename="ntios-su-add"
 ntios_su_addasperand_filename="${ntios_su_add_filename}@"
 ntios_su_add_monitor_filename="${ntios_su_add_filename}-monitor"
@@ -305,11 +304,8 @@ dst_media_sync_timer_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_syst
 src_modules_fpath=${home_lttp3rootfs_kernel_modules_load_d_dir}/${modules_filename}
 dst_modules_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}/${modules_filename}
 
-src_ninetyfive_ispboootversion_notice_fpath=${home_lttp3rootfs_motd_update_motd_d_dir}/${ninetyfive_ispboootversion_notice_filename}
-dst_ninetyfive_ispboootversion_notice_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_update_motd_d_dir}/${ninetyfive_ispboootversion_notice_filename}
-
-src_ninetynine_wlan_notice_fpath=${home_lttp3rootfs_motd_update_motd_d_dir}/${ninetynine_wlan_notice_filename}
-dst_ninetynine_wlan_notice_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_update_motd_d_dir}/${ninetynine_wlan_notice_filename}
+src_ninetyfive_ltpp3g2_notice_fpath=${home_lttp3rootfs_motd_update_motd_d_dir}/${ninetyfive_ltpp3g2_notice_filename}
+dst_ninetyfive_ltpp3g2_notice_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_update_motd_d_dir}/${ninetyfive_ltpp3g2_notice_filename}
 
 src_ntios_su_add_sh_fpath=${home_lttp3rootfs_services_sudo_dir}/${ntios_su_add_sh_filename}
 dst_ntios_su_add_sh_fpath=${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}/${ntios_su_add_sh_filename}
@@ -1396,32 +1392,18 @@ fi
 press_any_key__func
 echo -e "\r"
 echo -e "\r"
-echo -e ">Copying: ${ninetyfive_ispboootversion_notice_filename}"
+echo -e ">Copying: ${ninetyfive_ltpp3g2_notice_filename}"
 echo -e ">from: ${home_lttp3rootfs_motd_update_motd_d_dir}"
 echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_etc_update_motd_d_dir}"
-	cp -rf ${src_ninetyfive_ispboootversion_notice_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_etc_update_motd_d_dir}
+	cp -rf ${src_ninetyfive_ltpp3g2_notice_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_etc_update_motd_d_dir}
 
 echo -e "\r"
-echo -e ">>>Change ownership to <root> for folder: ${ninetyfive_ispboootversion_notice_filename}"
-	chown -R root:root ${dst_ninetyfive_ispboootversion_notice_fpath}
+echo -e ">>>Change ownership to <root> for folder: ${ninetyfive_ltpp3g2_notice_filename}"
+	chown -R root:root ${dst_ninetyfive_ltpp3g2_notice_fpath}
 
 echo -e "\r"
-echo -e ">>>Change permission to <-rwx-r-xr-x> for folder: ${ninetyfive_ispboootversion_notice_filename}"
-	chmod -R 755 ${dst_ninetyfive_ispboootversion_notice_fpath}
-
-echo -e "\r"
-echo -e ">Copying: ${ninetynine_wlan_notice_filename}"
-echo -e ">from: ${home_lttp3rootfs_motd_update_motd_d_dir}"
-echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_etc_update_motd_d_dir}"
-	cp -rf ${src_ninetynine_wlan_notice_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_etc_update_motd_d_dir}
-
-echo -e "\r"
-echo -e ">>>Change ownership to <root> for folder: ${ninetynine_wlan_notice_filename}"
-	chown -R root:root ${dst_ninetynine_wlan_notice_fpath}
-
-echo -e "\r"
-echo -e ">>>Change permission to <-rwx-r-xr-x> for folder: ${ninetynine_wlan_notice_filename}"
-	chmod -R 755 ${dst_ninetynine_wlan_notice_fpath}
+echo -e ">>>Change permission to <-rwx-r-xr-x> for folder: ${ninetyfive_ltpp3g2_notice_filename}"
+	chmod -R 755 ${dst_ninetyfive_ltpp3g2_notice_fpath}
 
 
 
