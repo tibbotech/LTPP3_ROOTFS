@@ -6725,6 +6725,7 @@ docker__get_source_fullpath__sub() {
     docker__SP7021_build_tools_isp__dir=${docker__SP7021__dir}/build/tools/isp
     docker__SP7021_linux_rootfs_initramfs_disk_dir=${docker__SP7021__dir}/linux/rootfs/initramfs/disk
     docker__SP7021_linux_rootfs_initramfs_disk_sbin__dir=${docker__SP7021_linux_rootfs_initramfs_disk_dir}/sbin
+    docker__SP7021_linux_rootfs_initramfs_disk_scripts__dir=${docker__SP7021_linux_rootfs_initramfs_disk_dir}/scripts
     docker__SP7021_linux_rootfs_initramfs_disk_etc__dir=${docker__SP7021_linux_rootfs_initramfs_disk_dir}/etc
     docker__SP7021_linux_rootfs_initramfs_disk_etc_update_motd_d__dir=${docker__SP7021_linux_rootfs_initramfs_disk_etc__dir}/update-motd.d
     docker__SP7021_linux_rootfs_initramfs_disk_etc_tibbo__dir=${docker__SP7021_linux_rootfs_initramfs_disk_etc__dir}/tibbo
@@ -6746,6 +6747,9 @@ docker__get_source_fullpath__sub() {
     docker__SP7021_linux_rootfs_initramfs_disk_etc_update_motd_d_96_overlayboot_notice__fpath="${docker__SP7021_linux_rootfs_initramfs_disk_etc_update_motd_d__dir}/${docker__96_overlayboot_notice__filename}"
     docker__SP7021_linux_rootfs_initramfs_disk_etc_update_motd_d_98_normalboot_notice__fpath="${docker__SP7021_linux_rootfs_initramfs_disk_etc_update_motd_d__dir}/${docker__98_normalboot_notice__filename}"
     docker__SP7021_linux_rootfs_initramfs_disk_etc_update_motd_d_99_wlan_notice__fpath="${docker__SP7021_linux_rootfs_initramfs_disk_etc_update_motd_d__dir}/${docker__99_wlan_notice__filename}"
+
+    docker__SP7021_linux_rootfs_initramfs_disk_scripts_one_time_exec_fpath="${docker__SP7021_linux_rootfs_initramfs_disk_scripts__dir}/${docker__one_time_exec_sh__filename}"
+
 
 #---docker__tmp__dir - contents
     compgen__query_w_autocomplete_out__filename="compgen_query_w_autocomplete.out"

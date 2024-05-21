@@ -365,7 +365,7 @@ docker__menu__sub() {
         if [[ "${docker__isRunning_inside_container}" == false ]]; then
             remarks_print+="${DOCKER__FG_LIGHTGREY}may need to deduct swapfile-size${DOCKER__NOCOLOR}"
         else
-            remarks_print+="${DOCKER__FG_LIGHTGREY}include swapfile-size deduction${DOCKER__NOCOLOR}"
+            remarks_print+="${DOCKER__FG_LIGHTGREY}included swapfile-size deduction${DOCKER__NOCOLOR}"
         fi
         echo -e "${remarks_print}"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
