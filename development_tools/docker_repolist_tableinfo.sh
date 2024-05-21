@@ -12,13 +12,14 @@ function containerIsActive__func() {
 	#Remarks:
 	#	{{.Image}}: get the 'repository:tag'
 	#	{{.Status}}: get the 'status'
-	local result=$(docker ps -a --format "table {{.Image}} {{.Status}}" | grep "${repo_tag}")
-	if [[ -n "${result}" ]]; then
+	local matched_string=$(docker ps -a --format "table {{.Image}} {{.Status}}" | grep -o "${repo_tag}.*" | cut -d' ' -f1)
+	if [[ "${repo_tag}" == "${matched_string}" ]]; then
 		#Remarks:
 		#	sed 's/ /_/g': replace SPACE with UNDERSCORE
 		#	sed 's/(.*.)//g': replace ANYTHING that is BETWEEN BRACKETS (including the brackets) with EMPTY STRING
 		#	sed 's/__/_/g'): replace DOUBLE UNDERSCORE with UNDERSCORE
-		local isExited=$(grep -o "${PATTERN_EXITED}.*" <<< "${result}" | sed 's/ /_/g' | sed 's/(.*.)//g' | sed 's/__/_/g')
+        local complete_line=$(docker ps -a --format "table {{.Image}} {{.Status}}" | grep "${repo_tag}")
+		local isExited=$(grep -o "${PATTERN_EXITED}.*" <<< "${complete_line}" | sed 's/ /_/g' | sed 's/(.*.)//g' | sed 's/__/_/g')
 		if [[ -n "${isExited}" ]]; then
 			echo "${isExited}"
 		else
