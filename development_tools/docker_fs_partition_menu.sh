@@ -440,7 +440,7 @@ docker__menu_update_disksizestatus_boolean_and_print_values__sub() {
 docker__menu_update_regex_and_diskpartstatus_print_values__sub () {
     #1. Generate 'docker__diskpartstatus_header_print'
     #2. Select 'docker__regEx'
-    if [[ ${docker__disksizestatus} == true ]]; then
+    if [[ ${docker__disksizestatus} == true ]] && [[ ${docker__disksize_set} -gt 0 ]]; then
         docker__regEx="${docker__regex12bq}"
 
         docker__diskpartstatus_header_print="${DOCKER__FOURSPACES}2. ${DOCKER__MENU} Configure "
