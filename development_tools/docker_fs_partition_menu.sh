@@ -266,6 +266,7 @@ docker__init_variables__sub() {
     docker__disksizestatus_print="${DOCKER__DASH}"
     docker__disksizestatus_header_print="${DOCKER__EMPTYSTRING}"
     docker__disksizestatus=false
+    docker__isRunning_inside_container=false
     docker__regEx="${DOCKER__EMPTYSTRING}"
     docker__regex1bq="[1bq]"
     docker__regex12bq="[1-2bq]"
@@ -296,6 +297,11 @@ docker__get_git_info__sub() {
     docker_git_current_info_msg+="${DOCKER__FG_LIGHTBLUE}${docker__git_current_tag}${DOCKER__NOCOLOR}"
 }
 
+docker__checkif_isrunning_in_container__sub() {
+    #Check if running inside a container
+    docker__isRunning_inside_container=$(checkIf_isRunning_inside_container__func)
+}
+
 docker__menu__sub() {
     #Initialize variables
     docker__diskpart="${DOCKER__EMPTYSTRING}"
@@ -315,6 +321,9 @@ docker__menu__sub() {
         #   docker_git_current_info_msg
         docker__get_git_info__sub
 
+        #Check if is running in a container
+        docker__checkif_isrunning_in_container__sub
+
         #Load header
         load_tibbo_title__func "${DOCKER__NUMOFLINES_2}"
 
@@ -333,7 +342,9 @@ docker__menu__sub() {
         #   1. docker__disksizestatus
         #   2. docker__disksizestatus_print
         docker__menu_update_disksizestatus_boolean_and_print_values__sub
-        echo -e "${docker__disksizestatus_header_print} (${DOCKER__FG_LIGHTGREY}${docker__disksizestatus_print}${DOCKER__NOCOLOR})"
+        local disksize_print="${docker__disksizestatus_header_print} (${DOCKER__FG_LIGHTGREY}${docker__disksizestatus_print}${DOCKER__NOCOLOR}) "
+        disksize_print+="(${DOCKER__FG_BORDEAUX}${DOCKER__ASTERISK}${DOCKER__NOCOLOR})"
+        echo -e "${disksize_print}"
         
         #Remark:
         #   This subroutine will implicitely update the varaiables:
@@ -347,6 +358,16 @@ docker__menu__sub() {
         echo -e "${DOCKER__FOURSPACES}b. ${DOCKER__MENU} build ${DOCKER__BG_LIGHTGREY}ISPBOOOT.BIN${DOCKER__NOCOLOR}"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
         echo -e "${DOCKER__FOURSPACES}q. $DOCKER__QUIT_CTRL_C"
+        duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
+
+        echo -e "${DOCKER__BG_ORANGE}Remarks:${DOCKER__NOCOLOR}"
+        local remarks_print="${DOCKER__FOURSPACES}${DOCKER__FG_BORDEAUX}${DOCKER__ASTERISK}${DOCKER__NOCOLOR}${DOCKER__FG_LIGHTGREY}:${DOCKER__NOCOLOR} "
+        if [[ "${docker__isRunning_inside_container}" == false ]]; then
+            remarks_print+="${DOCKER__FG_LIGHTGREY}may need to deduct swapfile-size${DOCKER__NOCOLOR}"
+        else
+            remarks_print+="${DOCKER__FG_LIGHTGREY}include swapfile-size deduction${DOCKER__NOCOLOR}"
+        fi
+        echo -e "${remarks_print}"
         duplicate_char__func "${DOCKER__DASH}" "${DOCKER__TABLEWIDTH}"
 
         #Show read-dialog
