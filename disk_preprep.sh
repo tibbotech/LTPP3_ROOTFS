@@ -149,12 +149,16 @@ usb_mount_rules_filename="usb-mount.rules"
 usb_mount_service_filename="usb-mount@.service"
 usb_mount_sh_filename="usb-mount.sh"
 
+fstab_filename="fstab"
+swapfile_filename="swapfile"
+
 
 
 home_dir=~	#this is the /root directory
 bin_dir=/bin
 # daisychain_dir=/sys/devices/platform/soc\@B/9c108000.l2sw
 etc_dir=/etc
+tb_reserve_dir="/tb_reserve"
 tmp_dir=/tmp
 usr_bin_dir=/usr/bin
 home_downloads_dir=${home_dir}/Downloads
@@ -414,6 +418,9 @@ sp7021_common_dtsi_patch_fpath=${home_lttp3rootfs_kernel_dts_dir}/${sp7021_commo
 old_sp7021_ltpp3g2revD_dtsi_fpath=${SP7xxx_linux_kernel_arch_arm_boot_dts_dir}/${sp7021_ltpp3g2revD_dtsi_filename}
 new_sp7021_ltpp3g2revD_dtsi_fpath=${home_lttp3rootfs_kernel_dts_dir}/${sp7021_ltpp3g2revD_dtsi_filename}
 sp7021_ltpp3g2revD_dtsi_patch_fpath=${home_lttp3rootfs_kernel_dts_dir}/${sp7021_ltpp3g2revD_dtsi_patch_filename}
+
+fstab_fpath="${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}/${fstab_filename}"
+swapfile_fpath="${tb_reserve_dir}/${swapfile_filename}"
 echo -e "---:TIBBO:ENV: FINISHED"
 
 
@@ -1383,7 +1390,10 @@ if [[ ${CONTAINER_ENV5} -gt 0 ]]; then
 	sed -i "/${SED_PATTERN_SWAPFILESIZE_IS}/c\\${SED_PATTERN_SWAPFILESIZE_IS}${CONTAINER_ENV5}" "${dst_one_time_exec_sh_fpath}"
 	echo ">Set '${SED_PATTERN_SWAPFILESIZE_IS}${CONTAINER_ENV5}M'"
 	echo ">in: ${dst_one_time_exec_sh_fpath}"
+
 	echo -e "\r"
+	echo "${swapfile_fpath} none swap sw 0 0" | tee -a "${fstab_fpath}"
+    echo ">Added entry to '${fstab_fpath}' to ENABLE swap on boot-time"
 fi
 
 

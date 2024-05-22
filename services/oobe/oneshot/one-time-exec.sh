@@ -132,6 +132,6 @@ if [[ ${swapfilesize} -gt 0 ]]; then
     swapon "${swapfile_fpath}"
     echo -e ":-->${FG_ORANGE}STATUS${NOCOLOR}: swapon ${FG_LIGHTGREY}${swapfile_fpath}${NOCOLOR}"
 
-    echo "${swapfile_fpath} none swap sw 0 0" | tee -a "${fstab_fpath}"
-    echo -e ":-->${FG_ORANGE}STATUS${NOCOLOR}: ADDED ENTRY TO ${FG_LIGHTGREY}${fstab_fpath}${NOCOLOR} TO ENABLE SWAP ON BOOT-TIME"
+    # echo "${swapfile_fpath} none swap sw 0 0" | tee -a "${fstab_fpath}"
+    # echo -e ":-->${FG_ORANGE}STATUS${NOCOLOR}: ADDED ENTRY TO ${FG_LIGHTGREY}${fstab_fpath}${NOCOLOR} TO ENABLE SWAP ON BOOT-TIME"
 fi
