@@ -79,12 +79,23 @@ echo -e "\r"
 apt-get install openssl libssl-dev bison flex -y
 
 press_any_key__func
-echo -e "\r"
-echo "---Cloning Sunplus Image---"
-echo -e "\r"
-echo ">Git-link: ${CONTAINER_ENV1}"
-echo -e "\r"
-git clone ${CONTAINER_ENV1}
+git_clone_sunplus_retry=0
+GIT_CLONE_SUNPLUS_RETRY_MAX=3
+while [[ ${git_clone_sunplus_retry} -lt ${GIT_CLONE_SUNPLUS_RETRY_MAX} ]]
+do
+	echo -e "\r"
+	echo "---Cloning Sunplus Image---"
+	echo -e "\r"
+	echo ">Git-link: ${CONTAINER_ENV1}"
+	echo -e "\r"
+	git clone ${CONTAINER_ENV1}; exitcode=$?
+
+	if [[ ${exitcode} -eq 0 ]]; then
+		break
+	else
+		git_clone_sunplus_retry=$((git_clone_sunplus_retry + 1))
+	fi
+done
 
 echo -e "\r"
 echo ">Navigating to ${SP7021_dir}"
