@@ -34,9 +34,9 @@ root_dir=/root
 root_ssh_dir=${root_dir}/.ssh
 root_ssh_id_rsa_fpath=${root_ssh_dir}/id_rsa
 
-
+tb_reserve_dir="/tb_reserve"
 swapfile_filename="swapfile"
-swapfile_fpath="/${swapfile_filename}"
+swapfile_fpath="${tb_reserve_dir}/${swapfile_filename}"
 
 etc_dir=/etc
 fstab_filename="fstab"
@@ -114,6 +114,11 @@ echo -e ":-->${FG_ORANGE}STATUS${NOCOLOR}: MOUNTED ${FG_LIGHTGREY}${dev_mqueue_d
 #---ENABLE SWAP
 swapfilesize=0
 if [[ ${swapfilesize} -gt 0 ]]; then
+    if [[ ! -d "${tb_reserve_dir}" ]]; then
+        mkdir "${tb_reserve_dir}"
+        echo -e ":-->${FG_ORANGE}STATUS${NOCOLOR}: mkdir \"${tb_reserve_dir}\""
+    fi
+
     swapfilesize_M="${swapfilesize}M"
     fallocate -l "${swapfilesize_M}" "${swapfile_fpath}"
     echo -e ":-->${FG_ORANGE}STATUS${NOCOLOR}: ALLOCATED ${FG_LIGHTGREY}${swapfilesize_M}${NOCOLOR} TO ${FG_LIGHTGREY}${swapfile_fpath}${NOCOLOR}"

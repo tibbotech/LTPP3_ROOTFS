@@ -35,7 +35,7 @@ echo -e "% ISPBOOOT.BIN ${FG_GREY}version${FG_RESET}: ${ispboootbin_version_retr
 
 
 #---SWAP
-swapfile_fpath="/swapfile"
+swapfile_fpath="/tb_reserve/swapfile"
 if [[ -f "${swapfile_fpath}" ]]; then
     swapfile_size_B=$(stat -c%s "${swapfile_fpath}")
     swapfile_size_MB=$(( swapfile_size_B/(1024*1024) ))
