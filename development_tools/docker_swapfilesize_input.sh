@@ -264,8 +264,8 @@ docker__load_global_fpath_paths__sub() {
 }
 
 docker__load_constants__sub() {
-    DOCKER__SWAPFILESIZE_MB_LOWERBOUND=0
-    DOCKER__SWAPFILESIZE_MB_UPPERBOUND=1024
+    # DOCKER__SWAPFILESIZE_MB_LOWERBOUND=0
+    # DOCKER__SWAPFILESIZE_MB_UPPERBOUND=1024
 
     DOCKER__SWAPFILESIZE_MB_IS_PATTERN="swapfilesize_mb="
 

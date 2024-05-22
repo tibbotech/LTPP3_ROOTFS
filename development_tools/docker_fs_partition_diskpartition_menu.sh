@@ -104,12 +104,16 @@ docker__init_variables__sub() {
     docker__overlayfs_size=$((disksize__input - docker__reservedfs_size - docker__rootfs_size))
     docker__disksize_remain=0
 
+    #***NOTE: the reason why 'swapfile' is NOT added to this array is because
+    #   'swapfile' is part of 'tb_reserve'
     docker__isp_partition_array=()
     docker__isp_partition_array[0]="${DOCKER__DISKPARTNAME_TB_RESERVE} ${docker__reservedfs_size}"
     docker__isp_partition_array[1]="${DOCKER__DISKPARTNAME_ROOTFS} ${docker__rootfs_size}"
     docker__isp_partition_array[2]="${DOCKER__DISKPARTNAME_OVERLAY} ${docker__overlayfs_size}"
     docker__isp_partition_array[3]="${DOCKER__DISKPARTNAME_REMAINING} ${docker__disksize_remain}"
 
+    #***NOTE: the reason why 'swapfile' is NOT added to this array is because
+    #   'swapfile' is part of 'tb_reserve'
     docker__isp_partition_array_default=()
     docker__isp_partition_array_default[0]="${DOCKER__DISKPARTNAME_TB_RESERVE} ${docker__reservedfs_size}"
     docker__isp_partition_array_default[1]="${DOCKER__DISKPARTNAME_ROOTFS} ${docker__rootfs_size}"
@@ -528,6 +532,8 @@ docker__partitiondisk__sub() {
     local PHASE_UPDATE=30
     local PHASE_EXIT=100
 
+    local SWAPFILE="swapfile"
+
     #Define variables
     local isp_partition_array_new=()
     local disksize_remain_bck=0
@@ -582,6 +588,10 @@ docker__partitiondisk__sub() {
                         #Goto next-phase
                         phase="${PHASE_PARTITIONSIZE_INPUT}"
                         ;;
+                    "${DOCKER__SWAPFILESIZE_MB_UPPERBOUND}")
+                        #Goto next-phase
+                        phase="${PHASE_PARTITIONSIZE_INPUT}"
+                        ;;                   
                     "1")    #rootfs
                         #Goto next-phase
                         phase="${PHASE_PARTITIONSIZE_INPUT}"
@@ -659,10 +669,13 @@ docker__partitiondisk__sub() {
                         #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                         disksize_remain_bck="${docker__disksize_remain}"
 
-                        #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-                        #Increment index
-                        #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-                        ((j++))
+                        # #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                        # #Increment index
+                        # #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                        # ((j++))
+
+                        #***NOTE: this index is reserved for 'swapfilesize' input
+                        j=${DOCKER__SWAPFILESIZE_MB_UPPERBOUND}
 
                         #Goto next-phase
                         phase="${PHASE_ARRAYDATA_RETRIEVE}"
@@ -671,13 +684,22 @@ docker__partitiondisk__sub() {
                         #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                         #Update 'readdialog_diskpartsize'
                         #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-                        readdialog_diskpartsize="${DOCKER__READDIALOG_HEADER}: ${docker__diskpartname} "
-                        
+                        # readdialog_diskpartsize="${DOCKER__READDIALOG_HEADER}: ${docker__diskpartname} "
+                        if [[ ${j} -eq ${DOCKER__SWAPFILESIZE_MB_UPPERBOUND} ]]; then
+                            docker__diskpartsize=${DOCKER__SWAPFILESIZE_MB_UPPERBOUND}
+                            readdialog_diskpartsize="${DOCKER__SWAPFILE} "
+                        else
+                            readdialog_diskpartsize="${docker__diskpartname} "
+                        fi
+
                         #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                         #Based on the disk-partition (rootfs, overlay, etc.), append its respectively options
                         #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-                        if [[ ${j} -eq 1 ]]; then  #rootfs
-                            readdialog_diskpartsize+="(${DOCKER__SEMICOLON_CLEAR_ABORT_COLORED}) "           
+                        #***NOTE: swapfiles-ize will be added to tb_reserve-size
+                        if [[ ${j} -eq ${DOCKER__SWAPFILESIZE_MB_UPPERBOUND} ]]; then  #swapfile
+                            readdialog_diskpartsize+="(${DOCKER__SEMICOLON_CLEAR_ABORT_COLORED}) "
+                        elif [[ ${j} -eq 1 ]]; then  #rootfs
+                            readdialog_diskpartsize+="(${DOCKER__SEMICOLON_CLEAR_REDO_ABORT_COLORED}) "           
                         elif [[ ${j} -eq 2 ]]; then #overlay
                             readdialog_diskpartsize+="(${DOCKER__SEMICOLON_CLEAR_REDO_ABORT_COLORED}) "
                         elif [[ ${j} -gt 2 ]]; then #anything else except for 'tb_reserve, rootfs, overlay'
@@ -693,13 +715,15 @@ docker__partitiondisk__sub() {
                             
                             #Only apply this condition for partitions other than 'tb_reserve', 'rootfs', and 'overlayfs'
                             #Only apply this condition if 'isnewdiskpartconfig__input = true'
-                            if [[ "${j}" -gt 2 ]] && [[ "${isnewdiskpartconfig__input}" == "true" ]]; then
+                            if [[ "${j}" -ne ${DOCKER__SWAPFILESIZE_MB_UPPERBOUND} ]] && \
+                                    [[ "${j}" -gt 2 ]] && \
+                                    [[ "${isnewdiskpartconfig__input}" == "true" ]]; then
                                 readdialog_diskpartsize_default="${docker__disksize_remain}"
                             fi
                         else
                             readdialog_diskpartsize_default="${docker__disksize_remain}"
                         fi
-
+#>>>>>>>>>>>>>>CONTINUE FROM HERE
                         #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                         #Remarks:
                         #   The read-dialog will not stop until a non Empty String is inputted.
