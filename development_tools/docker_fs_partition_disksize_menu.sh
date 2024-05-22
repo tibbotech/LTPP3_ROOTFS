@@ -67,15 +67,7 @@ docker__get_git_info__sub() {
     docker_git_current_info_msg+="${DOCKER__FG_LIGHTBLUE}${docker__git_current_tag}${DOCKER__NOCOLOR}"
 }
 
-docker__checkif_isrunning_in_container__sub() {
-    #Check if running inside a container
-    docker__isRunning_inside_container=$(checkIf_isRunning_inside_container__func)
-}
-
 docker__menu__sub() {
-    #Define constants
-    local swapfile_size_in_mbytes_IS_PATTERN="swapfilesize="
-
     #Define variables
     local disksize_retrieved=0
     local filecontent="${DOCKER__EMPTYSTRING}"
@@ -85,17 +77,10 @@ docker__menu__sub() {
     local ret=0
     local regex1234q="[1-4q]"
     local regexyn="[yn]"
-    local swapfile_size_in_mbytes=0
 
     #Write initial 'ret' value to file.
     #Note: this is done in case ctrl+c is pressed.
     write_data_to_file__func "${ret}" "${docker__fs_partition_disksize_menu_output__fpath}"
-
-    #Check if running inside a container
-    docker__checkif_isrunning_in_container__sub
-    if [[ ${docker__isRunning_inside_container} == true ]]; then
-        swapfile_size_in_mbytes=$(cat "${docker__SP7021_linux_rootfs_initramfs_disk_scripts_one_time_exec_fpath}" | grep "${swapfile_size_in_mbytes_IS_PATTERN}" | cut -d "=" -f2)
-    fi
 
     #Show menu
     while [[ 1 ]];
@@ -187,9 +172,6 @@ docker__menu__sub() {
     #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     # DISK-SIZE: WRITE TO FILE 'docker__docker_fs_partition_conf__fpath'
     #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    #Update 'ret' (in case there is any swapfile-size)
-    ret=$((ret - swapfile_size_in_mbytes))
-    
     #Update parameter
     filecontent="${DOCKER__DISKSIZESETTING} ${ret}"
 
