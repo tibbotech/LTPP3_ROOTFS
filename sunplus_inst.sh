@@ -93,7 +93,7 @@ do
 	if [[ ${exitcode} -eq 0 ]]; then
 		break
 	else
-		git_clone_sunplus_retry=$((git_clone_sunplus_retry + 1))
+		((git_clone_sunplus_retry++))
 	fi
 done
 
