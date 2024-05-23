@@ -117,7 +117,6 @@ docker__init_variables__sub() {
     #***NOTE: the reason why 'swapfile' is NOT added to this array is because
     #   'swapfile' is part of 'tb_reserve'
     docker__isp_partition_array=("${docker__isp_partition_array_default[@]}")
-    docker__isp_partition_writetofile_array=("${docker__isp_partition_array_default[@]}")
 
     docker__diskpartname="${DOCKER__EMPTYSTRING}"
     docker__diskpartsize="${DOCKER__EMPTYSTRING}"
@@ -537,7 +536,7 @@ docker__partitiondisk__sub() {
     local PHASE_EXIT=100
 
     #Define variables
-    local isp_partition_writetofile_array_bck=()
+    local isp_partition_writetofile_array=()    #MUST BE LOCAL VARIABLE!!!
     local dataarr_len=0
     local dataarr_lastindex=0
     local dataarr_tb_reserve_size=0
@@ -552,25 +551,6 @@ docker__partitiondisk__sub() {
 
     #Movedown and clean line(s)
     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
-
-
-    #---------------------------------------------------------------------
-    #docker__isp_partition_writetofile_array: Backup & Initialize
-    #---------------------------------------------------------------------
-    #REMARKS:
-    #   1. Always backup (whether flag_configure_new_partitions_is_chosen__input = true or false)
-    #   2. A backup is made because array 'docker__isp_partition_writetofile_array' may contain
-    #       data which was previously inputted.
-    #   3. Only Initialize if 'Configure new partitions' is chosen.
-    #---------------------------------------------------------------------
-    #Backup
-    isp_partition_writetofile_array_bck=("${docker__isp_partition_writetofile_array[@]}")
-
-    #Initialize
-    if [[ "${flag_configure_new_partitions_is_chosen__input}" == true ]]; then
-        docker__isp_partition_writetofile_array=("${docker__isp_partition_array_default[@]}")
-    fi
-
 
     #Show readinputdialog
     while true
@@ -674,13 +654,10 @@ docker__partitiondisk__sub() {
                         #---------------------------------------------------------------------
                         #***Note: this function implicitely updates 'docker__diskpartname'
                         #---------------------------------------------------------------------
-                        #Define array containing only the elements of array 'docker__isp_partition_writetofile_array' to be checked against!
-                        isp_partition_writetofile_tobechecked=("${docker__isp_partition_writetofile_array[@]:0:j}")
-
                         #Input and get a valid disk partition name
                         docker__other_diskpartname_handler__sub "${docker__diskpartname}" \
                                 "${j}" \
-                                "${isp_partition_writetofile_tobechecked[@]}"
+                                "${isp_partition_writetofile_array[@]}"
 
                         #Remark:
                         #   If no additional partition-name is provided,
@@ -688,7 +665,7 @@ docker__partitiondisk__sub() {
                         case "${docker__diskpartname}" in
                             "${DOCKER__SEMICOLON_REDO}")
                                 #Reset array
-                                docker__isp_partition_writetofile_array=()
+                                isp_partition_writetofile_array=()
 
                                 #Reset dvariables
                                 docker__remain_size=${disksize__input}
@@ -704,9 +681,6 @@ docker__partitiondisk__sub() {
                                 phase="${PHASE_UPDATE}"
                                 ;;
                             "${DOCKER__SEMICOLON_ABORT}")
-                                #***IMPORTANT: Restore backup
-                                docker__isp_partition_writetofile_array=("${isp_partition_writetofile_array_bck[@]}")
-
                                 #Goto next-phase
                                 phase="${PHASE_EXIT}"
                                 ;;
@@ -732,9 +706,9 @@ docker__partitiondisk__sub() {
                 case ${j} in
                     "0")
                         #---------------------------------------------------------------------
-                        #Update 'docker__isp_partition_writetofile_array'
+                        #Update 'isp_partition_writetofile_array'
                         #---------------------------------------------------------------------
-                        docker__isp_partition_writetofile_array[j]="${docker__diskpartname} ${DOCKER__RESERVED_SIZE_DEFAULT}"
+                        isp_partition_writetofile_array[j]="${docker__diskpartname} ${DOCKER__RESERVED_SIZE_DEFAULT}"
 
                         #---------------------------------------------------------------------
                         #Calculate 'docker__remain_size'
@@ -852,8 +826,8 @@ docker__partitiondisk__sub() {
                                     #---------------------------------------------------------------------
                                     *) 
                                         if [[ "${docker__remain_size}" -eq 0 ]]; then   #docker__remain_size = 0
-                                            #Update 'docker__isp_partition_writetofile_array'
-                                            docker__isp_partition_writetofile_array[j]="${docker__diskpartname} ${docker__readdialog_output}"
+                                            #Update 'isp_partition_writetofile_array'
+                                            isp_partition_writetofile_array[j]="${docker__diskpartname} ${docker__readdialog_output}"
 
                                             #Goto next-phase
                                             phase="${PHASE_UPDATE}"
@@ -909,13 +883,13 @@ docker__partitiondisk__sub() {
                                                         #Add 'swapfile-size' to 'tb_reserve-size'
                                                         docker__readdialog_output=$((docker__readdialog_output + DOCKER__RESERVED_SIZE_DEFAULT))
 
-                                                        #Update array 'docker__isp_partition_writetofile_array'
-                                                        docker__isp_partition_writetofile_array[0]="${docker__diskpartname} ${docker__readdialog_output}"
+                                                        #Update array 'isp_partition_writetofile_array'
+                                                        isp_partition_writetofile_array[0]="${docker__diskpartname} ${docker__readdialog_output}"
 
                                                         #Set j=1, which means handle 'rootfs' next
                                                         j=1
                                                     else    #all other cases (e.g., rootfs, overlay)
-                                                        docker__isp_partition_writetofile_array[j]="${docker__diskpartname} ${docker__readdialog_output}"
+                                                        isp_partition_writetofile_array[j]="${docker__diskpartname} ${docker__readdialog_output}"
 
                                                         ((j++))
                                                     fi
@@ -954,7 +928,7 @@ docker__partitiondisk__sub() {
                                         #   r(edo) is available starting from the 'overlay' input
                                         if [[ ${j} -gt 1 ]]; then
                                             #Reset array
-                                            docker__isp_partition_writetofile_array=()
+                                            isp_partition_writetofile_array=()
 
                                             #Reset dvariables
                                             docker__remain_size=${disksize__input}
@@ -977,9 +951,6 @@ docker__partitiondisk__sub() {
                                         fi
                                         ;;
                                     "${DOCKER__SEMICOLON_ABORT}")
-                                        #***IMPORTANT: Restore backup
-                                        docker__isp_partition_writetofile_array=("${isp_partition_writetofile_array_bck[@]}")
-                                        
                                         #Goto next-phase
                                         phase="${PHASE_EXIT}"
                                         ;;
@@ -1031,14 +1002,14 @@ docker__partitiondisk__sub() {
                 #---------------------------------------------------------------------
                 #Add 'docker__remain_size' to array
                 #---------------------------------------------------------------------
-                docker__isp_partition_writetofile_array[j]="${DOCKER__DISKPARTNAME_REMAINING} ${docker__remain_size}"
+                isp_partition_writetofile_array[j]="${DOCKER__DISKPARTNAME_REMAINING} ${docker__remain_size}"
 
                 #---------------------------------------------------------------------
-                #USING 'docker__isp_partition_writetofile_array' do the following:
+                #USING 'isp_partition_writetofile_array' do the following:
                 #1. Update array 'docker__isp_partition_array'
                 #2. Update file 'docker__docker_fs_partition_diskpartsize_dat__fpath' with new data
                 #---------------------------------------------------------------------
-                docker__isp_part_arr_update_and_writeto_file "${docker__isp_partition_writetofile_array[@]}"
+                docker__isp_part_arr_update_and_writeto_file "${isp_partition_writetofile_array[@]}"
 
                 #Goto next-phase
                 phase="${PHASE_EXIT}"
