@@ -1877,24 +1877,20 @@ docker__overlay_dst_exec_file_change_permission__sub() {
     #Input args
     local targetfpath__input=${1}
 
-    #Define variables
-    local docker_exec_cmd="${DOCKER__EMPTYSTRING}"
-    local cmd_to_change_permission="${DOCKER__EMPTYSTRING}"
-    local printmsg="${DOCKER__EMPTYSTRING}"
-
-    #Start generating 'printmsg'
-    printmsg="${DOCKER__SIXDASHES_COLON}${DOCKER__STATUS}: chmod ${DOCKER__CHMOD_755}${DOCKER__FG_LIGHTGREY}${targetfpath__input}: " 
+    #Set 'printmsg'
+    local printmsg="${DOCKER__SIXDASHES_COLON}${DOCKER__STATUS}: chmod ${DOCKER__CHMOD_755}${DOCKER__FG_LIGHTGREY}${targetfpath__input}: " 
 
     #Update variables
-    docker_exec_cmd="${DOCKER__EXEC_IT} ${docker__containerid} ${docker__bash_fpath} -c"
-    cmd_to_change_permission="chmod 755 ${targetfpath__input}"
+    local cmd="chmod 755 ${targetfpath__input}"
 
-    #Execute command
-    if [[ ${docker__isRunning_inside_container} == true ]]; then   #currently inside container
-        ${cmd_to_change_permission}
-    else    #currently outside container
-        ${docker_exec_cmd} "${cmd_to_change_permission}"
+    #Check whether INSIDE or OUTSIDE container and set 'containerid'
+    local containerid="${DOCKER__EMPTYSTRING}"
+    if [[ ${docker__isRunning_inside_container} == false ]]; then   #currently inside container
+        containerid=${docker__containerid}
     fi
+
+    #Execute command 'cmd'
+    docker_exec_cmd__func "${containerid}" "${cmd}"
 
     #Check exit-code
     docker__exitcode=$?
@@ -1933,35 +1929,28 @@ docker__overlay_tb_init_softlink_handler__sub() {
     show_msg_only__func "${DOCKER__SUBJECT_COMPLETED_TB_INIT_SH_CREATE_SOFTLINK}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
 }
 docker__overlay_tb_init_softlink_create__sub() {
-    #Define variables
-    local current_dir="${DOCKER__EMPTYSTRING}"
-    local docker_exec_cmd="${DOCKER__EMPTYSTRING}"
-    local cmd_tocreate_softlink="${DOCKER__EMPTYSTRING}"
-    local printmsg="${DOCKER__EMPTYSTRING}"
-
-    #Start generating 'printmsg'
-    printmsg="${DOCKER__SIXDASHES_COLON}${DOCKER__STATUS}: crete soft-link of ${DOCKER__FG_LIGHTGREY}${docker__tb_init_sh__filename}${DOCKER__NOCOLOR}: "
-
-    #Update variables
-    docker_exec_cmd="${DOCKER__EXEC_IT} ${docker__containerid} ${docker__bash_fpath} -c"
-    #IMPORTANT: make sure to use the REAL PATH '/sbin/tb_init.sh' and 
-    #   not '/root/SP7021/linux/rootfs/initramfs/disk/usr/sbin/tb_init.sh'
-    cmd_tocreate_softlink="ln -sfn \"${docker__sbin_tb_init_sh__fpath}\" \
-            \"${docker__SP7021_linux_rootfs_initramfs_disk_sbin_init__fpath}\""
+    #Set 'printmsg'
+    local printmsg="${DOCKER__SIXDASHES_COLON}${DOCKER__STATUS}: create soft-link of ${DOCKER__FG_LIGHTGREY}${docker__tb_init_sh__filename}${DOCKER__NOCOLOR}: "
 
     #Remove soft-link 'init'
     remove_file__func "${docker__containerid}" \
             "${docker__SP7021_linux_rootfs_initramfs_disk_sbin_init__fpath}" \
             "${DOCKER__SIXDASHES_COLON}"
 
-    #Execute command
-    if [[ ${docker__isRunning_inside_container} == true ]]; then   #currently inside container
-        #Note: MUST use eval, because we want to EVALUATE string 
-        #       'cmd_tocreate_softlink' as a SHELL-command.
-        eval "${cmd_tocreate_softlink}"
-    else    #currently outside container
-        ${docker_exec_cmd} "${cmd_tocreate_softlink}"
+    #Define command
+    #***IMPORTANT: make sure to use the REAL PATH '/sbin/tb_init.sh' and 
+    #   not '/root/SP7021/linux/rootfs/initramfs/disk/usr/sbin/tb_init.sh'
+    local cmd="ln -sfn \"${docker__sbin_tb_init_sh__fpath}\" \
+            \"${docker__SP7021_linux_rootfs_initramfs_disk_sbin_init__fpath}\""
+
+    #Check whether INSIDE or OUTSIDE container and set 'containerid'
+    local containerid="${DOCKER__EMPTYSTRING}"
+    if [[ ${docker__isRunning_inside_container} == false ]]; then   #currently inside container
+        containerid=${docker__containerid}
     fi
+
+    #Execute command 'cmd'
+    docker_exec_cmd__func "${containerid}" "${cmd}"
 
     #Check exit-code
     docker__exitcode=$?
@@ -2018,20 +2007,20 @@ docker__overlay_restore_original_state__sub() {
 }
 
 docker__run_script__sub() {
-    #Define variables
-    local docker_exec_cmd="${DOCKER__EXEC_IT} ${docker__containerid} ${docker__bash_fpath} -c"
-    local cmd_outside_container="eval \"${docker__docker__build_ispboootbin_fpath}\""
-    # local cmd_inside_container="eval \"${docker__docker__build_ispboootbin_fpath}\""
-    local cmd_inside_container="${cmd_outside_container}"
+    #Initialize variable
     local printmsg="${DOCKER__EMPTYSTRING}"
 
-    #Execute script 'docker__build_ispboootbin_fpath'
-    printmsg="---:${DOCKER__START}: build ${DOCKER__FG_LIGHTGREY}ISPBOOOT.BIN${DOCKER__NOCOLOR}"
-    if [[ ${docker__isRunning_inside_container} == true ]]; then   #currently inside container
-        eval ${cmd_outside_container}
-    else    #currently outside container
-        ${docker_exec_cmd} "${cmd_inside_container}"
+    #Define command
+    local cmd="eval \"${docker__docker__build_ispboootbin_fpath}\""
+
+    #Check whether INSIDE or OUTSIDE container and set 'containerid'
+    local containerid="${DOCKER__EMPTYSTRING}"
+    if [[ ${docker__isRunning_inside_container} == false ]]; then   #currently inside container
+        containerid=${docker__containerid}
     fi
+
+    #Execute command 'cmd'
+    docker_exec_cmd__func "${containerid}" "${cmd}"
 
     #Check if there are any errors
     docker__exitcode=$?

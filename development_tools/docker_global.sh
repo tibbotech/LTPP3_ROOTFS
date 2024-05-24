@@ -1419,6 +1419,19 @@ function bc_is_x_greaterthan_zero() {
 
 
 #---CONTAINER RELATED FUNCTIONS
+function docker_exec_cmd__func() {
+    #Input args
+    local containerid__arg="${1}"
+    local cmd__arg="${2}"
+
+    #Execute command and capture output
+    if [[ -n ${containerid__arg} ]]; then
+        docker exec -t "${containerid__arg}" /bin/bash -c "${cmd__arg}"
+    else
+        eval "${cmd__arg}"
+    fi
+}
+
 function docker_exec_cmd_and_receive_output__func() {
     #Input args
     local containerid__arg="${1}"
