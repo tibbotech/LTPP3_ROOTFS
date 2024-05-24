@@ -647,7 +647,7 @@ docker__partitiondisk__sub() {
                         fi
                         phase="${PHASE_PARTITIONSIZE_INPUT}"
                         ;;
-                    #all other partitions
+                    #all other disk partitions
                     *)
                         #---------------------------------------------------------------------
 #-----------------------#Other disk partition name
@@ -735,7 +735,7 @@ docker__partitiondisk__sub() {
                             #Set 'readdialog_diskpartname' to 'swapfile'
                             #***NOTE: this is the name which will be shown in the READINPUT DIALOG.
                             readdialog_diskpartname="${DOCKER__SWAPFILE} "
-                        else    #all other folders (e.g., tb_reserve, rootfs, overlay, etc.)
+                        else    #all disk partitions
                             readdialog_diskpartname="${docker__diskpartname} "
                         fi
 
@@ -780,7 +780,11 @@ docker__partitiondisk__sub() {
                                 fi
                             fi
                         else    #docker__diskpartsize = 0 (or Empty String)
-                            readdialog_diskpartsize_default="${docker__remain_size}"
+                            if [[ ${j} -eq 1024 ]]; then  #swapfile
+                                readdialog_diskpartsize_default="${docker__diskpartsize}"
+                            else    #all other disk partitions
+                                readdialog_diskpartsize_default="${docker__remain_size}"
+                            fi
                         fi
 
                         #---------------------------------------------------------------------
@@ -808,17 +812,38 @@ docker__partitiondisk__sub() {
                                     #docker__readdialog_output = 0
                                     #---------------------------------------------------------------------
                                     "0")
-                                        #Move-up and clean line(s)
-                                        moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+                                        #Update index 'j'
+                                        if [[ ${j} -eq 1024 ]]; then    #swapfile
+                                            #Add 'swapfile-size' to 'tb_reserve-size'
+                                            docker__readdialog_output=$((docker__readdialog_output + DOCKER__RESERVED_SIZE_DEFAULT))
 
-                                        #Print error message
-                                        echo -e "${readdialog_diskpartname}${docker__readdialog_output} (${DOCKER__ERRMSG_CANNOT_BE_ZERO})"
+                                            #Update array 'isp_partition_writetofile_array'
+                                            isp_partition_writetofile_array[0]="${docker__diskpartname} ${docker__readdialog_output}"
 
-                                        #Revert back to the backup
-                                        docker__remain_size=${docker__remain_size_bck}
+                                            #Set j=1, which means handle 'rootfs' next
+                                            j=1
 
-                                        #Goto next-phase
-                                        phase="${PHASE_PARTITIONSIZE_INPUT}"
+                                            #Goto next-phase
+                                            phase="${PHASE_ARRAYDATA_RETRIEVE}"
+                                        else
+                                            #Update 'docker__remain_size_bck'
+                                            docker__remain_size_bck=${docker__remain_size}
+
+                                            # #Goto next-phase
+                                            # phase="${PHASE_ARRAYDATA_RETRIEVE}"
+
+                                            #Move-up and clean line(s)
+                                            moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+                                            #Print error message
+                                            echo -e "${readdialog_diskpartname}${docker__readdialog_output} (${DOCKER__ERRMSG_CANNOT_BE_ZERO})"
+
+                                            #Revert back to the backup
+                                            docker__remain_size=${docker__remain_size_bck}
+
+                                            #Goto next-phase
+                                            phase="${PHASE_PARTITIONSIZE_INPUT}"
+                                        fi
                                         ;;
 
                                     #---------------------------------------------------------------------
@@ -888,7 +913,7 @@ docker__partitiondisk__sub() {
 
                                                         #Set j=1, which means handle 'rootfs' next
                                                         j=1
-                                                    else    #all other cases (e.g., rootfs, overlay)
+                                                    else    #all other disk partitions
                                                         isp_partition_writetofile_array[j]="${docker__diskpartname} ${docker__readdialog_output}"
 
                                                         ((j++))
@@ -925,8 +950,8 @@ docker__partitiondisk__sub() {
                                 case "${docker__readdialog_output}" in
                                     "${DOCKER__SEMICOLON_REDO}")
                                         #Remark:
-                                        #   r(edo) is available starting from the 'overlay' input
-                                        if [[ ${j} -gt 1 ]]; then
+                                        #   r(edo) is available starting from the 'rootfs' input
+                                        if [[ ${j} -gt 0 ]]; then
                                             #Reset array
                                             isp_partition_writetofile_array=()
 
@@ -994,8 +1019,7 @@ docker__partitiondisk__sub() {
 
                 #---------------------------------------------------------------------
                 #Increment index
-                #Note:
-                #   This is needed to add 'remaining' to the array
+                #***NOTE: this is needed to add 'remaining' to the array
                 #---------------------------------------------------------------------
                 ((j++))
 
