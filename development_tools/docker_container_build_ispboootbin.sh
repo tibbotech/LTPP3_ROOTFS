@@ -889,6 +889,7 @@ docker__overlay_overlaysetting_check__sub() {
     #Remark:
     # This subroutine passes the result(s) to the following global variable(s):
     #       docker__numof_errors_found_ctr (integer)
+
     #Define variables
     local printmsg="${DOCKER__EMPTYSTRING}"
 
@@ -2006,6 +2007,47 @@ docker__overlay_restore_original_state__sub() {
             "${DOCKER__SIXDASHES_COLON}"
 }
 
+
+
+docker__one_time_exec_update__sub () {
+    echo -e "docker__one_time_exec_update__sub: in progress"
+    echo -e "docker__one_time_exec_update__sub: should be run AFTER 'docker__overlay__sub'"
+    echo -e "once done don't forget to uncomment 'docker__run_script__sub'"
+    # #Initialize variable
+    # local printmsg="${DOCKER__SIXDASHES_COLON}${DOCKER__STATUS}: update ${DOCKER__FG_LIGHTGREY}one-time-exec.sh${DOCKER__NOCOLOR}: "
+
+    # #Define command
+    # local cmd=""
+
+    # #Check whether INSIDE or OUTSIDE container and set 'containerid'
+    # local containerid="${DOCKER__EMPTYSTRING}"
+    # if [[ ${docker__isRunning_inside_container} == false ]]; then   #currently inside container
+    #     containerid=${docker__containerid}
+    # fi
+
+    # #Execute command 'cmd'
+    # docker_exec_cmd__func "${containerid}" "${cmd}"
+
+    # #Check exit-code
+    # docker__exitcode=$?
+    # if [[ ${docker__exitcode} -ne 0 ]]; then #error found
+    #     printmsg+="${DOCKER__STATUS_FAILED}"
+    # else
+    #     printmsg+="${DOCKER__STATUS_SUCCESSFUL}"
+    # fi
+
+    # #Print
+    # show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+}
+
+docker__fstab_update__sub() {
+    echo -e "docker__fstab_update__sub: in progress"
+    echo -e "docker__fstab_update__sub: should be run AFTER 'docker__one_time_exec_update__sub'"
+    echo -e "once done don't forget to uncomment 'docker__run_script__sub'"
+}
+
+
+
 docker__run_script__sub() {
     #Initialize variable
     local printmsg="${DOCKER__EMPTYSTRING}"
@@ -2047,6 +2089,8 @@ docker__run_script__sub() {
     show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_1}" "${DOCKER__NUMOFLINES_0}"
 }
 
+
+
 docker__main__sub(){
     docker__get_source_fullpath__sub
 
@@ -2069,7 +2113,11 @@ docker__main__sub(){
 
     docker__overlay__sub
 
-    docker__run_script__sub
+    docker__one_time_exec_update__sub
+
+    docker__fstab_update__sub
+
+    # docker__run_script__sub
 }
 
 
