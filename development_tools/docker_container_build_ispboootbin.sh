@@ -381,6 +381,7 @@ docker__init_variables__sub() {
     docker__overlaymode_set="${DOCKER__OVERLAYMODE_PERSISTENT}"
     docker__overlaysetting_set="${DOCKER__OVERLAYFS_DISABLED}"
     docker__showTable=true
+    docker__swapfilesize=0
 }
 
 docker__checkif_isrunning_in_container__sub() {
@@ -2015,11 +2016,11 @@ docker__one_time_exec_update__sub () {
 
     #Retrieve 'tb_reserve_size'
     local tb_reserve_size=$(grep -F "${DOCKER__DISKPARTNAME_TB_RESERVE}" "${docker__docker_fs_partition_diskpartsize_dat__fpath}" | awk '{print $2}')
-    #Calculate 'swapfilesize'
-    local swapfilesize=$((tb_reserve_size - DOCKER__RESERVED_SIZE_DEFAULT))
+    #Calculate 'docker__swapfilesize'
+    docker__swapfilesize=$((tb_reserve_size - DOCKER__RESERVED_SIZE_DEFAULT))
 
     #Define command
-    local cmd="sed -i \"/${DOCKER__SED_PATTERN_SWAPFILESIZE_IS}/c\\${DOCKER__SED_PATTERN_SWAPFILESIZE_IS}${swapfilesize}\" "
+    local cmd="sed -i \"/${DOCKER__SED_PATTERN_SWAPFILESIZE_IS}/c\\${DOCKER__SED_PATTERN_SWAPFILESIZE_IS}${docker__swapfilesize}\" "
     cmd+="\"${docker__SP7021_linux_rootfs_initramfs_disk_scripts_one_time_exec_fpath}\""
 
     #Check whether INSIDE or OUTSIDE container and set 'containerid'
@@ -2138,33 +2139,36 @@ docker__fstab_remove_tb_reserve_entry__sub() {
 }
 
 docker__fstab_add_tb_reserve_entry__sub() {
-    #Define 'printmsg'
-    local printmsg="${DOCKER__SIXDASHES_COLON}${DOCKER__STATUS}: add entry "
-    printmsg+="${DOCKER__FG_LIGHTGREY}${DOCKER__FSTAB_TB_RESERVE_DIR_ENTRY}${DOCKER__NOCOLOR} "
-    printmsg+="to ${DOCKER__FG_LIGHTGREY}${docker__fstab__filename}${DOCKER__NOCOLOR}: "
+    #Check if 'docker__swapfilesize > 0', which means swapfile is ENABLED
+    if [[ ${docker__swapfilesize} -gt 0 ]]; then
+        #Define 'printmsg'
+        local printmsg="${DOCKER__SIXDASHES_COLON}${DOCKER__STATUS}: add entry "
+        printmsg+="${DOCKER__FG_LIGHTGREY}${DOCKER__FSTAB_TB_RESERVE_DIR_ENTRY}${DOCKER__NOCOLOR} "
+        printmsg+="to ${DOCKER__FG_LIGHTGREY}${docker__fstab__filename}${DOCKER__NOCOLOR}: "
 
-    #Remove entry '/tb_reserve none swap sw 0 0' from 'fstab'
-    local cmd="echo \"${DOCKER__FSTAB_TB_RESERVE_DIR_ENTRY}\" | tee -a \"${docker__SP7021_linux_rootfs_initramfs_disk_etc_fstab__fpath}\""
+        #Remove entry '/tb_reserve none swap sw 0 0' from 'fstab'
+        local cmd="echo \"${DOCKER__FSTAB_TB_RESERVE_DIR_ENTRY}\" | tee -a \"${docker__SP7021_linux_rootfs_initramfs_disk_etc_fstab__fpath}\""
 
-    #Check whether INSIDE or OUTSIDE container and set 'containerid'
-    local containerid="${DOCKER__EMPTYSTRING}"
-    if [[ ${docker__isRunning_inside_container} == false ]]; then   #currently inside container
-        containerid=${docker__containerid}
-    fi
+        #Check whether INSIDE or OUTSIDE container and set 'containerid'
+        local containerid="${DOCKER__EMPTYSTRING}"
+        if [[ ${docker__isRunning_inside_container} == false ]]; then   #currently inside container
+            containerid=${docker__containerid}
+        fi
 
-    #Execute command 'cmd'
-    docker_exec_cmd__func "${containerid}" "${cmd}"
+        #Execute command 'cmd'
+        docker_exec_cmd__func "${containerid}" "${cmd}"
 
-    #Check exit-code
-    docker__exitcode=$?
-    if [[ ${docker__exitcode} -ne 0 ]]; then #error found
-        printmsg+="${DOCKER__STATUS_FAILED}"
-        show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+        #Check exit-code
+        docker__exitcode=$?
+        if [[ ${docker__exitcode} -ne 0 ]]; then #error found
+            printmsg+="${DOCKER__STATUS_FAILED}"
+            show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
 
-        exit 99
-    else    #No error found
-        printmsg+="${DOCKER__STATUS_SUCCESSFUL}"
-        show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+            exit 99
+        else    #No error found
+            printmsg+="${DOCKER__STATUS_SUCCESSFUL}"
+            show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+        fi
     fi
 }
 
@@ -2239,7 +2243,7 @@ docker__main__sub(){
 
     docker__fstab_handler__sub
 
-    docker__run_script__sub
+    # docker__run_script__sub
 }
 
 
