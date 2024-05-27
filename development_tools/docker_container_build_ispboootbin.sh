@@ -367,6 +367,7 @@ docker__load_constants__sub() {
 docker__init_variables__sub() {
     docker__disksize_set=0
     docker__exitcode=0
+    docker__fstab_output="${DOCKER__EMPTYSTRING}"
     docker__isRunning_inside_container=false
     docker__isp_c_overlaybck_isfound=true
     docker__isp_sh_overlaybck_isfound=true
@@ -2007,43 +2008,164 @@ docker__overlay_restore_original_state__sub() {
             "${DOCKER__SIXDASHES_COLON}"
 }
 
-
-
 docker__one_time_exec_update__sub () {
-    echo -e "docker__one_time_exec_update__sub: in progress"
-    echo -e "docker__one_time_exec_update__sub: should be run AFTER 'docker__overlay__sub'"
-    echo -e "once done don't forget to uncomment 'docker__run_script__sub'"
-    # #Initialize variable
-    # local printmsg="${DOCKER__SIXDASHES_COLON}${DOCKER__STATUS}: update ${DOCKER__FG_LIGHTGREY}one-time-exec.sh${DOCKER__NOCOLOR}: "
+    #Initialize variable
+    local printmsg="${DOCKER__SIXDASHES_COLON}${DOCKER__STATUS}: update "
+    printmsg+="${DOCKER__FG_LIGHTGREY}${docker__one_time_exec_sh__filename}${DOCKER__NOCOLOR}: "
 
-    # #Define command
-    # local cmd=""
+    #Retrieve 'tb_reserve_size'
+    local tb_reserve_size=$(grep -F "${DOCKER__DISKPARTNAME_TB_RESERVE}" "${docker__docker_fs_partition_diskpartsize_dat__fpath}" | awk '{print $2}')
+    #Calculate 'swapfilesize'
+    local swapfilesize=$((tb_reserve_size - DOCKER__RESERVED_SIZE_DEFAULT))
 
-    # #Check whether INSIDE or OUTSIDE container and set 'containerid'
-    # local containerid="${DOCKER__EMPTYSTRING}"
-    # if [[ ${docker__isRunning_inside_container} == false ]]; then   #currently inside container
-    #     containerid=${docker__containerid}
-    # fi
+    #Define command
+    local cmd="sed -i \"/${DOCKER__SED_PATTERN_SWAPFILESIZE_IS}/c\\${DOCKER__SED_PATTERN_SWAPFILESIZE_IS}${swapfilesize}\" "
+    cmd+="\"${docker__SP7021_linux_rootfs_initramfs_disk_scripts_one_time_exec_fpath}\""
 
-    # #Execute command 'cmd'
-    # docker_exec_cmd__func "${containerid}" "${cmd}"
+    #Check whether INSIDE or OUTSIDE container and set 'containerid'
+    local containerid="${DOCKER__EMPTYSTRING}"
+    if [[ ${docker__isRunning_inside_container} == false ]]; then   #currently inside container
+        containerid=${docker__containerid}
+    fi
 
-    # #Check exit-code
-    # docker__exitcode=$?
-    # if [[ ${docker__exitcode} -ne 0 ]]; then #error found
-    #     printmsg+="${DOCKER__STATUS_FAILED}"
-    # else
-    #     printmsg+="${DOCKER__STATUS_SUCCESSFUL}"
-    # fi
+    #Execute command 'cmd'
+    docker_exec_cmd__func "${containerid}" "${cmd}"
 
-    # #Print
-    # show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+    #Check exit-code
+    docker__exitcode=$?
+    if [[ ${docker__exitcode} -ne 0 ]]; then #error found
+        printmsg+="${DOCKER__STATUS_FAILED}"
+    else
+        printmsg+="${DOCKER__STATUS_SUCCESSFUL}"
+    fi
+
+    #Print
+    show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
 }
 
-docker__fstab_update__sub() {
-    echo -e "docker__fstab_update__sub: in progress"
-    echo -e "docker__fstab_update__sub: should be run AFTER 'docker__one_time_exec_update__sub'"
-    echo -e "once done don't forget to uncomment 'docker__run_script__sub'"
+
+docker__fstab_handler__sub() {
+    #---------------------------------------------------------------------
+    # PHASE 1: Check if entry '/tb_reserve none swap sw 0 0' is found in 'fstab'
+    #---------------------------------------------------------------------
+    docker__fstab_checkif_tb_reserve_entry_ispresent_sub
+
+    #---------------------------------------------------------------------
+    # PHASE 2: Remove entry '/tb_reserve none swap sw 0 0' from 'fstab'
+    #---------------------------------------------------------------------
+    docker__fstab_remove_tb_reserve_entry__sub
+
+    #---------------------------------------------------------------------
+    # PHASE 3: Add entry '/tb_reserve none swap sw 0 0' to 'fstab'
+    #---------------------------------------------------------------------
+    docker__fstab_add_tb_reserve_entry__sub
+}
+
+docker__fstab_checkif_tb_reserve_entry_ispresent_sub() {
+    #Define printmsg
+    local printmsg="${DOCKER__SIXDASHES_COLON}${DOCKER__STATUS}: check if entry "
+    printmsg+="${DOCKER__FG_LIGHTGREY}${DOCKER__FSTAB_TB_RESERVE_DIR_ENTRY}${DOCKER__NOCOLOR} "
+    printmsg+="is found in ${DOCKER__FG_LIGHTGREY}${docker__fstab__filename}${DOCKER__NOCOLOR}: "
+
+    #Define command to check if entry '/tb_reserve none swap sw 0 0' is found in 'fstab'
+    local cmd="grep -F \"${DOCKER__FSTAB_TB_RESERVE_DIR_ENTRY}\" "
+    cmd+="\"${docker__SP7021_linux_rootfs_initramfs_disk_etc_fstab__fpath}\""
+
+    #Define output-file which will be used to store the output of 'cmd'
+    docker__fstab_output="${docker__tmp__dir}/fstab_output.out"
+
+    #Check whether INSIDE or OUTSIDE container and set 'containerid'
+    local containerid="${DOCKER__EMPTYSTRING}"
+    if [[ ${docker__isRunning_inside_container} == false ]]; then   #currently inside container
+        containerid=${docker__containerid}
+    fi
+
+    #Execute command 'cmd'
+    docker_exec_cmd_and_receive_output__func "${containerid}" "${cmd}" "${docker__fstab_output}"
+    #Check exit-code
+    docker__exitcode=$?
+    if [[ ${docker__exitcode} -ne 0 ]]; then #error found
+        printmsg+="${DOCKER__STATUS_FAILED}"
+        show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+
+        exit 99
+    fi
+
+    #Retrieve the output
+    docker__fstab_output=$(cat "${docker__fstab_output}")
+    if [[ -n "${docker__fstab_output}" ]]; then  #Yes, contains data
+        #Update 'printmsg'
+        printmsg+="${DOCKER__STATUS_PRESENT}"
+    else
+        printmsg+="${DOCKER__STATUS_NOTPRESENT}"
+    fi
+
+    show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+}
+
+docker__fstab_remove_tb_reserve_entry__sub() {
+    #Check if 'docker__fstab_output' contains data
+    if [[ -n "${docker__fstab_output}" ]]; then  #Yes, contains data
+        #Define 'printmsg'
+        local printmsg="${DOCKER__SIXDASHES_COLON}${DOCKER__STATUS}: remove entry "
+        printmsg+="${DOCKER__FG_LIGHTGREY}${DOCKER__FSTAB_TB_RESERVE_DIR_ENTRY}${DOCKER__NOCOLOR} "
+        printmsg+="from ${DOCKER__FG_LIGHTGREY}${docker__fstab__filename}${DOCKER__NOCOLOR}: "
+
+        #Remove entry '/tb_reserve none swap sw 0 0' from 'fstab'
+        local cmd="sed -i \"/${DOCKER__SED_FSTAB_TB_RESERVE_DIR_ENTRY}/d\" \"${docker__SP7021_linux_rootfs_initramfs_disk_etc_fstab__fpath}\""
+
+        #Check whether INSIDE or OUTSIDE container and set 'containerid'
+        local containerid="${DOCKER__EMPTYSTRING}"
+        if [[ ${docker__isRunning_inside_container} == false ]]; then   #currently inside container
+            containerid=${docker__containerid}
+        fi
+
+        #Execute command 'cmd'
+        docker_exec_cmd__func "${containerid}" "${cmd}"
+
+        #Check exit-code
+        docker__exitcode=$?
+        if [[ ${docker__exitcode} -ne 0 ]]; then #error found
+            printmsg+="${DOCKER__STATUS_FAILED}"
+            show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+
+            exit 99
+        else    #No error found
+            printmsg+="${DOCKER__STATUS_SUCCESSFUL}"
+            show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+        fi
+    fi
+}
+
+docker__fstab_add_tb_reserve_entry__sub() {
+    #Define 'printmsg'
+    local printmsg="${DOCKER__SIXDASHES_COLON}${DOCKER__STATUS}: add entry "
+    printmsg+="${DOCKER__FG_LIGHTGREY}${DOCKER__FSTAB_TB_RESERVE_DIR_ENTRY}${DOCKER__NOCOLOR} "
+    printmsg+="to ${DOCKER__FG_LIGHTGREY}${docker__fstab__filename}${DOCKER__NOCOLOR}: "
+
+    #Remove entry '/tb_reserve none swap sw 0 0' from 'fstab'
+    local cmd="echo \"${DOCKER__FSTAB_TB_RESERVE_DIR_ENTRY}\" | tee -a \"${docker__SP7021_linux_rootfs_initramfs_disk_etc_fstab__fpath}\""
+
+    #Check whether INSIDE or OUTSIDE container and set 'containerid'
+    local containerid="${DOCKER__EMPTYSTRING}"
+    if [[ ${docker__isRunning_inside_container} == false ]]; then   #currently inside container
+        containerid=${docker__containerid}
+    fi
+
+    #Execute command 'cmd'
+    docker_exec_cmd__func "${containerid}" "${cmd}"
+
+    #Check exit-code
+    docker__exitcode=$?
+    if [[ ${docker__exitcode} -ne 0 ]]; then #error found
+        printmsg+="${DOCKER__STATUS_FAILED}"
+        show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+
+        exit 99
+    else    #No error found
+        printmsg+="${DOCKER__STATUS_SUCCESSFUL}"
+        show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+    fi
 }
 
 
@@ -2115,9 +2237,9 @@ docker__main__sub(){
 
     docker__one_time_exec_update__sub
 
-    docker__fstab_update__sub
+    docker__fstab_handler__sub
 
-    # docker__run_script__sub
+    docker__run_script__sub
 }
 
 
