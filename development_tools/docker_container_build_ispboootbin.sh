@@ -2146,7 +2146,8 @@ docker__fstab_add_tb_reserve_entry__sub() {
         printmsg+="${DOCKER__FG_LIGHTGREY}${DOCKER__FSTAB_TB_RESERVE_DIR_ENTRY}${DOCKER__NOCOLOR} "
         printmsg+="to ${DOCKER__FG_LIGHTGREY}${docker__fstab__filename}${DOCKER__NOCOLOR}: "
 
-        #Remove entry '/tb_reserve none swap sw 0 0' from 'fstab'
+        #Add entry '/tb_reserve none swap sw 0 0' to 'fstab'
+        #***NOTE: this part MUST happen AFTER adding  '/tb_reseve' mount entry to 'fstab'
         local cmd="echo \"${DOCKER__FSTAB_TB_RESERVE_DIR_ENTRY}\" | tee -a \"${docker__SP7021_linux_rootfs_initramfs_disk_etc_fstab__fpath}\""
 
         #Check whether INSIDE or OUTSIDE container and set 'containerid'
