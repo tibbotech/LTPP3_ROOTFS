@@ -2243,7 +2243,7 @@ docker__main__sub(){
 
     docker__fstab_handler__sub
 
-    # docker__run_script__sub
+    docker__run_script__sub
 }
 
 
