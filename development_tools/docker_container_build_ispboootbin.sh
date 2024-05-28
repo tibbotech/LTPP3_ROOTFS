@@ -2021,7 +2021,7 @@ docker__one_time_exec_update__sub () {
 
     #Define command
     local cmd="sed -i \"/${DOCKER__SED_PATTERN_SWAPFILESIZE_IS}/c\\${DOCKER__SED_PATTERN_SWAPFILESIZE_IS}${docker__swapfilesize}\" "
-    cmd+="\"${docker__SP7021_linux_rootfs_initramfs_disk_scripts_one_time_exec_fpath}\""
+    cmd+="\"${docker__SP7021_linux_rootfs_initramfs_disk_scripts_one_time_exec__fpath}\""
 
     #Check whether INSIDE or OUTSIDE container and set 'containerid'
     local containerid="${DOCKER__EMPTYSTRING}"

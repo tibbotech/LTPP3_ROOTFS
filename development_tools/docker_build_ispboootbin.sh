@@ -295,11 +295,34 @@ docker__execute_scripts__sub() {
 }
 
 
+docker__ispboootbin_version__sub() {
+    #Retrieve CONTAINER_ENV4 value
+    echo "${CONTAINER_ENV4}" > "${docker__SP7021_linux_rootfs_initramfs_disk_etc_tibbo_version_ispboootbin_version__fpath}"
+    echo "---:TIBBO:-:UPDATE: wrote ISPBOOOT.BIN version ${CONTAINER_ENV4} to file ${docker__SP7021_linux_rootfs_initramfs_disk_etc_tibbo_version_ispboootbin_version__fpath}"
+
+    chown root:root ${docker__SP7021_linux_rootfs_initramfs_disk_etc_tibbo_version_ispboootbin_version__fpath}
+    echo "---:TIBBO:-:UPDATE: chown root:root ${docker__SP7021_linux_rootfs_initramfs_disk_etc_tibbo_version_ispboootbin_version__fpath}"
+
+    chmod 644 ${docker__SP7021_linux_rootfs_initramfs_disk_etc_tibbo_version_ispboootbin_version__fpath}
+    echo "---:TIBBO:-:UPDATE: chmod 644 ${docker__SP7021_linux_rootfs_initramfs_disk_etc_tibbo_version_ispboootbin_version__fpath}"
+}
+
+docker__swapfile__sub() {
+	sed -i "/${DOCKER__SED_PATTERN_SWAPFILESIZE_IS}/c\\${DOCKER__SED_PATTERN_SWAPFILESIZE_IS}${CONTAINER_ENV5}" "${docker__SP7021_linux_rootfs_initramfs_disk_scripts_one_time_exec__fpath}"
+    echo "---:TIBBO:-:UPDATE: updated 'swapfilesize' in file ${docker__SP7021_linux_rootfs_initramfs_disk_scripts_one_time_exec__fpath}"
+
+	echo "${DOCKER__FSTAB_TB_RESERVE_DIR_ENTRY} none swap sw 0 0" | tee -a "${docker__SP7021_linux_rootfs_initramfs_disk_etc_fstab__fpath}"
+    echo "---:TIBBO:-:UPDATE: added entry '${DOCKER__FSTAB_TB_RESERVE_DIR_ENTRY} none swap sw 0 0' to ${docker__SP7021_linux_rootfs_initramfs_disk_etc_fstab__fpath}"
+}
+
 
 #---MAIN SUBROUTINE
 docker__main__sub() {
     docker__get_source_fullpath__sub
     docker__load_global_fpath_paths__sub
+
+    docker__ispboootbin_version__sub
+    docker__swapfile__sub
 
     docker__build_ispboootbin__sub
     docker__execute_scripts__sub

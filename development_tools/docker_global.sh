@@ -6776,8 +6776,8 @@ docker__get_source_fullpath__sub() {
     docker__SP7021_linux_rootfs_initramfs_disk_etc_update_motd_d_98_normalboot_notice__fpath="${docker__SP7021_linux_rootfs_initramfs_disk_etc_update_motd_d__dir}/${docker__98_normalboot_notice__filename}"
     docker__SP7021_linux_rootfs_initramfs_disk_etc_update_motd_d_99_wlan_notice__fpath="${docker__SP7021_linux_rootfs_initramfs_disk_etc_update_motd_d__dir}/${docker__99_wlan_notice__filename}"
 
-    docker__SP7021_linux_rootfs_initramfs_disk_scripts_one_time_exec_fpath="${docker__SP7021_linux_rootfs_initramfs_disk_scripts__dir}/${docker__one_time_exec_sh__filename}"
-
+    docker__SP7021_linux_rootfs_initramfs_disk_scripts_one_time_exec__fpath="${docker__SP7021_linux_rootfs_initramfs_disk_scripts__dir}/${docker__one_time_exec_sh__filename}"
+    docker__SP7021_linux_rootfs_initramfs_disk_etc_tibbo_version_ispboootbin_version__fpath="${docker__SP7021_linux_rootfs_initramfs_disk_etc_tibbo_version__dir}/${docker__ispboootbin_version_txt__filename}"
 
 #---docker__tmp__dir - contents
     compgen__query_w_autocomplete_out__filename="compgen_query_w_autocomplete.out"
