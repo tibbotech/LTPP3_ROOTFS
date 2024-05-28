@@ -311,8 +311,13 @@ docker__swapfile__sub() {
 	sed -i "/${DOCKER__SED_PATTERN_SWAPFILESIZE_IS}/c\\${DOCKER__SED_PATTERN_SWAPFILESIZE_IS}${CONTAINER_ENV5}" "${docker__SP7021_linux_rootfs_initramfs_disk_scripts_one_time_exec__fpath}"
     echo "---:TIBBO:-:UPDATE: updated 'swapfilesize' in file ${docker__SP7021_linux_rootfs_initramfs_disk_scripts_one_time_exec__fpath}"
 
-	echo "${DOCKER__FSTAB_TB_RESERVE_DIR_ENTRY} none swap sw 0 0" | tee -a "${docker__SP7021_linux_rootfs_initramfs_disk_etc_fstab__fpath}"
-    echo "---:TIBBO:-:UPDATE: added entry '${DOCKER__FSTAB_TB_RESERVE_DIR_ENTRY} none swap sw 0 0' to ${docker__SP7021_linux_rootfs_initramfs_disk_etc_fstab__fpath}"
+    if [[ ${CONTAINER_ENV5} -gt 0 ]]; then
+        echo "${DOCKER__FSTAB_TB_RESERVE_DIR_ENTRY} none swap sw 0 0" | tee -a "${docker__SP7021_linux_rootfs_initramfs_disk_etc_fstab__fpath}"
+        echo "---:TIBBO:-:UPDATE: added entry '${DOCKER__FSTAB_TB_RESERVE_DIR_ENTRY} none swap sw 0 0' to ${docker__SP7021_linux_rootfs_initramfs_disk_etc_fstab__fpath}"
+    else
+        sed -i "/${DOCKER__SED_FSTAB_TB_RESERVE_DIR_ENTRY}/d" "${docker__SP7021_linux_rootfs_initramfs_disk_etc_fstab__fpath}"
+        echo "---:TIBBO:-:UPDATE: removed entry '${DOCKER__FSTAB_TB_RESERVE_DIR_ENTRY} none swap sw 0 0' from ${docker__SP7021_linux_rootfs_initramfs_disk_etc_fstab__fpath}"
+    fi
 }
 
 
