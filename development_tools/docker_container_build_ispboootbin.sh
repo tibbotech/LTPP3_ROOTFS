@@ -2113,7 +2113,7 @@ docker__fstab_remove_tb_reserve_entry__sub() {
         printmsg+="from ${DOCKER__FG_LIGHTGREY}${docker__fstab__filename}${DOCKER__NOCOLOR}: "
 
         #Remove entry '/tb_reserve none swap sw 0 0' from 'fstab'
-        local cmd="sed -i \"/${DOCKER__SED_FSTAB_TB_RESERVE_DIR_ENTRY}/d\" \"${docker__SP7021_linux_rootfs_initramfs_disk_etc_fstab__fpath}\""
+        local cmd="sed -i \"/${DOCKER__SED_FSTAB_TB_RESERVE_WO_LEADING_SLASH_ENTRY}/d\" \"${docker__SP7021_linux_rootfs_initramfs_disk_etc_fstab__fpath}\""
 
         #Check whether INSIDE or OUTSIDE container and set 'containerid'
         local containerid="${DOCKER__EMPTYSTRING}"
@@ -2148,6 +2148,39 @@ docker__fstab_add_tb_reserve_entry__sub() {
 
         #Remove entry '/tb_reserve none swap sw 0 0' from 'fstab'
         local cmd="echo \"${DOCKER__FSTAB_TB_RESERVE_DIR_ENTRY}\" | tee -a \"${docker__SP7021_linux_rootfs_initramfs_disk_etc_fstab__fpath}\""
+
+        #Check whether INSIDE or OUTSIDE container and set 'containerid'
+        local containerid="${DOCKER__EMPTYSTRING}"
+        if [[ ${docker__isRunning_inside_container} == false ]]; then   #currently inside container
+            containerid=${docker__containerid}
+        fi
+
+        #Execute command 'cmd'
+        docker_exec_cmd__func "${containerid}" "${cmd}"
+
+        #Check exit-code
+        docker__exitcode=$?
+        if [[ ${docker__exitcode} -ne 0 ]]; then #error found
+            printmsg+="${DOCKER__STATUS_FAILED}"
+            show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+
+            exit 99
+        else    #No error found
+            printmsg+="${DOCKER__STATUS_SUCCESSFUL}"
+            show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+        fi
+    fi
+}
+
+docker__fstab_remove_empty_lines__sub() {
+    #Check if 'docker__swapfilesize > 0', which means swapfile is ENABLED
+    if [[ ${docker__swapfilesize} -gt 0 ]]; then
+        #Define 'printmsg'
+        local printmsg="${DOCKER__SIXDASHES_COLON}${DOCKER__STATUS}: remove empty lines"
+        printmsg+="from ${DOCKER__FG_LIGHTGREY}${docker__fstab__filename}${DOCKER__NOCOLOR}: "
+
+        #Remove entry '/tb_reserve none swap sw 0 0' from 'fstab'
+        local cmd="sed -i '/^$/d' \"${docker__SP7021_linux_rootfs_initramfs_disk_etc_fstab__fpath}\""
 
         #Check whether INSIDE or OUTSIDE container and set 'containerid'
         local containerid="${DOCKER__EMPTYSTRING}"
@@ -2242,6 +2275,8 @@ docker__main__sub(){
     docker__one_time_exec_update__sub
 
     docker__fstab_handler__sub
+
+    docker__fstab_remove_empty_lines__sub
 
     docker__run_script__sub
 }

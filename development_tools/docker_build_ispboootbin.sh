@@ -296,6 +296,7 @@ docker__execute_scripts__sub() {
 
 
 docker__ispboootbin_version__sub() {
+    CONTAINER_ENV4=0.6.1.55
     #Retrieve CONTAINER_ENV4 value
     echo "${CONTAINER_ENV4}" > "${docker__SP7021_linux_rootfs_initramfs_disk_etc_tibbo_version_ispboootbin_version__fpath}"
     echo "---:TIBBO:-:UPDATE: wrote ISPBOOOT.BIN version ${CONTAINER_ENV4} to file ${docker__SP7021_linux_rootfs_initramfs_disk_etc_tibbo_version_ispboootbin_version__fpath}"
@@ -308,15 +309,19 @@ docker__ispboootbin_version__sub() {
 }
 
 docker__swapfile__sub() {
+    CONTAINER_ENV5=500
 	sed -i "/${DOCKER__SED_PATTERN_SWAPFILESIZE_IS}/c\\${DOCKER__SED_PATTERN_SWAPFILESIZE_IS}${CONTAINER_ENV5}" "${docker__SP7021_linux_rootfs_initramfs_disk_scripts_one_time_exec__fpath}"
     echo "---:TIBBO:-:UPDATE: updated 'swapfilesize' in file ${docker__SP7021_linux_rootfs_initramfs_disk_scripts_one_time_exec__fpath}"
 
     if [[ ${CONTAINER_ENV5} -gt 0 ]]; then
-        echo "${DOCKER__FSTAB_TB_RESERVE_DIR_ENTRY} none swap sw 0 0" | tee -a "${docker__SP7021_linux_rootfs_initramfs_disk_etc_fstab__fpath}"
-        echo "---:TIBBO:-:UPDATE: added entry '${DOCKER__FSTAB_TB_RESERVE_DIR_ENTRY} none swap sw 0 0' to ${docker__SP7021_linux_rootfs_initramfs_disk_etc_fstab__fpath}"
+        local entry_isfound=$(grep -F "${DOCKER__FSTAB_TB_RESERVE_DIR_ENTRY}" "${docker__SP7021_linux_rootfs_initramfs_disk_etc_fstab__fpath}")
+        if [[ -z "${entry_isfound}" ]]; then
+            echo "${DOCKER__FSTAB_TB_RESERVE_DIR_ENTRY}" | tee -a "${docker__SP7021_linux_rootfs_initramfs_disk_etc_fstab__fpath}"
+            echo "---:TIBBO:-:UPDATE: added entry '${DOCKER__FSTAB_TB_RESERVE_DIR_ENTRY}' to ${docker__SP7021_linux_rootfs_initramfs_disk_etc_fstab__fpath}"
+        fi
     else
-        sed -i "/${DOCKER__SED_FSTAB_TB_RESERVE_DIR_ENTRY}/d" "${docker__SP7021_linux_rootfs_initramfs_disk_etc_fstab__fpath}"
-        echo "---:TIBBO:-:UPDATE: removed entry '${DOCKER__FSTAB_TB_RESERVE_DIR_ENTRY} none swap sw 0 0' from ${docker__SP7021_linux_rootfs_initramfs_disk_etc_fstab__fpath}"
+        sed -i "/${DOCKER__SED_FSTAB_TB_RESERVE_WO_LEADING_SLASH_ENTRY}/d" "${docker__SP7021_linux_rootfs_initramfs_disk_etc_fstab__fpath}"
+        echo "---:TIBBO:-:UPDATE: removed entry '${DOCKER__FSTAB_TB_RESERVE_DIR_ENTRY}' from ${docker__SP7021_linux_rootfs_initramfs_disk_etc_fstab__fpath}"
     fi
 }
 
