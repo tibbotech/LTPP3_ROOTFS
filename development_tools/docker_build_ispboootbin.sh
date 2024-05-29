@@ -313,8 +313,8 @@ docker__ispboootbin_version__sub() {
 }
 
 docker__swapfile__sub() {
-    #Check if 'CONTAINER_ENV4' contains data
-    #***NOTE 1: CONTAINER_ENV4 would ONLY contain data IF it was INITIATED from a DOCKERFILE.
+    #Check if 'CONTAINER_ENV5' contains data
+    #***NOTE 1: CONTAINER_ENV5 would ONLY contain data IF it was INITIATED from a DOCKERFILE.
     #***NOTE 2: This part should NEVER be executed if NOT INITIATED from a DOCKERFILE.
     if [[ -n "${CONTAINER_ENV5}" ]]; then
         sed -i "/${DOCKER__SED_PATTERN_SWAPFILESIZE_IS}/c\\${DOCKER__SED_PATTERN_SWAPFILESIZE_IS}${CONTAINER_ENV5}" "${docker__SP7021_linux_rootfs_initramfs_disk_scripts_one_time_exec__fpath}"
