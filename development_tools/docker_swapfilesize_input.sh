@@ -1,34 +1,7 @@
-#!/bin/bash
+#!/bin/bash -m
+#Remark: by using '-m' the INTERRUPT executed here will NOT propagate to the UPPERLAYER scripts
+
 #---FUNCTIONS
-function containerIsActive__func() {
-	#Input args
-	local repoName__input=${1}
-	local tag__input=${2}
-
-	#Define variables
-	local repo_tag="${repoName__input}:${tag__input}"
-
-	#Check if imageID is found in container's list
-	#Remarks:
-	#	{{.Image}}: get the 'repository:tag'
-	#	{{.Status}}: get the 'status'
-	local matched_string=$(docker ps -a --format "table {{.Image}} {{.Status}}" | grep -o "${repo_tag}.*" | cut -d' ' -f1)
-	if [[ "${repo_tag}" == "${matched_string}" ]]; then
-		#Remarks:
-		#	sed 's/ /_/g': replace SPACE with UNDERSCORE
-		#	sed 's/(.*.)//g': replace ANYTHING that is BETWEEN BRACKETS (including the brackets) with EMPTY STRING
-		#	sed 's/__/_/g'): replace DOUBLE UNDERSCORE with UNDERSCORE
-        local complete_line=$(docker ps -a --format "table {{.Image}} {{.Status}}" | grep "${repo_tag}")
-		local isExited=$(grep -o "${PATTERN_EXITED}.*" <<< "${complete_line}" | sed 's/ /_/g' | sed 's/(.*.)//g' | sed 's/__/_/g')
-		if [[ -n "${isExited}" ]]; then
-			echo "${isExited}"
-		else
-			echo "true"
-		fi
-	else
-		echo "false"
-	fi
-}
 
 
 
@@ -290,179 +263,99 @@ docker__load_global_fpath_paths__sub() {
     source ${docker__global__fpath}
 }
 
-docker__environmental_variables__sub() {
-	docker__tmp__dir="/tmp"
-	docker__docker_repoList_tmp__filename="docker__docker_repoList.tmp"
-	docker__docker_repoList_tmp__fpath=${docker__tmp__dir}/${docker__docker_repoList_tmp__filename}
-	docker__docker_repoList_print__filename="docker__docker_repoList.prn"
-	docker__docker_repoList_print__fpath=${docker__tmp__dir}/${docker__docker_repoList_print__filename}
-}
-
 docker__load_constants__sub() {
-	PATTERN_EXITED="Exited"
+    # DOCKER__SWAPFILESIZE_MB_LOWERBOUND=0
+    # DOCKER__SWAPFILESIZE_MB_UPPERBOUND=1024
+
+    DOCKER__SWAPFILESIZE_MB_IS_PATTERN="swapfilesize_mb="
+
+    DOCKER__REMARK_PRINT="(${DOCKER__FG_LIGHTBLUE}REMARK${DOCKER__NOCOLOR}) Input range ${DOCKER__FG_LIGHTGREY}(MB)${DOCKER__NOCOLOR}: "
+    DOCKER__REMARK_PRINT+="${DOCKER__FG_LIGHTGREY}${DOCKER__SWAPFILESIZE_MB_LOWERBOUND}${DOCKER__NOCOLOR} - ${DOCKER__FG_LIGHTGREY}${DOCKER__SWAPFILESIZE_MB_UPPERBOUND}${DOCKER__NOCOLOR}"
+
+    DOCKER__READ_DIALOG="(${DOCKER__FG_BORDEAUX}MANDATORY${DOCKER__NOCOLOR}) Input Swapfile-Size "
+    DOCKER__READ_DIALOG+="${DOCKER__FG_LIGHTGREY}(0: Disable${DOCKER__NOCOLOR}, ${DOCKER__FG_LIGHTGREY}Ctrl+C: Cancel)${DOCKER__NOCOLOR}: "
 }
 
-get_docker_repoList__sub() {
-    #Define constants
-    local IMAGE_ID="IMAGE-ID"
-    local REPO_NAME="REPOSITORY"
-    local TAG="TAG"
-    local CREATED="CREATED"
-    local SIZE="SIZE"
-	local CONTAINER_ACTIVE="CONTAINER-ACTIVE"
-    local GAPS_BETWEEN_COL=2
+docker__init_variables__sub() {
+    docker__tibboHeader_prepend_numOfLines=${DOCKER__NUMOFLINES_2}
+}
 
-	#Define variables
-	local containerIsActive=false
-	local createdFor=${DOCKER__EMPTYSTRING}
-	local imageID=${DOCKER__EMPTYSTRING}
-	local imageSize=${DOCKER__EMPTYSTRING}
-	local line_tmp=${DOCKER__EMPTYSTRING}
-	local line_final=${DOCKER__EMPTYSTRING}
-	local repoName=${DOCKER__EMPTYSTRING}
-	local tag=${DOCKER__EMPTYSTRING}
+docker__swapfilesize_input__sub() {
+    #Load header
+    load_tibbo_title__func "${docker__tibboHeader_prepend_numOfLines}"
 
-	local containerIsActive_width=0
-	local containerIsActive_width_tmp=0
-	local createdFor_width=0
-	local createdFor_width_tmp=0
-	local imageID_width=0
-	local imageID_width_tmp=0
-	local imageSize_width=0
-	local imageSize_width_tmp=0
-    local lineNum=0
-	local numOf_images=0
-	local repoName_width=0
-	local repoName_width_tmp=0
-	local tag_width=0
-	local tag_width_tmp=0
 
-	local printf_format=${DOCKER__EMPTYSTRING}
-
-    #Remove existing files
-    if [[ -f ${docker__docker_repoList_tmp__fpath} ]]; then
-        rm ${docker__docker_repoList_tmp__fpath}
-    fi
-    if [[ -f ${docker__docker_repoList_print__fpath} ]]; then
-        rm ${docker__docker_repoList_print__fpath}
-    fi
-
-	#Get current Repository's List.
-	#Remark:
-	#	Also replace ONLY multiple-spaces to pipe.
-	#	It is important to do it here.
-	docker image ls | sed 's/   */|/g' > ${docker__docker_repoList_tmp__fpath}
-
-    #Get number of containers
-	numOf_images=`docker images | head -n -1 | wc -l`
-
-	#Go thru file content
-	while read line
-	do
-        #Increment LineNum
-        lineNum=$((lineNum+1))
-
-        if [[ ${lineNum} -eq 1 ]]; then
-			#Write header to file
-			echo -e "${IMAGE_ID} ${REPO_NAME} ${TAG} ${CREATED} ${SIZE} ${CONTAINER_ACTIVE}" > ${docker__docker_repoList_print__fpath}
-        else
-			#Replace exactly one-space only.
-			line_tmp=`echo ${line} | sed 's/  */_/g'`
-			#Replace pipe with one-space.
-			line_final=`echo ${line_tmp} | sed 's/|/ /g'`
-
-			#Get data
-			imageID=`echo ${line_final} | awk '{print $3}'`
-			repoName=`echo ${line_final} | awk '{print $1}'`
-			tag=`echo ${line_final} | awk '{print $2}'`
-			createdFor=`echo ${line_final} | awk '{print $4}'`
-			imageSize=`echo ${line_final} | awk '{print $5}'`
-
-			#Check if a container is active for given 'imageID'
-			containerIsActive=$(containerIsActive__func "${repoName}" "${tag}")
-			if [[ -n $(grep -o "${PATTERN_EXITED}.*" <<< "${containerIsActive}") ]]; then
-				containerIsActive="${DOCKER__FG_YELLOW}${containerIsActive}${DOCKER__NOCOLOR}"
-			fi
-
-			#For each object value (e.g., imageID, repoName, tag, createdFor, imageSize, containerIsActive) calculate the longest length
-			#Remark:
-			#   This longest length will be used as reference for the column-widths
-			imageID_width_tmp=${#imageID}
-			if [[ ${imageID_width_tmp} -gt ${imageID_width} ]]; then
-				imageID_width=${imageID_width_tmp}
-			fi
-
-			repoName_width_tmp=${#repoName}
-			if [[ ${repoName_width_tmp} -gt ${repoName_width} ]]; then
-				repoName_width=${repoName_width_tmp}
-			fi
-
-			tag_width_tmp=${#tag}
-			if [[ ${tag_width_tmp} -gt ${tag_width} ]]; then
-				tag_width=${tag_width_tmp}
-			fi
-
-			createdFor_width_tmp=${#createdFor}
-			if [[ ${createdFor_width_tmp} -gt ${createdFor_width} ]]; then
-				createdFor_width=${createdFor_width_tmp}
-			fi
-
-			imageSize_width_tmp=${#imageSize}
-			if [[ ${imageSize_width_tmp} -gt ${imageSize_width} ]]; then
-				imageSize_width=${imageSize_width_tmp}
-			fi
-
-			containerIsActive_width_tmp=${#containerIsActive}
-			if [[ ${containerIsActive_width_tmp} -gt ${containerIsActive_width} ]]; then
-				containerIsActive_width=${containerIsActive_width_tmp}
-			fi
-
-			#Write data to file
-			echo -e "${imageID} ${repoName} ${tag} ${createdFor} ${imageSize} ${containerIsActive}" >> ${docker__docker_repoList_print__fpath}
-		fi
-
-        if [[ ${lineNum} -gt ${numOf_images} ]]; then
-            break
+    #Create directory (if not present)
+    if [[ ! -d "${docker__docker_swap__dir}" ]]; then
+        mkdir -p "${docker__docker_swap__dir}"
+    else
+        if [[ -f "${docker__docker_swap_swapfilesize_mb_txt__fpath}" ]]; then
+            rm "${docker__docker_swap_swapfilesize_mb_txt__fpath}"
         fi
-	done < ${docker__docker_repoList_tmp__fpath}
+    fi
 
-    #Add additional spaces
-    #Remark:
-    #   This would ensure that there are gaps between the columns
-    imageID_width=$((imageID_width+GAPS_BETWEEN_COL))
-    repoName_width=$((repoName_width+GAPS_BETWEEN_COL))
-    tag_width=$((tag_width+GAPS_BETWEEN_COL))
-    createdFor_width=$((createdFor_width+GAPS_BETWEEN_COL))
-	imageSize_width=$((imageSize_width+GAPS_BETWEEN_COL))
-	containerIsActive_width=$((containerIsActive_width+GAPS_BETWEEN_COL))
 
-	local printf_format="%-${imageID_width}s%-${repoName_width}s%-${tag_width}s%-${createdFor_width}s%-${imageSize_width}s%-${containerIsActive_width}s\n"
+    #Print REMARK
+    echo -e "${DOCKER__REMARK_PRINT}"
 
-    # #Get header
-    local printf_header=`printf "${printf_format}" $(<${docker__docker_repoList_print__fpath}) | head -n1`
-    #Print header
-    echo -e "${DOCKER__FG_LIGHTGREY}${printf_header}${DOCKER__NOCOLOR}"
+    #Start loop
+    while true
+    do
+        #Show read-dialog
+        read -e -p "${DOCKER__READ_DIALOG}" swapfilesize_mb_input
 
-    #Print body
-    printf "${printf_format}" $(<${docker__docker_repoList_print__fpath}) | tail -n+2
+        #Remove all PREPENDED zeros
+        swapfilesize_mb_input_len=${#swapfilesize_mb_input}
+        if [[ ${swapfilesize_mb_input_len} -gt ${DOCKER__NUMOFCHARS_1} ]]; then
+            swapfilesize_mb_input=$(echo "${swapfilesize_mb_input}" | sed 's/^0*//')
+        fi
+
+        #Check if is-numeric
+        isnumeric=$(isNumeric__func "${swapfilesize_mb_input}")
+        if [[ ${isnumeric} == true ]]; then   #is a valid string
+            if [[ ${swapfilesize_mb_input} -ge ${DOCKER__SWAPFILESIZE_MB_LOWERBOUND} ]] && \
+                    [[ ${swapfilesize_mb_input} -le ${DOCKER__SWAPFILESIZE_MB_UPPERBOUND} ]]; then
+                #Break loop
+                break
+            else
+                #Move-up one line and clean this line
+                moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+                #Show 'invalid' behind the input string
+                echo "${DOCKER__READ_DIALOG}${swapfilesize_mb_input} (${DOCKER__STATUS_LINVALID})"
+            fi
+        else    #is NOT a valid string
+            #Move-up one line and clean this line
+            moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+            #Show 'invalid' behind the input string
+            if [[ -n "${swapfilesize_mb_input}" ]]; then
+                echo "${DOCKER__READ_DIALOG}${swapfilesize_mb_input} (${DOCKER__STATUS_LINVALID})"
+            fi
+        fi
+    done
+
+
+    #Write to file
+    #***NOTE: this will replace the current value in this file.
+    echo "${swapfilesize_mb_input}" > "${docker__docker_swap_swapfilesize_mb_txt__fpath}"
 }
 
 
-
-#---MAIN SUBROUTINES
+#---MAIN SUBROUTINE
 main__sub() {
-	docker__get_source_fullpath__sub
+    docker__get_source_fullpath__sub
 
-	docker__load_global_fpath_paths__sub
+    docker__load_global_fpath_paths__sub
 
-	docker__environmental_variables__sub
+    docker__load_constants__sub
 
-	docker__load_constants__sub
-	
-    get_docker_repoList__sub
+    docker__init_variables__sub
+
+    docker__swapfilesize_input__sub
 }
 
 
 
-#---EXECUTE MAIN
+#---EXECUTE
 main__sub

@@ -1,0 +1,61 @@
+#!/bin/bash
+#---CONSTANTS
+FG_RESET="\e[0;0m"
+FG_DARKBLUE="\e[30;38;5;33m"
+FG_GREEN41=$'\e[30;38;5;41m'
+FG_GREY="\e[30;38;5;246m"
+FG_LIGHTBLUE="\e[30;38;5;45m"
+FG_RED9="\e[30;38;5;9m"
+BLINK="\e[5m"
+
+
+
+#---START HORIZONTAL LINE
+echo -e "\r"
+echo "*********************************************************************"
+
+
+
+#---ISPBOOOT.BIN VERSION
+ispboootbin_version_txt_fpath="/etc/tibbo/version/ispboootbin_version.txt"
+ispboootbin_version_retrieved=""
+if [[ -f "${ispboootbin_version_txt_fpath}" ]]; then
+    ispboootbin_version_retrieved=$(cat "${ispboootbin_version_txt_fpath}")
+    ispboootbin_version_retrieved_print="${FG_LIGHTBLUE}${ispboootbin_version_retrieved}${FG_RESET}"
+
+    if [[ -z "${ispboootbin_version_retrieved}" ]]; then
+        ispboootbin_version_retrieved_print="file ${FG_GREY}${ispboootbin_version_txt_fpath}${FG_RESET} contains ${FG_RED9}NO${FG_RESET} version"
+    fi
+else
+    ispboootbin_version_retrieved_print="file ${FG_GREY}${ispboootbin_version_txt_fpath} ${FG_RED9}NOT${FG_RESET} found"
+fi
+
+echo -e "% ISPBOOOT.BIN ${FG_GREY}version${FG_RESET}: ${ispboootbin_version_retrieved_print}"
+
+
+
+#---SWAP
+swapfile_fpath="/tb_reserve/swapfile"
+if [[ -f "${swapfile_fpath}" ]]; then
+    swapfile_size_B=$(stat -c%s "${swapfile_fpath}")
+    swapfile_size_MB=$(( swapfile_size_B/(1024*1024) ))
+    echo "*********************************************************************"
+    echo -e "% Swapfile ${FG_GREY}size${FG_RESET} (${FG_GREY}MB${FG_RESET}): ${FG_LIGHTBLUE}${swapfile_size_MB}${FG_RESET}"
+fi
+
+
+
+#---WLAN
+wlan_interfacename=$(ip a | grep -o "wlan.*" | head -n1 | awk '{print $1}' | cut -d":" -f1)
+if [[ -n "${wlan_interfacename}" ]]; then
+    echo "*********************************************************************"
+    echo -e "% ${wlan_interfacename} is ${BLINK}${FG_GREEN41}present${FG_RESET}"
+    echo "*********************************************************************"
+    echo -e "% ${FG_GREY}Execute ${FG_LIGHTBLUE}sudo tb_wlan_mainmenu${FG_GREY} to configure ${FG_DARKBLUE}WLAN${FG_RESET}"
+fi
+
+
+
+#---CLOSING HORIZONTAL LINE
+echo "*********************************************************************"
+echo -e "\r"

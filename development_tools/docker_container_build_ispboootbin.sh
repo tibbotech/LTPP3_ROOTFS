@@ -334,6 +334,12 @@ docker__load_constants__sub() {
     DOCKER__SUBJECT_START_TB_INIT_SH_CREATE_SOFTLINK="---:${DOCKER__START}: TB_INIT.SH > CREATE SOFT-LINK"
     DOCKER__SUBJECT_COMPLETED_TB_INIT_SH_CREATE_SOFTLINK="---:${DOCKER__COMPLETED}: TB_INIT.SH > CREATE SOFT-LINK"
 
+    DOCKER__SUBJECT_START_ONE_TIME_EXEC="---:${DOCKER__START}: ONE-TIME-EXEC.SH > UPDATE SWAPFILESIZE"
+    DOCKER__SUBJECT_COMPLETED_ONE_TIME_EXEC="---:${DOCKER__COMPLETED}: ONE-TIME-EXEC.SH > UPDATE SWAPFILESIZE"
+
+    DOCKER__SUBJECT_START_FSTAB="---:${DOCKER__START}: FSTAB > UPDATE ENTRIES"
+    DOCKER__SUBJECT_COMPLETED_FSTAB="---:${DOCKER__COMPLETED}: FSTAB > UPDATE ENTRIES"
+
     DOCKER__INFOMSG_OVERLAYFS_SETTING_IS_DISABLED="${DOCKER__NINEDASHES_COLON}${DOCKER__INFO}: ${DOCKER__FG_LIGHTGREY}overlay${DOCKER__NOCOLOR} setting is disabled...\n"
     DOCKER__INFOMSG_OVERLAYFS_SETTING_IS_DISABLED+="${DOCKER__NINEDASHES_COLON}${DOCKER__INFO}: ignoring overlay..."
     DOCKER__INFOMSG_OVERLAYFS_PARTITION_IS_NOT_PRESENT="${DOCKER__NINEDASHES_COLON}${DOCKER__INFO}: partition ${DOCKER__FG_LIGHTGREY}overlay${DOCKER__NOCOLOR} is not present...\n"
@@ -367,6 +373,7 @@ docker__load_constants__sub() {
 docker__init_variables__sub() {
     docker__disksize_set=0
     docker__exitcode=0
+    docker__fstab_output="${DOCKER__EMPTYSTRING}"
     docker__isRunning_inside_container=false
     docker__isp_c_overlaybck_isfound=true
     docker__isp_sh_overlaybck_isfound=true
@@ -380,6 +387,7 @@ docker__init_variables__sub() {
     docker__overlaymode_set="${DOCKER__OVERLAYMODE_PERSISTENT}"
     docker__overlaysetting_set="${DOCKER__OVERLAYFS_DISABLED}"
     docker__showTable=true
+    docker__swapfilesize=0
 }
 
 docker__checkif_isrunning_in_container__sub() {
@@ -889,6 +897,7 @@ docker__overlay_overlaysetting_check__sub() {
     #Remark:
     # This subroutine passes the result(s) to the following global variable(s):
     #       docker__numof_errors_found_ctr (integer)
+
     #Define variables
     local printmsg="${DOCKER__EMPTYSTRING}"
 
@@ -1877,24 +1886,20 @@ docker__overlay_dst_exec_file_change_permission__sub() {
     #Input args
     local targetfpath__input=${1}
 
-    #Define variables
-    local docker_exec_cmd="${DOCKER__EMPTYSTRING}"
-    local cmd_to_change_permission="${DOCKER__EMPTYSTRING}"
-    local printmsg="${DOCKER__EMPTYSTRING}"
-
-    #Start generating 'printmsg'
-    printmsg="${DOCKER__SIXDASHES_COLON}${DOCKER__STATUS}: chmod ${DOCKER__CHMOD_755}${DOCKER__FG_LIGHTGREY}${targetfpath__input}: " 
+    #Set 'printmsg'
+    local printmsg="${DOCKER__SIXDASHES_COLON}${DOCKER__STATUS}: chmod ${DOCKER__CHMOD_755}${DOCKER__FG_LIGHTGREY}${targetfpath__input}: " 
 
     #Update variables
-    docker_exec_cmd="${DOCKER__EXEC_IT} ${docker__containerid} ${docker__bash_fpath} -c"
-    cmd_to_change_permission="chmod 755 ${targetfpath__input}"
+    local cmd="chmod 755 ${targetfpath__input}"
 
-    #Execute command
-    if [[ ${docker__isRunning_inside_container} == true ]]; then   #currently inside container
-        ${cmd_to_change_permission}
-    else    #currently outside container
-        ${docker_exec_cmd} "${cmd_to_change_permission}"
+    #Check whether INSIDE or OUTSIDE container and set 'containerid'
+    local containerid="${DOCKER__EMPTYSTRING}"
+    if [[ ${docker__isRunning_inside_container} == false ]]; then   #currently inside container
+        containerid=${docker__containerid}
     fi
+
+    #Execute command 'cmd'
+    docker_exec_cmd__func "${containerid}" "${cmd}"
 
     #Check exit-code
     docker__exitcode=$?
@@ -1933,35 +1938,28 @@ docker__overlay_tb_init_softlink_handler__sub() {
     show_msg_only__func "${DOCKER__SUBJECT_COMPLETED_TB_INIT_SH_CREATE_SOFTLINK}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
 }
 docker__overlay_tb_init_softlink_create__sub() {
-    #Define variables
-    local current_dir="${DOCKER__EMPTYSTRING}"
-    local docker_exec_cmd="${DOCKER__EMPTYSTRING}"
-    local cmd_tocreate_softlink="${DOCKER__EMPTYSTRING}"
-    local printmsg="${DOCKER__EMPTYSTRING}"
-
-    #Start generating 'printmsg'
-    printmsg="${DOCKER__SIXDASHES_COLON}${DOCKER__STATUS}: crete soft-link of ${DOCKER__FG_LIGHTGREY}${docker__tb_init_sh__filename}${DOCKER__NOCOLOR}: "
-
-    #Update variables
-    docker_exec_cmd="${DOCKER__EXEC_IT} ${docker__containerid} ${docker__bash_fpath} -c"
-    #IMPORTANT: make sure to use the REAL PATH '/sbin/tb_init.sh' and 
-    #   not '/root/SP7021/linux/rootfs/initramfs/disk/usr/sbin/tb_init.sh'
-    cmd_tocreate_softlink="ln -sfn \"${docker__sbin_tb_init_sh__fpath}\" \
-            \"${docker__SP7021_linux_rootfs_initramfs_disk_sbin_init__fpath}\""
+    #Set 'printmsg'
+    local printmsg="${DOCKER__SIXDASHES_COLON}${DOCKER__STATUS}: create soft-link of ${DOCKER__FG_LIGHTGREY}${docker__tb_init_sh__filename}${DOCKER__NOCOLOR}: "
 
     #Remove soft-link 'init'
     remove_file__func "${docker__containerid}" \
             "${docker__SP7021_linux_rootfs_initramfs_disk_sbin_init__fpath}" \
             "${DOCKER__SIXDASHES_COLON}"
 
-    #Execute command
-    if [[ ${docker__isRunning_inside_container} == true ]]; then   #currently inside container
-        #Note: MUST use eval, because we want to EVALUATE string 
-        #       'cmd_tocreate_softlink' as a SHELL-command.
-        eval "${cmd_tocreate_softlink}"
-    else    #currently outside container
-        ${docker_exec_cmd} "${cmd_tocreate_softlink}"
+    #Define command
+    #***IMPORTANT: make sure to use the REAL PATH '/sbin/tb_init.sh' and 
+    #   not '/root/SP7021/linux/rootfs/initramfs/disk/usr/sbin/tb_init.sh'
+    local cmd="ln -sfn \"${docker__sbin_tb_init_sh__fpath}\" \
+            \"${docker__SP7021_linux_rootfs_initramfs_disk_sbin_init__fpath}\""
+
+    #Check whether INSIDE or OUTSIDE container and set 'containerid'
+    local containerid="${DOCKER__EMPTYSTRING}"
+    if [[ ${docker__isRunning_inside_container} == false ]]; then   #currently inside container
+        containerid=${docker__containerid}
     fi
+
+    #Execute command 'cmd'
+    docker_exec_cmd__func "${containerid}" "${cmd}"
 
     #Check exit-code
     docker__exitcode=$?
@@ -2017,21 +2015,238 @@ docker__overlay_restore_original_state__sub() {
             "${DOCKER__SIXDASHES_COLON}"
 }
 
+docker__one_time_exec_update__sub () {
+    #Print
+    show_msg_only__func "${DOCKER__SUBJECT_START_ONE_TIME_EXEC}" "${DOCKER__NUMOFLINES_1}" "${DOCKER__NUMOFLINES_0}"
+
+    #Initialize variable
+    local printmsg="${DOCKER__SIXDASHES_COLON}${DOCKER__STATUS}: update "
+    printmsg+="${DOCKER__FG_LIGHTGREY}${docker__one_time_exec_sh__filename}${DOCKER__NOCOLOR}: "
+
+    #Retrieve 'tb_reserve_size'
+    local tb_reserve_size=$(grep -F "${DOCKER__DISKPARTNAME_TB_RESERVE}" "${docker__docker_fs_partition_diskpartsize_dat__fpath}" | awk '{print $2}')
+    #Calculate 'docker__swapfilesize'
+    docker__swapfilesize=$((tb_reserve_size - DOCKER__RESERVED_SIZE_DEFAULT))
+
+    #Define command
+    local cmd="sed -i \"/${DOCKER__SED_PATTERN_SWAPFILESIZE_IS}/c\\${DOCKER__SED_PATTERN_SWAPFILESIZE_IS}${docker__swapfilesize}\" "
+    cmd+="\"${docker__SP7021_linux_rootfs_initramfs_disk_scripts_one_time_exec__fpath}\""
+
+    #Check whether INSIDE or OUTSIDE container and set 'containerid'
+    local containerid="${DOCKER__EMPTYSTRING}"
+    if [[ ${docker__isRunning_inside_container} == false ]]; then   #currently inside container
+        containerid=${docker__containerid}
+    fi
+
+    #Execute command 'cmd'
+    docker_exec_cmd__func "${containerid}" "${cmd}"
+
+    #Check exit-code
+    docker__exitcode=$?
+    if [[ ${docker__exitcode} -ne 0 ]]; then #error found
+        printmsg+="${DOCKER__STATUS_FAILED}"
+    else
+        printmsg+="${DOCKER__STATUS_SUCCESSFUL}"
+    fi
+
+    #Print
+    show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+
+    #Print
+    show_msg_only__func "${DOCKER__SUBJECT_COMPLETED_ONE_TIME_EXEC}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+}
+
+
+docker__fstab_handler__sub() {
+    #Print
+    show_msg_only__func "${DOCKER__SUBJECT_START_FSTAB}" "${DOCKER__NUMOFLINES_1}" "${DOCKER__NUMOFLINES_0}"
+
+    #---------------------------------------------------------------------
+    # PHASE 1: Check if entry '/tb_reserve none swap sw 0 0' is found in 'fstab'
+    #---------------------------------------------------------------------
+    docker__fstab_checkif_tb_reserve_entry_ispresent_sub
+
+    #---------------------------------------------------------------------
+    # PHASE 2: Remove entry '/tb_reserve none swap sw 0 0' from 'fstab'
+    #---------------------------------------------------------------------
+    docker__fstab_remove_tb_reserve_entry__sub
+
+    #---------------------------------------------------------------------
+    # PHASE 3: Add entry '/tb_reserve none swap sw 0 0' to 'fstab'
+    #---------------------------------------------------------------------
+    docker__fstab_add_tb_reserve_entry__sub
+
+    #---------------------------------------------------------------------
+    # PHASE 4: Remove any empty lines in 'fstab'
+    #---------------------------------------------------------------------
+    docker__fstab_remove_empty_lines__sub
+
+    #Print
+    show_msg_only__func "${DOCKER__SUBJECT_COMPLETED_FSTAB}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+}
+
+docker__fstab_checkif_tb_reserve_entry_ispresent_sub() {
+    #Define printmsg
+    local printmsg="${DOCKER__SIXDASHES_COLON}${DOCKER__STATUS}: check if entry "
+    printmsg+="${DOCKER__FG_LIGHTGREY}${DOCKER__FSTAB_TB_RESERVE_DIR_ENTRY}${DOCKER__NOCOLOR} "
+    printmsg+="is found in ${DOCKER__FG_LIGHTGREY}${docker__fstab__filename}${DOCKER__NOCOLOR}: "
+
+    #Define command to check if entry '/tb_reserve none swap sw 0 0' is found in 'fstab'
+    local cmd="grep -F \"${DOCKER__FSTAB_TB_RESERVE_DIR_ENTRY}\" "
+    cmd+="\"${docker__SP7021_linux_rootfs_initramfs_disk_etc_fstab__fpath}\""
+
+    #Define output-file which will be used to store the output of 'cmd'
+    docker__fstab_output="${docker__tmp__dir}/fstab_output.out"
+
+    #Check whether INSIDE or OUTSIDE container and set 'containerid'
+    local containerid="${DOCKER__EMPTYSTRING}"
+    if [[ ${docker__isRunning_inside_container} == false ]]; then   #currently inside container
+        containerid=${docker__containerid}
+    fi
+
+    #Execute command 'cmd'
+    docker_exec_cmd_and_receive_output__func "${containerid}" "${cmd}" "${docker__fstab_output}"
+    #Check exit-code
+    docker__exitcode=$?
+    if [[ ${docker__exitcode} -ne 0 ]]; then #error found
+        printmsg+="${DOCKER__STATUS_FAILED}"
+        show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+
+        exit 99
+    fi
+
+    #Retrieve the output
+    docker__fstab_output=$(cat "${docker__fstab_output}")
+    if [[ -n "${docker__fstab_output}" ]]; then  #Yes, contains data
+        #Update 'printmsg'
+        printmsg+="${DOCKER__STATUS_PRESENT}"
+    else
+        printmsg+="${DOCKER__STATUS_NOTPRESENT}"
+    fi
+
+    show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+}
+
+docker__fstab_remove_tb_reserve_entry__sub() {
+    #Check if 'docker__fstab_output' contains data
+    if [[ -n "${docker__fstab_output}" ]]; then  #Yes, contains data
+        #Define 'printmsg'
+        local printmsg="${DOCKER__SIXDASHES_COLON}${DOCKER__STATUS}: remove entry "
+        printmsg+="${DOCKER__FG_LIGHTGREY}${DOCKER__FSTAB_TB_RESERVE_DIR_ENTRY}${DOCKER__NOCOLOR} "
+        printmsg+="from ${DOCKER__FG_LIGHTGREY}${docker__fstab__filename}${DOCKER__NOCOLOR}: "
+
+        #Remove entry '/tb_reserve none swap sw 0 0' from 'fstab'
+        local cmd="sed -i \"/${DOCKER__SED_FSTAB_TB_RESERVE_WO_LEADING_SLASH_ENTRY}/d\" \"${docker__SP7021_linux_rootfs_initramfs_disk_etc_fstab__fpath}\""
+
+        #Check whether INSIDE or OUTSIDE container and set 'containerid'
+        local containerid="${DOCKER__EMPTYSTRING}"
+        if [[ ${docker__isRunning_inside_container} == false ]]; then   #currently inside container
+            containerid=${docker__containerid}
+        fi
+
+        #Execute command 'cmd'
+        docker_exec_cmd__func "${containerid}" "${cmd}"
+
+        #Check exit-code
+        docker__exitcode=$?
+        if [[ ${docker__exitcode} -ne 0 ]]; then #error found
+            printmsg+="${DOCKER__STATUS_FAILED}"
+            show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+
+            exit 99
+        else    #No error found
+            printmsg+="${DOCKER__STATUS_SUCCESSFUL}"
+            show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+        fi
+    fi
+}
+
+docker__fstab_add_tb_reserve_entry__sub() {
+    #Check if 'docker__swapfilesize > 0', which means swapfile is ENABLED
+    if [[ ${docker__swapfilesize} -gt 0 ]]; then
+        #Define 'printmsg'
+        local printmsg="${DOCKER__SIXDASHES_COLON}${DOCKER__STATUS}: add entry "
+        printmsg+="${DOCKER__FG_LIGHTGREY}${DOCKER__FSTAB_TB_RESERVE_DIR_ENTRY}${DOCKER__NOCOLOR} "
+        printmsg+="to ${DOCKER__FG_LIGHTGREY}${docker__fstab__filename}${DOCKER__NOCOLOR}: "
+
+        #Add entry '/tb_reserve none swap sw 0 0' to 'fstab'
+        #***NOTE: this part MUST happen AFTER adding  '/tb_reseve' mount entry to 'fstab'
+        local cmd="echo \"${DOCKER__FSTAB_TB_RESERVE_DIR_ENTRY}\" | tee -a \"${docker__SP7021_linux_rootfs_initramfs_disk_etc_fstab__fpath}\""
+
+        #Check whether INSIDE or OUTSIDE container and set 'containerid'
+        local containerid="${DOCKER__EMPTYSTRING}"
+        if [[ ${docker__isRunning_inside_container} == false ]]; then   #currently inside container
+            containerid=${docker__containerid}
+        fi
+
+        #Execute command 'cmd'
+        docker_exec_cmd__func "${containerid}" "${cmd}"
+
+        #Check exit-code
+        docker__exitcode=$?
+        if [[ ${docker__exitcode} -ne 0 ]]; then #error found
+            printmsg+="${DOCKER__STATUS_FAILED}"
+            show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+
+            exit 99
+        else    #No error found
+            printmsg+="${DOCKER__STATUS_SUCCESSFUL}"
+            show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+        fi
+    fi
+}
+
+docker__fstab_remove_empty_lines__sub() {
+    #Check if 'docker__swapfilesize > 0', which means swapfile is ENABLED
+    # if [[ ${docker__swapfilesize} -gt 0 ]]; then
+    #Define 'printmsg'
+    local printmsg="${DOCKER__SIXDASHES_COLON}${DOCKER__STATUS}: remove empty lines"
+    printmsg+="from ${DOCKER__FG_LIGHTGREY}${docker__fstab__filename}${DOCKER__NOCOLOR}: "
+
+    #Remove entry '/tb_reserve none swap sw 0 0' from 'fstab'
+    local cmd="sed -i '/^$/d' \"${docker__SP7021_linux_rootfs_initramfs_disk_etc_fstab__fpath}\""
+
+    #Check whether INSIDE or OUTSIDE container and set 'containerid'
+    local containerid="${DOCKER__EMPTYSTRING}"
+    if [[ ${docker__isRunning_inside_container} == false ]]; then   #currently inside container
+        containerid=${docker__containerid}
+    fi
+
+    #Execute command 'cmd'
+    docker_exec_cmd__func "${containerid}" "${cmd}"
+
+    #Check exit-code
+    docker__exitcode=$?
+    if [[ ${docker__exitcode} -ne 0 ]]; then #error found
+        printmsg+="${DOCKER__STATUS_FAILED}"
+        show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+
+        exit 99
+    else    #No error found
+        printmsg+="${DOCKER__STATUS_SUCCESSFUL}"
+        show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+    fi
+    # fi
+}
+
+
+
 docker__run_script__sub() {
-    #Define variables
-    local docker_exec_cmd="${DOCKER__EXEC_IT} ${docker__containerid} ${docker__bash_fpath} -c"
-    local cmd_outside_container="eval \"${docker__docker__build_ispboootbin_fpath}\""
-    # local cmd_inside_container="eval \"${docker__docker__build_ispboootbin_fpath}\""
-    local cmd_inside_container="${cmd_outside_container}"
+    #Initialize variable
     local printmsg="${DOCKER__EMPTYSTRING}"
 
-    #Execute script 'docker__build_ispboootbin_fpath'
-    printmsg="---:${DOCKER__START}: build ${DOCKER__FG_LIGHTGREY}ISPBOOOT.BIN${DOCKER__NOCOLOR}"
-    if [[ ${docker__isRunning_inside_container} == true ]]; then   #currently inside container
-        eval ${cmd_outside_container}
-    else    #currently outside container
-        ${docker_exec_cmd} "${cmd_inside_container}"
+    #Define command
+    local flag_docker_container_build_ispboootbin_sh_executed_this_script=true
+    local cmd="eval \"${docker__docker__build_ispboootbin_fpath}\" \"${flag_docker_container_build_ispboootbin_sh_executed_this_script}\""
+
+    #Check whether INSIDE or OUTSIDE container and set 'containerid'
+    local containerid="${DOCKER__EMPTYSTRING}"
+    if [[ ${docker__isRunning_inside_container} == false ]]; then   #currently inside container
+        containerid=${docker__containerid}
     fi
+
+    #Execute command 'cmd'
+    docker_exec_cmd__func "${containerid}" "${cmd}"
 
     #Check if there are any errors
     docker__exitcode=$?
@@ -2058,6 +2273,8 @@ docker__run_script__sub() {
     show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_1}" "${DOCKER__NUMOFLINES_0}"
 }
 
+
+
 docker__main__sub(){
     docker__get_source_fullpath__sub
 
@@ -2079,6 +2296,10 @@ docker__main__sub(){
     docker__preCheck__sub
 
     docker__overlay__sub
+
+    docker__one_time_exec_update__sub
+
+    docker__fstab_handler__sub
 
     docker__run_script__sub
 }

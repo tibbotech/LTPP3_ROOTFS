@@ -96,6 +96,7 @@ isp_c_filename="isp.c"
 isp_c_patch_filename="isp.c.patch"
 Kconfig_filename="Kconfig"
 Kconfig_patch_filename="Kconfig.patch"
+libpmux_py_filename="libpmux.py"
 makefile_filename="Makefile"
 makefile_patch_filename="Makefile.patch"
 make_menuconfig_filename="armhf_kernel.config"
@@ -104,7 +105,7 @@ media_sync_sh_filename="media_sync.sh"
 media_sync_service_filename="media_sync.service"
 media_sync_timer_filename="media_sync.timer"
 modules_filename="modules"
-ninetynine_wlan_notice_filename="99-wlan-notice"
+ninetyfive_ltpp3g2_notice_filename="95-ltpp3g2-notice"
 ntios_su_add_filename="ntios-su-add"
 ntios_su_addasperand_filename="${ntios_su_add_filename}@"
 ntios_su_add_monitor_filename="${ntios_su_add_filename}-monitor"
@@ -148,12 +149,16 @@ usb_mount_rules_filename="usb-mount.rules"
 usb_mount_service_filename="usb-mount@.service"
 usb_mount_sh_filename="usb-mount.sh"
 
+fstab_filename="fstab"
+swapfile_filename="swapfile"
+
 
 
 home_dir=~	#this is the /root directory
 bin_dir=/bin
 # daisychain_dir=/sys/devices/platform/soc\@B/9c108000.l2sw
 etc_dir=/etc
+tb_reserve_dir="/tb_reserve"
 tmp_dir=/tmp
 usr_bin_dir=/usr/bin
 home_downloads_dir=${home_dir}/Downloads
@@ -165,7 +170,7 @@ home_lttp3rootfs_dir=${home_dir}/LTPP3_ROOTFS
 home_lttp3rootfs_boot_configs_dir=${home_lttp3rootfs_dir}/boot/configs
 home_lttp3rootfs_boot_drivers_dir=${home_lttp3rootfs_dir}/boot/drivers
 home_lttp3rootfs_build_drivers_dir=${home_lttp3rootfs_dir}/build/drivers
-home_lttp3rootfs_docker_version_dir=${home_lttp3rootfs_dir}/docker/version
+# home_lttp3rootfs_docker_version_dir=${home_lttp3rootfs_dir}/docker/version
 home_lttp3rootfs_motd_update_motd_d_dir=${home_lttp3rootfs_dir}/motd/update-motd.d
 home_lttp3rootfs_rootfs_initramfs_dir=${home_lttp3rootfs_dir}/rootfs/initramfs
 home_lttp3rootfs_rootfs_initramfs_disk_etc_dir=${home_lttp3rootfs_rootfs_initramfs_dir}/disk/etc
@@ -191,7 +196,10 @@ home_lttp3rootfs_kernel_drivers_serial_dir=${home_lttp3rootfs_kernel_dir}/driver
 home_lttp3rootfs_kernel_drivers_wifi_dir=${home_lttp3rootfs_kernel_dir}/drivers/wifi
 home_lttp3rootfs_kernel_dts_dir=${home_lttp3rootfs_kernel_dir}/dts
 home_lttp3rootfs_kernel_modules_load_d_dir=${home_lttp3rootfs_kernel_dir}/modules-load.d
-home_lttp3rootfs_usr_bin_dir=${home_lttp3rootfs_dir}/usr/bin
+home_lttp3rootfs_usr_dir=${home_lttp3rootfs_dir}/usr
+home_lttp3rootfs_usr_bin_dir=${home_lttp3rootfs_usr_dir}/bin
+home_lttp3rootfs_usr_lib_dir=${home_lttp3rootfs_usr_dir}/lib
+home_lttp3rootfs_usr_lib_pmux_dir=${home_lttp3rootfs_usr_lib_dir}/pmux
 SP7xxx_dir=${home_dir}/SP7021
 SP7xxx_boot_uboot_include_configs_dir=${SP7xxx_dir}/boot/uboot/include/configs
 SP7xxx_boot_uboot_board_sunplus_pentagram_board_dir=${SP7xxx_dir}/boot/uboot/board/sunplus/pentagram_board
@@ -213,6 +221,7 @@ SP7xxx_linux_rootfs_initramfs_dir=${SP7xxx_dir}/linux/rootfs/initramfs
 SP7xxx_linux_rootfs_initramfs_disk_dir=${SP7xxx_linux_rootfs_initramfs_dir}/${disk_foldername}
 SP7xxx_linux_rootfs_initramfs_disk_etc_dir=${SP7xxx_linux_rootfs_initramfs_disk_dir}/etc
 SP7xxx_linux_rootfs_initramfs_disk_lib_dir=${SP7xxx_linux_rootfs_initramfs_disk_dir}/lib
+SP7xxx_linux_rootfs_initramfs_disk_lib_python3_ntios_pmux_dir=${SP7xxx_linux_rootfs_initramfs_disk_lib_dir}/python3/ntios/pmux
 SP7xxx_linux_rootfs_initramfs_disk_etc_update_motd_d_dir=${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}/update-motd.d
 SP7xxx_linux_rootfs_initramfs_disk_usr_bin_dir=${SP7xxx_linux_rootfs_initramfs_disk_dir}/usr/bin
 SP7xxx_linux_rootfs_initramfs_disk_var_backups_gpio_dir=${SP7xxx_linux_rootfs_initramfs_disk_dir}/var/backups/gpio
@@ -278,8 +287,11 @@ dst_hostname_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}/${hostname_file
 src_hosts_fpath=${home_lttp3rootfs_rootfs_initramfs_disk_etc_dir}/${hosts_filename}
 dst_hosts_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}/${hosts_filename}
 
-src_ispboootbin_version_txt_fpath=${home_lttp3rootfs_docker_version_dir}/${ispboootbin_version_txt_filename}
+# src_ispboootbin_version_txt_fpath=${home_lttp3rootfs_docker_version_dir}/${ispboootbin_version_txt_filename}
 dst_ispboootbin_version_txt_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_tibbo_version_dir}/${ispboootbin_version_txt_filename}
+
+src_libpmux_py_fpath=${home_lttp3rootfs_usr_lib_pmux_dir}/${libpmux_py_filename}
+dst_libpmux_py_fpath=${SP7xxx_linux_rootfs_initramfs_disk_lib_python3_ntios_pmux_dir}/${libpmux_py_filename}
 
 src_make_menuconfig_fpath=${home_lttp3rootfs_kernel_makeconfig_dir}/${make_menuconfig_filename}
 dst_make_menuconfig_fpath=${SP7xxx_linux_kernel_dir}/${make_menuconfig_default_filename}
@@ -296,8 +308,8 @@ dst_media_sync_timer_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_systemd_syst
 src_modules_fpath=${home_lttp3rootfs_kernel_modules_load_d_dir}/${modules_filename}
 dst_modules_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}/${modules_filename}
 
-src_ninetynine_wlan_notice_fpath=${home_lttp3rootfs_motd_update_motd_d_dir}/${ninetynine_wlan_notice_filename}
-dst_ninetynine_wlan_notice_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_update_motd_d_dir}/${ninetynine_wlan_notice_filename}
+src_ninetyfive_ltpp3g2_notice_fpath=${home_lttp3rootfs_motd_update_motd_d_dir}/${ninetyfive_ltpp3g2_notice_filename}
+dst_ninetyfive_ltpp3g2_notice_fpath=${SP7xxx_linux_rootfs_initramfs_disk_etc_update_motd_d_dir}/${ninetyfive_ltpp3g2_notice_filename}
 
 src_ntios_su_add_sh_fpath=${home_lttp3rootfs_services_sudo_dir}/${ntios_su_add_sh_filename}
 dst_ntios_su_add_sh_fpath=${SP7xxx_linux_rootfs_initramfs_disk_usr_local_bin_dir}/${ntios_su_add_sh_filename}
@@ -406,6 +418,9 @@ sp7021_common_dtsi_patch_fpath=${home_lttp3rootfs_kernel_dts_dir}/${sp7021_commo
 old_sp7021_ltpp3g2revD_dtsi_fpath=${SP7xxx_linux_kernel_arch_arm_boot_dts_dir}/${sp7021_ltpp3g2revD_dtsi_filename}
 new_sp7021_ltpp3g2revD_dtsi_fpath=${home_lttp3rootfs_kernel_dts_dir}/${sp7021_ltpp3g2revD_dtsi_filename}
 sp7021_ltpp3g2revD_dtsi_patch_fpath=${home_lttp3rootfs_kernel_dts_dir}/${sp7021_ltpp3g2revD_dtsi_patch_filename}
+
+fstab_fpath="${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}/${fstab_filename}"
+swapfile_fpath="${tb_reserve_dir}/${swapfile_filename}"
 echo -e "---:TIBBO:ENV: FINISHED"
 
 
@@ -805,7 +820,6 @@ else
 	echo -e "\r"
 	echo -e ">>>>>Creating directory <${SP7xxx_linux_rootfs_initramfs_disk_var_backups_gpio_dir}>"
 		mkdir -p ${SP7xxx_linux_rootfs_initramfs_disk_var_backups_gpio_dir}
-
 fi
 
 echo -e "\r"
@@ -1137,20 +1151,39 @@ echo -e ">>>Change permission to <-rwxr-xr-x> for file: ${one_time_exec_before_l
 
 
 
-#---DOCKER
+#---FIRMWARE
+press_any_key__func
 echo -e "\r"
-echo -e ">Copying: ${ispboootbin_version_txt_filename}>"
-echo -e ">from: ${home_lttp3rootfs_docker_version_dir}"
-echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_etc_tibbo_version_dir}"
-	cp ${src_ispboootbin_version_txt_fpath} ${dst_ispboootbin_version_txt_fpath}
+echo -e ">Copying: ${firmware_foldername}"
+echo -e ">from: ${home_lttp3rootfs_rootfs_initramfs_disk_etc_dir}"
+echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}"
+	cp -rf ${src_firmware_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}
 
 echo -e "\r"
-echo -e ">>>Change ownership to <root> for file: ${ispboootbin_version_txt_filename}"
-	chown root:root ${dst_ispboootbin_version_txt_fpath}
+echo -e ">>>Change ownership to <root> for folder: ${firmware_foldername}"
+	chown -R root:root ${dst_firmware_fpath}
 
 echo -e "\r"
-echo -e ">>>Change permission to <-rwxr-xr-x> for file: ${ispboootbin_version_txt_filename}"
-	chmod 644 ${dst_ispboootbin_version_txt_fpath}
+echo -e ">>>Change permission to <-rw-r--r--> for folder: ${firmware_foldername}"
+	chmod -R 644 ${dst_firmware_fpath}
+
+
+
+#---BRCM_PATCHRAM_PLUS
+press_any_key__func
+echo -e "\r"
+echo -e ">Copying: ${brcm_patchram_plus_filename}"
+echo -e ">from: ${home_lttp3rootfs_usr_bin_dir}"
+echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_usr_bin_dir}"
+	cp ${src_brcm_patchram_plus_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_usr_bin_dir}
+
+echo -e "\r"
+echo -e ">>>Change ownership to <root> for file: ${brcm_patchram_plus_filename}"
+	chown root:root ${dst_brcm_patchram_plus_fpath}
+
+echo -e "\r"
+echo -e ">>>Change permission to <-rwxr-xr-x> for file: ${brcm_patchram_plus_filename}"
+	chmod 755 ${dst_brcm_patchram_plus_fpath}
 
 
 
@@ -1187,24 +1220,27 @@ echo -e ">>>Change permission to <-rw-r--r--> for file: ${hosts_filename}"
 
 
 
-#---FIRMWARE FOLDER
+#---ISPBOOOT.BIN
 press_any_key__func
 echo -e "\r"
-echo -e ">Copying: ${firmware_foldername}"
-echo -e ">from: ${home_lttp3rootfs_rootfs_initramfs_disk_etc_dir}"
-echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}"
-	cp -rf ${src_firmware_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_etc_dir}
+echo "---ISPBOOOT.BIN version---"
+echo -e "\r"
+echo ">Get environment variable 'CONTAINER_ENV4': ${CONTAINER_ENV4}"
+echo ">write to file: ${ispboootbin_version_txt_filename}"
+echo ">at: ${SP7xxx_linux_rootfs_initramfs_disk_etc_tibbo_version_dir}"
+echo "${CONTAINER_ENV4}" > "${dst_ispboootbin_version_txt_fpath}"
 
 echo -e "\r"
-echo -e ">>>Change ownership to <root> for folder: ${firmware_foldername}"
-	chown -R root:root ${dst_firmware_fpath}
+echo -e ">>>Change ownership to <root> for file: ${ispboootbin_version_txt_filename}"
+	chown root:root ${dst_ispboootbin_version_txt_fpath}
 
 echo -e "\r"
-echo -e ">>>Change permission to <-rw-r--r--> for folder: ${firmware_foldername}"
-	chmod -R 644 ${dst_firmware_fpath}
+echo -e ">>>Change permission to <-rwxr-xr-x> for file: ${ispboootbin_version_txt_filename}"
+	chmod 644 ${dst_ispboootbin_version_txt_fpath}
 
 
-#---FILE: clk-sp-q628.c
+
+#---CLK_SP-Q628
 #press_any_key__func
 #echo -e "\r"
 #echo -e ">Copying: ${clkspq628c_filename}"
@@ -1222,26 +1258,9 @@ echo -e ">>>Change permission to <-rw-r--r--> for folder: ${firmware_foldername}
 
 
 
-#---FILE: brcm_patchram_plus
-press_any_key__func
-echo -e "\r"
-echo -e ">Copying: ${brcm_patchram_plus_filename}"
-echo -e ">from: ${home_lttp3rootfs_usr_bin_dir}"
-echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_usr_bin_dir}"
-	cp ${src_brcm_patchram_plus_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_usr_bin_dir}
-
-echo -e "\r"
-echo -e ">>>Change ownership to <root> for file: ${brcm_patchram_plus_filename}"
-	chown root:root ${dst_brcm_patchram_plus_fpath}
-
-echo -e "\r"
-echo -e ">>>Change permission to <-rwxr-xr-x> for file: ${brcm_patchram_plus_filename}"
-	chmod 755 ${dst_brcm_patchram_plus_fpath}
-
-
-
 #---KERNEL
 press_any_key__func
+echo -e "\r"
 echo -e "\r"
 echo -e ">Copy contents of folder: ${tpd_foldername}"
 echo -e ">from: ${home_lttp3rootfs_kernel_scripts_tpd_dir}"
@@ -1252,6 +1271,9 @@ echo -e "\r"
 echo -e ">>>Change ownership to <root> for this folder and its contents: ${tpd_foldername}"
 	chown root:root -R ${dst_tpd_dir}
 
+
+press_any_key__func
+echo -e "\r"
 echo -e "\r"
 echo -e "---Kernel Configuration File"
 echo -e ">Copying: ${make_menuconfig_filename}"
@@ -1262,13 +1284,17 @@ echo -e "\r"
 echo -e "\r"
 	cp ${src_make_menuconfig_fpath} ${dst_make_menuconfig_fpath}
 
+
 # press_any_key__func
+# echo -e "\r"
 # echo -e "\r"
 # echo -e ">>>Navigate to ${SP7xxx_linux_kernel_dir}"
 # 	cd ${SP7xxx_linux_kernel_dir}
 
-#press_any_key__func
-#echo -e "\r"
+
+# press_any_key__func
+# echo -e "\r"
+# echo -e "\r"
 #echo -e ">>>>>Importing Kernel config-file: ${make_menuconfig_default_filename}"
 #echo -e ">from: ${SP7xxx_linux_kernel_dir}"
 #	make olddefconfig
@@ -1279,12 +1305,12 @@ echo -e "\r"
 
 ###FIX error messages:
 #	WARN:	uid is 0 but '/etc' is owned by 1000
+press_any_key__func
+echo -e "\r"
 echo -e "\r"
 echo -e ">chown root:root ${etc_dir}"
 echo -e ">in: ${SP7xxx_linux_rootfs_initramfs_extra_dir}"
 	chown root:root ${SP7xxx_linux_rootfs_initramfs_extra_etc_dir}
-
-
 
 ###FIX error messages:
 #	WARN:	owner has write permission for '/etc' folder
@@ -1294,8 +1320,6 @@ echo -e ">in: ${SP7xxx_linux_rootfs_initramfs_extra_dir}"
 echo -e ">to: drwxr-xr-x"
 	chmod 755 ${SP7xxx_linux_rootfs_initramfs_extra_etc_dir}
 
-
-press_any_key__func
 echo -e "\r"
 echo -e ">Backup '${build_disk_filename}' by renaming" 
 echo -e ">to: ${build_disk_bck_filename}"
@@ -1308,6 +1332,7 @@ mv ${build_disk_fpath} ${build_disk_bck_fpath}
 #Copy modified file to location: ~/SP7021/linux/rootfs/initramfs
 press_any_key__func
 echo -e "\r"
+echo -e "\r"
 echo -e ">Copying ${build_disk_mod_filename}" 
 echo -e ">as: ${build_disk_filename}"
 echo -e ">from: ${home_lttp3rootfs_rootfs_initramfs_dir}"
@@ -1317,7 +1342,7 @@ cp ${build_disk_mod_fpath}  ${build_disk_fpath}
 
 
 
-#Make file "build_disk.sh" executable
+#BUILD_DISK
 press_any_key__func
 echo -e "\r"
 echo -e ">Changing permission of ${build_disk_filename}"
@@ -1328,26 +1353,75 @@ chmod +x ${build_disk_fpath}
 
 
 
+#NTIOS
+press_any_key__func
+if [[ ! -d "${SP7xxx_linux_rootfs_initramfs_disk_lib_python3_ntios_pmux_dir}" ]]; then
+	mkdir -p "${SP7xxx_linux_rootfs_initramfs_disk_lib_python3_ntios_pmux_dir}"
+fi
+
+echo -e "\r"
+echo -e ">Copying: ${libpmux_py_filename}"
+echo -e ">from: ${home_lttp3rootfs_usr_lib_pmux_dir}"
+echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_lib_python3_ntios_pmux_dir}"
+	cp -rf ${src_libpmux_py_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_lib_python3_ntios_pmux_dir}
+
+echo -e "\r"
+echo -e ">>>Change ownership to <root> for folder: ${libpmux_py_filename}"
+	chown -R root:root ${dst_libpmux_py_fpath}
+
+echo -e "\r"
+echo -e ">>>Change permission to <-rwx-r-xr-x> for folder: ${libpmux_py_filename}"
+	chmod -R 755 ${dst_libpmux_py_fpath}
+
+
+
+#ONE-TIME-EXEC
+if [[ ${CONTAINER_ENV5} -gt 0 ]]; then
+	press_any_key__func
+	echo -e "\r"
+	echo -e "\r"
+	echo "---swapfile---"
+	SED_PATTERN_SWAPFILESIZE_IS="swapfilesize="
+	echo ">Defined constant 'SED_PATTERN_SWAPFILESIZE_IS=\"${SED_PATTERN_SWAPFILESIZE_IS}'\""
+	echo -e "\r"
+	echo ">Get environment variable 'CONTAINER_ENV5': ${CONTAINER_ENV5}"
+
+	echo -e "\r"
+	sed -i "/${SED_PATTERN_SWAPFILESIZE_IS}/c\\${SED_PATTERN_SWAPFILESIZE_IS}${CONTAINER_ENV5}" "${dst_one_time_exec_sh_fpath}"
+	echo ">Set '${SED_PATTERN_SWAPFILESIZE_IS}${CONTAINER_ENV5}M'"
+	echo ">in: ${dst_one_time_exec_sh_fpath}"
+
+	echo -e "\r"
+	echo "${swapfile_fpath} none swap sw 0 0" | tee -a "${fstab_fpath}"
+    echo ">Added entry to '${fstab_fpath}' to ENABLE swap on boot-time"
+fi
+
+
+
 #UPDATE-MOTD-D
 press_any_key__func
 echo -e "\r"
-echo -e ">Copying: ${ninetynine_wlan_notice_filename}"
+echo -e "\r"
+echo -e ">Copying: ${ninetyfive_ltpp3g2_notice_filename}"
 echo -e ">from: ${home_lttp3rootfs_motd_update_motd_d_dir}"
 echo -e ">to: ${SP7xxx_linux_rootfs_initramfs_disk_etc_update_motd_d_dir}"
-	cp -rf ${src_ninetynine_wlan_notice_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_etc_update_motd_d_dir}
+	cp -rf ${src_ninetyfive_ltpp3g2_notice_fpath} ${SP7xxx_linux_rootfs_initramfs_disk_etc_update_motd_d_dir}
 
 echo -e "\r"
-echo -e ">>>Change ownership to <root> for folder: ${ninetynine_wlan_notice_filename}"
-	chown -R root:root ${dst_ninetynine_wlan_notice_fpath}
+echo -e ">>>Change ownership to <root> for folder: ${ninetyfive_ltpp3g2_notice_filename}"
+	chown -R root:root ${dst_ninetyfive_ltpp3g2_notice_fpath}
 
 echo -e "\r"
-echo -e ">>>Change permission to <-rw-r-xr-x> for folder: ${ninetynine_wlan_notice_filename}"
-	chmod -R 755 ${dst_ninetynine_wlan_notice_fpath}
+echo -e ">>>Change permission to <-rwx-r-xr-x> for folder: ${ninetyfive_ltpp3g2_notice_filename}"
+	chmod -R 755 ${dst_ninetyfive_ltpp3g2_notice_fpath}
 
 
 
-###APPLYIBG PATCHES###
+#%%%%%%%%%%%%%%%%%%%%%%%%
+#%%% APPLYING PATCHES %%%
+#%%%%%%%%%%%%%%%%%%%%%%%%
 press_any_key__func
+echo -e "\r"
 ehci_sched_c_diff=$(diff ${old_ehci_sched_c_fpath} ${new_ehci_sched_c_fpath})
 if [[ -n "${ehci_sched_c_diff}" ]]; then
 	echo -e "\r"
@@ -1532,6 +1606,7 @@ fi
 
 #PATCH: 'BCMDHD'
 press_any_key__func
+echo -e "\r"
 if [[ -d "${SP7xxx_linux_kernel_drivers_net_wireless_bcmdhd_dir}" ]]; then
 	echo -e "\r"
 	echo -e ">Remove folder ${bcmdhd_foldername}"

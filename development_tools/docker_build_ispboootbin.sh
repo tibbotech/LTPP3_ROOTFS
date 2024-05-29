@@ -1,4 +1,12 @@
 #!/bin/bash
+#---INPUT ARGS
+flag_docker_container_build_ispboootbin_sh_executed_this_script__argv1=${1}  #{true|false}
+
+if [[ "${flag_docker_container_build_ispboootbin_sh_executed_this_script__argv1}" == false ]] || \
+        [[ -z "${flag_docker_container_build_ispboootbin_sh_executed_this_script__argv1}" ]]; then
+    flag_docker_container_build_ispboootbin_sh_executed_this_script__argv1=false
+fi
+
 #---SUBROUTINES
 docker__get_source_fullpath__sub() {
     #Define constants
@@ -295,11 +303,54 @@ docker__execute_scripts__sub() {
 }
 
 
+docker__ispboootbin_version__sub() {
+    #***NOTE: if 'flag_docker_container_build_ispboootbin_sh_executed_this_script__argv1 = false', then it mean that this script
+    #       is initiated from a 'docker_container_build_ispboootbin_sh'. 
+    #***NOTE 2: it is important to use this flag, because otherwise if initiated from a 'docker_container_build_ispboootbin_sh'
+    #       this part should NEVER be executed. The 'CONTAINER_ENV4' value would NOT be correct!!!
+    if [[ "${flag_docker_container_build_ispboootbin_sh_executed_this_script__argv1}" == false ]]; then
+        #Retrieve CONTAINER_ENV4 value
+        echo "${CONTAINER_ENV4}" > "${docker__SP7021_linux_rootfs_initramfs_disk_etc_tibbo_version_ispboootbin_version__fpath}"
+        echo "---:TIBBO:-:UPDATE: wrote ISPBOOOT.BIN version ${CONTAINER_ENV4} to file ${docker__SP7021_linux_rootfs_initramfs_disk_etc_tibbo_version_ispboootbin_version__fpath}"
+
+        chown root:root ${docker__SP7021_linux_rootfs_initramfs_disk_etc_tibbo_version_ispboootbin_version__fpath}
+        echo "---:TIBBO:-:UPDATE: chown root:root ${docker__SP7021_linux_rootfs_initramfs_disk_etc_tibbo_version_ispboootbin_version__fpath}"
+
+        chmod 644 ${docker__SP7021_linux_rootfs_initramfs_disk_etc_tibbo_version_ispboootbin_version__fpath}
+        echo "---:TIBBO:-:UPDATE: chmod 644 ${docker__SP7021_linux_rootfs_initramfs_disk_etc_tibbo_version_ispboootbin_version__fpath}"
+    fi
+}
+
+docker__swapfile__sub() {
+    #***NOTE: if 'flag_docker_container_build_ispboootbin_sh_executed_this_script__argv1 = false', then it mean that this script
+    #       is initiated from a 'docker_container_build_ispboootbin_sh'. 
+    #***NOTE 2: it is important to use this flag, because otherwise if initiated from a 'docker_container_build_ispboootbin_sh'
+    #       this part should NEVER be executed. The 'CONTAINER_ENV5' value would NOT be correct!!!
+    if [[ "${flag_docker_container_build_ispboootbin_sh_executed_this_script__argv1}" == false ]]; then
+        sed -i "/${DOCKER__SED_PATTERN_SWAPFILESIZE_IS}/c\\${DOCKER__SED_PATTERN_SWAPFILESIZE_IS}${CONTAINER_ENV5}" "${docker__SP7021_linux_rootfs_initramfs_disk_scripts_one_time_exec__fpath}"
+        echo "---:TIBBO:-:UPDATE: updated 'swapfilesize' in file ${docker__SP7021_linux_rootfs_initramfs_disk_scripts_one_time_exec__fpath}"
+
+        if [[ ${CONTAINER_ENV5} -gt 0 ]]; then
+            local entry_isfound=$(grep -F "${DOCKER__FSTAB_TB_RESERVE_DIR_ENTRY}" "${docker__SP7021_linux_rootfs_initramfs_disk_etc_fstab__fpath}")
+            if [[ -z "${entry_isfound}" ]]; then
+                echo "${DOCKER__FSTAB_TB_RESERVE_DIR_ENTRY}" | tee -a "${docker__SP7021_linux_rootfs_initramfs_disk_etc_fstab__fpath}"
+                echo "---:TIBBO:-:UPDATE: added entry '${DOCKER__FSTAB_TB_RESERVE_DIR_ENTRY}' to ${docker__SP7021_linux_rootfs_initramfs_disk_etc_fstab__fpath}"
+            fi
+        else
+            sed -i "/${DOCKER__SED_FSTAB_TB_RESERVE_WO_LEADING_SLASH_ENTRY}/d" "${docker__SP7021_linux_rootfs_initramfs_disk_etc_fstab__fpath}"
+            echo "---:TIBBO:-:UPDATE: removed entry '${DOCKER__FSTAB_TB_RESERVE_DIR_ENTRY}' from ${docker__SP7021_linux_rootfs_initramfs_disk_etc_fstab__fpath}"
+        fi
+    fi
+}
+
 
 #---MAIN SUBROUTINE
 docker__main__sub() {
     docker__get_source_fullpath__sub
     docker__load_global_fpath_paths__sub
+
+    docker__ispboootbin_version__sub
+    docker__swapfile__sub
 
     docker__build_ispboootbin__sub
     docker__execute_scripts__sub

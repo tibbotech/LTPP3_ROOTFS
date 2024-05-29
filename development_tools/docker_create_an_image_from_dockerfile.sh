@@ -5,9 +5,11 @@ DOCKER__GIT_MAIN="main"
 DOCKER__PATTERN1="repository:tag"
 DOCKER__PATTERN2="On branch"
 DOCKER__PATTERN3="origin"
-DOCKER__PATTERN4="CONTAINER_ENV1"
-DOCKER__PATTERN5="CONTAINER_ENV2"
-DOCKER__PATTERN6="DOCKERFILE_ENV1"
+DOCKER__PATTERN_CONTAINER_ENV1="CONTAINER_ENV1"
+DOCKER__PATTERN_CONTAINER_ENV2="CONTAINER_ENV2"
+DOCKER__PATTERN_DOCKERFILE_ENV1="DOCKERFILE_ENV1"
+DOCKER__PATTERN_CONTAINER_ENV4="CONTAINER_ENV4"
+DOCKER__PATTERN_CONTAINER_ENV5="CONTAINER_ENV5"
 SED__PATTERN_SSH_FORMAT="git\@github.com:"
 SED__PATTERN_HTTPS_FORMAT="https:\/\/github.com\/"
 
@@ -24,14 +26,23 @@ function create_image__func() {
     #Define local message variables
     local statusMsg="---:${DOCKER__FG_ORANGE}STATUS${DOCKER__NOCOLOR}: Creating image..."
     local errorMsg1="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: No branch name found...abort"
-    local errorMsg2="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Oops...it appears that the Environment variables are not set yet...\n"
-    errorMsg2+="***${DOCKER__FG_LIGHTBLUE}RECOMMEND${DOCKER__NOCOLOR}: Please choose 'option 3: Export environment variables' first!"
+    local errorMsg2="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Oops...it appears that \"${DOCKER__PATTERN_CONTAINER_ENV1}\" and "
+            errorMsg2+="\"${DOCKER__PATTERN_CONTAINER_ENV1}\" are not set yet...\n"
+          errorMsg2+="***${DOCKER__FG_LIGHTBLUE}RECOMMEND${DOCKER__NOCOLOR}: Please choose 'option 3: Export environment variables' first!"
+    local errorMsg4="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Oops...it appears that \"${DOCKER__PATTERN_CONTAINER_ENV4}\""
+            errorMsg4+="is not set yet...\n"
+          errorMsg4+="***${DOCKER__FG_LIGHTBLUE}RECOMMEND${DOCKER__NOCOLOR}: Please choose '1. Create image using docker-file' again!"
+    local errorMsg5="***${DOCKER__FG_LIGHTRED}ERROR${DOCKER__NOCOLOR}: Oops...it appears that \"${DOCKER__PATTERN_CONTAINER_ENV5}\""
+            errorMsg5+="is not set yet...\n"
+          errorMsg5+="***${DOCKER__FG_LIGHTBLUE}RECOMMEND${DOCKER__NOCOLOR}: Please choose '1. Create image using docker-file' again!"
 
     #Define local  variables
     # local docker__images_cmd="docker images"
     local exported_env_var1=${DOCKER__EMPTYSTRING}  #sunplus git-link
     local exported_env_var2=${DOCKER__EMPTYSTRING}  #sunplus checkout-number
     local exported_env_var3=${DOCKER__EMPTYSTRING}  #tibbo git-link (e.g. LTPP3_ROOTFS.git)
+    local exported_env_var4=${DOCKER__EMPTYSTRING}  #disk_preprep.sh ispboootbin_version
+    local exported_env_var5=${DOCKER__EMPTYSTRING}  #disk_preprep.sh swapfilesize_mb
 
     local git_branch=${DOCKER__EMPTYSTRING}
     local git_https_link_isFound=${DOCKER__EMPTYSTRING}
@@ -46,12 +57,17 @@ function create_image__func() {
         #Set a value for 'dockerfile_repository_tag'
         dockerfile_repository_tag="${dockerfile}:${DOCKER__LATEST}"
     else    #is Not an Empty String
-        #Find the following patterns in 'dockerfile_fpath': 'DOCKER__PATTERN4', 'DOCKER__PATTERN5', and 'DOCKER__PATTERN6'
-        container_env1_isfound=$(grep -F "${DOCKER__PATTERN4}" "${dockerfile_fpath}")
-        container_env2_isfound=$(grep -F "${DOCKER__PATTERN5}" "${dockerfile_fpath}")
-        container_env3_isfound=$(grep -F "${DOCKER__PATTERN6}" "${dockerfile_fpath}")
-    
-        #Check if 'dockerfile_fpath' contains 'DOCKER__PATTERN4', 'DOCKER__PATTERN5', and 'DOCKER__PATTERN6' are present in file 'dockerfile_fpath'?
+        #Find the following patterns in 'dockerfile_fpath': 'DOCKER__PATTERN_CONTAINER_ENV1', 'DOCKER__PATTERN_CONTAINER_ENV2', and 'DOCKER__PATTERN_DOCKERFILE_ENV1'
+        container_env1_isfound=$(grep -F "${DOCKER__PATTERN_CONTAINER_ENV1}" "${dockerfile_fpath}")
+        container_env2_isfound=$(grep -F "${DOCKER__PATTERN_CONTAINER_ENV2}" "${dockerfile_fpath}")
+        container_env3_isfound=$(grep -F "${DOCKER__PATTERN_DOCKERFILE_ENV1}" "${dockerfile_fpath}")
+        container_env4_isfound=$(grep -F "${DOCKER__PATTERN_CONTAINER_ENV4}" "${dockerfile_fpath}")
+        container_env5_isfound=$(grep -F "${DOCKER__PATTERN_CONTAINER_ENV5}" "${dockerfile_fpath}")
+
+        #---------------------------------------------------------------------
+        # sunplus_inst.sh & sunplus_inst_for_sd_boot.sh: CONTAINER_ENV1, CONTAINER_ENV2, DOCKERFILE_ENV1
+        #---------------------------------------------------------------------
+        #Check if 'dockerfile_fpath' contains 'DOCKER__PATTERN_CONTAINER_ENV1', 'DOCKER__PATTERN_CONTAINER_ENV2', and 'DOCKER__PATTERN_DOCKERFILE_ENV1' are present in file 'dockerfile_fpath'?
         if [[ -n "${container_env1_isfound}" ]] && [[ -n "${container_env2_isfound}" ]] && [[ -n "${container_env3_isfound}" ]]; then   #Yes, patterns are present
             #Retrieve to-be-exported Environment variables
             exported_env_var1=`retrieve_env_var_link_from_file__func "${dockerfile_fpath}" "${docker__exported_env_var__fpath}"`
@@ -105,6 +121,32 @@ function create_image__func() {
 
                 exported_env_var3="--branch ${git_branch} ${exported_env_var3}"
             fi
+
+        #---------------------------------------------------------------------
+        # disk_preprep.sh: CONTAINER_ENV4
+        #---------------------------------------------------------------------
+        elif [[ -n "${container_env4_isfound}" ]] && [[ -n "${container_env5_isfound}" ]]; then
+            #Retrieve ISPBOOOT.BIN version from file
+            exported_env_var4=$(cat "${docker__ispboootbin_version_txt__fpath}")
+            exported_env_var5=$(cat "${docker__docker_swap_swapfilesize_mb_txt__fpath}")
+
+            #Check if 'exported_env_var4' is an Empty String
+            if [[ -z "${exported_env_var4}" ]]; then
+                moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+                echo -e "${errorMsg4}"
+                moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+                exit 99
+            fi
+
+            #Check if 'exported_env_var5' is an Empty String
+            if [[ -z "${exported_env_var5}" ]]; then
+                moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+                echo -e "${errorMsg5}"
+                moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+
+                exit 99
+            fi
         fi
     fi
 
@@ -117,7 +159,12 @@ function create_image__func() {
     #Remark:
     #   DOCKER_ARG1: argument defined in the dockerfile(s) (e.g. sunplus_inst.sh)
     #   HOST_EXPORTED_ARG1: exported variable in defined in the HOST device (e.g. sunplus git clone link)
-    docker build --build-arg DOCKER_ARG1="${exported_env_var1}" --build-arg DOCKER_ARG2="${exported_env_var2}" --build-arg DOCKER_ARG3="${exported_env_var3}" --tag ${dockerfile_repository_tag} - < ${dockerfile_fpath} #with REPOSITORY:TAG
+    docker build --build-arg DOCKER_ARG1="${exported_env_var1}" \
+            --build-arg DOCKER_ARG2="${exported_env_var2}" \
+            --build-arg DOCKER_ARG3="${exported_env_var3}" \
+            --build-arg DOCKER_ARG4="${exported_env_var4}" \
+            --build-arg DOCKER_ARG5="${exported_env_var5}" \
+            --tag ${dockerfile_repository_tag} - < ${dockerfile_fpath} #with REPOSITORY:TAG
 
     #Validate executed command
     validate_exitCode__func
@@ -181,7 +228,7 @@ function validate_exitCode__func() {
         # echo -e "${DOCKER__EXITING_NOW}"
         # moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
 
-        exit
+        exit 99
     fi
 }
 
@@ -555,7 +602,39 @@ docker__ispboootbin_version_input__sub() {
 
     #Run script and capture exit code
     eval "${docker__ispboootbin_version_input__fpath}" || exitCode=$?
-    
+
+    #Check if exitCode is '99'
+    #NOTE 1: this probably means that an interrupt, thus Ctrl+C was pressed.
+    #NOTE 2: the interrupt is caught by an Global function 'docker__ctrl_c__sub'
+    # which is defined in 'docker_global.sh'.
+    if ((exitCode == DOCKER__EXITCODE_99)); then
+        exit 99
+    # else
+    #     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
+    fi
+}
+
+docker__swapfilesize_input__sub() {
+    #define local variables
+    local exitCode=0
+    local label_repositorytag=${DOCKER__EMPTYSTRING}
+
+    #1. Find match pattern 'DOCKER__MATCHPATTERN_LABEL_REPOSITORY_COLON_TAG_IS'
+    #2. Retrieve the string on the right-side of the equal (=) sign
+    #3. Remove the double quotes (")
+    label_repositorytag=$(cat "${docker__dockerFile_fpath}" | \
+            grep -o "${DOCKER__MATCHPATTERN_LABEL_REPOSITORY_COLON_TAG_IS}.*" | \
+            cut -d"=" -f2 | \
+            sed 's/\"//g')
+
+    #Check if pattern 'DOCKER__MATCHPATTERN_ROOTFS' is NOT found in 'label_repositorytag'
+    if [[ ! "${label_repositorytag}" =~ "${DOCKER__MATCHPATTERN_ROOTFS}" ]]; then
+        return 0;
+    fi
+
+    #Run script and capture exit code
+    eval "${docker__swapfilesize_input_sh__fpath}" || exitCode=$?
+
     #Check if exitCode is '99'
     #NOTE 1: this probably means that an interrupt, thus Ctrl+C was pressed.
     #NOTE 2: the interrupt is caught by an Global function 'docker__ctrl_c__sub'
@@ -583,6 +662,8 @@ main_sub() {
         docker__show_dockerList_files__sub
 
         docker__ispboootbin_version_input__sub
+
+        docker__swapfilesize_input__sub
 
         docker__create_image_handler__sub
 

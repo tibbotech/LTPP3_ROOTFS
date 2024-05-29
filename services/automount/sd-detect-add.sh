@@ -219,8 +219,8 @@ do_Mount_sub()
 	fi
 
 	#Mount devfullpath_in (e.g. /dev/sda1) to an available MOUNTPOINT (e.g. /media/HIEN_E)
-	${usr_bin_dir}/mount -t auto -o rw,users,permissions=777 ${devfullpath_in} ${MEDIAFULLPATH}
-	chmod -R 777 ${MEDIAFULLPATH}
+	${usr_bin_dir}/mount -t auto -o rw,users,umask=000,exec ${devfullpath_in} ${MEDIAFULLPATH}
+
 
 	#Get permission of directory
 	local MEDIAFULLPATH_permission=`ls -ld ${MEDIAFULLPATH} | cut -d" " -f1`

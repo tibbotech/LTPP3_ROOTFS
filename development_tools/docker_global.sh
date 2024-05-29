@@ -341,6 +341,8 @@ DOCKER__COLNUM_1=1
 DOCKER__COLNUM_2=2
 DOCKER__COLNUM_3=3
 
+DOCKER_DISKSIZE_MIN=2816    #in MB (tb_reserve:128 + swapfile: 1024 + rootfs:1536 + overlay: 128)
+
 DOCKER__LINENUM_0=0
 DOCKER__LINENUM_1=1
 DOCKER__LINENUM_2=2
@@ -408,7 +410,7 @@ DOCKER__DISKSIZE_4G_TOTAL_IN_BYTES=3909091328   #found this value via fdisk -l
 DOCKER__DISKSIZE_4G_CORRECTION_IN_BYTES=38063309    #determined after boot-image
 DOCKER__DISKSIZE_4G_IN_BYTES=$((DOCKER__DISKSIZE_4G_TOTAL_IN_BYTES - DOCKER__DISKSIZE_4G_CORRECTION_IN_BYTES))
 DOCKER__DISKSIZE_4G_IN_MBYTES=$((DOCKER__DISKSIZE_4G_IN_BYTES/DOCKER__DISKSIZE_1K_IN_BYTES/DOCKER__DISKSIZE_1K_IN_BYTES))
-DOCKER__DISKSIZE_8G_IN_BYTES=$((DOCKER__DISKSIZE_4G_IN_BYTES*2))    #it is assumed that the disksize of ltpp3g2-03 is 2 x DOCKER__DISKSIZE_4G_IN_BYTES
+DOCKER__DISKSIZE_8G_IN_BYTES=7817134080     #found this value via fdisk -l
 DOCKER__DISKSIZE_8G_IN_MBYTES=$((DOCKER__DISKSIZE_8G_IN_BYTES/DOCKER__DISKSIZE_1K_IN_BYTES/DOCKER__DISKSIZE_1K_IN_BYTES))
 DOCKER__DISKSIZE_0X1E0000000="0x1e0000000"
 
@@ -420,6 +422,7 @@ DOCKER__FSTAB_TB_RESERVE_DIR="/${DOCKER__DISKPARTNAME_TB_RESERVE}"
 DOCKER__OVERLAY_SIZE_DEFAULT=4   #in MB
 DOCKER__RESERVED_SIZE_DEFAULT=128   #in MB
 DOCKER__ROOTFS_SIZE_DEFAULT=1536    #in MB
+DOKCER__SWAPFILE_SIZE_DEFAULT=1024  #in MB (NOTE: this is the maximal allowed swapfile-size)
 
 DOCKER__PATTERN_EMMC="EMMC"
 DOCKER__PATTERN_ROOTFS_0X1E0000000="rootfs 0x1e0000000"
@@ -447,6 +450,7 @@ DOCKER__SED_PATTERN_PENTAGRAM_COMMON_H_W_BACKSLASH0="\\\"b_c=console=tty1 consol
 DOCKER__SED_TB_INIT_MAIN_DIR="\\/"
 DOCKER__SED_TB_INIT_DEV_MMCBLK0P="\\/dev\\/mmcblk0p"
 DOCKER__SED_TB_OVERLAY_DEV_MMCBLK0P10="tb_overlay=\\/dev\\/mmcblk0p10"
+
 
 
 #---PATH CONSTANTS
@@ -504,6 +508,8 @@ DOCKER__NOTICE="${DOCKER__FG_ORANGE131}NOTICE${DOCKER__NOCOLOR}"
 DOCKER__PRECHECK="${DOCKER__FG_PURPLERED}PRE${NOCOLOR}${FG_ORANGE}-CHECK:${DOCKER__NOCOLOR}"
 DOCKER__LOCATION="${DOCKER__FG_YELLOW}LOCATION${DOCKER__NOCOLOR}"
 DOCKER__QUESTION="${DOCKER__FG_YELLOW}QUESTION${DOCKER__NOCOLOR}"
+DOCKER__STATUS_PRESENT="${DOCKER__FG_GREEN}PRESENT${DOCKER__NOCOLOR}"
+DOCKER__STATUS_NOTPRESENT="${DOCKER__FG_LIGHTRED}NOT-PRESENT${DOCKER__NOCOLOR}"
 DOCKER__REQUEST="${DOCKER__FG_ORANGE}REQUEST${DOCKER__NOCOLOR}"
 DOCKER__RESULT="${DOCKER__FG_ORANGE}RESULT${DOCKER__NOCOLOR}"
 DOCKER__START="${DOCKER__FG_ORANGE}START${DOCKER__NOCOLOR}"
@@ -660,6 +666,15 @@ DOCKER__EIGHTSPACES=${DOCKER__FOURSPACES}${DOCKER__FOURSPACES}
 DOCKER__TENSPACES=${DOCKER__FIVESPACES}${DOCKER__FIVESPACES}
 
 
+
+#---SWAPFILE CONSTANTS
+DOCKER__SWAPFILE="swapfile"
+DOCKER__SWAPFILESIZE_MB_LOWERBOUND=0
+DOCKER__SWAPFILESIZE_MB_UPPERBOUND=1024
+DOCKER__FSTAB_TB_RESERVE_DIR_ENTRY="/${DOCKER__DISKPARTNAME_TB_RESERVE}/${DOCKER__SWAPFILE} none swap sw 0 0"
+# DOCKER__SED_TB_RESERVE_DIR="/${DOCKER__DISKPARTNAME_TB_RESERVE}"
+DOCKER__SED_FSTAB_TB_RESERVE_WO_LEADING_SLASH_ENTRY="${DOCKER__DISKPARTNAME_TB_RESERVE}\/${DOCKER__SWAPFILE} none swap sw 0 0"
+DOCKER__SED_PATTERN_SWAPFILESIZE_IS="swapfilesize="
 
 #---CONSTANTS THAT MUST BE LOADED HERE!
 #---MENU CONSTANTS
@@ -1408,6 +1423,19 @@ function bc_is_x_greaterthan_zero() {
 
 
 #---CONTAINER RELATED FUNCTIONS
+function docker_exec_cmd__func() {
+    #Input args
+    local containerid__arg="${1}"
+    local cmd__arg="${2}"
+
+    #Execute command and capture output
+    if [[ -n ${containerid__arg} ]]; then
+        docker exec -t "${containerid__arg}" /bin/bash -c "${cmd__arg}"
+    else
+        eval "${cmd__arg}"
+    fi
+}
+
 function docker_exec_cmd_and_receive_output__func() {
     #Input args
     local containerid__arg="${1}"
@@ -6444,8 +6472,10 @@ docker__get_source_fullpath__sub() {
     docker__isp_c_overlaybck__filename="isp.c.overlaybck"
     docker__isp_sh__filename="isp.sh"
     docker__isp_sh_overlaybck__filename="isp.sh.overlaybck"
+    docker__ispboootbin_version_txt__filename="ispboootbin_version.txt"
     docker__pentagram_common_h__filename="pentagram_common.h"
     docker__pentagram_common_h_overlaybck__filename="pentagram_common.h.overlaybck"
+    docker__swapfilesize_mb_txt__filename="swapfilesize_mb.txt"
     docker__tb_init_sh__filename="tb_init.sh"
     docker__tb_init_bootmenu__filename="tb_init_bootmenu"
     docker__96_overlayboot_notice__filename="96-overlayboot-notice"
@@ -6469,6 +6499,8 @@ docker__get_source_fullpath__sub() {
     docker__docker_dockerfiles__dir=${docker__docker__dir}/dockerfiles
     docker__docker_images__dir=${docker__docker__dir}/images
     docker__docker_overlayfs__dir=${docker__docker__dir}/overlayfs
+    docker__docker_swap__dir=${docker__docker__dir}/swap
+    docker__docker_version__dir=${docker__docker__dir}/version
 
     docker__docker_overlayfs_cmdline__fpath=${docker__docker_overlayfs__dir}/${docker__cmdline__filename}
     docker__docker_overlayfs_fstab__fpath=${docker__docker_overlayfs__dir}/${docker__fstab__filename}
@@ -6484,6 +6516,10 @@ docker__get_source_fullpath__sub() {
     docker__docker_overlayfs_tb_init_bootmenu__fpath=${docker__docker_overlayfs__dir}/${docker__tb_init_bootmenu__filename}
     docker__docker_overlayfs_96_overlayboot_notice__fpath=${docker__docker_overlayfs__dir}/${docker__96_overlayboot_notice__filename}
     docker__docker_overlayfs_98_normalboot_notice__fpath=${docker__docker_overlayfs__dir}/${docker__98_normalboot_notice__filename}
+
+    docker__ispboootbin_version_txt__fpath=${docker__docker_version__dir}/${docker__ispboootbin_version_txt__filename}
+    docker__docker_swap_swapfilesize_mb_txt__fpath=${docker__docker_swap__dir}/${docker__swapfilesize_mb_txt__filename}
+
 
 #---docker__docker_config__dir - contents
     docker__export_env_var_menu_cfg__filename="docker_export_env_var_menu.cfg"
@@ -6619,6 +6655,9 @@ docker__get_source_fullpath__sub() {
     docker__ssh_to_host__filename="docker_ssh_to_host.sh"
     docker__ssh_to_host__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__ssh_to_host__filename}
 
+    docker__swapfilesize_input_sh__filename="docker_swapfilesize_input.sh"
+    docker__swapfilesize_input_sh__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${docker__swapfilesize_input_sh__filename}
+
     git__git_create_checkout_local_branch__filename="git_create_checkout_local_branch.sh"
     git__git_create_checkout_local_branch__fpath=${docker__LTPP3_ROOTFS_development_tools__dir}/${git__git_create_checkout_local_branch__filename}
 
@@ -6683,8 +6722,8 @@ docker__get_source_fullpath__sub() {
     docker__LTPP3_ROOTFS_boot_configs_pentagram_common_h__fpath=${docker__LTPP3_ROOTFS_boot_configs__dir}/${docker__pentagram_common_h__filename}
 
     docker__LTPP3_ROOTFS_docker_version__dir=${docker__LTPP3_ROOTFS_docker__dir}/version
-    docker__ispboootbin_version_txt__filename="ispboootbin_version.txt"
-    docker__ispboootbin_version_txt__fpath=${docker__LTPP3_ROOTFS_docker_version__dir}/${docker__ispboootbin_version_txt__filename}
+    docker__ispboootbin_version_default_txt__filename="ispboootbin_version_default.txt"
+    docker__ispboootbin_version_default_txt__fpath=${docker__LTPP3_ROOTFS_docker_version__dir}/${docker__ispboootbin_version_default_txt__filename}
 
 #---docker__LTPP3_ROOTFS_linux_scripts__dir - contents
     docker__LTPP3_ROOTFS_linux_scripts_tb_init_sh__fpath=${docker__LTPP3_ROOTFS_linux_scripts__dir}/${docker__tb_init_sh__filename}
@@ -6696,6 +6735,15 @@ docker__get_source_fullpath__sub() {
     docker__LTPP3_ROOTFS_motd_update_motd_98_normalboot_notice__fpath=${docker__LTPP3_ROOTFS_motd_update_motd__dir}/${docker__98_normalboot_notice__filename}
     docker__LTPP3_ROOTFS_motd_update_motd_99_wlan_notice__fpath=${docker__LTPP3_ROOTFS_motd_update_motd__dir}/${docker__99_wlan_notice__filename}
 
+
+#---docker__LTPP3_ROOTFS_services__dir - contents
+    docker__LTPP3_ROOTFS_services__dir=${docker__LTPP3_ROOTFS__dir}/services
+    docker__LTPP3_ROOTFS_services_oobe__dir=${docker__LTPP3_ROOTFS_services__dir}/oobe
+    docker__LTPP3_ROOTFS_services_oobe_oneshot__dir=${docker__LTPP3_ROOTFS_services_oobe__dir}/oneshot
+    docker__one_time_exec_sh__filename="one-time-exec.sh"
+    docker__one_time_exec_sh__fpath="${docker__LTPP3_ROOTFS_services_oobe_oneshot__dir}/${docker__one_time_exec_sh__filename}"
+
+
 #---docker__SP7021__dir - contents
     #Note: this directory MUST be the same as the 'SP7021_dir' which is defined in 'sunplus_inst.sh'
     docker__SP7021__dir="${docker__root__dir}/SP7021"
@@ -6705,6 +6753,7 @@ docker__get_source_fullpath__sub() {
     docker__SP7021_build_tools_isp__dir=${docker__SP7021__dir}/build/tools/isp
     docker__SP7021_linux_rootfs_initramfs_disk_dir=${docker__SP7021__dir}/linux/rootfs/initramfs/disk
     docker__SP7021_linux_rootfs_initramfs_disk_sbin__dir=${docker__SP7021_linux_rootfs_initramfs_disk_dir}/sbin
+    docker__SP7021_linux_rootfs_initramfs_disk_scripts__dir=${docker__SP7021_linux_rootfs_initramfs_disk_dir}/scripts
     docker__SP7021_linux_rootfs_initramfs_disk_etc__dir=${docker__SP7021_linux_rootfs_initramfs_disk_dir}/etc
     docker__SP7021_linux_rootfs_initramfs_disk_etc_update_motd_d__dir=${docker__SP7021_linux_rootfs_initramfs_disk_etc__dir}/update-motd.d
     docker__SP7021_linux_rootfs_initramfs_disk_etc_tibbo__dir=${docker__SP7021_linux_rootfs_initramfs_disk_etc__dir}/tibbo
@@ -6726,6 +6775,9 @@ docker__get_source_fullpath__sub() {
     docker__SP7021_linux_rootfs_initramfs_disk_etc_update_motd_d_96_overlayboot_notice__fpath="${docker__SP7021_linux_rootfs_initramfs_disk_etc_update_motd_d__dir}/${docker__96_overlayboot_notice__filename}"
     docker__SP7021_linux_rootfs_initramfs_disk_etc_update_motd_d_98_normalboot_notice__fpath="${docker__SP7021_linux_rootfs_initramfs_disk_etc_update_motd_d__dir}/${docker__98_normalboot_notice__filename}"
     docker__SP7021_linux_rootfs_initramfs_disk_etc_update_motd_d_99_wlan_notice__fpath="${docker__SP7021_linux_rootfs_initramfs_disk_etc_update_motd_d__dir}/${docker__99_wlan_notice__filename}"
+
+    docker__SP7021_linux_rootfs_initramfs_disk_scripts_one_time_exec__fpath="${docker__SP7021_linux_rootfs_initramfs_disk_scripts__dir}/${docker__one_time_exec_sh__filename}"
+    docker__SP7021_linux_rootfs_initramfs_disk_etc_tibbo_version_ispboootbin_version__fpath="${docker__SP7021_linux_rootfs_initramfs_disk_etc_tibbo_version__dir}/${docker__ispboootbin_version_txt__filename}"
 
 #---docker__tmp__dir - contents
     compgen__query_w_autocomplete_out__filename="compgen_query_w_autocomplete.out"

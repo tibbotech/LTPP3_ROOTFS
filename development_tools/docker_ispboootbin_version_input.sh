@@ -285,7 +285,7 @@ docker__load_global_fpath_paths__sub() {
 }
 
 docker__load_constants__sub() {
-    DOCKER__READ_DIALOG="(${DOCKER__FG_LIGHTGREY}MANDATORY${DOCKER__NOCOLOR}) Input ISPBOOOT.BIN version (${DOCKER__FG_LIGHTGREY}Ctrl+C: Cancel${DOCKER__NOCOLOR}): "
+    DOCKER__READ_DIALOG="(${DOCKER__FG_BORDEAUX}MANDATORY${DOCKER__NOCOLOR}) Input ISPBOOOT.BIN Version ${DOCKER__FG_LIGHTGREY}(Ctrl+C: Cancel)${DOCKER__NOCOLOR}: "
 }
 
 docker__init_variables__sub() {
@@ -296,15 +296,26 @@ docker__ispboootbin_version_input__sub() {
     #Load header
     load_tibbo_title__func "${docker__tibboHeader_prepend_numOfLines}"
 
+
+    #Create directory (if not present)
+    if [[ ! -d "${docker__docker_version__dir}" ]]; then
+        mkdir -p "${docker__docker_version__dir}"
+    else
+        if [[ -f "${docker__ispboootbin_version_txt__fpath}" ]]; then
+            rm "${docker__ispboootbin_version_txt__fpath}"
+        fi
+    fi
+
+
     #Get version from file '/<topdir>/LTPP3_ROOTFS/docker/version/ispboootbin_version.txt'
     #NOTE: will read ONLY the FIRST line of the file
-    ispboootbin_version_current=$(cat ${docker__ispboootbin_version_txt__fpath} | head -n1)
+    local ispboootbin_version_default=$(cat ${docker__ispboootbin_version_default_txt__fpath} | head -n1)
 
     #Start loop
     while true
     do
         #Show read-dialog
-        read -e -p "${DOCKER__READ_DIALOG}" -i "${ispboootbin_version_current}" ispboootbin_version_input
+        read -e -p "${DOCKER__READ_DIALOG}" -i "${ispboootbin_version_default}" ispboootbin_version_input
 
         #Check if input 'ispboootbin_version_input' is a valid string, which means
         #   whether this string only contains numbers and dots

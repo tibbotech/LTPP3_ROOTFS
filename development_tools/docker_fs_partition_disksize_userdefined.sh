@@ -41,6 +41,9 @@ docker__load_constants__sub() {
     DOCKER__MENUTITLE+="${DOCKER__FG_DARKBLUE}CHOOSE "
     DOCKER__MENUTITLE+="${DOCKER__FG_RED125}DISK${DOCKER__NOCOLOR}-${DOCKER__FG_RED125}SIZE${DOCKER__NOCOLOR}: "
     DOCKER__MENUTITLE+="USER-DEFINED (${DOCKER__FG_DARKBLUE}MB${DOCKER__NOCOLOR})"
+
+    DOCKER__READINPUT_DIALOG="disk-size (${DOCKER__FG_YELLOW}>=${DOCKER__FG_LIGHTGREY}${DOCKER_DISKSIZE_MIN}${DOCKER__NOCOLOR}, "
+    DOCKER__READINPUT_DIALOG+="${DOCKER__FG_LIGHTGREY}${DOCKER__CTRL_C_COLON_QUIT}${DOCKER__NOCOLOR}): "
 }
 
 docker__get_git_info__sub() {
@@ -96,13 +99,19 @@ docker__menu__sub() {
     while true
     do
         #Select an option
-        read -e -p "---:${DOCKER__INPUT}: disk-size (${DOCKER__CTRL_C_COLON_QUIT}): " mydisksize
+        read -e -p "${DOCKER__READINPUT_DIALOG}" -i ${DOCKER_DISKSIZE_MIN} mydisksize
         moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
 
         #Only continue if a valid option is selected
         if [[ ! -z ${mydisksize} ]]; then
             if [[ $(isNumeric__func "${mydisksize}") == true ]]; then
-                break
+                if [[ ${mydisksize} -ge ${DOCKER_DISKSIZE_MIN} ]]; then
+                    break
+                else
+                    moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
+
+                    echo -e "${DOCKER__READINPUT_DIALOG}${mydisksize} (${DOCKER__STATUS_LINVALID})"
+                fi
             else
                 moveUp_and_cleanLines__func "${DOCKER__NUMOFLINES_2}"
             fi

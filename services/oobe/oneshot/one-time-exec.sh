@@ -34,6 +34,14 @@ root_dir=/root
 root_ssh_dir=${root_dir}/.ssh
 root_ssh_id_rsa_fpath=${root_ssh_dir}/id_rsa
 
+tb_reserve_dir="/tb_reserve"
+swapfile_filename="swapfile"
+swapfile_fpath="${tb_reserve_dir}/${swapfile_filename}"
+
+etc_dir=/etc
+fstab_filename="fstab"
+fstab_fpath="${etc_dir}/${fstab_filename}"
+
 
 
 #---RESIZE
@@ -103,13 +111,27 @@ echo -e ":-->${FG_ORANGE}STATUS${NOCOLOR}: MOUNTED ${FG_LIGHTGREY}${dev_mqueue_d
 
 
 
-# #---LOAD TPD MODULE
-# tpd_isloaded=$(lsmod | grep 'tpd')
-# if [[ -z "${tpd_isloaded}" ]]; then
-#     echo -e ":-->${FG_ORANGE}STATUS${NOCOLOR}: UPDATE MODULE DEPENDENCIES: ${FG_LIGHTGREY}depmod -a${NOCOLOR}"
-#     depmod -a
+#---ENABLE SWAP
+swapfilesize=0
+if [[ ${swapfilesize} -gt 0 ]]; then
+    if [[ ! -d "${tb_reserve_dir}" ]]; then
+        mkdir "${tb_reserve_dir}"
+        echo -e ":-->${FG_ORANGE}STATUS${NOCOLOR}: mkdir \"${tb_reserve_dir}\""
+    fi
 
-#     echo -e ":-->${FG_ORANGE}STATUS${NOCOLOR}: LOAD TPD-MODULE: ${FG_LIGHTGREY}modprobe tpd${NOCOLOR}"
-#     modprobe tpd
-# fi
+    swapfilesize_M="${swapfilesize}M"
+    fallocate -l "${swapfilesize_M}" "${swapfile_fpath}"
+    echo -e ":-->${FG_ORANGE}STATUS${NOCOLOR}: ALLOCATED ${FG_LIGHTGREY}${swapfilesize_M}${NOCOLOR} TO ${FG_LIGHTGREY}${swapfile_fpath}${NOCOLOR}"
 
+    chmod 600 "${swapfile_fpath}"
+    echo -e ":-->${FG_ORANGE}STATUS${NOCOLOR}: chmod ${FG_LIGHTGREY}600 ${swapfile_fpath}${NOCOLOR}"
+
+    mkswap "${swapfile_fpath}"
+    echo -e ":-->${FG_ORANGE}STATUS${NOCOLOR}: mkswap ${FG_LIGHTGREY}${swapfile_fpath}${NOCOLOR}"
+
+    swapon "${swapfile_fpath}"
+    echo -e ":-->${FG_ORANGE}STATUS${NOCOLOR}: swapon ${FG_LIGHTGREY}${swapfile_fpath}${NOCOLOR}"
+
+    # echo "${swapfile_fpath} none swap sw 0 0" | tee -a "${fstab_fpath}"
+    # echo -e ":-->${FG_ORANGE}STATUS${NOCOLOR}: ADDED ENTRY TO ${FG_LIGHTGREY}${fstab_fpath}${NOCOLOR} TO ENABLE SWAP ON BOOT-TIME"
+fi
