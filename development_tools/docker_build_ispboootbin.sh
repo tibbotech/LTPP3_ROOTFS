@@ -1,4 +1,12 @@
 #!/bin/bash
+#---INPUT ARGS
+flag_docker_container_build_ispboootbin_sh_executed_this_script__argv1=${1}  #{true|false}
+
+if [[ "${flag_docker_container_build_ispboootbin_sh_executed_this_script__argv1}" == false ]] || \
+        [[ -z "${flag_docker_container_build_ispboootbin_sh_executed_this_script__argv1}" ]]; then
+    flag_docker_container_build_ispboootbin_sh_executed_this_script__argv1=false
+fi
+
 #---SUBROUTINES
 docker__get_source_fullpath__sub() {
     #Define constants
@@ -296,10 +304,11 @@ docker__execute_scripts__sub() {
 
 
 docker__ispboootbin_version__sub() {
-    #Check if 'CONTAINER_ENV4' contains data
-    #***NOTE 1: CONTAINER_ENV4 would ONLY contain data IF it was INITIATED from a DOCKERFILE.
-    #***NOTE 2: This part should NEVER be executed if NOT INITIATED from a DOCKERFILE.
-    if [[ -n "${CONTAINER_ENV4}" ]]; then
+    #***NOTE: if 'flag_docker_container_build_ispboootbin_sh_executed_this_script__argv1 = false', then it mean that this script
+    #       is initiated from a 'docker_container_build_ispboootbin_sh'. 
+    #***NOTE 2: it is important to use this flag, because otherwise if initiated from a 'docker_container_build_ispboootbin_sh'
+    #       this part should NEVER be executed. The 'CONTAINER_ENV4' value would NOT be correct!!!
+    if [[ "${flag_docker_container_build_ispboootbin_sh_executed_this_script__argv1}" == false ]]; then
         #Retrieve CONTAINER_ENV4 value
         echo "${CONTAINER_ENV4}" > "${docker__SP7021_linux_rootfs_initramfs_disk_etc_tibbo_version_ispboootbin_version__fpath}"
         echo "---:TIBBO:-:UPDATE: wrote ISPBOOOT.BIN version ${CONTAINER_ENV4} to file ${docker__SP7021_linux_rootfs_initramfs_disk_etc_tibbo_version_ispboootbin_version__fpath}"
@@ -313,10 +322,11 @@ docker__ispboootbin_version__sub() {
 }
 
 docker__swapfile__sub() {
-    #Check if 'CONTAINER_ENV5' contains data
-    #***NOTE 1: CONTAINER_ENV5 would ONLY contain data IF it was INITIATED from a DOCKERFILE.
-    #***NOTE 2: This part should NEVER be executed if NOT INITIATED from a DOCKERFILE.
-    if [[ -n "${CONTAINER_ENV5}" ]]; then
+    #***NOTE: if 'flag_docker_container_build_ispboootbin_sh_executed_this_script__argv1 = false', then it mean that this script
+    #       is initiated from a 'docker_container_build_ispboootbin_sh'. 
+    #***NOTE 2: it is important to use this flag, because otherwise if initiated from a 'docker_container_build_ispboootbin_sh'
+    #       this part should NEVER be executed. The 'CONTAINER_ENV5' value would NOT be correct!!!
+    if [[ "${flag_docker_container_build_ispboootbin_sh_executed_this_script__argv1}" == false ]]; then
         sed -i "/${DOCKER__SED_PATTERN_SWAPFILESIZE_IS}/c\\${DOCKER__SED_PATTERN_SWAPFILESIZE_IS}${CONTAINER_ENV5}" "${docker__SP7021_linux_rootfs_initramfs_disk_scripts_one_time_exec__fpath}"
         echo "---:TIBBO:-:UPDATE: updated 'swapfilesize' in file ${docker__SP7021_linux_rootfs_initramfs_disk_scripts_one_time_exec__fpath}"
 

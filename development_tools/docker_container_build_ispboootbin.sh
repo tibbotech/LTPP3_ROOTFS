@@ -334,6 +334,12 @@ docker__load_constants__sub() {
     DOCKER__SUBJECT_START_TB_INIT_SH_CREATE_SOFTLINK="---:${DOCKER__START}: TB_INIT.SH > CREATE SOFT-LINK"
     DOCKER__SUBJECT_COMPLETED_TB_INIT_SH_CREATE_SOFTLINK="---:${DOCKER__COMPLETED}: TB_INIT.SH > CREATE SOFT-LINK"
 
+    DOCKER__SUBJECT_START_ONE_TIME_EXEC="---:${DOCKER__START}: ONE-TIME-EXEC.SH > UPDATE SWAPFILESIZE"
+    DOCKER__SUBJECT_COMPLETED_ONE_TIME_EXEC="---:${DOCKER__COMPLETED}: ONE-TIME-EXEC.SH > UPDATE SWAPFILESIZE"
+
+    DOCKER__SUBJECT_START_FSTAB="---:${DOCKER__START}: FSTAB > UPDATE ENTRIES"
+    DOCKER__SUBJECT_COMPLETED_FSTAB="---:${DOCKER__COMPLETED}: FSTAB > UPDATE ENTRIES"
+
     DOCKER__INFOMSG_OVERLAYFS_SETTING_IS_DISABLED="${DOCKER__NINEDASHES_COLON}${DOCKER__INFO}: ${DOCKER__FG_LIGHTGREY}overlay${DOCKER__NOCOLOR} setting is disabled...\n"
     DOCKER__INFOMSG_OVERLAYFS_SETTING_IS_DISABLED+="${DOCKER__NINEDASHES_COLON}${DOCKER__INFO}: ignoring overlay..."
     DOCKER__INFOMSG_OVERLAYFS_PARTITION_IS_NOT_PRESENT="${DOCKER__NINEDASHES_COLON}${DOCKER__INFO}: partition ${DOCKER__FG_LIGHTGREY}overlay${DOCKER__NOCOLOR} is not present...\n"
@@ -2010,6 +2016,9 @@ docker__overlay_restore_original_state__sub() {
 }
 
 docker__one_time_exec_update__sub () {
+    #Print
+    show_msg_only__func "${DOCKER__SUBJECT_START_ONE_TIME_EXEC}" "${DOCKER__NUMOFLINES_1}" "${DOCKER__NUMOFLINES_0}"
+
     #Initialize variable
     local printmsg="${DOCKER__SIXDASHES_COLON}${DOCKER__STATUS}: update "
     printmsg+="${DOCKER__FG_LIGHTGREY}${docker__one_time_exec_sh__filename}${DOCKER__NOCOLOR}: "
@@ -2042,10 +2051,16 @@ docker__one_time_exec_update__sub () {
 
     #Print
     show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+
+    #Print
+    show_msg_only__func "${DOCKER__SUBJECT_COMPLETED_ONE_TIME_EXEC}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
 }
 
 
 docker__fstab_handler__sub() {
+    #Print
+    show_msg_only__func "${DOCKER__SUBJECT_START_FSTAB}" "${DOCKER__NUMOFLINES_1}" "${DOCKER__NUMOFLINES_0}"
+
     #---------------------------------------------------------------------
     # PHASE 1: Check if entry '/tb_reserve none swap sw 0 0' is found in 'fstab'
     #---------------------------------------------------------------------
@@ -2060,6 +2075,14 @@ docker__fstab_handler__sub() {
     # PHASE 3: Add entry '/tb_reserve none swap sw 0 0' to 'fstab'
     #---------------------------------------------------------------------
     docker__fstab_add_tb_reserve_entry__sub
+
+    #---------------------------------------------------------------------
+    # PHASE 4: Remove any empty lines in 'fstab'
+    #---------------------------------------------------------------------
+    docker__fstab_remove_empty_lines__sub
+
+    #Print
+    show_msg_only__func "${DOCKER__SUBJECT_COMPLETED_FSTAB}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
 }
 
 docker__fstab_checkif_tb_reserve_entry_ispresent_sub() {
@@ -2175,35 +2198,35 @@ docker__fstab_add_tb_reserve_entry__sub() {
 
 docker__fstab_remove_empty_lines__sub() {
     #Check if 'docker__swapfilesize > 0', which means swapfile is ENABLED
-    if [[ ${docker__swapfilesize} -gt 0 ]]; then
-        #Define 'printmsg'
-        local printmsg="${DOCKER__SIXDASHES_COLON}${DOCKER__STATUS}: remove empty lines"
-        printmsg+="from ${DOCKER__FG_LIGHTGREY}${docker__fstab__filename}${DOCKER__NOCOLOR}: "
+    # if [[ ${docker__swapfilesize} -gt 0 ]]; then
+    #Define 'printmsg'
+    local printmsg="${DOCKER__SIXDASHES_COLON}${DOCKER__STATUS}: remove empty lines"
+    printmsg+="from ${DOCKER__FG_LIGHTGREY}${docker__fstab__filename}${DOCKER__NOCOLOR}: "
 
-        #Remove entry '/tb_reserve none swap sw 0 0' from 'fstab'
-        local cmd="sed -i '/^$/d' \"${docker__SP7021_linux_rootfs_initramfs_disk_etc_fstab__fpath}\""
+    #Remove entry '/tb_reserve none swap sw 0 0' from 'fstab'
+    local cmd="sed -i '/^$/d' \"${docker__SP7021_linux_rootfs_initramfs_disk_etc_fstab__fpath}\""
 
-        #Check whether INSIDE or OUTSIDE container and set 'containerid'
-        local containerid="${DOCKER__EMPTYSTRING}"
-        if [[ ${docker__isRunning_inside_container} == false ]]; then   #currently inside container
-            containerid=${docker__containerid}
-        fi
-
-        #Execute command 'cmd'
-        docker_exec_cmd__func "${containerid}" "${cmd}"
-
-        #Check exit-code
-        docker__exitcode=$?
-        if [[ ${docker__exitcode} -ne 0 ]]; then #error found
-            printmsg+="${DOCKER__STATUS_FAILED}"
-            show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
-
-            exit 99
-        else    #No error found
-            printmsg+="${DOCKER__STATUS_SUCCESSFUL}"
-            show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
-        fi
+    #Check whether INSIDE or OUTSIDE container and set 'containerid'
+    local containerid="${DOCKER__EMPTYSTRING}"
+    if [[ ${docker__isRunning_inside_container} == false ]]; then   #currently inside container
+        containerid=${docker__containerid}
     fi
+
+    #Execute command 'cmd'
+    docker_exec_cmd__func "${containerid}" "${cmd}"
+
+    #Check exit-code
+    docker__exitcode=$?
+    if [[ ${docker__exitcode} -ne 0 ]]; then #error found
+        printmsg+="${DOCKER__STATUS_FAILED}"
+        show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+
+        exit 99
+    else    #No error found
+        printmsg+="${DOCKER__STATUS_SUCCESSFUL}"
+        show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_0}" "${DOCKER__NUMOFLINES_0}"
+    fi
+    # fi
 }
 
 
@@ -2213,7 +2236,8 @@ docker__run_script__sub() {
     local printmsg="${DOCKER__EMPTYSTRING}"
 
     #Define command
-    local cmd="eval \"${docker__docker__build_ispboootbin_fpath}\""
+    local flag_docker_container_build_ispboootbin_sh_executed_this_script=true
+    local cmd="eval \"${docker__docker__build_ispboootbin_fpath}\" \"${flag_docker_container_build_ispboootbin_sh_executed_this_script}\""
 
     #Check whether INSIDE or OUTSIDE container and set 'containerid'
     local containerid="${DOCKER__EMPTYSTRING}"
@@ -2276,8 +2300,6 @@ docker__main__sub(){
     docker__one_time_exec_update__sub
 
     docker__fstab_handler__sub
-
-    docker__fstab_remove_empty_lines__sub
 
     docker__run_script__sub
 }
