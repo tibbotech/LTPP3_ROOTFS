@@ -296,30 +296,40 @@ docker__execute_scripts__sub() {
 
 
 docker__ispboootbin_version__sub() {
-    #Retrieve CONTAINER_ENV4 value
-    echo "${CONTAINER_ENV4}" > "${docker__SP7021_linux_rootfs_initramfs_disk_etc_tibbo_version_ispboootbin_version__fpath}"
-    echo "---:TIBBO:-:UPDATE: wrote ISPBOOOT.BIN version ${CONTAINER_ENV4} to file ${docker__SP7021_linux_rootfs_initramfs_disk_etc_tibbo_version_ispboootbin_version__fpath}"
+    #Check if 'CONTAINER_ENV4' contains data
+    #***NOTE 1: CONTAINER_ENV4 would ONLY contain data IF it was INITIATED from a DOCKERFILE.
+    #***NOTE 2: This part should NEVER be executed if NOT INITIATED from a DOCKERFILE.
+    if [[ -n "${CONTAINER_ENV4}" ]]; then
+        #Retrieve CONTAINER_ENV4 value
+        echo "${CONTAINER_ENV4}" > "${docker__SP7021_linux_rootfs_initramfs_disk_etc_tibbo_version_ispboootbin_version__fpath}"
+        echo "---:TIBBO:-:UPDATE: wrote ISPBOOOT.BIN version ${CONTAINER_ENV4} to file ${docker__SP7021_linux_rootfs_initramfs_disk_etc_tibbo_version_ispboootbin_version__fpath}"
 
-    chown root:root ${docker__SP7021_linux_rootfs_initramfs_disk_etc_tibbo_version_ispboootbin_version__fpath}
-    echo "---:TIBBO:-:UPDATE: chown root:root ${docker__SP7021_linux_rootfs_initramfs_disk_etc_tibbo_version_ispboootbin_version__fpath}"
+        chown root:root ${docker__SP7021_linux_rootfs_initramfs_disk_etc_tibbo_version_ispboootbin_version__fpath}
+        echo "---:TIBBO:-:UPDATE: chown root:root ${docker__SP7021_linux_rootfs_initramfs_disk_etc_tibbo_version_ispboootbin_version__fpath}"
 
-    chmod 644 ${docker__SP7021_linux_rootfs_initramfs_disk_etc_tibbo_version_ispboootbin_version__fpath}
-    echo "---:TIBBO:-:UPDATE: chmod 644 ${docker__SP7021_linux_rootfs_initramfs_disk_etc_tibbo_version_ispboootbin_version__fpath}"
+        chmod 644 ${docker__SP7021_linux_rootfs_initramfs_disk_etc_tibbo_version_ispboootbin_version__fpath}
+        echo "---:TIBBO:-:UPDATE: chmod 644 ${docker__SP7021_linux_rootfs_initramfs_disk_etc_tibbo_version_ispboootbin_version__fpath}"
+    fi
 }
 
 docker__swapfile__sub() {
-	sed -i "/${DOCKER__SED_PATTERN_SWAPFILESIZE_IS}/c\\${DOCKER__SED_PATTERN_SWAPFILESIZE_IS}${CONTAINER_ENV5}" "${docker__SP7021_linux_rootfs_initramfs_disk_scripts_one_time_exec__fpath}"
-    echo "---:TIBBO:-:UPDATE: updated 'swapfilesize' in file ${docker__SP7021_linux_rootfs_initramfs_disk_scripts_one_time_exec__fpath}"
+    #Check if 'CONTAINER_ENV4' contains data
+    #***NOTE 1: CONTAINER_ENV4 would ONLY contain data IF it was INITIATED from a DOCKERFILE.
+    #***NOTE 2: This part should NEVER be executed if NOT INITIATED from a DOCKERFILE.
+    if [[ -n "${CONTAINER_ENV5}" ]]; then
+        sed -i "/${DOCKER__SED_PATTERN_SWAPFILESIZE_IS}/c\\${DOCKER__SED_PATTERN_SWAPFILESIZE_IS}${CONTAINER_ENV5}" "${docker__SP7021_linux_rootfs_initramfs_disk_scripts_one_time_exec__fpath}"
+        echo "---:TIBBO:-:UPDATE: updated 'swapfilesize' in file ${docker__SP7021_linux_rootfs_initramfs_disk_scripts_one_time_exec__fpath}"
 
-    if [[ ${CONTAINER_ENV5} -gt 0 ]]; then
-        local entry_isfound=$(grep -F "${DOCKER__FSTAB_TB_RESERVE_DIR_ENTRY}" "${docker__SP7021_linux_rootfs_initramfs_disk_etc_fstab__fpath}")
-        if [[ -z "${entry_isfound}" ]]; then
-            echo "${DOCKER__FSTAB_TB_RESERVE_DIR_ENTRY}" | tee -a "${docker__SP7021_linux_rootfs_initramfs_disk_etc_fstab__fpath}"
-            echo "---:TIBBO:-:UPDATE: added entry '${DOCKER__FSTAB_TB_RESERVE_DIR_ENTRY}' to ${docker__SP7021_linux_rootfs_initramfs_disk_etc_fstab__fpath}"
+        if [[ ${CONTAINER_ENV5} -gt 0 ]]; then
+            local entry_isfound=$(grep -F "${DOCKER__FSTAB_TB_RESERVE_DIR_ENTRY}" "${docker__SP7021_linux_rootfs_initramfs_disk_etc_fstab__fpath}")
+            if [[ -z "${entry_isfound}" ]]; then
+                echo "${DOCKER__FSTAB_TB_RESERVE_DIR_ENTRY}" | tee -a "${docker__SP7021_linux_rootfs_initramfs_disk_etc_fstab__fpath}"
+                echo "---:TIBBO:-:UPDATE: added entry '${DOCKER__FSTAB_TB_RESERVE_DIR_ENTRY}' to ${docker__SP7021_linux_rootfs_initramfs_disk_etc_fstab__fpath}"
+            fi
+        else
+            sed -i "/${DOCKER__SED_FSTAB_TB_RESERVE_WO_LEADING_SLASH_ENTRY}/d" "${docker__SP7021_linux_rootfs_initramfs_disk_etc_fstab__fpath}"
+            echo "---:TIBBO:-:UPDATE: removed entry '${DOCKER__FSTAB_TB_RESERVE_DIR_ENTRY}' from ${docker__SP7021_linux_rootfs_initramfs_disk_etc_fstab__fpath}"
         fi
-    else
-        sed -i "/${DOCKER__SED_FSTAB_TB_RESERVE_WO_LEADING_SLASH_ENTRY}/d" "${docker__SP7021_linux_rootfs_initramfs_disk_etc_fstab__fpath}"
-        echo "---:TIBBO:-:UPDATE: removed entry '${DOCKER__FSTAB_TB_RESERVE_DIR_ENTRY}' from ${docker__SP7021_linux_rootfs_initramfs_disk_etc_fstab__fpath}"
     fi
 }
 
