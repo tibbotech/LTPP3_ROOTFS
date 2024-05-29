@@ -143,3 +143,45 @@
 #   1. range-notation (e.g. /etc/hi{e-n})
 #   2. range-notation follows the ASCII numbering order
 #
+#---:29 May 2024:---
+#Affected file(s): 
+#   disk_preprep.sh
+#   usr/lib/pmux/libpmux.py
+#Implementation:
+#   Fix for TPD not send/receive data
+#
+#---:29 May 2024:---
+#Affected file(s): 
+#   disk_preprep.sh
+#   docker/dockerfiles/dockerfile_ltps_rootfs
+#   docker/dockerfiles/sd_dockerfile_ltps_rootfs
+#   docker/dockerfiles/dockerfile_ltps_rootfs_ispboootbin
+#   docker/dockerfiles/sd_dockerfile_ltps_rootfs_ispboootbin
+#   development_tools/docker_global.sh
+#   development_tools/docker_ispboootbin_version_input.sh
+#   development_tools/docker_create_an_image_from_dockerfile.sh
+#   development_tools/docker_create_images_from_dockerlist.sh
+#   development_tools/docker_build_ispboootbin.sh
+#   docker/version/ispboootbin_version_default.txt
+#   motd/update-motd.d/95-ispboootversion-notice
+#   development_tools/docker_build_ispboootbin.sh
+#Implementation:
+#   Show ISPBOOOT.BIN version after login into the ltps
+#
+#---:29 May 2024:---
+#Affected file(s): 
+#   development_tools/docker_swapfilesize_input.sh
+#   services/oobe/oneshot/one-time-exec.sh
+#Implementation:
+#   Input swapfile size when execute building image from dockerfile/dockerlist
+#
+#---:29 May 2024:---
+#Affected file(s): 
+#   development_tools/docker_fs_partition_disksize_menu.sh
+#   development_tools/docker_fs_partition_disksize_userdefined.sh
+#   development_tools/docker_fs_partition_diskpartition_menu.sh
+#   development_tools/docker_container_build_ispboootbin.sh
+#   development_tools/development_tools/docker_build_ispboootbin.sh
+#Implementation:
+#   Input swapfile size when configuring overlay
+#
