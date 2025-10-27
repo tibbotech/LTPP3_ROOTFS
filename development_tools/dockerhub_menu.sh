@@ -525,10 +525,10 @@ docker__docker_push__sub() {
         ${docker__docker_push_cmd} ${docker__repoTag_get}
 
         #Remove docker login cache
-        printmsg="${DOCKER__DOCKERHUB_REMOVE_CACHE_FILE} '${docker__config_json__fpath}'"
-        show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_2}" "${DOCKER__NUMOFLINES_0}"
+        # printmsg="${DOCKER__DOCKERHUB_REMOVE_CACHE_FILE} '${docker__config_json__fpath}'"
+        # show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_2}" "${DOCKER__NUMOFLINES_0}"
 
-        rm "${docker__config_json__fpath}"
+        # rm "${docker__config_json__fpath}"
     fi
 
     #Move-down and clean 1 line
@@ -587,10 +587,10 @@ docker__docker_pull__sub() {
     ${docker__docker_pull_cmd} ${docker__repoTag_put}
 
     #Remove docker login cache
-    printmsg="${DOCKER__DOCKERHUB_REMOVE_CACHE_FILE} '${docker__config_json__fpath}'"
-    show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_2}" "${DOCKER__NUMOFLINES_0}"
+    # printmsg="${DOCKER__DOCKERHUB_REMOVE_CACHE_FILE} '${docker__config_json__fpath}'"
+    # show_msg_only__func "${printmsg}" "${DOCKER__NUMOFLINES_2}" "${DOCKER__NUMOFLINES_0}"
 
-    rm "${docker__config_json__fpath}"
+    # rm "${docker__config_json__fpath}"
 
     #Move-down and clean 1 line
     moveDown_and_cleanLines__func "${DOCKER__NUMOFLINES_1}"
